@@ -46,6 +46,7 @@
             this.btnCopyToLibrary = new System.Windows.Forms.Button();
             this.btnCopyToModel = new System.Windows.Forms.Button();
             this.ttText = new System.Windows.Forms.ToolTip(this.components);
+            this.cbPreview = new System.Windows.Forms.CheckBox();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
@@ -59,7 +60,7 @@
             this.groupBox2.Controls.Add(this.lvModelMaterials);
             this.groupBox2.Location = new System.Drawing.Point(330, 14);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(175, 456);
+            this.groupBox2.Size = new System.Drawing.Size(175, 427);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "FE Model materials";
@@ -89,13 +90,14 @@
             this.lvModelMaterials.MultiSelect = false;
             this.lvModelMaterials.Name = "lvModelMaterials";
             this.lvModelMaterials.ShowGroups = false;
-            this.lvModelMaterials.Size = new System.Drawing.Size(162, 399);
+            this.lvModelMaterials.Size = new System.Drawing.Size(162, 370);
             this.lvModelMaterials.TabIndex = 1;
             this.lvModelMaterials.UseCompatibleStateImageBehavior = false;
             this.lvModelMaterials.View = System.Windows.Forms.View.List;
             this.lvModelMaterials.Enter += new System.EventHandler(this.lvModelMaterials_Enter);
             this.lvModelMaterials.Leave += new System.EventHandler(this.lvModelMaterials_Leave);
             this.lvModelMaterials.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lvModelMaterials_MouseDown);
+            this.lvModelMaterials.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lvModelMaterials_MouseUp);
             // 
             // btnRename
             // 
@@ -238,12 +240,24 @@
             this.btnCopyToModel.UseVisualStyleBackColor = true;
             this.btnCopyToModel.Click += new System.EventHandler(this.btnCopyToModel_Click);
             // 
+            // cbPreview
+            // 
+            this.cbPreview.AutoSize = true;
+            this.cbPreview.Location = new System.Drawing.Point(337, 444);
+            this.cbPreview.Name = "cbPreview";
+            this.cbPreview.Size = new System.Drawing.Size(169, 19);
+            this.cbPreview.TabIndex = 14;
+            this.cbPreview.Text = "Preview material properties";
+            this.cbPreview.UseVisualStyleBackColor = true;
+            this.cbPreview.CheckedChanged += new System.EventHandler(this.cbPreview_CheckedChanged);
+            // 
             // FrmMaterialLibrary
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(524, 511);
+            this.Controls.Add(this.cbPreview);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.btnCancel);
@@ -266,6 +280,7 @@
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -286,5 +301,6 @@
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnDeleteFromModel;
         private System.Windows.Forms.ToolTip ttText;
+        private System.Windows.Forms.CheckBox cbPreview;
     }
 }

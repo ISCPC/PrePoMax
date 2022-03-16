@@ -150,6 +150,7 @@
             this.tsmiCreateBoundaryLayer = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiFindEdgesByAngleForModelParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiRemeshElements = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiUpdateNodalCoordinatesFromFile = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerModel1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiNode = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiRenumberAllNodes = new System.Windows.Forms.ToolStripMenuItem();
@@ -388,7 +389,9 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsmiUpdateNodalCoordinatesFromFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerMaterial2 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiImportMaterial = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiExportMaterial = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -1383,6 +1386,13 @@
             this.tsmiRemeshElements.Text = "Remesh Elements";
             this.tsmiRemeshElements.Click += new System.EventHandler(this.tsmiRemeshElements_Click);
             // 
+            // tsmiUpdateNodalCoordinatesFromFile
+            // 
+            this.tsmiUpdateNodalCoordinatesFromFile.Name = "tsmiUpdateNodalCoordinatesFromFile";
+            this.tsmiUpdateNodalCoordinatesFromFile.Size = new System.Drawing.Size(266, 22);
+            this.tsmiUpdateNodalCoordinatesFromFile.Text = "Update Nodal Coordinates From File";
+            this.tsmiUpdateNodalCoordinatesFromFile.Click += new System.EventHandler(this.tsmiUpdateNodalCoordinatesFromFile_Click);
+            // 
             // tsmiDividerModel1
             // 
             this.tsmiDividerModel1.Name = "tsmiDividerModel1";
@@ -1722,42 +1732,45 @@
             this.tsmiEditMaterial,
             this.tsmiDuplicateMaterial,
             this.tsmiDividerMaterial1,
+            this.tsmiImportMaterial,
+            this.tsmiExportMaterial,
+            this.tsmiDividerMaterial2,
             this.tsmiDeleteMaterial});
             this.tsmiMaterial.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMaterial.Image")));
             this.tsmiMaterial.Name = "tsmiMaterial";
-            this.tsmiMaterial.Size = new System.Drawing.Size(156, 22);
+            this.tsmiMaterial.Size = new System.Drawing.Size(180, 22);
             this.tsmiMaterial.Text = "Material";
             // 
             // tsmiCreateMaterial
             // 
             this.tsmiCreateMaterial.Name = "tsmiCreateMaterial";
-            this.tsmiCreateMaterial.Size = new System.Drawing.Size(124, 22);
+            this.tsmiCreateMaterial.Size = new System.Drawing.Size(180, 22);
             this.tsmiCreateMaterial.Text = "Create";
             this.tsmiCreateMaterial.Click += new System.EventHandler(this.tsmiCreateMaterial_Click);
             // 
             // tsmiEditMaterial
             // 
             this.tsmiEditMaterial.Name = "tsmiEditMaterial";
-            this.tsmiEditMaterial.Size = new System.Drawing.Size(124, 22);
+            this.tsmiEditMaterial.Size = new System.Drawing.Size(180, 22);
             this.tsmiEditMaterial.Text = "Edit";
             this.tsmiEditMaterial.Click += new System.EventHandler(this.tsmiEditMaterial_Click);
             // 
             // tsmiDuplicateMaterial
             // 
             this.tsmiDuplicateMaterial.Name = "tsmiDuplicateMaterial";
-            this.tsmiDuplicateMaterial.Size = new System.Drawing.Size(124, 22);
+            this.tsmiDuplicateMaterial.Size = new System.Drawing.Size(180, 22);
             this.tsmiDuplicateMaterial.Text = "Duplicate";
             this.tsmiDuplicateMaterial.Click += new System.EventHandler(this.tsmiDuplicateMaterial_Click);
             // 
             // tsmiDividerMaterial1
             // 
             this.tsmiDividerMaterial1.Name = "tsmiDividerMaterial1";
-            this.tsmiDividerMaterial1.Size = new System.Drawing.Size(121, 6);
+            this.tsmiDividerMaterial1.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiDeleteMaterial
             // 
             this.tsmiDeleteMaterial.Name = "tsmiDeleteMaterial";
-            this.tsmiDeleteMaterial.Size = new System.Drawing.Size(124, 22);
+            this.tsmiDeleteMaterial.Size = new System.Drawing.Size(180, 22);
             this.tsmiDeleteMaterial.Text = "Delete";
             this.tsmiDeleteMaterial.Click += new System.EventHandler(this.tsmiDeleteMaterial_Click);
             // 
@@ -1765,7 +1778,7 @@
             // 
             this.tsmiMaterialLibrary.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMaterialLibrary.Image")));
             this.tsmiMaterialLibrary.Name = "tsmiMaterialLibrary";
-            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(156, 22);
+            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(180, 22);
             this.tsmiMaterialLibrary.Text = "Material Library";
             this.tsmiMaterialLibrary.Click += new System.EventHandler(this.tsmiMaterialLibrary_Click);
             // 
@@ -1778,7 +1791,7 @@
             this.tsmiDelete});
             this.tsmiSection.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSection.Image")));
             this.tsmiSection.Name = "tsmiSection";
-            this.tsmiSection.Size = new System.Drawing.Size(156, 22);
+            this.tsmiSection.Size = new System.Drawing.Size(180, 22);
             this.tsmiSection.Text = "Section";
             // 
             // tsmiCreateSection
@@ -3365,12 +3378,24 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
-            // tsmiUpdateNodalCoordinatesFromFile
+            // tsmiDividerMaterial2
             // 
-            this.tsmiUpdateNodalCoordinatesFromFile.Name = "tsmiUpdateNodalCoordinatesFromFile";
-            this.tsmiUpdateNodalCoordinatesFromFile.Size = new System.Drawing.Size(266, 22);
-            this.tsmiUpdateNodalCoordinatesFromFile.Text = "Update Nodal Coordinates From File";
-            this.tsmiUpdateNodalCoordinatesFromFile.Click += new System.EventHandler(this.tsmiUpdateNodalCoordinatesFromFile_Click);
+            this.tsmiDividerMaterial2.Name = "tsmiDividerMaterial2";
+            this.tsmiDividerMaterial2.Size = new System.Drawing.Size(177, 6);
+            // 
+            // tsmiImportMaterial
+            // 
+            this.tsmiImportMaterial.Name = "tsmiImportMaterial";
+            this.tsmiImportMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiImportMaterial.Text = "Import";
+            this.tsmiImportMaterial.Click += new System.EventHandler(this.tsmiImportMaterial_Click);
+            // 
+            // tsmiExportMaterial
+            // 
+            this.tsmiExportMaterial.Name = "tsmiExportMaterial";
+            this.tsmiExportMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiExportMaterial.Text = "Export";
+            this.tsmiExportMaterial.Click += new System.EventHandler(this.tsmiExportMaterial_Click);
             // 
             // FrmMain
             // 
@@ -3785,6 +3810,9 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiExportToDeformedStl;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerExport2;
         private System.Windows.Forms.ToolStripMenuItem tsmiUpdateNodalCoordinatesFromFile;
+        private System.Windows.Forms.ToolStripMenuItem tsmiImportMaterial;
+        private System.Windows.Forms.ToolStripMenuItem tsmiExportMaterial;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerMaterial2;
     }
 }
 

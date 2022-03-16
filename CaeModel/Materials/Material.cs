@@ -61,6 +61,13 @@ namespace CaeModel
                             den.DensityTemp[i][1] = fromSystem.Convert(den.DensityTemp[i][1], stc, toSystem);
                         }
                     }
+                    else if (property is SlipWear sw)
+                    {
+                        // Hardness
+                        sw.Hardness = fromSystem.Convert(sw.Hardness, spc, toSystem);
+                        // Wear coefficient
+                        sw.WearCoefficient = sw.WearCoefficient;
+                    }
                     else if (property is Elastic el)
                     {
                         for (int i = 0; i < el.YoungsPoissonsTemp.Length; i++)

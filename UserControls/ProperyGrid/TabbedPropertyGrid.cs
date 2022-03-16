@@ -11,12 +11,23 @@ namespace UserControls
     // http://kiwigis.blogspot.si/2009/05/adding-tab-key-support-to-propertygrid.html
     public class TabbedPropertyGrid : PropertyGrid
     {
+        // Variables                                                                                                                
+        private bool _readOnly;
+
+
+        // Variables                                                                                                                
+        public bool ReadOnly { get { return _readOnly; } set { _readOnly = value; } }
+
+
+        // Constructors                                                                                                             
         public TabbedPropertyGrid() : base() 
         {
             this.LineColor = System.Drawing.SystemColors.Control;
             this.DisabledItemForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
+            //
+            _readOnly = false;
         }
-
+        //
         public void SetParent(Form form)
         {
             // Catch null arguments
@@ -31,7 +42,6 @@ namespace UserControls
             // Listen for keydown event
             form.KeyDown += new KeyEventHandler(this.Form_KeyDown);
         }
-
         public void SetLabelColumnWidth(double labelRatio)
         {
             // get the grid view
@@ -49,7 +59,7 @@ namespace UserControls
             // refresh
             view.Invalidate();
         }
-
+        //
         private void Form_KeyDown(object sender, KeyEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine(DateTime.Now.Millisecond + e.KeyCode.ToString());
@@ -125,7 +135,7 @@ namespace UserControls
                     break;
             }
         }
-
+        // Overrides
         protected override void OnGotFocus(EventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine(DateTime.Now.Millisecond + " OnGotFocus");
@@ -149,7 +159,6 @@ namespace UserControls
 
             base.OnGotFocus(e);
         }
-
         protected override void OnEnter(EventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine(DateTime.Now.Millisecond + " OnEnter");
@@ -169,7 +178,21 @@ namespace UserControls
             //
             base.OnEnter(e);
         }
-
+        protected override void OnSelectedGridItemChanged(SelectedGridItemChangedEventArgs e)
+        {
+            if (_readOnly)
+            {
+                if (e.NewSelection.GridItemType == GridItemType.Property)
+                {
+                    if (e.NewSelection.Parent != null && e.NewSelection.Parent.GridItemType == GridItemType.Category)
+                    {
+                        this.SelectedGridItem = e.NewSelection.Parent;
+                        return;
+                    }
+                }
+            }
+        }
+        //
         private void InitializeComponent()
         {
             this.SuspendLayout();

@@ -24,11 +24,27 @@ namespace PrePoMax.Forms
         private Controller _controller;
         private TabPage[] _pages;
         private bool _useSimpleEditor;
-        private bool _keepVisible;
+        private bool _preview;
         
 
         // Properties                                                                                                               
-        public Material Material { get { return _material; } set { _material = value.DeepClone(); } }
+        public Material Material
+        {
+            get { return _material; }
+            set
+            {
+                _material = value.DeepClone();
+                // Save selected property
+                int selectedId = -1;
+                if (lvAddedProperties.SelectedIndices.Count > 0)
+                    selectedId = lvAddedProperties.SelectedIndices[0];
+                //
+                ShowMaterial();
+                // Select previous property
+                if (selectedId >= 0 && selectedId < lvAddedProperties.Items.Count) 
+                    lvAddedProperties.Items[selectedId].Selected = true;
+            }
+        }
         public bool UseSimpleEditor { get { return _useSimpleEditor; } set { _useSimpleEditor = value.DeepClone(); } }
 
 
@@ -59,7 +75,7 @@ namespace PrePoMax.Forms
         // Event handling
         private void FrmMaterial_VisibleChanged(object sender, EventArgs e)
         {
-            cbTemperatureDependent.Enabled = !_useSimpleEditor;
+            cbTemperatureDependent.Enabled = !(_useSimpleEditor || _preview);
             tvProperties.Visible = !_useSimpleEditor;
             lvAddedProperties.Visible = !_useSimpleEditor;
         }
@@ -92,7 +108,7 @@ namespace PrePoMax.Forms
         }
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if (tvProperties.SelectedNodes != null)
+            if (!_preview && tvProperties.SelectedNodes != null)
             {
                 foreach (TreeNode treeNode in tvProperties.SelectedNodes)
                 {
@@ -275,7 +291,7 @@ namespace PrePoMax.Forms
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             
         }
@@ -297,7 +313,7 @@ namespace PrePoMax.Forms
         {
             _useSimpleEditor = false;
             //
-            if (!_keepVisible)
+            if (!_preview)
             {
                 dgvData.HidePlot();
                 Hide();
@@ -322,7 +338,7 @@ namespace PrePoMax.Forms
             _materialNames = null;
             _materialToEditName = null;
             _material = null;
-            _keepVisible = false;
+            _preview = false;
             lvAddedProperties.Items.Clear();
             ClearControls();
             SetControlsVisibility();
@@ -358,40 +374,7 @@ namespace PrePoMax.Forms
             else
             {
                 Material = _controller.GetMaterial(_materialToEditName); // to clone
-                //
-                tbName.Text = _material.Name;
-                tbDescription.Text = _material.Description;
-                cbTemperatureDependent.Checked = _material.TemperatureDependent;
-                //
-                if (_material.Properties.Count > 0)
-                {
-                    ListViewItem item;
-                    ViewMaterialProperty view = null;
-                    foreach (var property in _material.Properties)
-                    {
-                        if (property is Density den) view = new ViewDensity(den);
-                        else if (property is Elastic el) view = new ViewElastic(el);
-                        else if (property is ElasticWithDensity ewd)
-                        {
-                            view = new ViewElasticWithDensity(ewd);
-                            _useSimpleEditor = true;
-                        }
-                        else if (property is Plastic pl) view = new ViewPlastic(pl);
-                        else if (property is ThermalExpansion te)
-                            view = new ViewThermalExpansion(te, cbTemperatureDependent.Checked);
-                        else if (property is ThermalConductivity tc) view = new ViewThermalConductivity(tc);
-                        else if (property is SpecificHeat sh) view = new ViewSpecificHeat(sh);
-                        else if (property is SlipWear sw) view = new ViewSlipWear(sw);
-                        else throw new NotSupportedException();
-                        //
-                        item = new ListViewItem(view.Name);
-                        item.Tag = view;
-                        item = lvAddedProperties.Items.Add(item);
-                    }
-                    //
-                    lvAddedProperties.Items[0].Selected = true;
-                    lvAddedProperties.Select();
-                }
+                ShowMaterial();
             }
             // Simple material editor
             int delta;
@@ -424,18 +407,74 @@ namespace PrePoMax.Forms
             //
             return true;
         }
-        public void PrepareFormAlwaysVisible()
+        public void ShowMaterial()
+        {
+            lvAddedProperties.Items.Clear();
+            //
+            tbName.Text = _material.Name;
+            tbDescription.Text = _material.Description;
+            cbTemperatureDependent.Checked = _material.TemperatureDependent;
+            //
+            if (_material.Properties.Count > 0)
+            {
+                ListViewItem item;
+                ViewMaterialProperty view = null;
+                foreach (var property in _material.Properties)
+                {
+                    if (property is Density den) view = new ViewDensity(den);
+                    else if (property is Elastic el) view = new ViewElastic(el);
+                    else if (property is ElasticWithDensity ewd)
+                    {
+                        view = new ViewElasticWithDensity(ewd);
+                        _useSimpleEditor = true;
+                    }
+                    else if (property is Plastic pl) view = new ViewPlastic(pl);
+                    else if (property is ThermalExpansion te)
+                        view = new ViewThermalExpansion(te, cbTemperatureDependent.Checked);
+                    else if (property is ThermalConductivity tc) view = new ViewThermalConductivity(tc);
+                    else if (property is SpecificHeat sh) view = new ViewSpecificHeat(sh);
+                    else if (property is SlipWear sw) view = new ViewSlipWear(sw);
+                    else throw new NotSupportedException();
+                    //
+                    item = new ListViewItem(view.Name);
+                    item.Tag = view;
+                    item = lvAddedProperties.Items.Add(item);
+                }
+                //
+                lvAddedProperties.Items[0].Selected = true;
+                lvAddedProperties.Select();
+            }
+        }
+        public void PrepareFormForPreview()
         {
             PrepareForm(null, null);
+            tbName.Text = "";
             //
-            _keepVisible = true;
+            _preview = true;
             SetControlsVisibility();
         }
         private void SetControlsVisibility()
         {
-            btnOKAddNew.Visible = !_keepVisible;
-            btnOK.Visible = !_keepVisible;
-            btnCancel.Visible = !_keepVisible;
+            tbName.ReadOnly = _preview;
+            tbName.BackColor = SystemColors.Window;
+            tbDescription.ReadOnly = _preview;
+            tbDescription.BackColor = SystemColors.Window;
+            // Buttons
+            btnAdd.Enabled = !_preview;
+            btnMoveUp.Enabled = !_preview;
+            btnMoveDown.Enabled = !_preview;
+            btnRemove.Enabled = !_preview;
+            // Property grid
+            propertyGrid.ReadOnly = _preview;
+            // Data grid
+            dgvData.AllowUserToAddRows = !_preview;
+            dgvData.AllowUserToDeleteRows = !_preview;
+            dgvData.ReadOnly = _preview;
+            // Buttons
+            btnOKAddNew.Visible = !_preview;
+            btnOK.Visible = !_preview;
+            btnCancel.Visible = !_preview;
+
         }
         private void ClearControls()
         {

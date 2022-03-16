@@ -3927,6 +3927,14 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiImportMaterial_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void tsmiExportMaterial_Click(object sender, EventArgs e)
+        {
+
+        }
         private void tsmiDeleteMaterial_Click(object sender, EventArgs e)
         {
             try

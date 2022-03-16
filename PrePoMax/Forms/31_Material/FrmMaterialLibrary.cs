@@ -21,6 +21,7 @@ namespace PrePoMax.Forms
         private bool _libraryChanged;
         private bool _modelChanged;
         private UnitSystem _libraryUnitSystem;
+        private FrmMaterial _frmMaterial;
 
         // Properties                                                                                                               
 
@@ -63,11 +64,11 @@ namespace PrePoMax.Forms
                 if (materialNode != null) btvLibrary.SelectedNode = materialNode;
                 else btvLibrary.SelectedNode = btvLibrary.Nodes[0];
                 //
-                FrmMaterial frmMaterial = new FrmMaterial(_controller);
-                frmMaterial.Text = "Edit Material";
-                frmMaterial.PrepareFormAlwaysVisible();
-                frmMaterial.Location = new Point(Location.X + Width - 10, Location.Y);
-                frmMaterial.Show(this);
+                _frmMaterial = new FrmMaterial(_controller);
+                _frmMaterial.Text = "Preview Material Properties";
+                _frmMaterial.PrepareFormForPreview();
+                //
+                btvLibrary_AfterSelect(null, null);
             }
             catch (Exception ex)
             {
@@ -77,19 +78,32 @@ namespace PrePoMax.Forms
         //
         private void btvLibrary_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (btvLibrary.SelectedNode != null) tbCategoryName.Text = btvLibrary.SelectedNode.Text;
-        }
-        private void btvLibrary_MouseDown(object sender, MouseEventArgs e)
-        {
             try
             {
-                if (btvLibrary.HitTest(e.Location).Node == null)
+                if (btvLibrary.SelectedNode != null)
                 {
-                    //btvLibrary.SelectedNode = null;
+                    tbCategoryName.Text = btvLibrary.SelectedNode.Text;
+                    //
+                    if (btvLibrary.SelectedNode.Tag != null)
+                    {
+                        if (_frmMaterial != null) _frmMaterial.Material = (Material)btvLibrary.SelectedNode.Tag;
+                    }
                 }
             }
             catch
             { }
+        }
+        private void btvLibrary_MouseDown(object sender, MouseEventArgs e)
+        {
+            //try
+            //{
+            //    if (btvLibrary.HitTest(e.Location).Node == null)
+            //    {
+            //        //btvLibrary.SelectedNode = null;
+            //    }
+            //}
+            //catch
+            //{ }
         }
         private void btvLibrary_MouseDoubleClick(object sender, MouseEventArgs e)
         {
@@ -98,11 +112,24 @@ namespace PrePoMax.Forms
         //
         private void lvModelMaterials_MouseDown(object sender, MouseEventArgs e)
         {
+            //try
+            //{
+            //    if (lvModelMaterials.HitTest(e.Location).Item == null)
+            //    {
+            //        //lvModelMaterials.SelectedItems.Clear();
+            //    }
+            //}
+            //catch
+            //{ }
+        }
+        private void lvModelMaterials_MouseUp(object sender, MouseEventArgs e)
+        {
             try
             {
-                if (lvModelMaterials.HitTest(e.Location).Item == null)
+                if (lvModelMaterials.SelectedItems != null && lvModelMaterials.SelectedItems.Count == 1 &&
+                   lvModelMaterials.SelectedItems[0].Tag != null)
                 {
-                    //lvModelMaterials.SelectedItems.Clear();
+                    if (_frmMaterial.Material != null) _frmMaterial.Material = (Material)lvModelMaterials.SelectedItems[0].Tag;
                 }
             }
             catch
@@ -218,23 +245,28 @@ namespace PrePoMax.Forms
                     if (btvLibrary.SelectedNode.Tag == null) categoryNode = btvLibrary.SelectedNode;    // Category
                     else categoryNode = btvLibrary.SelectedNode.Parent;                                 // Material
                     //
-                    ListViewItem modelMaterialItem = lvModelMaterials.SelectedItems[0];
-                    Material modelMaterial = (Material)modelMaterialItem.Tag.DeepClone();
-                    //
-                    if (!categoryNode.Nodes.ContainsKey(modelMaterialItem.Text))
+                    string materialName = lvModelMaterials.SelectedItems[0].Text;
+                    int count = 1;
+                    while (categoryNode.Nodes.ContainsKey(materialName))
                     {
-                        TreeNode newMaterialNode = categoryNode.Nodes.Add(modelMaterialItem.Text);
-                        newMaterialNode.Name = modelMaterialItem.Text;
-                        // Convert material unit system
-                        modelMaterial.ConvertUnits(_controller.Model.UnitSystem, _controller.Model.UnitSystem, _libraryUnitSystem);
-                        newMaterialNode.Tag = modelMaterial;
-                        //
-                        categoryNode.Expand();
-                        btvLibrary.SelectedNode = newMaterialNode;
-                        //
-                        _libraryChanged = true;
+                        materialName = lvModelMaterials.SelectedItems[0].Text + "_Model-" + count;
+                        count++;
                     }
-                    else throw new CaeException("The node '" + categoryNode.Text + "' already contains the node named '" + modelMaterialItem.Text + "'.");
+                    //
+                    ListViewItem libraryMaterialItem = lvModelMaterials.SelectedItems[0];
+                    Material libraryMaterial = (Material)libraryMaterialItem.Tag.DeepClone();
+                    libraryMaterial.Name = materialName;
+                    //
+                    TreeNode newMaterialNode = categoryNode.Nodes.Add(libraryMaterial.Name);
+                    newMaterialNode.Name = newMaterialNode.Text;
+                    // Convert material unit system
+                    libraryMaterial.ConvertUnits(_controller.Model.UnitSystem, _controller.Model.UnitSystem, _libraryUnitSystem);
+                    newMaterialNode.Tag = libraryMaterial;
+                    //
+                    categoryNode.Expand();
+                    btvLibrary.SelectedNode = newMaterialNode;
+                    //
+                    _libraryChanged = true;
                 }
             }
             catch (Exception ex)
@@ -252,24 +284,29 @@ namespace PrePoMax.Forms
             {
                 if (btvLibrary.SelectedNode != null && btvLibrary.SelectedNode.Tag != null)
                 {
-                    if (!lvModelMaterials.Items.ContainsKey(btvLibrary.SelectedNode.Text))
+                    string materialName = btvLibrary.SelectedNode.Text;
+                    int count = 1;
+                    while (lvModelMaterials.Items.ContainsKey(materialName))
                     {
-                        ListViewItem modelMaterialItem = lvModelMaterials.Items.Add(btvLibrary.SelectedNode.Text);
-                        modelMaterialItem.Name = modelMaterialItem.Text;
-                        // Convert material unit system
-                        Material modelMaterial = (Material)btvLibrary.SelectedNode.Tag.DeepClone();
-                        modelMaterial.ConvertUnits(_controller.Model.UnitSystem, _libraryUnitSystem, _controller.Model.UnitSystem);
-                        modelMaterialItem.Tag = modelMaterial;
-                        //
-                        lvModelMaterials_Enter(null, null);
-                        modelMaterialItem.Selected = true;
-                        lvModelMaterials_Leave(null, null);
-                        //
-                        _modelChanged = true;
+                        materialName = btvLibrary.SelectedNode.Text + "_Library-" + count;
+                        count++;
                     }
-                    else throw new CaeException("The model already contains the material named '" + btvLibrary.SelectedNode.Text + "'.");
+                    ListViewItem modelMaterialItem = lvModelMaterials.Items.Add(materialName);
+                    modelMaterialItem.Name = modelMaterialItem.Text;
+                    // Convert material unit system
+                    Material modelMaterial = (Material)btvLibrary.SelectedNode.Tag.DeepClone();
+                    modelMaterial.Name = modelMaterialItem.Name;
+                    modelMaterial.ConvertUnits(_controller.Model.UnitSystem, _libraryUnitSystem, _controller.Model.UnitSystem);
+                    modelMaterialItem.Tag = modelMaterial;
+                    //
+                    lvModelMaterials_Enter(null, null);
+                    modelMaterialItem.Selected = true;
+                    lvModelMaterials_Leave(null, null);
+                    //
+                    _modelChanged = true;
                 }
-                else throw new CaeException("Please select the material in the library materials to be copied to the model materials.");
+                else throw new CaeException("Please select the material in the library materials " +
+                                            "to be copied to the model materials.");
             }
             catch (Exception ex)
             {                
@@ -279,6 +316,16 @@ namespace PrePoMax.Forms
             {
                 _controller.Model.UnitSystem.SetConverterUnits();
             }
+        }
+        //
+        private void cbPreview_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbPreview.Checked)
+            {
+                _frmMaterial.Location = new Point(Location.X + Width - 12, Location.Y);
+                _frmMaterial.Show(this);
+            }
+            else _frmMaterial.Hide();
         }
         //
         private void btnSave_Click(object sender, EventArgs e)
