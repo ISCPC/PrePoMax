@@ -60,7 +60,7 @@
             this.groupBox2.Controls.Add(this.lvModelMaterials);
             this.groupBox2.Location = new System.Drawing.Point(330, 14);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(175, 427);
+            this.groupBox2.Size = new System.Drawing.Size(205, 427);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "FE Model materials";
@@ -68,7 +68,7 @@
             // btnDeleteFromModel
             // 
             this.btnDeleteFromModel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDeleteFromModel.Location = new System.Drawing.Point(94, 22);
+            this.btnDeleteFromModel.Location = new System.Drawing.Point(124, 22);
             this.btnDeleteFromModel.Name = "btnDeleteFromModel";
             this.btnDeleteFromModel.Size = new System.Drawing.Size(75, 23);
             this.btnDeleteFromModel.TabIndex = 10;
@@ -90,7 +90,7 @@
             this.lvModelMaterials.MultiSelect = false;
             this.lvModelMaterials.Name = "lvModelMaterials";
             this.lvModelMaterials.ShowGroups = false;
-            this.lvModelMaterials.Size = new System.Drawing.Size(162, 370);
+            this.lvModelMaterials.Size = new System.Drawing.Size(192, 370);
             this.lvModelMaterials.TabIndex = 1;
             this.lvModelMaterials.UseCompatibleStateImageBehavior = false;
             this.lvModelMaterials.View = System.Windows.Forms.View.List;
@@ -185,7 +185,7 @@
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOK.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnOK.Location = new System.Drawing.Point(343, 476);
+            this.btnOK.Location = new System.Drawing.Point(373, 476);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 12;
@@ -198,7 +198,7 @@
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnCancel.Location = new System.Drawing.Point(424, 476);
+            this.btnCancel.Location = new System.Drawing.Point(454, 476);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 11;
@@ -256,7 +256,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(524, 511);
+            this.ClientSize = new System.Drawing.Size(554, 511);
             this.Controls.Add(this.cbPreview);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnOK);

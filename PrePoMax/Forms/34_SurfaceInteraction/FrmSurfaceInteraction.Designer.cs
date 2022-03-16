@@ -90,7 +90,8 @@
             this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.Location = new System.Drawing.Point(3, 3);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(344, 252);
+            this.propertyGrid.ReadOnly = false;
+            this.propertyGrid.Size = new System.Drawing.Size(339, 252);
             this.propertyGrid.TabIndex = 6;
             this.propertyGrid.ToolbarVisible = false;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
@@ -98,7 +99,7 @@
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(215, 512);
+            this.btnOK.Location = new System.Drawing.Point(210, 512);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 8;
@@ -110,7 +111,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(296, 512);
+            this.btnCancel.Location = new System.Drawing.Point(291, 512);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 7;
@@ -126,7 +127,7 @@
             this.gbData.Controls.Add(this.lName);
             this.gbData.Location = new System.Drawing.Point(12, 12);
             this.gbData.Name = "gbData";
-            this.gbData.Size = new System.Drawing.Size(365, 57);
+            this.gbData.Size = new System.Drawing.Size(360, 57);
             this.gbData.TabIndex = 10;
             this.gbData.TabStop = false;
             this.gbData.Text = "Data";
@@ -137,7 +138,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbName.Location = new System.Drawing.Point(109, 19);
             this.tbName.Name = "tbName";
-            this.tbName.Size = new System.Drawing.Size(250, 23);
+            this.tbName.Size = new System.Drawing.Size(245, 23);
             this.tbName.TabIndex = 1;
             this.tbName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbName_KeyDown);
             // 
@@ -164,7 +165,7 @@
             this.gbProperties.Controls.Add(this.tvProperties);
             this.gbProperties.Location = new System.Drawing.Point(12, 75);
             this.gbProperties.Name = "gbProperties";
-            this.gbProperties.Size = new System.Drawing.Size(365, 431);
+            this.gbProperties.Size = new System.Drawing.Size(360, 431);
             this.gbProperties.TabIndex = 0;
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Interaction models";
@@ -180,7 +181,7 @@
             this.tcProperties.Margin = new System.Windows.Forms.Padding(0);
             this.tcProperties.Name = "tcProperties";
             this.tcProperties.SelectedIndex = 0;
-            this.tcProperties.Size = new System.Drawing.Size(358, 286);
+            this.tcProperties.Size = new System.Drawing.Size(353, 286);
             this.tcProperties.TabIndex = 11;
             // 
             // tpProperties
@@ -190,7 +191,7 @@
             this.tpProperties.Location = new System.Drawing.Point(4, 24);
             this.tpProperties.Name = "tpProperties";
             this.tpProperties.Padding = new System.Windows.Forms.Padding(3);
-            this.tpProperties.Size = new System.Drawing.Size(350, 258);
+            this.tpProperties.Size = new System.Drawing.Size(345, 258);
             this.tpProperties.TabIndex = 0;
             this.tpProperties.Text = "Properties";
             // 
@@ -256,11 +257,11 @@
             this.lvAddedProperties.FullRowSelect = true;
             this.lvAddedProperties.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.lvAddedProperties.HideSelection = false;
-            this.lvAddedProperties.Location = new System.Drawing.Point(177, 38);
+            this.lvAddedProperties.Location = new System.Drawing.Point(173, 38);
             this.lvAddedProperties.MultiSelect = false;
             this.lvAddedProperties.Name = "lvAddedProperties";
             this.lvAddedProperties.ShowGroups = false;
-            this.lvAddedProperties.Size = new System.Drawing.Size(183, 101);
+            this.lvAddedProperties.Size = new System.Drawing.Size(182, 101);
             this.lvAddedProperties.TabIndex = 5;
             this.lvAddedProperties.UseCompatibleStateImageBehavior = false;
             this.lvAddedProperties.View = System.Windows.Forms.View.Details;
@@ -273,7 +274,7 @@
             // btnAdd
             // 
             this.btnAdd.Image = global::PrePoMax.Properties.Resources.Right_arrow;
-            this.btnAdd.Location = new System.Drawing.Point(147, 38);
+            this.btnAdd.Location = new System.Drawing.Point(145, 38);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(24, 24);
             this.btnAdd.TabIndex = 3;
@@ -283,7 +284,7 @@
             // btnRemove
             // 
             this.btnRemove.Image = global::PrePoMax.Properties.Resources.Remove;
-            this.btnRemove.Location = new System.Drawing.Point(147, 68);
+            this.btnRemove.Location = new System.Drawing.Point(145, 68);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(24, 24);
             this.btnRemove.TabIndex = 4;
@@ -293,7 +294,7 @@
             // btnOKAddNew
             // 
             this.btnOKAddNew.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOKAddNew.Location = new System.Drawing.Point(119, 512);
+            this.btnOKAddNew.Location = new System.Drawing.Point(114, 512);
             this.btnOKAddNew.Name = "btnOKAddNew";
             this.btnOKAddNew.Size = new System.Drawing.Size(90, 23);
             this.btnOKAddNew.TabIndex = 17;
@@ -305,7 +306,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(389, 546);
+            this.ClientSize = new System.Drawing.Size(384, 546);
             this.Controls.Add(this.btnOKAddNew);
             this.Controls.Add(this.gbProperties);
             this.Controls.Add(this.gbData);

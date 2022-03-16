@@ -3933,7 +3933,14 @@ namespace PrePoMax
         }
         private void tsmiExportMaterial_Click(object sender, EventArgs e)
         {
-
+            try
+            {
+                SelectMultipleEntities("Materials", _controller.GetAllMaterials(), ExportMaterials);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
         }
         private void tsmiDeleteMaterial_Click(object sender, EventArgs e)
         {
@@ -3955,6 +3962,31 @@ namespace PrePoMax
         private void DuplicateMaterials(string[] materialNames)
         {
             _controller.DuplicateMaterialsCommand(materialNames);
+        }
+        private async void ExportMaterials(string[] materialNames)
+        {
+            try
+            {
+                _controller.CurrentView = ViewGeometryModelResults.Model;
+                //
+                saveFileDialog.Filter = "Calculix files | *.inp";
+                //
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // The filter adds the extension to the file name
+                    SetStateWorking(Globals.ExportingText);
+                    //
+                    await Task.Run(() => _controller.ExportMaterials(materialNames, saveFileDialog.FileName));
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.ExportingText);
+            }
         }
         private void DeleteMaterials(string[] materialNames)
         {

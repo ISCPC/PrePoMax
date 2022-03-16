@@ -4919,6 +4919,12 @@ namespace PrePoMax
                 AddMaterial(newMaterial);
             }
         }
+        public void ExportMaterials(string[] materialNames, string fileName)
+        {
+            FileInOut.Output.CalculixFileWriter.WriteMaterials(fileName, _model, materialNames);
+            //
+            _form.WriteDataToOutput("Materials exported to file: " + fileName);
+        }
         public void RemoveMaterials(string[] materialNames)
         {
             foreach (var name in materialNames)

@@ -25,7 +25,7 @@ namespace PrePoMax.Forms
         private TabPage[] _pages;
         private bool _useSimpleEditor;
         private bool _preview;
-        
+
 
         // Properties                                                                                                               
         public Material Material
@@ -341,7 +341,7 @@ namespace PrePoMax.Forms
             _preview = false;
             lvAddedProperties.Items.Clear();
             ClearControls();
-            SetControlsVisibility();
+            SetControlStates();
             //
             _materialNames = _controller.GetMaterialNames();
             _materialToEditName = materialToEditName;
@@ -451,19 +451,30 @@ namespace PrePoMax.Forms
             tbName.Text = "";
             //
             _preview = true;
-            SetControlsVisibility();
+            SetControlStates();
         }
-        private void SetControlsVisibility()
+        private void SetControlStates()
         {
             tbName.ReadOnly = _preview;
             tbName.BackColor = SystemColors.Window;
             tbDescription.ReadOnly = _preview;
             tbDescription.BackColor = SystemColors.Window;
             // Buttons
-            btnAdd.Enabled = !_preview;
-            btnMoveUp.Enabled = !_preview;
-            btnMoveDown.Enabled = !_preview;
-            btnRemove.Enabled = !_preview;
+            btnAdd.Visible = !_preview;
+            btnMoveUp.Visible = !_preview;
+            btnMoveDown.Visible = !_preview;
+            btnRemove.Visible = !_preview;
+            // All models
+            tvProperties.Visible = !_preview;
+            // Added models
+            if (_preview)
+            {
+                lvAddedProperties.Left = tvProperties.Left;
+                lvAddedProperties.Width = (btnMoveUp.Left + btnMoveUp.Width) - lvAddedProperties.Left;
+                lvAddedProperties.Top = labAvailable.Top;
+                lvAddedProperties.Height = tvProperties.Bottom - lvAddedProperties.Top;
+                lvAddedProperties.BringToFront();
+            }
             // Property grid
             propertyGrid.ReadOnly = _preview;
             // Data grid
@@ -474,7 +485,6 @@ namespace PrePoMax.Forms
             btnOKAddNew.Visible = !_preview;
             btnOK.Visible = !_preview;
             btnCancel.Visible = !_preview;
-
         }
         private void ClearControls()
         {

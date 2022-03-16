@@ -27,6 +27,25 @@ namespace FileInOut.Output
             }
             File.WriteAllText(fileName, sb.ToString());
         }
+        static public void WriteMaterials(string fileName, FeModel model, string[] materialNames)
+        {
+            List<CalculixKeyword> keywords = new List<CalculixKeyword>();
+            // Heading
+            CalTitle title = new CalTitle("Heading", "");
+            keywords.Add(title);
+            AppendHeading(model, title);
+            // Materials
+            title = new CalTitle("Materials", "");
+            keywords.Add(title);
+            AppendMaterials(model, title, materialNames);
+            // Write file
+            StringBuilder sb = new StringBuilder();
+            foreach (var keyword in keywords)
+            {
+                WriteKeywordRecursively(sb, keyword);
+            }
+            File.WriteAllText(fileName, sb.ToString());
+        }
         //
         static public List<CalculixKeyword> GetAllKeywords(FeModel model, Dictionary<int, double[]> deformations = null)
         {
@@ -522,14 +541,15 @@ namespace FileInOut.Output
 
 
 
-        static private void AppendMaterials(FeModel model, CalculixKeyword parent) 
+        static private void AppendMaterials(FeModel model, CalculixKeyword parent, string[] materialNames = null)
         {
             CalMaterial material;
             HashSet<string> activeMaterialNames = MaterialNamesUsedInActiveSections(model);
             //
             foreach (var entry in model.Materials)
             {
-                if (entry.Value.Active && activeMaterialNames.Contains(entry.Key))
+                if ((entry.Value.Active && activeMaterialNames.Contains(entry.Key)) ||
+                    (materialNames != null && materialNames.Contains(entry.Value.Name)))
                 {
                     material = new CalMaterial(entry.Value);
                     parent.AddKeyword(material);
@@ -539,6 +559,11 @@ namespace FileInOut.Output
                         if (property is Density de)
                         {
                             material.AddKeyword(new CalDensity(de, entry.Value.TemperatureDependent));
+                        }
+                        else if (property is SlipWear sw)
+                        {
+                            if (materialNames != null)  // must be here
+                                material.AddKeyword(new CalSlipWear(sw, entry.Value.TemperatureDependent));
                         }
                         else if (property is Elastic el)
                         {
@@ -568,12 +593,10 @@ namespace FileInOut.Output
                         {
                             material.AddKeyword(new CalSpecificHeat(sh, entry.Value.TemperatureDependent));
                         }
-                        else if (property is SlipWear sw)
-                        { }
                         else throw new NotImplementedException();
                     }
                 }
-                else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
+                else if (materialNames == null) parent.AddKeyword(new CalDeactivated(entry.Value.Name));
             }
             
         }

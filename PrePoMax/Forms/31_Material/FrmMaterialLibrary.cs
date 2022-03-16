@@ -215,7 +215,8 @@ namespace PrePoMax.Forms
 
                         _libraryChanged = true;
                     }
-                    else throw new CaeException("The node '" + btvLibrary.SelectedNode.Parent.Text + "' already contains the node named '" + tbCategoryName.Text + "'.");
+                    else throw new CaeException("The node '" + btvLibrary.SelectedNode.Parent.Text + 
+                                                "' already contains the node named '" + tbCategoryName.Text + "'.");
                 }
             }
             catch (Exception ex)
@@ -228,10 +229,19 @@ namespace PrePoMax.Forms
         {
             if (lvModelMaterials.SelectedItems.Count == 1)
             {
+                int selectedIndex = lvModelMaterials.SelectedIndices[0];
                 lvModelMaterials.Items.Remove(lvModelMaterials.SelectedItems[0]);
                 _modelChanged = true;
                 //
-                if (lvModelMaterials.Items.Count > 0) lvModelMaterials.Items[0].Selected = true;
+                if (lvModelMaterials.Items.Count > 0)
+                {
+                    // Select the same index
+                    if (selectedIndex < lvModelMaterials.Items.Count) lvModelMaterials.Items[selectedIndex].Selected = true;
+                    // Select the last item
+                    else lvModelMaterials.Items[selectedIndex - 1].Selected = true;
+                }
+                //
+                lvModelMaterials.Focus();
             }
         }
         //
@@ -300,8 +310,11 @@ namespace PrePoMax.Forms
                     modelMaterialItem.Tag = modelMaterial;
                     //
                     lvModelMaterials_Enter(null, null);
+                    // Deselect
                     modelMaterialItem.Selected = true;
                     lvModelMaterials_Leave(null, null);
+                    //
+                    lvModelMaterials.Focus();
                     //
                     _modelChanged = true;
                 }

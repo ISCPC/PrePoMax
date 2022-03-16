@@ -144,7 +144,8 @@
             this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.Location = new System.Drawing.Point(3, 3);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(439, 231);
+            this.propertyGrid.ReadOnly = false;
+            this.propertyGrid.Size = new System.Drawing.Size(429, 231);
             this.propertyGrid.TabIndex = 6;
             this.propertyGrid.ToolbarVisible = false;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
@@ -152,7 +153,7 @@
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(310, 647);
+            this.btnOK.Location = new System.Drawing.Point(300, 647);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 8;
@@ -164,7 +165,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(391, 647);
+            this.btnCancel.Location = new System.Drawing.Point(381, 647);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 7;
@@ -183,7 +184,7 @@
             this.gbData.Controls.Add(this.lName);
             this.gbData.Location = new System.Drawing.Point(12, 12);
             this.gbData.Name = "gbData";
-            this.gbData.Size = new System.Drawing.Size(460, 130);
+            this.gbData.Size = new System.Drawing.Size(450, 130);
             this.gbData.TabIndex = 10;
             this.gbData.TabStop = false;
             this.gbData.Text = "Data";
@@ -209,7 +210,7 @@
             this.tbDescription.Multiline = true;
             this.tbDescription.Name = "tbDescription";
             this.tbDescription.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbDescription.Size = new System.Drawing.Size(360, 51);
+            this.tbDescription.Size = new System.Drawing.Size(350, 51);
             this.tbDescription.TabIndex = 3;
             this.tbDescription.Text = "1\r\n2\r\n3";
             // 
@@ -228,7 +229,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbName.Location = new System.Drawing.Point(95, 19);
             this.tbName.Name = "tbName";
-            this.tbName.Size = new System.Drawing.Size(360, 23);
+            this.tbName.Size = new System.Drawing.Size(350, 23);
             this.tbName.TabIndex = 1;
             this.tbName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbName_KeyDown);
             // 
@@ -257,7 +258,7 @@
             this.gbProperties.Controls.Add(this.lvAddedProperties);
             this.gbProperties.Location = new System.Drawing.Point(12, 148);
             this.gbProperties.Name = "gbProperties";
-            this.gbProperties.Size = new System.Drawing.Size(460, 493);
+            this.gbProperties.Size = new System.Drawing.Size(450, 493);
             this.gbProperties.TabIndex = 0;
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Material models";
@@ -273,7 +274,7 @@
             this.tcProperties.Margin = new System.Windows.Forms.Padding(0);
             this.tcProperties.Name = "tcProperties";
             this.tcProperties.SelectedIndex = 0;
-            this.tcProperties.Size = new System.Drawing.Size(453, 265);
+            this.tcProperties.Size = new System.Drawing.Size(443, 265);
             this.tcProperties.TabIndex = 11;
             // 
             // tpProperties
@@ -283,7 +284,7 @@
             this.tpProperties.Location = new System.Drawing.Point(4, 24);
             this.tpProperties.Name = "tpProperties";
             this.tpProperties.Padding = new System.Windows.Forms.Padding(3);
-            this.tpProperties.Size = new System.Drawing.Size(445, 237);
+            this.tpProperties.Size = new System.Drawing.Size(435, 237);
             this.tpProperties.TabIndex = 0;
             this.tpProperties.Text = "Properties";
             // 
@@ -294,7 +295,7 @@
             this.tpDataPoints.Location = new System.Drawing.Point(4, 24);
             this.tpDataPoints.Name = "tpDataPoints";
             this.tpDataPoints.Padding = new System.Windows.Forms.Padding(3);
-            this.tpDataPoints.Size = new System.Drawing.Size(445, 237);
+            this.tpDataPoints.Size = new System.Drawing.Size(513, 237);
             this.tpDataPoints.TabIndex = 1;
             this.tpDataPoints.Text = "Data points";
             // 
@@ -314,7 +315,7 @@
             this.dgvData.EnablePasteMenu = true;
             this.dgvData.Location = new System.Drawing.Point(3, 3);
             this.dgvData.Name = "dgvData";
-            this.dgvData.Size = new System.Drawing.Size(439, 231);
+            this.dgvData.Size = new System.Drawing.Size(507, 231);
             this.dgvData.StartPlotAtZero = false;
             this.dgvData.TabIndex = 0;
             this.dgvData.XColIndex = 0;
@@ -324,7 +325,7 @@
             // 
             this.btnMoveDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnMoveDown.Image = global::PrePoMax.Properties.Resources.Down_arrow;
-            this.btnMoveDown.Location = new System.Drawing.Point(431, 67);
+            this.btnMoveDown.Location = new System.Drawing.Point(421, 67);
             this.btnMoveDown.Name = "btnMoveDown";
             this.btnMoveDown.Size = new System.Drawing.Size(24, 24);
             this.btnMoveDown.TabIndex = 13;
@@ -335,7 +336,7 @@
             // 
             this.btnMoveUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnMoveUp.Image = global::PrePoMax.Properties.Resources.Up_arrow;
-            this.btnMoveUp.Location = new System.Drawing.Point(431, 37);
+            this.btnMoveUp.Location = new System.Drawing.Point(421, 37);
             this.btnMoveUp.Name = "btnMoveUp";
             this.btnMoveUp.Size = new System.Drawing.Size(24, 24);
             this.btnMoveUp.TabIndex = 12;
@@ -363,7 +364,7 @@
             // btnAdd
             // 
             this.btnAdd.Image = global::PrePoMax.Properties.Resources.Right_arrow;
-            this.btnAdd.Location = new System.Drawing.Point(204, 37);
+            this.btnAdd.Location = new System.Drawing.Point(202, 37);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(24, 24);
             this.btnAdd.TabIndex = 3;
@@ -374,7 +375,7 @@
             // 
             this.btnRemove.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnRemove.Image = global::PrePoMax.Properties.Resources.Remove;
-            this.btnRemove.Location = new System.Drawing.Point(431, 97);
+            this.btnRemove.Location = new System.Drawing.Point(421, 97);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(24, 24);
             this.btnRemove.TabIndex = 4;
@@ -398,11 +399,11 @@
             listViewItem3,
             listViewItem4,
             listViewItem5});
-            this.lvAddedProperties.Location = new System.Drawing.Point(234, 37);
+            this.lvAddedProperties.Location = new System.Drawing.Point(230, 37);
             this.lvAddedProperties.MultiSelect = false;
             this.lvAddedProperties.Name = "lvAddedProperties";
             this.lvAddedProperties.ShowGroups = false;
-            this.lvAddedProperties.Size = new System.Drawing.Size(191, 185);
+            this.lvAddedProperties.Size = new System.Drawing.Size(187, 185);
             this.lvAddedProperties.TabIndex = 5;
             this.lvAddedProperties.UseCompatibleStateImageBehavior = false;
             this.lvAddedProperties.View = System.Windows.Forms.View.Details;
@@ -415,7 +416,7 @@
             // btnOKAddNew
             // 
             this.btnOKAddNew.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOKAddNew.Location = new System.Drawing.Point(214, 647);
+            this.btnOKAddNew.Location = new System.Drawing.Point(204, 647);
             this.btnOKAddNew.Name = "btnOKAddNew";
             this.btnOKAddNew.Size = new System.Drawing.Size(90, 23);
             this.btnOKAddNew.TabIndex = 17;
@@ -427,7 +428,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(484, 681);
+            this.ClientSize = new System.Drawing.Size(474, 681);
             this.Controls.Add(this.btnOKAddNew);
             this.Controls.Add(this.gbProperties);
             this.Controls.Add(this.gbData);
