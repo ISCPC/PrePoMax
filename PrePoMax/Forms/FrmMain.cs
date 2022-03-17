@@ -523,7 +523,7 @@ namespace PrePoMax
                             // Create new model
                             New(ModelSpaceEnum.ThreeD, unitSystemType);
                             // Import
-                            await _controller.ImportFileAsync(fileName);
+                            await _controller.ImportFileAsync(fileName, false);
                             //
                             _controller.OpenedFileName = null; // otherwise the previous OpenedFileName gets overwriten on Save
                         }
@@ -1337,45 +1337,9 @@ namespace PrePoMax
             //
             SetMenuAndToolStripVisibility();
         }
-        internal async void tsmiImportFile_Click(object sender, EventArgs e)
+        internal void tsmiImportFile_Click(object sender, EventArgs e)
         {
-            try
-            {
-                if (!_controller.ModelInitialized)
-                    throw new CaeException("There is no model to import into. First create a new model.");
-                // If the model space or the unit system are undefined
-                SelectNewModelProperties();
-                //
-                string[] files = GetFileNamesToImport(GetFileImportFilter());
-                if (files != null && files.Length > 0)
-                {
-                    _controller.ClearErrors();
-                    //
-                    SetStateWorking(Globals.ImportingText);
-                    foreach (var file in files)
-                    {
-                        await _controller.ImportFileAsync(file);
-                    }
-                    SetFrontBackView(true, true);   // animate must be true in order for the scale bar to work correctly
-                    //
-                    int numErrors = _controller.GetNumberOfErrors();
-                    if (numErrors > 0)
-                    {
-                        _controller.OutputErrors();
-                        string message = "There were errors while importing the file/files.";
-                        WriteDataToOutput(message);
-                        AutoClosingMessageBox.ShowError(message, 3000);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-            finally
-            {
-                SetStateReady(Globals.ImportingText);
-            }
+            ImportFile(false);
         }
         internal async void tsmiSave_Click(object sender, EventArgs e)
         {
@@ -1597,6 +1561,48 @@ namespace PrePoMax
             }
         }
         //
+        private async void ImportFile(bool onlyMaterials)
+        {
+            try
+            {
+                if (!_controller.ModelInitialized)
+                    throw new CaeException("There is no model to import into. First create a new model.");
+                // If the model space or the unit system are undefined
+                SelectNewModelProperties();
+                //
+                string filter = GetFileImportFilter(onlyMaterials);
+                string[] files = GetFileNamesToImport(filter);
+                //
+                if (files != null && files.Length > 0)
+                {
+                    _controller.ClearErrors();
+                    //
+                    SetStateWorking(Globals.ImportingText);
+                    foreach (var file in files)
+                    {
+                        await _controller.ImportFileAsync(file, onlyMaterials);
+                    }
+                    SetFrontBackView(true, true);   // animate must be true in order for the scale bar to work correctly
+                    //
+                    int numErrors = _controller.GetNumberOfErrors();
+                    if (numErrors > 0)
+                    {
+                        _controller.OutputErrors();
+                        string message = "There were errors while importing the file/files.";
+                        WriteDataToOutput(message);
+                        AutoClosingMessageBox.ShowError(message, 3000);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.ImportingText);
+            }
+        }
         private async void SaveCADPartsAsStep(string[] partNames)
         {
             try
@@ -3927,9 +3933,9 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiImportMaterial_Click(object sender, EventArgs e)
+        private  void tsmiImportMaterial_Click(object sender, EventArgs e)
         {
-
+            ImportFile(true);
         }
         private void tsmiExportMaterial_Click(object sender, EventArgs e)
         {
@@ -6526,9 +6532,9 @@ namespace PrePoMax
         {
             return _vtk.GetBoundingBoxSize();
         }
-        public string GetFileNameToImport()
+        public string GetFileNameToImport(bool onlyMaterials)
         {
-            return GetFileNameToImport(GetFileImportFilter());
+            return GetFileNameToImport(GetFileImportFilter(onlyMaterials));
         }
         public string GetFileNameToImport(string filter)
         {
@@ -6580,8 +6586,10 @@ namespace PrePoMax
             });
             return fileNames;
         }
-        private string GetFileImportFilter()
+        private string GetFileImportFilter(bool onlyMaterials)
         {
+            if (onlyMaterials) return "Abaqus/Calculix inp files|*.inp";
+            //
             string filter = "All supported files|*.stp;*.step;*.igs;*.iges;*.brep;*.stl;*.unv;*.vol;*.inp;*.mesh"
                             + "|Step files|*.stp;*.step"
                             + "|Iges files|*.igs;*.iges"
@@ -6595,8 +6603,8 @@ namespace PrePoMax
         }
         private HashSet<string> GetFileImportExtensions()
         {
-            string[] tmp = GetFileImportFilter().Split(new string[] { "*", "\"", ";", "|" },
-                                                       StringSplitOptions.RemoveEmptyEntries);
+            string[] tmp = GetFileImportFilter(false).Split(new string[] { "*", "\"", ";", "|" },
+                                                            StringSplitOptions.RemoveEmptyEntries);
             HashSet<string> extensions = new HashSet<string>();
             foreach (var entry in tmp)
             {

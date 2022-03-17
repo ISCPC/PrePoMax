@@ -16,27 +16,28 @@ namespace PrePoMax.Commands
     {
         // Variables                                                                                                                
         private string _fileName;
-        private bool _resetCamera;
+        private bool _onlyMaterials;
 
 
         // Constructor                                                                                                              
-        public CImportFile(string fileName)
+        public CImportFile(string fileName, bool onlyMaterials)
             :base("Import file")
         {
             _fileName = Tools.GetLocalPath(fileName);
+            _onlyMaterials = onlyMaterials;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.ImportFile(Tools.GetGlobalPath(_fileName));
+            receiver.ImportFile(Tools.GetGlobalPath(_fileName), _onlyMaterials);
             return true;
         }
 
         public void ExecuteWithDialogs(Controller receiver)
         {
-            string fileName = receiver.GetFileNameToImport();
+            string fileName = receiver.GetFileNameToImport(_onlyMaterials);
             if (fileName != null) _fileName = Tools.GetLocalPath(fileName);
             Execute(receiver);
         }

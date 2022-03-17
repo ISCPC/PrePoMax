@@ -242,6 +242,7 @@
             // 
             // cbPreview
             // 
+            this.cbPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.cbPreview.AutoSize = true;
             this.cbPreview.Location = new System.Drawing.Point(337, 444);
             this.cbPreview.Name = "cbPreview";

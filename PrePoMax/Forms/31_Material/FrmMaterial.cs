@@ -127,6 +127,8 @@ namespace PrePoMax.Forms
                             {
                                 if (mp is Density de)
                                     item.Tag = new ViewDensity(de.DeepClone());
+                                else if (mp is SlipWear sw)
+                                    item.Tag = new ViewSlipWear(sw.DeepClone());
                                 else if (mp is Elastic el)
                                     item.Tag = new ViewElastic(el.DeepClone());
                                 else if (mp is Plastic pl)
@@ -137,8 +139,6 @@ namespace PrePoMax.Forms
                                     item.Tag = new ViewThermalConductivity(tc.DeepClone());
                                 else if (mp is SpecificHeat sh)
                                     item.Tag = new ViewSpecificHeat(sh.DeepClone());
-                                else if (mp is SlipWear sw)
-                                    item.Tag = new ViewSlipWear(sw.DeepClone());
                                 else throw new NotSupportedException();
                             }
                             else throw new NotSupportedException();
@@ -422,6 +422,7 @@ namespace PrePoMax.Forms
                 foreach (var property in _material.Properties)
                 {
                     if (property is Density den) view = new ViewDensity(den);
+                    else if (property is SlipWear sw) view = new ViewSlipWear(sw);
                     else if (property is Elastic el) view = new ViewElastic(el);
                     else if (property is ElasticWithDensity ewd)
                     {
@@ -433,7 +434,6 @@ namespace PrePoMax.Forms
                         view = new ViewThermalExpansion(te, cbTemperatureDependent.Checked);
                     else if (property is ThermalConductivity tc) view = new ViewThermalConductivity(tc);
                     else if (property is SpecificHeat sh) view = new ViewSpecificHeat(sh);
-                    else if (property is SlipWear sw) view = new ViewSlipWear(sw);
                     else throw new NotSupportedException();
                     //
                     item = new ListViewItem(view.Name);

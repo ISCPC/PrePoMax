@@ -199,6 +199,9 @@
             this.tsmiEditMaterial = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDuplicateMaterial = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerMaterial1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiImportMaterial = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiExportMaterial = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerMaterial2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDeleteMaterial = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMaterialLibrary = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSection = new System.Windows.Forms.ToolStripMenuItem();
@@ -389,9 +392,6 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsmiDividerMaterial2 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiImportMaterial = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiExportMaterial = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -1766,6 +1766,25 @@
             // 
             this.tsmiDividerMaterial1.Name = "tsmiDividerMaterial1";
             this.tsmiDividerMaterial1.Size = new System.Drawing.Size(177, 6);
+            // 
+            // tsmiImportMaterial
+            // 
+            this.tsmiImportMaterial.Name = "tsmiImportMaterial";
+            this.tsmiImportMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiImportMaterial.Text = "Import from .inp";
+            this.tsmiImportMaterial.Click += new System.EventHandler(this.tsmiImportMaterial_Click);
+            // 
+            // tsmiExportMaterial
+            // 
+            this.tsmiExportMaterial.Name = "tsmiExportMaterial";
+            this.tsmiExportMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiExportMaterial.Text = "Export to .inp";
+            this.tsmiExportMaterial.Click += new System.EventHandler(this.tsmiExportMaterial_Click);
+            // 
+            // tsmiDividerMaterial2
+            // 
+            this.tsmiDividerMaterial2.Name = "tsmiDividerMaterial2";
+            this.tsmiDividerMaterial2.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiDeleteMaterial
             // 
@@ -3377,25 +3396,6 @@
             // timerOutput
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
-            // 
-            // tsmiDividerMaterial2
-            // 
-            this.tsmiDividerMaterial2.Name = "tsmiDividerMaterial2";
-            this.tsmiDividerMaterial2.Size = new System.Drawing.Size(177, 6);
-            // 
-            // tsmiImportMaterial
-            // 
-            this.tsmiImportMaterial.Name = "tsmiImportMaterial";
-            this.tsmiImportMaterial.Size = new System.Drawing.Size(180, 22);
-            this.tsmiImportMaterial.Text = "Import";
-            this.tsmiImportMaterial.Click += new System.EventHandler(this.tsmiImportMaterial_Click);
-            // 
-            // tsmiExportMaterial
-            // 
-            this.tsmiExportMaterial.Name = "tsmiExportMaterial";
-            this.tsmiExportMaterial.Size = new System.Drawing.Size(180, 22);
-            this.tsmiExportMaterial.Text = "Export";
-            this.tsmiExportMaterial.Click += new System.EventHandler(this.tsmiExportMaterial_Click);
             // 
             // FrmMain
             // 

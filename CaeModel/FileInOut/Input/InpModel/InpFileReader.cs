@@ -64,6 +64,7 @@ namespace FileInOut.Input
                                                                                  "*HYPERFOAM",
                                                                                  "*MAGNETIC PERMEABILITY",
                                                                                  "*PLASTIC",
+                                                                                 "*SLIP WEAR",
                                                                                  "*SPECIFIC GAS CONSTANT",
                                                                                  "*SPECIFIC HEAT",
                                                                                  "*USER MATERIAL"
@@ -913,6 +914,12 @@ namespace FileInOut.Input
                             if (density != null) material.AddProperty(density);
                             if (temperatureDependent) material.TemperatureDependent = true;
                         }
+                        else if (keyword == "*SLIP WEAR")
+                        {
+                            SlipWear slipWear = GetMaterialSlipWear(dataSet, out temperatureDependent);
+                            if (slipWear != null) material.AddProperty(slipWear);
+                            if (temperatureDependent) material.TemperatureDependent = true;
+                        }
                         else if (keyword == "*ELASTIC")
                         {
                             Elastic elastic = GetMaterialElasticity(dataSet, out temperatureDependent);
@@ -1001,6 +1008,32 @@ namespace FileInOut.Input
             catch
             {
                 _errors.Add("Failed to import density: " + lines.ToRows());
+                return null;
+            }
+        }
+        private static SlipWear GetMaterialSlipWear(string[] lines, out bool temperatureDependent)
+        {
+            // *Slip wear     
+            // 60, 0.01
+            string[] record1;
+            temperatureDependent = false;
+            try
+            {
+                double hardness = 0;
+                double wearCoefficient = 0;
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    record1 = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    hardness = double.Parse(record1[0]);
+                    wearCoefficient = double.Parse(record1[1]);
+                }
+                //
+                SlipWear slipWear = new SlipWear(hardness, wearCoefficient);
+                return slipWear;
+            }
+            catch
+            {
+                _errors.Add("Failed to import slip wear: " + lines.ToRows());
                 return null;
             }
         }

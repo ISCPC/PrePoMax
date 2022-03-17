@@ -915,7 +915,7 @@ namespace CaeModel
             //
             _mesh.RemoveElementsByType<FeElement1D>();
         }
-        public List<string> ImportMeshFromInpFile(string fileName, Action<string> WriteDataToOutput)
+        public List<string> ImportModelFromInpFile(string fileName, Action<string> WriteDataToOutput)
         {
             OrderedDictionary<int[], Calculix.CalculixUserKeyword> indexedUserKeywords;
             FileInOut.Input.InpFileReader.Read(fileName,
@@ -925,6 +925,36 @@ namespace CaeModel
                                                out indexedUserKeywords);
             //
             CalculixUserKeywords = indexedUserKeywords;
+            //
+            return FileInOut.Input.InpFileReader.Errors;
+        }
+        public List<string> ImportMaterialsFromInpFile(string fileName, Action<string> WriteDataToOutput)
+        {
+            FeModel model = new FeModel("Imported Materials");
+            model.Properties.ModelSpace = _properties.ModelSpace;
+            model.UnitSystem = _unitSystem;
+            //
+            FileInOut.Input.InpFileReader.Read(fileName,
+                                               FileInOut.Input.ElementsToImport.Solid | FileInOut.Input.ElementsToImport.Shell,
+                                               model,
+                                               WriteDataToOutput,
+                                               out OrderedDictionary<int[], Calculix.CalculixUserKeyword>  indexedUserKeywords);
+            //
+            string name;
+            foreach (var entry in model.Materials)
+            {
+                name = entry.Key;
+                if (_materials.ContainsKey(name))
+                {
+                    name += "_Imported";
+                    if (_materials.ContainsKey(name))
+                    {
+                        name = _materials.GetNextNumberedKey(name);
+                    }
+                }
+                entry.Value.Name = name;
+                _materials.Add(name, entry.Value);
+            }
             //
             return FileInOut.Input.InpFileReader.Errors;
         }

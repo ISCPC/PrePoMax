@@ -455,9 +455,9 @@ namespace PrePoMax
         // Menus
         #region File menu   ########################################################################################################
         // COMMANDS ********************************************************************************
-        public void ImportFileCommand(string fileName)
+        public void ImportFileCommand(string fileName, bool onlyMaterials)
         {
-            Commands.CImportFile comm = new Commands.CImportFile(fileName);
+            Commands.CImportFile comm = new Commands.CImportFile(fileName, onlyMaterials);
             _commands.AddAndExecute(comm);
         }
         public void SaveToPmxCommand(string fileName)
@@ -799,15 +799,15 @@ namespace PrePoMax
             }
         }
         // Import
-        public string GetFileNameToImport()
+        public string GetFileNameToImport(bool onlyMaterials)
         {
-            return _form.GetFileNameToImport();
+            return _form.GetFileNameToImport(onlyMaterials);
         }
-        public async Task ImportFileAsync(string fileName)
+        public async Task ImportFileAsync(string fileName, bool onlyMaterials)
         {
-            await Task.Run(() => ImportFileCommand(fileName));
+            await Task.Run(() => ImportFileCommand(fileName, onlyMaterials));
         }
-        public void ImportFile(string fileName)
+        public void ImportFile(string fileName, bool onlyMaterials)
         {
             if (!File.Exists(fileName)) throw new FileNotFoundException("The file: '" + fileName + "' does not exist.");
             //
@@ -844,8 +844,10 @@ namespace PrePoMax
                 _model.ImportMeshFromVolFile(fileName);
             else if (extension == ".mesh")
                 _model.ImportMeshFromMmgFile(fileName);
+            else if (extension == ".inp" && onlyMaterials)
+                _errors = _model.ImportMaterialsFromInpFile(fileName, _form.WriteDataToOutput);
             else if (extension == ".inp")
-                _errors = _model.ImportMeshFromInpFile(fileName, _form.WriteDataToOutput);
+                _errors = _model.ImportModelFromInpFile(fileName, _form.WriteDataToOutput);
             else if (extension == ".unv")
                 _model.ImportMeshFromUnvFile(fileName);
             else throw new NotSupportedException();            
@@ -2588,7 +2590,7 @@ namespace PrePoMax
                 //
                 _form.SmoothPart(partName, 0, fileName);
                 //
-                ImportFile(fileName);
+                ImportFile(fileName, false);
                 //ReplacePartGeometryFromFile(part, fileName);
             }
         }
@@ -3665,7 +3667,7 @@ namespace PrePoMax
         {
             FeModel newModel = new FeModel("Deformed");
             newModel.Properties.ModelSpace = _model.Properties.ModelSpace;
-            newModel.ImportMeshFromInpFile(fileName, _form.WriteDataToOutput);
+            newModel.ImportModelFromInpFile(fileName, _form.WriteDataToOutput);
             _model.Mesh.UpdateNodalCoordinatesFromMesh(newModel.Mesh);
             //
             Redraw();
