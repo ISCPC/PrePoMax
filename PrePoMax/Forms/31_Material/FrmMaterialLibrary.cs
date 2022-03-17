@@ -18,7 +18,6 @@ namespace PrePoMax.Forms
     {
         // Variables                                                                                                                
         private Controller _controller;
-        private bool _libraryChanged;
         private bool _modelChanged;
         private UnitSystem _libraryUnitSystem;
         private FrmMaterial _frmMaterial;
@@ -32,7 +31,6 @@ namespace PrePoMax.Forms
             InitializeComponent();
             //
             _controller = controller;
-            _libraryChanged = false;
             _modelChanged = false;
             //
             _libraryUnitSystem = new UnitSystem(UnitSystemType.MM_TON_S_C);
@@ -57,7 +55,8 @@ namespace PrePoMax.Forms
                     if (lvModelMaterials.Items.Count > 0) lvModelMaterials.Items[0].Selected = true;
                 }
                 //
-                LoadLibraryFromFile();
+                string fileName = Path.Combine(Application.StartupPath, Globals.MaterialLibraryFileName);
+                LoadMaterialLibraryFromFile(fileName);
                 //
                 TreeNode materialNode;
                 GetNodeContainingFirstMaterial(btvLibrary.Nodes[0], out materialNode);
@@ -76,12 +75,117 @@ namespace PrePoMax.Forms
             }
         }
         //
+        private void btnNew_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                {
+                    saveFileDialog.Filter = "Material library files | *.lib";
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        MaterialLibraryItem materialLibrary = new MaterialLibraryItem("Materials");
+                        SaveMaterialLibraryToFile(saveFileDialog.FileName, materialLibrary);
+                        //
+                        LoadMaterialLibraryFromFile(saveFileDialog.FileName);
+                        SetControlStates();
+                    }
+                }
+            }
+            catch
+            { }
+        }
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
+                {
+                    openFileDialog.Filter = "Material library files | *.lib";
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        LoadMaterialLibraryFromFile(openFileDialog.FileName);
+                        SetControlStates();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex is CaeException ce) ExceptionTools.Show(this, ce);
+            }
+        }
+        private void btnRemove_Click(object sender, EventArgs e)
+        {
+            if (lvLibraries.SelectedItems.Count == 1)
+            {
+                int selectedId = lvLibraries.SelectedIndices[0];
+                lvLibraries.SelectedIndices.Clear();
+                lvLibraries.Items.RemoveAt(selectedId);
+                //
+                if (selectedId < lvLibraries.Items.Count) lvLibraries.Items[selectedId].Selected = true;
+                else if (lvLibraries.Items.Count > 0) lvLibraries.Items[lvLibraries.Items.Count - 1].Selected = true;
+                else if (lvLibraries.Items.Count == 0) SetControlStates();
+            }
+        }
+        private void lvLibraries_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (lvLibraries.SelectedItems.Count == 1)
+                {
+                    MaterialLibraryItem mli = (MaterialLibraryItem)lvLibraries.SelectedItems[0].Tag;
+                    btvLibrary.Nodes[0].Nodes.Clear();
+                    ItemListToTreeNodes(mli, btvLibrary.Nodes[0]);
+                    //
+                    ApplyFormatingRecursive(btvLibrary.Nodes[0]);
+                    //
+                    btvLibrary_AfterSelect(null, null);
+                }
+            }
+            catch { }
+        }
+        private void LibraryChanged()
+        {
+            if (lvLibraries.SelectedItems.Count == 1)
+            {
+                MaterialLibraryItem materialLibrary = (MaterialLibraryItem)lvLibraries.SelectedItems[0].Tag;
+                materialLibrary.Items.Clear();
+                TreeNodesToItemList(btvLibrary.Nodes[0], materialLibrary);
+                //
+                if (!lvLibraries.SelectedItems[0].Text.EndsWith("*")) lvLibraries.SelectedItems[0].Text += "*";
+            }
+        }
+        private bool AnyLibraryChanged()
+        {
+            foreach (ListViewItem item in lvLibraries.Items)
+            {
+                if (item.Text.EndsWith("*")) return true;
+            }
+            return false;
+        }
+        private void SetControlStates()
+        {
+            bool enabled = true;
+            if (lvLibraries.Items.Count == 0)
+            {
+                btvLibrary.Nodes[0].Nodes.Clear();
+                tbCategoryName.Text = "";
+                //
+                enabled = false;
+            }
+            //
+            gbLibraryMaterials.Enabled = enabled;
+            btnCopyToModel.Enabled = enabled;
+            btnCopyToLibrary.Enabled = enabled;
+        }
+        //
         private void btvLibrary_AfterSelect(object sender, TreeViewEventArgs e)
         {
             try
             {
                 if (btvLibrary.SelectedNode != null)
                 {
+                    btvLibrary.SelectedNode.EnsureVisible();
                     tbCategoryName.Text = btvLibrary.SelectedNode.Text;
                     //
                     if (btvLibrary.SelectedNode.Tag != null)
@@ -137,19 +241,19 @@ namespace PrePoMax.Forms
         }
         private void lvModelMaterials_Leave(object sender, EventArgs e)
         {
-            if (lvModelMaterials.SelectedItems.Count == 1)
-            {
-                lvModelMaterials.SelectedItems[0].BackColor = SystemColors.Highlight;
-                lvModelMaterials.SelectedItems[0].ForeColor = Color.White;
-            }
+            //if (lvModelMaterials.SelectedItems.Count == 1)
+            //{
+            //    lvModelMaterials.SelectedItems[0].BackColor = SystemColors.Highlight;
+            //    lvModelMaterials.SelectedItems[0].ForeColor = Color.White;
+            //}
         }
         private void lvModelMaterials_Enter(object sender, EventArgs e)
         {
-            if (lvModelMaterials.SelectedItems.Count == 1)
-            {
-                lvModelMaterials.SelectedItems[0].BackColor = Color.White;
-                lvModelMaterials.SelectedItems[0].ForeColor = Color.Black;
-            }
+            //if (lvModelMaterials.SelectedItems.Count == 1)
+            //{
+            //    lvModelMaterials.SelectedItems[0].BackColor = Color.White;
+            //    lvModelMaterials.SelectedItems[0].ForeColor = Color.Black;
+            //}
         }
         //
         private void tbCategoryName_KeyDown(object sender, KeyEventArgs e)
@@ -184,7 +288,7 @@ namespace PrePoMax.Forms
 
                     tbCategoryName.Focus();
 
-                    _libraryChanged = true;
+                    LibraryChanged();
                 }
             }
             catch (Exception ex)
@@ -197,7 +301,7 @@ namespace PrePoMax.Forms
             if (btvLibrary.SelectedNode != null && btvLibrary.SelectedNode.Parent != null)
             {
                 btvLibrary.SelectedNode.Parent.Nodes.Remove(btvLibrary.SelectedNode);
-                _libraryChanged = true;
+                LibraryChanged();
             }
         }
         private void btnRename_Click(object sender, EventArgs e)
@@ -212,8 +316,8 @@ namespace PrePoMax.Forms
                         btvLibrary.SelectedNode.Text = tbCategoryName.Text;
                         btvLibrary.SelectedNode.Name = tbCategoryName.Text;
                         if (btvLibrary.SelectedNode.Tag != null) ((Material)btvLibrary.SelectedNode.Tag).Name = tbCategoryName.Text;
-
-                        _libraryChanged = true;
+                        //
+                        LibraryChanged();
                     }
                     else throw new CaeException("The node '" + btvLibrary.SelectedNode.Parent.Text + 
                                                 "' already contains the node named '" + tbCategoryName.Text + "'.");
@@ -276,7 +380,7 @@ namespace PrePoMax.Forms
                     categoryNode.Expand();
                     btvLibrary.SelectedNode = newMaterialNode;
                     //
-                    _libraryChanged = true;
+                    LibraryChanged();
                 }
             }
             catch (Exception ex)
@@ -345,7 +449,10 @@ namespace PrePoMax.Forms
         {
             try
             {
-                SaveLibraryToFile();
+                if (lvLibraries.SelectedItems.Count == 1)
+                {
+                    SaveMaterialLibrary(lvLibraries.SelectedItems[0]);
+                }
             }
             catch (Exception ex)
             {
@@ -393,11 +500,11 @@ namespace PrePoMax.Forms
         {
             try
             {
-                if (e.CloseReason == CloseReason.UserClosing && _libraryChanged)
+                if (e.CloseReason == CloseReason.UserClosing && AnyLibraryChanged())
                 {
-                    DialogResult response = MessageBox.Show("Save material library before closing?", "Warning",
+                    DialogResult response = MessageBox.Show("Save all material libraries before closing?", "Warning",
                                                             MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
-                    if (response == DialogResult.Yes) SaveLibraryToFile();
+                    if (response == DialogResult.Yes) SaveAllMaterialLibraries();
                     else if (response == DialogResult.Cancel) e.Cancel = true;
                 }
             }
@@ -407,54 +514,63 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        private void SaveLibraryToFile()
+        private void SaveAllMaterialLibraries()
         {
-            string fileName = Path.Combine(Application.StartupPath, Globals.MaterialLibraryFileName);
-            //
-            MaterialLibraryItem materials = new MaterialLibraryItem(btvLibrary.Nodes[0].Text);
-            TreeNodesToItemList(btvLibrary.Nodes[0], materials);
-            //
-            JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
-            string json = JsonConvert.SerializeObject(materials, Formatting.Indented, settings);
-            File.WriteAllText(fileName, json);
-            //
-            _libraryChanged = false;
+            foreach (ListViewItem item in lvLibraries.Items) SaveMaterialLibrary(item);
         }
-        private void TreeNodesToItemList(TreeNode node, MaterialLibraryItem item)
+        private void SaveMaterialLibrary(ListViewItem item)
         {
-            item.Expanded = node.IsExpanded;
+            if (item.Text.EndsWith("*"))
+            {
+                MaterialLibraryItem materialLibrary = (MaterialLibraryItem)item.Tag;
+                SaveMaterialLibraryToFile(item.Name, materialLibrary);
+                item.Text = item.Name;
+            }
+        }
+        private void SaveMaterialLibraryToFile(string fileName, MaterialLibraryItem materialLibrary)
+        {
+            JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
+            string json = JsonConvert.SerializeObject(materialLibrary, Formatting.Indented, settings);
+            File.WriteAllText(fileName, json);
+        }
+        private void TreeNodesToItemList(TreeNode node, MaterialLibraryItem materialLibraryItem)
+        {
+            materialLibraryItem.Expanded = node.IsExpanded;
             //
             foreach (TreeNode childNode in node.Nodes)
             {
                 MaterialLibraryItem childItem = new MaterialLibraryItem(childNode.Name);
                 if (childNode.Tag != null) childItem.Tag = (Material)childNode.Tag.DeepClone();
-                item.Items.Add(childItem);
+                materialLibraryItem.Items.Add(childItem);
                 //
                 TreeNodesToItemList(childNode, childItem);
             }
         }
         //
-        private void LoadLibraryFromFile()
+        private void LoadMaterialLibraryFromFile(string fileName)
         {
-            string fileName = Path.Combine(Application.StartupPath, Globals.MaterialLibraryFileName);
-            //
             if (File.Exists(fileName))
             {
+                foreach (ListViewItem item in lvLibraries.Items)
+                {
+                    if (item.Name == fileName) throw new CaeException("The selected material library is already open.");
+                }
                 JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
                 string contents = File.ReadAllText(fileName);
                 //
-                MaterialLibraryItem mli = JsonConvert.DeserializeObject<MaterialLibraryItem>(contents, settings);
+                MaterialLibraryItem materialLibrary = JsonConvert.DeserializeObject<MaterialLibraryItem>(contents, settings);
                 //
-                btvLibrary.Nodes[0].Nodes.Clear();
-                ItemListToTreeNodes(mli, btvLibrary.Nodes[0]);
+                lvLibraries.SelectedIndices.Clear();
+                ListViewItem libraryItem = lvLibraries.Items.Add(fileName);
+                libraryItem.Name = libraryItem.Text;
+                libraryItem.Tag = materialLibrary;
+                libraryItem.Selected = true;
             }
-            //
-            ApplyFormatingRecursive(btvLibrary.Nodes[0]);
         }
-        private void ItemListToTreeNodes(MaterialLibraryItem item, TreeNode node)
+        private void ItemListToTreeNodes(MaterialLibraryItem materialLibraryItem, TreeNode node)
         {
             TreeNode childNode;
-            foreach (MaterialLibraryItem childItem in item.Items)
+            foreach (MaterialLibraryItem childItem in materialLibraryItem.Items)
             {
                 childNode = node.Nodes.Add(childItem.Name);
                 childNode.Name = childItem.Name;
@@ -463,7 +579,7 @@ namespace PrePoMax.Forms
                 else ItemListToTreeNodes(childItem, childNode);
             }
             //
-            if (item.Expanded) node.Expand();
+            if (materialLibraryItem.Expanded) node.Expand();
         }
         //
         private void ApplyFormatingRecursive(TreeNode node)

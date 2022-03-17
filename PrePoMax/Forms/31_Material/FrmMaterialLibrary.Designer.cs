@@ -31,12 +31,12 @@
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Materials");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMaterialLibrary));
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.gbModelMaterials = new System.Windows.Forms.GroupBox();
             this.btnDeleteFromModel = new System.Windows.Forms.Button();
             this.lvModelMaterials = new UserControls.ListViewWithSelection();
             this.btnRename = new System.Windows.Forms.Button();
             this.tbCategoryName = new System.Windows.Forms.TextBox();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.gbLibraryMaterials = new System.Windows.Forms.GroupBox();
             this.btnDeleteFromLibrary = new System.Windows.Forms.Button();
             this.btnAddCategory = new System.Windows.Forms.Button();
             this.btvLibrary = new UserControls.BufferedTreeView();
@@ -47,28 +47,34 @@
             this.btnCopyToModel = new System.Windows.Forms.Button();
             this.ttText = new System.Windows.Forms.ToolTip(this.components);
             this.cbPreview = new System.Windows.Forms.CheckBox();
-            this.groupBox2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
+            this.gbLibraries = new System.Windows.Forms.GroupBox();
+            this.btnRemove = new System.Windows.Forms.Button();
+            this.btnAdd = new System.Windows.Forms.Button();
+            this.btnNew = new System.Windows.Forms.Button();
+            this.lvLibraries = new UserControls.ListViewWithSelection();
+            this.gbModelMaterials.SuspendLayout();
+            this.gbLibraryMaterials.SuspendLayout();
+            this.gbLibraries.SuspendLayout();
             this.SuspendLayout();
             // 
-            // groupBox2
+            // gbModelMaterials
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.gbModelMaterials.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.btnDeleteFromModel);
-            this.groupBox2.Controls.Add(this.lvModelMaterials);
-            this.groupBox2.Location = new System.Drawing.Point(330, 14);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(205, 427);
-            this.groupBox2.TabIndex = 0;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "FE Model materials";
+            this.gbModelMaterials.Controls.Add(this.btnDeleteFromModel);
+            this.gbModelMaterials.Controls.Add(this.lvModelMaterials);
+            this.gbModelMaterials.Location = new System.Drawing.Point(324, 157);
+            this.gbModelMaterials.Name = "gbModelMaterials";
+            this.gbModelMaterials.Size = new System.Drawing.Size(263, 388);
+            this.gbModelMaterials.TabIndex = 0;
+            this.gbModelMaterials.TabStop = false;
+            this.gbModelMaterials.Text = "FE Model materials";
             // 
             // btnDeleteFromModel
             // 
             this.btnDeleteFromModel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDeleteFromModel.Location = new System.Drawing.Point(124, 22);
+            this.btnDeleteFromModel.Location = new System.Drawing.Point(182, 22);
             this.btnDeleteFromModel.Name = "btnDeleteFromModel";
             this.btnDeleteFromModel.Size = new System.Drawing.Size(75, 23);
             this.btnDeleteFromModel.TabIndex = 10;
@@ -86,11 +92,11 @@
             this.lvModelMaterials.FullRowSelect = true;
             this.lvModelMaterials.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.lvModelMaterials.HideSelection = false;
-            this.lvModelMaterials.Location = new System.Drawing.Point(7, 51);
+            this.lvModelMaterials.Location = new System.Drawing.Point(6, 51);
             this.lvModelMaterials.MultiSelect = false;
             this.lvModelMaterials.Name = "lvModelMaterials";
             this.lvModelMaterials.ShowGroups = false;
-            this.lvModelMaterials.Size = new System.Drawing.Size(192, 370);
+            this.lvModelMaterials.Size = new System.Drawing.Size(251, 331);
             this.lvModelMaterials.TabIndex = 1;
             this.lvModelMaterials.UseCompatibleStateImageBehavior = false;
             this.lvModelMaterials.View = System.Windows.Forms.View.List;
@@ -102,7 +108,7 @@
             // btnRename
             // 
             this.btnRename.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnRename.Location = new System.Drawing.Point(199, 428);
+            this.btnRename.Location = new System.Drawing.Point(199, 360);
             this.btnRename.Name = "btnRename";
             this.btnRename.Size = new System.Drawing.Size(75, 23);
             this.btnRename.TabIndex = 0;
@@ -114,28 +120,28 @@
             // 
             this.tbCategoryName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbCategoryName.Location = new System.Drawing.Point(6, 428);
+            this.tbCategoryName.Location = new System.Drawing.Point(6, 360);
             this.tbCategoryName.Name = "tbCategoryName";
             this.tbCategoryName.Size = new System.Drawing.Size(187, 23);
             this.tbCategoryName.TabIndex = 2;
             this.tbCategoryName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbCategoryName_KeyDown);
             this.tbCategoryName.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbCategoryName_KeyUp);
             // 
-            // groupBox3
+            // gbLibraryMaterials
             // 
-            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.gbLibraryMaterials.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-            this.groupBox3.Controls.Add(this.btnDeleteFromLibrary);
-            this.groupBox3.Controls.Add(this.btnAddCategory);
-            this.groupBox3.Controls.Add(this.btvLibrary);
-            this.groupBox3.Controls.Add(this.tbCategoryName);
-            this.groupBox3.Controls.Add(this.btnRename);
-            this.groupBox3.Location = new System.Drawing.Point(14, 14);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(280, 456);
-            this.groupBox3.TabIndex = 3;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Library materials";
+            this.gbLibraryMaterials.Controls.Add(this.btnDeleteFromLibrary);
+            this.gbLibraryMaterials.Controls.Add(this.btnAddCategory);
+            this.gbLibraryMaterials.Controls.Add(this.btvLibrary);
+            this.gbLibraryMaterials.Controls.Add(this.tbCategoryName);
+            this.gbLibraryMaterials.Controls.Add(this.btnRename);
+            this.gbLibraryMaterials.Location = new System.Drawing.Point(12, 157);
+            this.gbLibraryMaterials.Name = "gbLibraryMaterials";
+            this.gbLibraryMaterials.Size = new System.Drawing.Size(280, 388);
+            this.gbLibraryMaterials.TabIndex = 3;
+            this.gbLibraryMaterials.TabStop = false;
+            this.gbLibraryMaterials.Text = "Library materials";
             // 
             // btnDeleteFromLibrary
             // 
@@ -174,7 +180,7 @@
             treeNode1.Text = "Materials";
             this.btvLibrary.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1});
-            this.btvLibrary.Size = new System.Drawing.Size(268, 370);
+            this.btvLibrary.Size = new System.Drawing.Size(268, 302);
             this.btvLibrary.TabIndex = 4;
             this.btvLibrary.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.btvLibrary_AfterSelect);
             this.btvLibrary.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.btvLibrary_MouseDoubleClick);
@@ -185,7 +191,7 @@
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOK.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnOK.Location = new System.Drawing.Point(373, 476);
+            this.btnOK.Location = new System.Drawing.Point(425, 551);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 12;
@@ -198,7 +204,7 @@
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnCancel.Location = new System.Drawing.Point(454, 476);
+            this.btnCancel.Location = new System.Drawing.Point(506, 550);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 11;
@@ -207,9 +213,9 @@
             // 
             // btnSave
             // 
-            this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSave.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnSave.Location = new System.Drawing.Point(20, 476);
+            this.btnSave.Location = new System.Drawing.Point(494, 109);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(75, 23);
             this.btnSave.TabIndex = 13;
@@ -220,7 +226,7 @@
             // btnCopyToLibrary
             // 
             this.btnCopyToLibrary.Image = global::PrePoMax.Properties.Resources.Left_arrow;
-            this.btnCopyToLibrary.Location = new System.Drawing.Point(300, 95);
+            this.btnCopyToLibrary.Location = new System.Drawing.Point(296, 238);
             this.btnCopyToLibrary.Name = "btnCopyToLibrary";
             this.btnCopyToLibrary.Size = new System.Drawing.Size(24, 24);
             this.btnCopyToLibrary.TabIndex = 10;
@@ -232,7 +238,7 @@
             // btnCopyToModel
             // 
             this.btnCopyToModel.Image = global::PrePoMax.Properties.Resources.Right_arrow;
-            this.btnCopyToModel.Location = new System.Drawing.Point(300, 65);
+            this.btnCopyToModel.Location = new System.Drawing.Point(296, 208);
             this.btnCopyToModel.Name = "btnCopyToModel";
             this.btnCopyToModel.Size = new System.Drawing.Size(24, 24);
             this.btnCopyToModel.TabIndex = 8;
@@ -244,7 +250,7 @@
             // 
             this.cbPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.cbPreview.AutoSize = true;
-            this.cbPreview.Location = new System.Drawing.Point(337, 444);
+            this.cbPreview.Location = new System.Drawing.Point(20, 554);
             this.cbPreview.Name = "cbPreview";
             this.cbPreview.Size = new System.Drawing.Size(169, 19);
             this.cbPreview.TabIndex = 14;
@@ -252,20 +258,84 @@
             this.cbPreview.UseVisualStyleBackColor = true;
             this.cbPreview.CheckedChanged += new System.EventHandler(this.cbPreview_CheckedChanged);
             // 
+            // gbLibraries
+            // 
+            this.gbLibraries.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.gbLibraries.Controls.Add(this.btnRemove);
+            this.gbLibraries.Controls.Add(this.btnAdd);
+            this.gbLibraries.Controls.Add(this.btnNew);
+            this.gbLibraries.Controls.Add(this.btnSave);
+            this.gbLibraries.Controls.Add(this.lvLibraries);
+            this.gbLibraries.Location = new System.Drawing.Point(12, 12);
+            this.gbLibraries.Name = "gbLibraries";
+            this.gbLibraries.Size = new System.Drawing.Size(575, 139);
+            this.gbLibraries.TabIndex = 15;
+            this.gbLibraries.TabStop = false;
+            this.gbLibraries.Text = "Libraries";
+            // 
+            // btnRemove
+            // 
+            this.btnRemove.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRemove.Location = new System.Drawing.Point(494, 80);
+            this.btnRemove.Name = "btnRemove";
+            this.btnRemove.Size = new System.Drawing.Size(75, 23);
+            this.btnRemove.TabIndex = 14;
+            this.btnRemove.Text = "Remove";
+            this.btnRemove.UseVisualStyleBackColor = true;
+            this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
+            // 
+            // btnAdd
+            // 
+            this.btnAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnAdd.Location = new System.Drawing.Point(494, 51);
+            this.btnAdd.Name = "btnAdd";
+            this.btnAdd.Size = new System.Drawing.Size(75, 23);
+            this.btnAdd.TabIndex = 13;
+            this.btnAdd.Text = "Add";
+            this.btnAdd.UseVisualStyleBackColor = true;
+            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
+            // 
+            // btnNew
+            // 
+            this.btnNew.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnNew.Location = new System.Drawing.Point(494, 22);
+            this.btnNew.Name = "btnNew";
+            this.btnNew.Size = new System.Drawing.Size(75, 23);
+            this.btnNew.TabIndex = 12;
+            this.btnNew.Text = "New";
+            this.btnNew.UseVisualStyleBackColor = true;
+            this.btnNew.Click += new System.EventHandler(this.btnNew_Click);
+            // 
+            // lvLibraries
+            // 
+            this.lvLibraries.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lvLibraries.DisableMouse = false;
+            this.lvLibraries.HideSelection = false;
+            this.lvLibraries.Location = new System.Drawing.Point(6, 22);
+            this.lvLibraries.MultiSelect = false;
+            this.lvLibraries.Name = "lvLibraries";
+            this.lvLibraries.Size = new System.Drawing.Size(482, 110);
+            this.lvLibraries.TabIndex = 11;
+            this.lvLibraries.UseCompatibleStateImageBehavior = false;
+            this.lvLibraries.View = System.Windows.Forms.View.List;
+            this.lvLibraries.SelectedIndexChanged += new System.EventHandler(this.lvLibraries_SelectedIndexChanged);
+            // 
             // FrmMaterialLibrary
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(554, 511);
+            this.ClientSize = new System.Drawing.Size(599, 586);
+            this.Controls.Add(this.gbLibraries);
             this.Controls.Add(this.cbPreview);
-            this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnCopyToLibrary);
             this.Controls.Add(this.btnCopyToModel);
-            this.Controls.Add(this.groupBox3);
-            this.Controls.Add(this.groupBox2);
+            this.Controls.Add(this.gbLibraryMaterials);
+            this.Controls.Add(this.gbModelMaterials);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -274,12 +344,13 @@
             this.Name = "FrmMaterialLibrary";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "Material Library";
+            this.Text = "Material Library Editor";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmMaterialLibrary_FormClosing);
             this.Load += new System.EventHandler(this.FrmMaterialLibrary_Load);
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
+            this.gbModelMaterials.ResumeLayout(false);
+            this.gbLibraryMaterials.ResumeLayout(false);
+            this.gbLibraryMaterials.PerformLayout();
+            this.gbLibraries.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -287,10 +358,10 @@
 
         #endregion
 
-        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.GroupBox gbModelMaterials;
         private System.Windows.Forms.Button btnRename;
         private System.Windows.Forms.TextBox tbCategoryName;
-        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.GroupBox gbLibraryMaterials;
         private UserControls.BufferedTreeView btvLibrary;
         private System.Windows.Forms.Button btnAddCategory;
         private System.Windows.Forms.Button btnCopyToLibrary;
@@ -303,5 +374,10 @@
         private System.Windows.Forms.Button btnDeleteFromModel;
         private System.Windows.Forms.ToolTip ttText;
         private System.Windows.Forms.CheckBox cbPreview;
+        private System.Windows.Forms.GroupBox gbLibraries;
+        private System.Windows.Forms.Button btnAdd;
+        private System.Windows.Forms.Button btnNew;
+        private UserControls.ListViewWithSelection lvLibraries;
+        private System.Windows.Forms.Button btnRemove;
     }
 }
