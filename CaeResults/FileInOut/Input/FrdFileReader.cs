@@ -441,23 +441,17 @@ namespace CaeResults
             switch (fieldData.Name)
             {
                 case FOFieldNames.Disp:
-                    field = CreateVectorField(fieldData.Name, components, values);
-                    break;
                 case FOFieldNames.Forc:
+                // Thermal
+                case FOFieldNames.Flux:
+                // Sensitivity
+                case FOFieldNames.Norm:
                     field = CreateVectorField(fieldData.Name, components, values);
                     break;
                 case FOFieldNames.Stress:
-                    field = CreateStressField(fieldData.Name, components, values);
-                    break;
                 case FOFieldNames.ToStrain:
                 case FOFieldNames.MeStrain:
                 case FOFieldNames.Pe:
-                    field = CreateStrainField(fieldData.Name, components, values);
-                    break;
-                // Thermal
-                case FOFieldNames.Flux:
-                    field = CreateVectorField(fieldData.Name, components, values);
-                    break;
                 // Error
                 case FOFieldNames.ZZStr:
                     field = CreateStressField(fieldData.Name, components, values);
@@ -576,32 +570,19 @@ namespace CaeResults
             time = float.Parse(record[2]);
             numOfVal = int.Parse(record[3]);
             methodId = int.Parse(record[4]);
-
+            // Sensitivity
+            if (type == StepType.Static && methodId == 3)   // method 3 is also usef for last iterations type
+            {
+                if (prevFieldData.Type == StepType.Frequency || prevFieldData.Type == StepType.FrequencySensitivity)
+                    type = StepType.FrequencySensitivity;
+            }
+            //
             if (int.Parse(record[4]) == 4) type = StepType.Buckling;                                // buckling switch
             //
             if (type == StepType.Buckling)
-            {
-                if (prevFieldData == null) // this is the first step
-                {
-                    stepId = 1;
-                    stepIncrementId = 1;
-                }
-                else if (prevFieldData.Type != StepType.Buckling)   // this is the first increment in the buckling step
-                {
-                    stepId = prevFieldData.StepId + 1;
-                    stepIncrementId = 1;
-                }
-                else if (globalIncrementId != prevFieldData.GlobalIncrementId)    // this is the new increment in the buckling step
-                {
-                    stepId = prevFieldData.StepId;
-                    stepIncrementId = prevFieldData.StepIncrementId + 1;
-                }
-                else // this is the same increment
-                {
-                    stepId = prevFieldData.StepId;
-                    stepIncrementId = prevFieldData.StepIncrementId;
-                }
-            }
+                GetStepAndStepIncrementIds(type, 1, globalIncrementId, prevFieldData, out stepId, out stepIncrementId);
+            else if (type == StepType.FrequencySensitivity)
+                GetStepAndStepIncrementIds(type, 0, globalIncrementId, prevFieldData, out stepId, out stepIncrementId);
             // Check for modal analysis
             else if (record.Length > 5 && record[5].Contains("MODAL"))
             {
@@ -625,6 +606,30 @@ namespace CaeResults
             fieldData.MethodId = methodId;
             fieldData.StepId = stepId;
             fieldData.StepIncrementId = stepIncrementId;
+        }
+        static private void GetStepAndStepIncrementIds(StepType type, int startIncrementId, int globalIncrementId,
+                                                       FieldData prevFieldData, out int stepId, out int stepIncrementId)
+        {
+            if (prevFieldData == null) // this is the first step
+            {
+                stepId = 1;
+                stepIncrementId = startIncrementId;
+            }
+            else if (prevFieldData.Type != type)   // this is the first increment in the new type step
+            {
+                stepId = prevFieldData.StepId + 1;
+                stepIncrementId = startIncrementId;
+            }
+            else if (globalIncrementId != prevFieldData.GlobalIncrementId)    // this is the new increment in the new type step
+            {
+                stepId = prevFieldData.StepId;
+                stepIncrementId = prevFieldData.StepIncrementId + 1;
+            }
+            else // this is the same increment
+            {
+                stepId = prevFieldData.StepId;
+                stepIncrementId = prevFieldData.StepIncrementId;
+            }
         }
         static private float[][] GetFieldValuesData(string[] lines, ref int lineNum, bool constantWidth, int numOfVal,
                                                     Dictionary<int, int> nodeIdsLookUp, out List<string> components)

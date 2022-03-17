@@ -12,8 +12,8 @@ namespace CaeResults
         None,
         Static,
         Frequency,
+        FrequencySensitivity,
         Buckling,
-        Sensitivity,
         LastIterations
     }
 
@@ -38,6 +38,7 @@ namespace CaeResults
             Name = name;
             Component = null;
             GlobalIncrementId = -1;
+            MethodId = -1;
             Type = StepType.None;
             Time = -1;
             StepId = -1;
@@ -49,6 +50,7 @@ namespace CaeResults
             Name = name;
             Component = component;
             GlobalIncrementId = -1;
+            MethodId = -1;
             Type = StepType.None;
             Time = -1;
             StepId = stepId;
@@ -59,6 +61,7 @@ namespace CaeResults
         {
             Component = fieldData.Component;
             GlobalIncrementId = fieldData.GlobalIncrementId;
+            MethodId = fieldData.MethodId;
             Type = fieldData.Type;
             Time = fieldData.Time;
             StepId = fieldData.StepId;
@@ -87,25 +90,27 @@ namespace CaeResults
                     bw.Write((int)1);
                     bw.Write(fieldData.Component);
                 }
-
                 bw.Write(fieldData.GlobalIncrementId);
+                bw.Write(fieldData.MethodId);
                 bw.Write((int)fieldData.Type);
                 bw.Write(fieldData.Time);
                 bw.Write(fieldData.StepId);
                 bw.Write(fieldData.StepIncrementId);
             }
         }
-        public static FieldData ReadFromFile(System.IO.BinaryReader br)
+        public static FieldData ReadFromFile(System.IO.BinaryReader br, int major, int minor, int build)
         {
+            //
             int fieldDataExists = br.ReadInt32();
             if (fieldDataExists == 1)
             {
                 FieldData fieldData = new FieldData(br.ReadString());       // read the name
-                
+                //
                 int componentExists = br.ReadInt32();
                 if (componentExists == 1) fieldData.Component = br.ReadString();
-
+                //
                 fieldData.GlobalIncrementId = br.ReadInt32();
+                if (major >= 1 && minor >= 3) fieldData.MethodId = br.ReadInt32();
                 fieldData.Type = (StepType)br.ReadInt32();
                 fieldData.Time = br.ReadSingle();
                 fieldData.StepId = br.ReadInt32();
@@ -125,8 +130,6 @@ namespace CaeResults
         {
             return  Name == data.Name &&
                     Component == data.Component &&
-                    //UserDefinedBlockId == data.UserDefinedBlockId &&
-                    //Type == data.Type &&
                     StepId == data.StepId &&
                     StepIncrementId == data.StepIncrementId;
         }

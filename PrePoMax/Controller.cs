@@ -754,8 +754,16 @@ namespace PrePoMax
                         model = tmp._model;
                         results = tmp._results;
                         //
+                        string[] versions = fileVersion.Split(new string[] { " ", ".", "v" }, StringSplitOptions.RemoveEmptyEntries);
+                        int major;
+                        int minor;
+                        int build;
+                        int.TryParse(versions[versions.Length - 3], out major);
+                        int.TryParse(versions[versions.Length - 2], out minor);
+                        int.TryParse(versions[versions.Length - 1], out build);
+                        //
                         FeModel.ReadFromFile(model, br);
-                        FeResults.ReadFromFile(results, br);
+                        FeResults.ReadFromFile(results, br, major, minor, build);
                     }
                     //
                     model.UpdateMeshPartsElementTypes();
@@ -784,7 +792,7 @@ namespace PrePoMax
                     results = tmp._results;
                     //
                     FeModel.ReadFromFile(model, br);
-                    FeResults.ReadFromFile(results, br);
+                    FeResults.ReadFromFile(results, br, 0, 0, 0);
                 }
                 //
                 model.UpdateMeshPartsElementTypes();
@@ -12600,7 +12608,9 @@ namespace PrePoMax
             string unit;
             if (_currentFieldData.Type == StepType.Static) unit = _results.UnitSystem.TimeUnitAbbreviation;
             else if (_currentFieldData.Type == StepType.Frequency) unit = _results.UnitSystem.FrequencyUnitAbbreviation;
+            else if (_currentFieldData.Type == StepType.FrequencySensitivity) unit = _results.UnitSystem.FrequencyUnitAbbreviation;
             else if (_currentFieldData.Type == StepType.Buckling) unit = "";
+            
             else if (_currentFieldData.Type == StepType.LastIterations) unit = _results.UnitSystem.TimeUnitAbbreviation;
             else throw new NotSupportedException();
             // Deformation variable
@@ -12620,6 +12630,7 @@ namespace PrePoMax
             vtkControl.DataFieldType fieldType;
             if (fieldData.Type == StepType.Static) fieldType = vtkControl.DataFieldType.Static;
             else if (fieldData.Type == StepType.Frequency) fieldType = vtkControl.DataFieldType.Frequency;
+            else if (fieldData.Type == StepType.FrequencySensitivity) fieldType = vtkControl.DataFieldType.FrequencySensitivity;
             else if (fieldData.Type == StepType.Buckling) fieldType = vtkControl.DataFieldType.Buckling;
             else if (fieldData.Type == StepType.LastIterations) fieldType = vtkControl.DataFieldType.LastIterations;
             else throw new NotSupportedException();

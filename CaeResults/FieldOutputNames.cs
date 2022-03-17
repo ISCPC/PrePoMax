@@ -27,6 +27,9 @@ namespace CaeResults
         public const string Flux = "FLUX";
         public const string Rfl = "RFL";
         public const string HError = "HERROR";
+        // Sensitivity
+        public const string Norm = "NORM";
+        public const string SenFreq = "SENFREQ";
         // Wear
         public const string SlidingDistance = "SLIDING_DISTANCE";
         public const string SurfaceNormal = "SURFACE_NORMAL";

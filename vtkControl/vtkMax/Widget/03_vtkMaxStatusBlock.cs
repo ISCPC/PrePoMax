@@ -78,6 +78,12 @@ namespace vtkControl
                 _text += "Step: #" + _stepNumber + "   Mode: #" + _incrementNumber + "   Frequency: " +
                          _analysisTime.ToString() + " " + _analysisTimeUnit;
             }
+            else if (_fieldType == DataFieldType.FrequencySensitivity)
+            {
+                // subtract 1 since first increment contains only normals
+                _text += "Step: #" + _stepNumber + "   Mode: #" + _incrementNumber + "   Frequency: " +
+                         _analysisTime.ToString() + " " + _analysisTimeUnit;
+            }
             else if (_fieldType == DataFieldType.Buckling)
             {
                 _text += "Step: #" + _stepNumber + "   Buckling factor: " + _analysisTime.ToString();

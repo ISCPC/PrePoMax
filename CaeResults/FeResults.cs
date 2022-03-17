@@ -121,7 +121,7 @@ namespace CaeResults
                 }
             }
         }
-        public static void ReadFromFile(FeResults results, System.IO.BinaryReader br)
+        public static void ReadFromFile(FeResults results, System.IO.BinaryReader br, int major, int minor, int build)
         {
             int numItems;
             FieldData fieldData;
@@ -150,7 +150,7 @@ namespace CaeResults
                     results._fields = new Dictionary<FieldData, Field>();
                     for (int i = 0; i < numItems; i++)
                     {
-                        fieldData = FieldData.ReadFromFile(br);
+                        fieldData = FieldData.ReadFromFile(br, major, minor, build);
                         field = Field.ReadFromFile(br);
                         results._fields.Add(fieldData, field);
                     }
@@ -679,8 +679,17 @@ namespace CaeResults
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "%";
                         break;
+                    // Sensitivity
+                    case FOFieldNames.Norm:
+                        unitConverter = new StringLengthConverter();
+                        unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
+                        break;
+                    case FOFieldNames.SenFreq:
+                        unitConverter = new DoubleConverter();
+                        unitAbbreviation = "/";
+                        break;
                     default:
-                        //if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
+                        if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
                         //
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "?";
@@ -1016,6 +1025,18 @@ namespace CaeResults
                     return result;
                 }
             }
+            // Find other existing result
+            foreach (var entry in _fields)
+            {
+                if (entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId)
+                {
+                    result = new FieldData(entry.Key);
+                    result.Name = name;
+                    result.Component = component;
+                    result.Valid = false;
+                    return result;
+                }
+            }
             // Nothing found
             result = new FieldData(name, component, stepId, stepIncrementId);
             result.Type = StepType.Static;
@@ -1262,17 +1283,20 @@ namespace CaeResults
         public float[] GetValues(FieldData fieldData, int[] globalNodeIds)
         {
             float[] values = null;
+            bool zeroIncrement = false;
             //
             if (fieldData.Valid)
             {
-                if (fieldData.StepIncrementId == 0)   // Zero increment - Find all occurances!!!
+                if (fieldData.StepIncrementId == 0)     // Zero increment - Find all occurances!!!
                 {
-                    if (fieldData.StepId == 1)        // first step
+                    if (fieldData.StepId == 1)          // first step
                     {
                         values = new float[globalNodeIds.Length];
+                        zeroIncrement = true;
                     }
                 }
-                else
+                //
+                if (!zeroIncrement)
                 {
                     Field field = GetField(fieldData);
                     //
@@ -1323,16 +1347,14 @@ namespace CaeResults
                 if (fieldData.StepId == 1)        // first step
                     return false;
             }
-            else
+            //
+            foreach (var entry in _fields)
             {
-                foreach (var entry in _fields)
+                if (entry.Key.Name.ToUpper() == fieldData.Name.ToUpper() && 
+                    entry.Key.StepId == fieldData.StepId && 
+                    entry.Key.StepIncrementId == fieldData.StepIncrementId)
                 {
-                    if (entry.Key.Name.ToUpper() == fieldData.Name.ToUpper() && 
-                        entry.Key.StepId == fieldData.StepId && 
-                        entry.Key.StepIncrementId == fieldData.StepIncrementId)
-                    {
-                        return entry.Value.IsComponentInvariant(fieldData.Component);
-                    }
+                    return entry.Value.IsComponentInvariant(fieldData.Component);
                 }
             }
             return false;
@@ -1350,7 +1372,8 @@ namespace CaeResults
             nodesData.Coor = new double[2][];
             nodesData.Values = new float[2];
             int minId = -1;
-            int maxId = -1;            
+            int maxId = -1;
+            bool zeroIncrement = false;
             //
             if (fieldData.StepIncrementId == 0)     // Zero increment - Find all occurances!!!
             {
@@ -1364,9 +1387,12 @@ namespace CaeResults
                     nodesData.Coor[1] = _mesh.Nodes[maxId].Coor;
                     nodesData.Values[0] = 0;
                     nodesData.Values[1] = 0;
+                    //
+                    zeroIncrement = true;
                 }
             }
-            else
+            //
+            if (!zeroIncrement)
             {                
                 foreach (var fieldEntry in _fields)
                 {

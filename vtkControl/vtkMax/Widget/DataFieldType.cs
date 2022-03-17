@@ -10,6 +10,7 @@ namespace vtkControl
     {
         Static,
         Frequency,
+        FrequencySensitivity,
         Buckling,
         LastIterations
     }
