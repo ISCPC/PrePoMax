@@ -13,6 +13,7 @@ namespace CaeResults
         Static,
         Frequency,
         Buckling,
+        Sensitivity,
         LastIterations
     }
 
@@ -21,7 +22,8 @@ namespace CaeResults
     {
         // Variables                                                                                                                
         public string Component;
-        public int UserDefinedBlockId;
+        public int GlobalIncrementId;
+        public int MethodId;
         public StepType Type;
         public float Time;
         public int StepId;
@@ -35,7 +37,7 @@ namespace CaeResults
             _checkName = false;     // the name may contain other cahracters - do not use constructor with name
             Name = name;
             Component = null;
-            UserDefinedBlockId = -1;
+            GlobalIncrementId = -1;
             Type = StepType.None;
             Time = -1;
             StepId = -1;
@@ -46,7 +48,7 @@ namespace CaeResults
         {
             Name = name;
             Component = component;
-            UserDefinedBlockId = -1;
+            GlobalIncrementId = -1;
             Type = StepType.None;
             Time = -1;
             StepId = stepId;
@@ -56,7 +58,7 @@ namespace CaeResults
             : base(fieldData.Name)
         {
             Component = fieldData.Component;
-            UserDefinedBlockId = fieldData.UserDefinedBlockId;
+            GlobalIncrementId = fieldData.GlobalIncrementId;
             Type = fieldData.Type;
             Time = fieldData.Time;
             StepId = fieldData.StepId;
@@ -86,7 +88,7 @@ namespace CaeResults
                     bw.Write(fieldData.Component);
                 }
 
-                bw.Write(fieldData.UserDefinedBlockId);
+                bw.Write(fieldData.GlobalIncrementId);
                 bw.Write((int)fieldData.Type);
                 bw.Write(fieldData.Time);
                 bw.Write(fieldData.StepId);
@@ -103,7 +105,7 @@ namespace CaeResults
                 int componentExists = br.ReadInt32();
                 if (componentExists == 1) fieldData.Component = br.ReadString();
 
-                fieldData.UserDefinedBlockId = br.ReadInt32();
+                fieldData.GlobalIncrementId = br.ReadInt32();
                 fieldData.Type = (StepType)br.ReadInt32();
                 fieldData.Time = br.ReadSingle();
                 fieldData.StepId = br.ReadInt32();

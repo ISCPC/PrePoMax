@@ -480,9 +480,8 @@ namespace CaeResults
 
                 //                              field#  stepIncrement#       step#            - COMMENTS
                 //    1PSTEP                        25               1           2           
-                //             time        numOfvalues                                       
-                //  100CL  107 2.000000000         613                     0    7           1
-
+                //                    time numOfvalues              methodId increment#       - COMMENTS
+                //  100CL  107 2.000000000         613                     0          7     1
 
                 //    1PSTEP                        25           1           2               
                 //  100CL  107 2.000000000         613                     0    7           1
@@ -529,6 +528,15 @@ namespace CaeResults
                 // -5  D2          1    2    2    0                                          
                 // -5  D3          1    2    3    0                                          
                 // -5  ALL         1    2    0    0    1ALL                                  
+
+                // FREQUENCY SENSITIVITY
+
+                //    1PSTEP                         3           1           2               
+                //  100CL  115 0.00000E+00        1393                     3   15           1
+                // -4  SENFREQ     2    1                                                    
+                // -5  DFDN        1    1    1    0                                          
+                // -5  DFDNFIL     1    1    2    0                                          
+
             }
             //
             string line;
@@ -536,11 +544,12 @@ namespace CaeResults
             string[] splitter = new string[] { " " };
             //
             string name;
-            int userDefinedBlockId = -1;
+            int globalIncrementId = -1;
             StepType type = StepType.Static;
             float time;
             int stepId;
             int stepIncrementId = -1;
+            int methodId;
             //
             record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // 1PSTEP
             // Last iterations
@@ -563,9 +572,11 @@ namespace CaeResults
             line = line.Insert(position, " ");
             //
             record = line.Split(splitter, StringSplitOptions.RemoveEmptyEntries);                   // 100CL
-            userDefinedBlockId = int.Parse(record[1]);
+            globalIncrementId = int.Parse(record[1]) - 100;
             time = float.Parse(record[2]);
             numOfVal = int.Parse(record[3]);
+            methodId = int.Parse(record[4]);
+
             if (int.Parse(record[4]) == 4) type = StepType.Buckling;                                // buckling switch
             //
             if (type == StepType.Buckling)
@@ -580,7 +591,7 @@ namespace CaeResults
                     stepId = prevFieldData.StepId + 1;
                     stepIncrementId = 1;
                 }
-                else if (userDefinedBlockId != prevFieldData.UserDefinedBlockId)    // this is the new increment in the buckling step
+                else if (globalIncrementId != prevFieldData.GlobalIncrementId)    // this is the new increment in the buckling step
                 {
                     stepId = prevFieldData.StepId;
                     stepIncrementId = prevFieldData.StepIncrementId + 1;
@@ -608,9 +619,10 @@ namespace CaeResults
             name = record[1];
             //
             fieldData = new FieldData(name);
-            fieldData.UserDefinedBlockId = userDefinedBlockId;
+            fieldData.GlobalIncrementId = globalIncrementId;
             fieldData.Type = type;
             fieldData.Time = time;
+            fieldData.MethodId = methodId;
             fieldData.StepId = stepId;
             fieldData.StepIncrementId = stepIncrementId;
         }

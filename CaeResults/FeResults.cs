@@ -680,7 +680,7 @@ namespace CaeResults
                         unitAbbreviation = "%";
                         break;
                     default:
-                        if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
+                        //if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
                         //
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "?";
