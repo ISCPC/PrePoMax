@@ -120,7 +120,7 @@ namespace UserControls
 	/// The TreeView control is a regular treeview with multi-selection capability.
 	/// </summary>
 	[ToolboxItem(true)]
-	public class CodersLabTreeView : System.Windows.Forms.TreeView
+	public class CodersLabTreeView : TreeView
 	{
         #region Matej
         private const int TVM_SETEXTENDEDSTYLE = 0x1100 + 44;
@@ -794,13 +794,17 @@ namespace UserControls
 		/// </summary>
 		/// <param name="tn">Node to recursively unselect.</param>
 		/// <param name="tva">Specifies the action that caused the selection change.</param>
-		private void UnselectNodesRecursively(TreeNode tn, TreeViewAction tva)
+		private bool UnselectNodesRecursively(TreeNode tn, TreeViewAction tva)
 		{
+			bool wasSelected = IsNodeSelected(tn);
 			SelectNode(tn, false, tva);
+			//
 			foreach (TreeNode child in tn.Nodes)
 			{
-				UnselectNodesRecursively(child, tva);
+				wasSelected |= UnselectNodesRecursively(child, tva);
 			}
+			//
+			return wasSelected;
 		}
 
 		#endregion
@@ -1063,8 +1067,10 @@ namespace UserControls
 			int intNodeLevel = GetNodeLevel(tn);
 			bool blnPlusMinusClicked = false;
 			if (e.X < 20 + (intNodeLevel * 20))
+            {
 				blnPlusMinusClicked = true;
-
+				blnNodeProcessedOnMouseDown = true;
+			}
 			return blnPlusMinusClicked;
 		}
 
@@ -1675,47 +1681,60 @@ namespace UserControls
 
 		#region OnAfterCollapse
 
+		protected override void OnBeforeCollapse(TreeViewCancelEventArgs e)
+		{
+			if (intMouseClicks == 1) BeginUpdate();
+			base.OnBeforeCollapse(e);
+		}
+
 		/// <summary>
 		/// Occurs after a node is collapsed.
 		/// </summary>
 		/// <param name="e"></param>
+
 		protected override void OnAfterCollapse(TreeViewEventArgs e)
 		{
-			base.OnAfterCollapse(e);
-			return;
-
 			blnSelectionChanged = false;
+			// If more nodes are selected
 
 			// All child nodes should be deselected
 			bool blnChildSelected = false;
 			foreach (TreeNode tn in e.Node.Nodes)
 			{
-				if (IsNodeSelected(tn))
-				{
-					blnChildSelected = true;
-				}
-				UnselectNodesRecursively(tn, TreeViewAction.Collapse);
+				blnChildSelected |= UnselectNodesRecursively(tn, TreeViewAction.Collapse);
 			}
-
+			//
 			if (blnChildSelected)
 			{
 				SelectNode(e.Node, true, TreeViewAction.Collapse);
 			}
-
+			//
 			OnSelectionsChanged();
-
-			//base.OnAfterCollapse(e);
+			//
+			if (intMouseClicks == 1) EndUpdate();
+			base.OnAfterCollapse(e);
 		}
+        protected override void OnBeforeExpand(TreeViewCancelEventArgs e)
+        {
+			if (intMouseClicks == 1) BeginUpdate();
+            base.OnBeforeExpand(e);
+        }
+        protected override void OnAfterExpand(TreeViewEventArgs e)
+        {
+			if (intMouseClicks == 1) EndUpdate();
+            base.OnAfterExpand(e);
+        }
 
-		#endregion
 
-		#region OnItemDrag
+        #endregion
 
-		/// <summary>
-		/// Occurs when an item is being dragged.
-		/// </summary>
-		/// <param name="e"></param>
-		protected override void OnItemDrag(ItemDragEventArgs e)
+        #region OnItemDrag
+
+        /// <summary>
+        /// Occurs when an item is being dragged.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnItemDrag(ItemDragEventArgs e)
 		{
 			e = new ItemDragEventArgs(MouseButtons.Left, this.SelectedNodes);
 			base.OnItemDrag(e);

@@ -74,7 +74,7 @@ namespace PrePoMax.Forms
                 ExceptionTools.Show(this, ex);
             }
         }
-        //
+        // Libraries
         private void btnNew_Click(object sender, EventArgs e)
         {
             try
@@ -134,10 +134,8 @@ namespace PrePoMax.Forms
                 if (lvLibraries.SelectedItems.Count == 1)
                 {
                     MaterialLibraryItem mli = (MaterialLibraryItem)lvLibraries.SelectedItems[0].Tag;
-                    btvLibrary.Nodes[0].Nodes.Clear();
-                    ItemListToTreeNodes(mli, btvLibrary.Nodes[0]);
-                    //
-                    ApplyFormatingRecursive(btvLibrary.Nodes[0]);
+                    ClearTree();
+                    FillTree(mli, btvLibrary.Nodes[0]);
                     //
                     btvLibrary_AfterSelect(null, null);
                 }
@@ -168,7 +166,7 @@ namespace PrePoMax.Forms
             bool enabled = true;
             if (lvLibraries.Items.Count == 0)
             {
-                btvLibrary.Nodes[0].Nodes.Clear();
+                ClearTree();
                 tbCategoryName.Text = "";
                 //
                 enabled = false;
@@ -177,6 +175,12 @@ namespace PrePoMax.Forms
             gbLibraryMaterials.Enabled = enabled;
             btnCopyToModel.Enabled = enabled;
             btnCopyToLibrary.Enabled = enabled;
+        }
+        private void ClearTree()
+        {
+            btvLibrary.BeginUpdate();
+            btvLibrary.Nodes[0].Nodes.Clear();
+            btvLibrary.EndUpdate();
         }
         //
         private void btvLibrary_AfterSelect(object sender, TreeViewEventArgs e)
@@ -211,7 +215,11 @@ namespace PrePoMax.Forms
         }
         private void btvLibrary_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            btnCopyToModel_Click(null, null);
+            if (btvLibrary.SelectedNode != null && btvLibrary.SelectedNode.Tag != null)
+            {
+                btnCopyToModel_Click(null, null);
+            }
+                
         }
         //
         private void lvModelMaterials_MouseDown(object sender, MouseEventArgs e)
@@ -566,6 +574,15 @@ namespace PrePoMax.Forms
                 libraryItem.Tag = materialLibrary;
                 libraryItem.Selected = true;
             }
+        }
+        private void FillTree(MaterialLibraryItem materialLibraryItem, TreeNode node)
+        {
+            node.TreeView.BeginUpdate();
+            //
+            ItemListToTreeNodes(materialLibraryItem, node);
+            ApplyFormatingRecursive(btvLibrary.Nodes[0]);
+            //
+            node.TreeView.EndUpdate();
         }
         private void ItemListToTreeNodes(MaterialLibraryItem materialLibraryItem, TreeNode node)
         {

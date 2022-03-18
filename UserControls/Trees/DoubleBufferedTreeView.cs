@@ -8,12 +8,6 @@ namespace UserControls
 {
     public class BufferedTreeView : TreeView
     {
-        // double buffer
-        protected override void OnHandleCreated(EventArgs e)
-        {
-            SendMessage(this.Handle, TVM_SETEXTENDEDSTYLE, (IntPtr)TVS_EX_DOUBLEBUFFER, (IntPtr)TVS_EX_DOUBLEBUFFER);
-            base.OnHandleCreated(e);
-        }
         // Pinvoke:
         private const int TVM_SETEXTENDEDSTYLE = 0x1100 + 44;
         private const int TVM_GETEXTENDEDSTYLE = 0x1100 + 45;
@@ -37,12 +31,48 @@ namespace UserControls
         public Color HighLightDeselectedColor { get { return _highlightDeselectedColor; } set { _highlightDeselectedColor = value; } }
         public Color HighlightErrorColor { get { return _highlightErrorColor; } set { _highlightErrorColor = value; } }
 
+
         // Constructor                                                                  
         public BufferedTreeView()
         {
+            //this.SetStyle(ControlStyles.DoubleBuffer, true);
             this.DrawMode = TreeViewDrawMode.OwnerDrawText;
+            //
             ResetHighlightColors();
         }
+
+
+        // Overrides                                                                    
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            SendMessage(this.Handle, TVM_SETEXTENDEDSTYLE, (IntPtr)TVS_EX_DOUBLEBUFFER, (IntPtr)TVS_EX_DOUBLEBUFFER);
+            base.OnHandleCreated(e);
+        }
+        protected override void OnBeforeCollapse(TreeViewCancelEventArgs e)
+        {
+            BeginUpdate();
+            //
+            base.OnBeforeCollapse(e);
+        }
+        protected override void OnAfterCollapse(TreeViewEventArgs e)
+        {
+            EndUpdate();
+            //
+            base.OnAfterCollapse(e);
+        }
+        protected override void OnBeforeExpand(TreeViewCancelEventArgs e)
+        {
+            BeginUpdate();
+            //
+            base.OnBeforeExpand(e);
+        }
+        protected override void OnAfterExpand(TreeViewEventArgs e)
+        {
+            EndUpdate();
+            //
+            base.OnAfterExpand(e);
+        }
+
 
         // Methods                                                                      
         protected override void OnDrawNode(DrawTreeNodeEventArgs e)
@@ -106,7 +136,7 @@ namespace UserControls
                 }
             }
         }
-
+        //
         public void ResetHighlightColors()
         {
             _highlightSelectedTextColor = SystemColors.HighlightText;
@@ -117,7 +147,7 @@ namespace UserControls
 
             _highlightErrorColor = Color.Red;
         }
-
+        //
         public bool[] GetTreeExpandCollapseState()
         {
             List<bool> states = new List<bool>();
@@ -162,5 +192,6 @@ namespace UserControls
                 SetNodeExpandCollapseState(child, states, ref id);
             }
         }
+        
     }
 }

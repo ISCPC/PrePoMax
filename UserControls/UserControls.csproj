@@ -82,6 +82,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Forms\FrmPropertyDataListView.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="MenuStrip\NoHighlightRenderer.cs" />
     <Compile Include="MessageBoxes\AutoClosingMessageBox.cs" />
     <Compile Include="DataGridView\DataGridViewCopyPaste.cs">
@@ -144,9 +147,6 @@
     </Compile>
     <Compile Include="TextBoxes\UnitAwareTextBox.Designer.cs">
       <DependentUpon>UnitAwareTextBox.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Trees\MultiSelectBufferedTreeView.cs">
-      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Trees\DoubleBufferedTreeView.cs">
       <SubType>Component</SubType>
@@ -216,6 +216,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmProperties.resx">
       <DependentUpon>FrmProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmPropertyDataListView.resx">
+      <DependentUpon>FrmPropertyDataListView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmPropertyListView.resx">
       <DependentUpon>FrmPropertyListView.cs</DependentUpon>
