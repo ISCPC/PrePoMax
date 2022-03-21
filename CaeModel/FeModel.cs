@@ -24,6 +24,7 @@ namespace CaeModel
         private OrderedDictionary<string, SurfaceInteraction> _surfaceInteractions;             //ISerializable
         private OrderedDictionary<string, ContactPair> _contactPairs;                           //ISerializable
         private OrderedDictionary<string, InitialCondition> _initialConditions;                 //ISerializable
+        private OrderedDictionary<string, Amplitude> _amplitudes;                               //ISerializable
         private StepCollection _stepCollection;                                                 //ISerializable
         private OrderedDictionary<int[], Calculix.CalculixUserKeyword> _calculixUserKeywords;   //ISerializable
         private ModelProperties _properties;                                                    //ISerializable
@@ -41,6 +42,7 @@ namespace CaeModel
         public OrderedDictionary<string, SurfaceInteraction> SurfaceInteractions { get { return _surfaceInteractions; } }
         public OrderedDictionary<string, ContactPair> ContactPairs { get { return _contactPairs; } }
         public OrderedDictionary<string, InitialCondition> InitialConditions { get { return _initialConditions; } }
+        public OrderedDictionary<string, Amplitude> Amplitudes { get { return _amplitudes; } }
         public StepCollection StepCollection { get { return _stepCollection; } }
         public OrderedDictionary<int[], Calculix.CalculixUserKeyword> CalculixUserKeywords 
         { 
@@ -71,6 +73,7 @@ namespace CaeModel
             _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>();
             _contactPairs = new OrderedDictionary<string, ContactPair>();
             _initialConditions = new OrderedDictionary<string, InitialCondition>();
+            _amplitudes = new OrderedDictionary<string, Amplitude>();
             _stepCollection = new StepCollection();
             _properties = new ModelProperties();
             _unitSystem = new UnitSystem();
@@ -88,6 +91,8 @@ namespace CaeModel
             _hashName = Tools.GetRandomString(8);
             // Compatibility for version v.1.0.0
             _initialConditions = new OrderedDictionary<string, InitialCondition>();
+            // Compatibility for version v.1.2.1
+            _amplitudes = new OrderedDictionary<string, Amplitude>();
             //
             foreach (SerializationEntry entry in info)
             {
@@ -139,6 +144,8 @@ namespace CaeModel
                         _contactPairs = (OrderedDictionary<string, ContactPair>)entry.Value; break;
                     case "_initialConditions":
                         _initialConditions = (OrderedDictionary<string, InitialCondition>)entry.Value; break;
+                    case "_amplitudes":
+                        _amplitudes = (OrderedDictionary<string, Amplitude>)entry.Value; break;
                     case "_stepCollection":
                         _stepCollection = (StepCollection)entry.Value; break;
                     case "_calculixUserKeywords":
@@ -168,7 +175,6 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        // Static methods
         public static void WriteToFile(FeModel model, System.IO.BinaryWriter bw)
         {
             // Write geometry
@@ -1126,98 +1132,7 @@ namespace CaeModel
             Dictionary<Type, HashSet<Enum>> elementTypeEnums = _properties.ModelSpace.GetAvailableElementTypes();
             if (_mesh != null) _mesh.UpdatePartsElementTypes(elementTypeEnums);
         }
-        
-        // ISerialization
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            // Using typeof() works also for null fields
-            info.AddValue("_name", Name, typeof(string));
-            info.AddValue("_geometry", _geometry, typeof(FeMesh));
-            info.AddValue("_mesh", _mesh, typeof(FeMesh));
-            info.AddValue("_materials", _materials, typeof(OrderedDictionary<string, Material>));
-            info.AddValue("_sections", _sections, typeof(OrderedDictionary<string, Section>));
-            info.AddValue("_constraints", _constraints, typeof(OrderedDictionary<string, Constraint>));
-            info.AddValue("_surfaceInteractions", _surfaceInteractions, typeof(OrderedDictionary<string, SurfaceInteraction>));
-            info.AddValue("_contactPairs", _contactPairs, typeof(OrderedDictionary<string, ContactPair>));
-            info.AddValue("_initialConditions", _initialConditions, typeof(OrderedDictionary<string, InitialCondition>));
-            info.AddValue("_stepCollection", _stepCollection, typeof(StepCollection));
-            info.AddValue("_calculixUserKeywords", _calculixUserKeywords, typeof(OrderedDictionary<int[], Calculix.CalculixUserKeyword>));
-            info.AddValue("_properties", _properties, typeof(ModelProperties));
-            info.AddValue("_unitSystem", _unitSystem, typeof(UnitSystem));
-            info.AddValue("_hashName", _hashName, typeof(string));
-        }
-
         // Boundary displacement method
-        public FeModel PrepareBdmModel_(Dictionary<int, double[]> deformations)
-        {
-            // Mesh
-            FeModel bdmModel = new FeModel("BDMmodel");
-            bdmModel.Properties = _properties;
-            bdmModel.Mesh.AddMesh(_mesh, null);
-            // Copy reference points
-            foreach (var entry in _mesh.ReferencePoints)
-            {
-                bdmModel.Mesh.ReferencePoints.Add(entry.Key, entry.Value);
-            }            
-            // Materials
-            Material materialElastic = new Material("Elastic");
-            materialElastic.AddProperty(new Elastic(new double[][] { new double[] { 1000, 0, 0 } }));
-            bdmModel._materials.Add(materialElastic.Name, materialElastic);
-            // Sections
-            Section section;
-            foreach (var entry in _sections)
-            {
-                section = entry.Value.DeepClone();
-                section.MaterialName = materialElastic.Name;
-                bdmModel.Sections.Add(section.Name, section);
-            }
-            // Constraints
-            foreach (var entry in _constraints)
-            {
-                bdmModel.Constraints.Add(entry.Key, entry.Value);
-            }
-            // Steps
-            StaticStep staticStep = new StaticStep("Step-1");
-            bdmModel._stepCollection.AddStep(staticStep);
-            // Merge existing BCs
-            bool twoD = false;
-            BoundaryCondition bc;
-            foreach (var step in _stepCollection.StepsList)
-            {
-                foreach (var entry in step.BoundaryConditions)
-                {
-                    bc = entry.Value.DeepClone();
-                    bc.Name = step.Name + "_" + bc.Name;
-                    twoD |= bc.TwoD;
-                    staticStep.AddBoundaryCondition(bc);
-                }
-            }
-            // Create BDM boundary conditions
-            if (deformations != null)
-            {
-                string name;
-                double[] xyz;
-                FeNodeSet nodeSet;
-                DisplacementRotation dr;
-                foreach (var entry in deformations)
-                {
-                    // Node set
-                    name = bdmModel.Mesh.NodeSets.GetNextNumberedKey("BDM", "_" + entry.Key);
-                    nodeSet = new FeNodeSet(name, new int[] { entry.Key });
-                    bdmModel.Mesh.NodeSets.Add(nodeSet.Name, nodeSet);
-                    // Boundary condition
-                    xyz = entry.Value;
-                    name = staticStep.BoundaryConditions.GetNextNumberedKey("BDM-" + entry.Key);
-                    dr = new DisplacementRotation(name, nodeSet.Name, RegionTypeEnum.NodeSetName, twoD);
-                    if (xyz[0] != 0) dr.U1 = xyz[0];
-                    if (xyz[1] != 0) dr.U2 = xyz[1];
-                    if (xyz[2] != 0) dr.U3 = xyz[2];
-                    staticStep.AddBoundaryCondition(dr);
-                }
-            }
-            //
-            return bdmModel;
-        }
         public FeModel PrepareBdmModel(Dictionary<int, double[]> deformations)
         {
             // Mesh
@@ -1308,5 +1223,26 @@ namespace CaeModel
             //
             return bdmModel;
         }
+        // ISerialization
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // Using typeof() works also for null fields
+            info.AddValue("_name", Name, typeof(string));
+            info.AddValue("_geometry", _geometry, typeof(FeMesh));
+            info.AddValue("_mesh", _mesh, typeof(FeMesh));
+            info.AddValue("_materials", _materials, typeof(OrderedDictionary<string, Material>));
+            info.AddValue("_sections", _sections, typeof(OrderedDictionary<string, Section>));
+            info.AddValue("_constraints", _constraints, typeof(OrderedDictionary<string, Constraint>));
+            info.AddValue("_surfaceInteractions", _surfaceInteractions, typeof(OrderedDictionary<string, SurfaceInteraction>));
+            info.AddValue("_contactPairs", _contactPairs, typeof(OrderedDictionary<string, ContactPair>));
+            info.AddValue("_initialConditions", _initialConditions, typeof(OrderedDictionary<string, InitialCondition>));
+            info.AddValue("_amplitudes", _amplitudes, typeof(OrderedDictionary<string, Amplitude>));
+            info.AddValue("_stepCollection", _stepCollection, typeof(StepCollection));
+            info.AddValue("_calculixUserKeywords", _calculixUserKeywords, typeof(OrderedDictionary<int[], Calculix.CalculixUserKeyword>));
+            info.AddValue("_properties", _properties, typeof(ModelProperties));
+            info.AddValue("_unitSystem", _unitSystem, typeof(UnitSystem));
+            info.AddValue("_hashName", _hashName, typeof(string));
+        }
+
     }
 }

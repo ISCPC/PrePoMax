@@ -6039,7 +6039,55 @@ namespace PrePoMax
                 else throw new NotSupportedException();
             }
         }
-        
+
+        #endregion #################################################################################################################
+
+        #region Amplitude menu   ###################################################################################################
+        // COMMANDS ********************************************************************************
+        public void AddAmplitudeCommand(Amplitude amplitude)
+        {
+            Commands.CAddAmplitude comm = new Commands.CAddAmplitude(amplitude);
+            _commands.AddAndExecute(comm);
+        }
+        public void ReplaceAmplitudeCommand(string oldAmplitudeName, Amplitude newAmplitude)
+        {
+            Commands.CReplaceAmplitude comm = new Commands.CReplaceAmplitude(oldAmplitudeName, newAmplitude);
+            _commands.AddAndExecute(comm);
+        }
+        public void RemoveAmplitudesCommand(string[] amplitudeNames)
+        {
+            Commands.CRemoveAmplitudes comm = new Commands.CRemoveAmplitudes(amplitudeNames);
+            _commands.AddAndExecute(comm);
+        }
+        //******************************************************************************************
+        public string[] GetAmplitudeNames()
+        {
+            return _model.Amplitudes.Keys.ToArray();
+        }
+        public void AddAmplitude(Amplitude amplitude)
+        {
+            _model.Amplitudes.Add(amplitude.Name, amplitude);
+        }
+        public Amplitude GetAmplitude(string amplitudeName)
+        {
+            return _model.Amplitudes[amplitudeName];
+        }
+        public Amplitude[] GetAllAmplitudes()
+        {
+            return _model.Amplitudes.Values.ToArray();
+        }
+        public void ReplaceAmplitude(string oldAmplitudeName, Amplitude amplitude)
+        {
+            _model.Amplitudes.Replace(oldAmplitudeName, amplitude.Name, amplitude);
+        }
+        public void RemoveAmplitudes(string[] amplitudeNames)
+        {
+            foreach (var name in amplitudeNames)
+            {
+                _model.Amplitudes.Remove(name);
+            }
+        }
+
         #endregion #################################################################################################################
 
         #region Step menu   ########################################################################################################
@@ -7162,7 +7210,7 @@ namespace PrePoMax
         }
         private void LastWearRunCompleted(AnalysisJob job)
         {
-            DeleteFilesBeforeJobRun(job.InputFileName);
+            if (job.JobStatus == JobStatus.OK) DeleteFilesBeforeJobRun(job.InputFileName);
         }
         private void ReadWearResults(AnalysisJob job)
         {

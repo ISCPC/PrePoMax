@@ -77,6 +77,7 @@ namespace PrePoMax
         private FrmContactPair _frmContactPair;
         private FrmSearchContactPairs _frmSearchContactPairs;
         private FrmInitialCondition _frmInitialCondition;
+        private FrmAmplitude _frmAmplitude;
         private FrmStep _frmStep;
         private FrmHistoryOutput _frmHistoryOutput;
         private FrmFieldOutput _frmFieldOutput;
@@ -371,6 +372,9 @@ namespace PrePoMax
                 //
                 _frmInitialCondition = new FrmInitialCondition(_controller);
                 AddFormToAllForms(_frmInitialCondition);
+                //
+                _frmAmplitude = new FrmAmplitude(_controller);
+                AddFormToAllForms(_frmAmplitude);
                 //
                 _frmStep = new FrmStep(_controller);
                 AddFormToAllForms(_frmStep);
@@ -1160,6 +1164,7 @@ namespace PrePoMax
                     tsmiProperty.Enabled = true;
                     tsmiInteraction.Enabled = true;
                     tsmiInitialCondition.Enabled = true;
+                    tsmiAmplitude.Enabled = true;
                     tsmiStepMenu.Enabled = true;
                     tsmiBC.Enabled = true;
                     tsmiLoad.Enabled = true;
@@ -4502,6 +4507,61 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
+        #region Amplitude menu  ####################################################################################################
+        private void tsmiCreateAmplitude_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CreateAmplitude();
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiEditAmplitude_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Amplitudes", _controller.GetAllAmplitudes(), EditAmplitude);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDeleteAmplitude_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Amplitudes", _controller.GetAllAmplitudes(), DeleteAmplitudes);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        //
+        private void CreateAmplitude()
+        {
+            if (_controller.Model.Mesh == null) return;
+            ShowForm(_frmAmplitude, "Create Amplitude", null);
+        }
+        private void EditAmplitude(string amplitudeName)
+        {
+            ShowForm(_frmAmplitude, "Edit Amplitude", amplitudeName);
+        }
+        private void DeleteAmplitudes(string[] amplitudeNames)
+        {
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected amplitudes?" + Environment.NewLine
+                                                 + amplitudeNames.ToRows()) == DialogResult.OK)
+            {
+                _controller.RemoveAmplitudesCommand(amplitudeNames);
+            }
+        }
+
+        #endregion  ################################################################################################################
+
         #region Step menu  #########################################################################################################
         internal void tsmiCreateStep_Click(object sender, EventArgs e)
         {
@@ -7617,6 +7677,6 @@ namespace PrePoMax
             }
         }
 
-        
+       
     }
 }

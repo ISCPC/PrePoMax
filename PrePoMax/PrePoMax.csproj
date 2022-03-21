@@ -187,6 +187,9 @@
     <Compile Include="Command\0074_InitialCondition\CAddInitialCondition.cs" />
     <Compile Include="Command\0074_InitialCondition\CRemoveInitialConditions.cs" />
     <Compile Include="Command\0074_InitialCondition\CReplaceInitialCondition.cs" />
+    <Compile Include="Command\0075_Amplitude\CAddAmplitude.cs" />
+    <Compile Include="Command\0075_Amplitude\CRemoveAmplitudes.cs" />
+    <Compile Include="Command\0075_Amplitude\CReplaceAmplitude.cs" />
     <Compile Include="Command\0081_Step\CAddStep.cs" />
     <Compile Include="Command\0081_Step\CDuplicateSteps.cs" />
     <Compile Include="Command\0081_Step\CRemoveSteps.cs" />
@@ -346,6 +349,12 @@
     </Compile>
     <Compile Include="Forms\37_InitialConditions\ViewInitialCondition.cs" />
     <Compile Include="Forms\37_InitialConditions\ViewInitialTemperature.cs" />
+    <Compile Include="Forms\38_Amplitude\AmplitudeDataPoint.cs" />
+    <Compile Include="Forms\38_Amplitude\FrmAmplitude.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\38_Amplitude\ViewAmplitude.cs" />
+    <Compile Include="Forms\38_Amplitude\ViewAmplitudeTabular.cs" />
     <Compile Include="Forms\41_Step\ViewCoupledTempDispStep.cs" />
     <Compile Include="Forms\41_Step\ViewSlipWearStep.cs" />
     <Compile Include="Forms\41_Step\ViewUncoupledTempDispStep.cs" />
@@ -639,6 +648,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\37_InitialConditions\FrmInitialCondition.resx">
       <DependentUpon>FrmInitialCondition.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\38_Amplitude\FrmAmplitude.resx">
+      <DependentUpon>FrmAmplitude.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\42_HistoryOutput\FrmHistoryOutput.resx">
       <DependentUpon>FrmHistoryOutput.cs</DependentUpon>

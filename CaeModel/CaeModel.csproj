@@ -63,6 +63,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Amplitude\Amplitude.cs" />
+    <Compile Include="Amplitude\AmplitudeTabular.cs" />
     <Compile Include="Constraints\SpringConstraint.cs" />
     <Compile Include="Constraints\SurfaceSpring.cs" />
     <Compile Include="Contact\ContactPair.cs" />
@@ -72,6 +74,7 @@
     <Compile Include="Contact\Surface interaction\SurfaceInteraction.cs" />
     <Compile Include="Contact\Surface interaction\SurfaceInteractionProperty.cs" />
     <Compile Include="FileInOut\Input\Mmg\MmgFileReader.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalAmplitude.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPhysicalConstants.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Material\CalSlipWear.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Section\CalMembraneSection.cs" />
@@ -237,6 +240,7 @@
     <None Include="ClassDiagram1.cd" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

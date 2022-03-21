@@ -170,7 +170,7 @@ namespace PrePoMax.Forms
             if (_initialConditionNames == null)
                 throw new CaeException("The initial condition names must be defined first.");
             // Populate list view
-            PopulateListOfHistoryOutputs(nodeSetNames, surfaceNames);
+            PopulateListOfInitialTemperatures(nodeSetNames, surfaceNames);
             // Create new initial condition
             if (_initialConditionToEditName == null)
             {
@@ -213,7 +213,7 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        private void PopulateListOfHistoryOutputs(string[] nodeSetNames, string[] surfaceNames)
+        private void PopulateListOfInitialTemperatures(string[] nodeSetNames, string[] surfaceNames)
         {
             ListViewItem item;
             // Initial temperature

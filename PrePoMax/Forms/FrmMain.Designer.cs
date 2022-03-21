@@ -392,6 +392,11 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
+            this.tsmiAmplitude = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCreateAmplitude = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiEditAmplitude = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerAmplitude1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiDeleteAmplitude = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -422,6 +427,7 @@
             this.tsmiProperty,
             this.tsmiInteraction,
             this.tsmiInitialCondition,
+            this.tsmiAmplitude,
             this.tsmiStepMenu,
             this.tsmiAnalysis,
             this.tsmiResults,
@@ -1738,58 +1744,58 @@
             this.tsmiDeleteMaterial});
             this.tsmiMaterial.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMaterial.Image")));
             this.tsmiMaterial.Name = "tsmiMaterial";
-            this.tsmiMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiMaterial.Size = new System.Drawing.Size(156, 22);
             this.tsmiMaterial.Text = "Material";
             // 
             // tsmiCreateMaterial
             // 
             this.tsmiCreateMaterial.Name = "tsmiCreateMaterial";
-            this.tsmiCreateMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateMaterial.Size = new System.Drawing.Size(162, 22);
             this.tsmiCreateMaterial.Text = "Create";
             this.tsmiCreateMaterial.Click += new System.EventHandler(this.tsmiCreateMaterial_Click);
             // 
             // tsmiEditMaterial
             // 
             this.tsmiEditMaterial.Name = "tsmiEditMaterial";
-            this.tsmiEditMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditMaterial.Size = new System.Drawing.Size(162, 22);
             this.tsmiEditMaterial.Text = "Edit";
             this.tsmiEditMaterial.Click += new System.EventHandler(this.tsmiEditMaterial_Click);
             // 
             // tsmiDuplicateMaterial
             // 
             this.tsmiDuplicateMaterial.Name = "tsmiDuplicateMaterial";
-            this.tsmiDuplicateMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDuplicateMaterial.Size = new System.Drawing.Size(162, 22);
             this.tsmiDuplicateMaterial.Text = "Duplicate";
             this.tsmiDuplicateMaterial.Click += new System.EventHandler(this.tsmiDuplicateMaterial_Click);
             // 
             // tsmiDividerMaterial1
             // 
             this.tsmiDividerMaterial1.Name = "tsmiDividerMaterial1";
-            this.tsmiDividerMaterial1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerMaterial1.Size = new System.Drawing.Size(159, 6);
             // 
             // tsmiImportMaterial
             // 
             this.tsmiImportMaterial.Name = "tsmiImportMaterial";
-            this.tsmiImportMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiImportMaterial.Size = new System.Drawing.Size(162, 22);
             this.tsmiImportMaterial.Text = "Import from .inp";
             this.tsmiImportMaterial.Click += new System.EventHandler(this.tsmiImportMaterial_Click);
             // 
             // tsmiExportMaterial
             // 
             this.tsmiExportMaterial.Name = "tsmiExportMaterial";
-            this.tsmiExportMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiExportMaterial.Size = new System.Drawing.Size(162, 22);
             this.tsmiExportMaterial.Text = "Export to .inp";
             this.tsmiExportMaterial.Click += new System.EventHandler(this.tsmiExportMaterial_Click);
             // 
             // tsmiDividerMaterial2
             // 
             this.tsmiDividerMaterial2.Name = "tsmiDividerMaterial2";
-            this.tsmiDividerMaterial2.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerMaterial2.Size = new System.Drawing.Size(159, 6);
             // 
             // tsmiDeleteMaterial
             // 
             this.tsmiDeleteMaterial.Name = "tsmiDeleteMaterial";
-            this.tsmiDeleteMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteMaterial.Size = new System.Drawing.Size(162, 22);
             this.tsmiDeleteMaterial.Text = "Delete";
             this.tsmiDeleteMaterial.Click += new System.EventHandler(this.tsmiDeleteMaterial_Click);
             // 
@@ -1797,7 +1803,7 @@
             // 
             this.tsmiMaterialLibrary.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMaterialLibrary.Image")));
             this.tsmiMaterialLibrary.Name = "tsmiMaterialLibrary";
-            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(180, 22);
+            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(156, 22);
             this.tsmiMaterialLibrary.Text = "Material Library";
             this.tsmiMaterialLibrary.Click += new System.EventHandler(this.tsmiMaterialLibrary_Click);
             // 
@@ -1810,7 +1816,7 @@
             this.tsmiDelete});
             this.tsmiSection.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSection.Image")));
             this.tsmiSection.Name = "tsmiSection";
-            this.tsmiSection.Size = new System.Drawing.Size(180, 22);
+            this.tsmiSection.Size = new System.Drawing.Size(156, 22);
             this.tsmiSection.Text = "Section";
             // 
             // tsmiCreateSection
@@ -2100,26 +2106,26 @@
             // tsmiCreateInitialCondition
             // 
             this.tsmiCreateInitialCondition.Name = "tsmiCreateInitialCondition";
-            this.tsmiCreateInitialCondition.Size = new System.Drawing.Size(108, 22);
+            this.tsmiCreateInitialCondition.Size = new System.Drawing.Size(180, 22);
             this.tsmiCreateInitialCondition.Text = "Create";
             this.tsmiCreateInitialCondition.Click += new System.EventHandler(this.tsmiCreateInitialCondition_Click);
             // 
             // tsmiEditInitialCondition
             // 
             this.tsmiEditInitialCondition.Name = "tsmiEditInitialCondition";
-            this.tsmiEditInitialCondition.Size = new System.Drawing.Size(108, 22);
+            this.tsmiEditInitialCondition.Size = new System.Drawing.Size(180, 22);
             this.tsmiEditInitialCondition.Text = "Edit";
             this.tsmiEditInitialCondition.Click += new System.EventHandler(this.tsmiEditInitialCondition_Click);
             // 
             // tsmiDividerInitialCondition1
             // 
             this.tsmiDividerInitialCondition1.Name = "tsmiDividerInitialCondition1";
-            this.tsmiDividerInitialCondition1.Size = new System.Drawing.Size(105, 6);
+            this.tsmiDividerInitialCondition1.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiDeleteInitialCondition
             // 
             this.tsmiDeleteInitialCondition.Name = "tsmiDeleteInitialCondition";
-            this.tsmiDeleteInitialCondition.Size = new System.Drawing.Size(108, 22);
+            this.tsmiDeleteInitialCondition.Size = new System.Drawing.Size(180, 22);
             this.tsmiDeleteInitialCondition.Text = "Delete";
             this.tsmiDeleteInitialCondition.Click += new System.EventHandler(this.tsmiDeleteInitialCondition_Click);
             // 
@@ -3397,6 +3403,43 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
+            // tsmiAmplitude
+            // 
+            this.tsmiAmplitude.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiCreateAmplitude,
+            this.tsmiEditAmplitude,
+            this.tsmiDividerAmplitude1,
+            this.tsmiDeleteAmplitude});
+            this.tsmiAmplitude.Name = "tsmiAmplitude";
+            this.tsmiAmplitude.Size = new System.Drawing.Size(75, 20);
+            this.tsmiAmplitude.Text = "Amplitude";
+            // 
+            // tsmiCreateAmplitude
+            // 
+            this.tsmiCreateAmplitude.Name = "tsmiCreateAmplitude";
+            this.tsmiCreateAmplitude.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateAmplitude.Text = "Create";
+            this.tsmiCreateAmplitude.Click += new System.EventHandler(this.tsmiCreateAmplitude_Click);
+            // 
+            // tsmiEditAmplitude
+            // 
+            this.tsmiEditAmplitude.Name = "tsmiEditAmplitude";
+            this.tsmiEditAmplitude.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditAmplitude.Text = "Edit";
+            this.tsmiEditAmplitude.Click += new System.EventHandler(this.tsmiEditAmplitude_Click);
+            // 
+            // tsmiDividerAmplitude1
+            // 
+            this.tsmiDividerAmplitude1.Name = "tsmiDividerAmplitude1";
+            this.tsmiDividerAmplitude1.Size = new System.Drawing.Size(177, 6);
+            // 
+            // tsmiDeleteAmplitude
+            // 
+            this.tsmiDeleteAmplitude.Name = "tsmiDeleteAmplitude";
+            this.tsmiDeleteAmplitude.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteAmplitude.Text = "Delete";
+            this.tsmiDeleteAmplitude.Click += new System.EventHandler(this.tsmiDeleteAmplitude_Click);
+            // 
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -3813,6 +3856,11 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiImportMaterial;
         private System.Windows.Forms.ToolStripMenuItem tsmiExportMaterial;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerMaterial2;
+        private System.Windows.Forms.ToolStripMenuItem tsmiAmplitude;
+        private System.Windows.Forms.ToolStripMenuItem tsmiCreateAmplitude;
+        private System.Windows.Forms.ToolStripMenuItem tsmiEditAmplitude;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerAmplitude1;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteAmplitude;
     }
 }
 

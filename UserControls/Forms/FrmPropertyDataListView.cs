@@ -4,15 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UserControls.Forms
+namespace UserControls
 {
-    class FrmPropertyDataListView : FrmPropertyListView
+    public class FrmPropertyDataListView : FrmPropertyListView
     {
-        private System.Windows.Forms.TabControl tcProperties;
-        private System.Windows.Forms.TabPage tpProperties;
-        private TabbedPropertyGrid tabbedPropertyGrid1;
-        private System.Windows.Forms.TabPage tpDataPoints;
-        private DataGridViewCopyPaste dgvData;
+        protected System.Windows.Forms.TabControl tcProperties;
+        protected System.Windows.Forms.TabPage tpProperties;
+        protected System.Windows.Forms.TabPage tpDataPoints;
+        protected DataGridViewCopyPaste dgvData;
         private System.ComponentModel.IContainer components;
 
         // Constructors                                                                                                             
@@ -29,9 +28,6 @@ namespace UserControls.Forms
         {
             InitializeComponent();
             //
-            gbProperties.Controls.Remove(propertyGrid);
-            Controls.Remove(gbProperties);
-            //
             _preselectIndex = -1;
         }
 
@@ -41,13 +37,11 @@ namespace UserControls.Forms
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tcProperties = new System.Windows.Forms.TabControl();
             this.tpProperties = new System.Windows.Forms.TabPage();
-            this.tabbedPropertyGrid1 = new UserControls.TabbedPropertyGrid();
             this.tpDataPoints = new System.Windows.Forms.TabPage();
             this.dgvData = new UserControls.DataGridViewCopyPaste();
             this.gbType.SuspendLayout();
             this.gbProperties.SuspendLayout();
             this.tcProperties.SuspendLayout();
-            this.tpProperties.SuspendLayout();
             this.tpDataPoints.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvData)).BeginInit();
             this.SuspendLayout();
@@ -69,26 +63,12 @@ namespace UserControls.Forms
             // tpProperties
             // 
             this.tpProperties.BackColor = System.Drawing.SystemColors.Control;
-            this.tpProperties.Controls.Add(this.tabbedPropertyGrid1);
             this.tpProperties.Location = new System.Drawing.Point(4, 24);
             this.tpProperties.Name = "tpProperties";
             this.tpProperties.Padding = new System.Windows.Forms.Padding(3);
-            this.tpProperties.Size = new System.Drawing.Size(232, 237);
+            this.tpProperties.Size = new System.Drawing.Size(232, 172);
             this.tpProperties.TabIndex = 0;
             this.tpProperties.Text = "Properties";
-            // 
-            // tabbedPropertyGrid1
-            // 
-            this.tabbedPropertyGrid1.DisabledItemForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
-            this.tabbedPropertyGrid1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabbedPropertyGrid1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.tabbedPropertyGrid1.LineColor = System.Drawing.SystemColors.Control;
-            this.tabbedPropertyGrid1.Location = new System.Drawing.Point(3, 3);
-            this.tabbedPropertyGrid1.Name = "tabbedPropertyGrid1";
-            this.tabbedPropertyGrid1.ReadOnly = false;
-            this.tabbedPropertyGrid1.Size = new System.Drawing.Size(226, 231);
-            this.tabbedPropertyGrid1.TabIndex = 6;
-            this.tabbedPropertyGrid1.ToolbarVisible = false;
             // 
             // tpDataPoints
             // 
@@ -97,7 +77,7 @@ namespace UserControls.Forms
             this.tpDataPoints.Location = new System.Drawing.Point(4, 24);
             this.tpDataPoints.Name = "tpDataPoints";
             this.tpDataPoints.Padding = new System.Windows.Forms.Padding(3);
-            this.tpDataPoints.Size = new System.Drawing.Size(435, 237);
+            this.tpDataPoints.Size = new System.Drawing.Size(232, 172);
             this.tpDataPoints.TabIndex = 1;
             this.tpDataPoints.Text = "Data points";
             // 
@@ -117,7 +97,7 @@ namespace UserControls.Forms
             this.dgvData.EnablePasteMenu = true;
             this.dgvData.Location = new System.Drawing.Point(3, 3);
             this.dgvData.Name = "dgvData";
-            this.dgvData.Size = new System.Drawing.Size(429, 231);
+            this.dgvData.Size = new System.Drawing.Size(226, 166);
             this.dgvData.StartPlotAtZero = false;
             this.dgvData.TabIndex = 0;
             this.dgvData.XColIndex = 0;
@@ -137,11 +117,35 @@ namespace UserControls.Forms
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);
             this.tcProperties.ResumeLayout(false);
-            this.tpProperties.ResumeLayout(false);
             this.tpDataPoints.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvData)).EndInit();
             this.ResumeLayout(false);
 
+            // This code must be copied into InitializeComponent after each change in the designer
+            gbProperties.Controls.Remove(propertyGrid);
+            gbProperties.Visible = false;
+            //
+            tcProperties.Location = gbProperties.Location;
+            tcProperties.Size = gbProperties.Size;
+            //
+            tpProperties.Controls.Add(propertyGrid);
+            propertyGrid.Anchor = System.Windows.Forms.AnchorStyles.None;
+            propertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+
+        }
+        // This code must be copied into InitializeComponent after each change in the designer
+        private void UpdateControls()
+        {
+            // This code must be copied into InitializeComponent after each change in the designer
+            gbProperties.Controls.Remove(propertyGrid);
+            gbProperties.Visible = false;
+            //
+            tcProperties.Location = gbProperties.Location;
+            tcProperties.Size = gbProperties.Size;
+            //
+            tpProperties.Controls.Add(propertyGrid);
+            propertyGrid.Anchor = System.Windows.Forms.AnchorStyles.None;
+            propertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
         }
     }
 }

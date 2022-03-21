@@ -10,7 +10,7 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
-    public class InitialCondition : NamedClass, IMultiRegion
+    public abstract class InitialCondition : NamedClass, IMultiRegion
     {
         // Variables                                                                                                                
         private RegionTypeEnum _regionType;
