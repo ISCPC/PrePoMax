@@ -18,7 +18,9 @@ namespace CaeModel
         private int[] _creationIds;
         private Selection _creationData;
         protected bool _twoD;
+        protected string _amplitudeName;
         protected Color _color;
+        public const string DefaultAmplitudeName = "Default";
 
 
         // Properties                                                                                                               
@@ -27,6 +29,19 @@ namespace CaeModel
         public int[] CreationIds { get { return _creationIds; } set { _creationIds = value; } }
         public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
         public bool TwoD { get { return _twoD; } }
+        public string AmplitudeName
+        {
+            get
+            {
+                if (_amplitudeName == null) return DefaultAmplitudeName;
+                else return _amplitudeName;
+            }
+            set
+            {
+                _amplitudeName = value;
+                if (_amplitudeName == DefaultAmplitudeName) _amplitudeName = null;
+            }
+        }
         public Color Color
         {
             get
@@ -49,6 +64,7 @@ namespace CaeModel
             _creationIds = null;
             _creationData = null;
             _twoD = twoD;
+            _amplitudeName = null;
             _color = Color.Lime;
         }
 

@@ -36,8 +36,14 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("** Name: " + _displacementRotation.Name);
-            if (_displacementRotation.GetFixedDirections().Length > 0) sb.AppendLine("*Boundary, Fixed");
-            else sb.AppendLine("*Boundary");
+            string fixedBc = "";
+            if (_displacementRotation.GetFixedDirections().Length > 0) fixedBc = ", Fixed";
+            string amplitude = "";
+            if (_displacementRotation.AmplitudeName != BoundaryCondition.DefaultAmplitudeName)
+                amplitude = ", Amplitude=" + _displacementRotation.AmplitudeName;
+            //
+            sb.AppendFormat("*Boundary{0}{1}{2}", fixedBc, amplitude, Environment.NewLine);
+            //
             return sb.ToString();
         }
         public override string GetDataString()

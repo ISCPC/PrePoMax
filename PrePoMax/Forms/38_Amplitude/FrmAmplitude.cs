@@ -233,7 +233,7 @@ namespace PrePoMax.Forms
                             _controller.Model.UnitSystem.FrequencyUnitAbbreviation);
             SetGridViewUnit(nameof(AmplitudeDataPoint.Amplitude), noUnit, null);
             //
-            dgvData.XColIndex = 1;
+            dgvData.XColIndex = 0;
             dgvData.StartPlotAtZero = true;
         }
         private void SetGridViewUnit(string columnName, string unit1, string unit2)

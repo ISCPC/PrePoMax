@@ -360,30 +360,33 @@ namespace UserControls
             BindingSource bindingSource = (BindingSource)DataSource;
             while (RowCount < lastRow + 1) bindingSource.AddNew();
             //
-            TypeConverter[] converters = null;
-            if (this.DataSource is BindingSource bs && bs.DataSource is System.Collections.ICollection ic)
-            {
-                //Get the type you are interested in.
-                Type myListElementType = ic.GetType().GetGenericArguments().Single();
+            
+            // CONVERTERS
+            
+            //TypeConverter[] converters = null;
+            //if (this.DataSource is BindingSource bs && bs.DataSource is System.Collections.ICollection ic)
+            //{
+            //    //Get the type you are interested in.
+            //    Type myListElementType = ic.GetType().GetGenericArguments().Single();
 
-                //Get information about the property you are interested in on the type.
-                var properties = myListElementType.GetProperties();
-                //
-                converters = new TypeConverter[properties.Length];
-                for (int i = 0; i < properties.Length; i++)
-                {
-                    //Pull off the TypeConverterAttribute.
-                    var attr = properties[i].GetCustomAttribute<TypeConverterAttribute>();
-                    //The attribute only stores the name of the TypeConverter as a string.
-                    var converterTypeName = attr.ConverterTypeName;
+            //    //Get information about the property you are interested in on the type.
+            //    var properties = myListElementType.GetProperties();
+            //    //
+            //    converters = new TypeConverter[properties.Length];
+            //    for (int i = 0; i < properties.Length; i++)
+            //    {
+            //        //Pull off the TypeConverterAttribute.
+            //        var attr = properties[i].GetCustomAttribute<TypeConverterAttribute>();
+            //        //The attribute only stores the name of the TypeConverter as a string.
+            //        var converterTypeName = attr.ConverterTypeName;
 
-                    // Get the actual Type of the TypeConverter from the string.
-                    var converterType = Type.GetType(converterTypeName);
+            //        // Get the actual Type of the TypeConverter from the string.
+            //        var converterType = Type.GetType(converterTypeName);
 
-                    //Create an instance of the TypeConverter.
-                    converters[i] = (TypeConverter)Activator.CreateInstance(converterType);
-                }
-            }
+            //        //Create an instance of the TypeConverter.
+            //        converters[i] = (TypeConverter)Activator.CreateInstance(converterType);
+            //    }
+            //}
 
 
             foreach (int rowKey in cbValues.Keys)

@@ -233,7 +233,7 @@ namespace CaeJob
                 }
             }
             //
-            if (_currentRunStep <= _numOfRunSteps)
+            if (_currentRunStep <= _numOfRunSteps && (_jobStatus == JobStatus.None || _jobStatus == JobStatus.OK))
             {
                 PreRun?.Invoke(this);
                 SubmitOneRun();
@@ -460,8 +460,13 @@ namespace CaeJob
                     _watch.Stop();
                     _timer.Stop();
                     //
-                    KillAllProcessesSpawnedBy((UInt32)_exe.Id);
-                    _exe.Kill();
+                    try
+                    {
+                        UInt32 id = (UInt32)_exe.Id;
+                        KillAllProcessesSpawnedBy(id);
+                        _exe.Kill();    // must be here
+                    }
+                    catch { }
                 }
             }
             finally

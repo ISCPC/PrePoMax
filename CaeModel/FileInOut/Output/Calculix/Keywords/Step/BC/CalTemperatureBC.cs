@@ -33,7 +33,12 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("** Name: " + _temperatureBC.Name);
-            sb.AppendLine("*Boundary");
+            string amplitude = "";
+            if (_temperatureBC.AmplitudeName != BoundaryCondition.DefaultAmplitudeName)
+                amplitude = ", Amplitude=" + _temperatureBC.AmplitudeName;
+            //
+            sb.AppendFormat("*Boundary{0}{1}", amplitude, Environment.NewLine);
+            //
             return sb.ToString();
         }
         public override string GetDataString()

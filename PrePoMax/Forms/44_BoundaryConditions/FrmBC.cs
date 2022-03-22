@@ -226,14 +226,16 @@ namespace PrePoMax.Forms
             string[] nodeSetNames = _controller.GetUserNodeSetNames();
             string[] surfaceNames = _controller.GetUserSurfaceNames();
             string[] referencePointNames = _controller.GetReferencePointNames();
+            string[] amplitudeNames = _controller.GetAmplitudeNames();
             if (nodeSetNames == null) nodeSetNames = new string[0];
             if (surfaceNames == null) surfaceNames = new string[0];
             if (referencePointNames == null) referencePointNames = new string[0];
+            if (amplitudeNames == null) amplitudeNames = new string[0];
             //
             if (_boundaryConditionNames == null)
                 throw new CaeException("The boundary condition names must be defined first.");
             // Populate list view
-            PopulateListOfBCs(nodeSetNames, surfaceNames, referencePointNames);
+            PopulateListOfBCs(nodeSetNames, surfaceNames, referencePointNames, amplitudeNames);
             // Check if this step supports any boundary conditions
             if (lvTypes.Items.Count == 0) return false;
             // Create new boundary condition
@@ -297,7 +299,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref referencePointNames, vdr.ReferencePointName, s => { vdr.ReferencePointName = s; });
                     else throw new NotSupportedException();
                     //
-                    vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
+                    vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames, amplitudeNames);
                 }
                 else if (_viewBc is ViewSubmodelBC vsm)
                 {
@@ -323,7 +325,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref surfaceNames, vtmp.SurfaceName, s => { vtmp.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vtmp.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                    vtmp.PopululateDropDownLists(nodeSetNames, surfaceNames, amplitudeNames);
                 }
                 else throw new NotSupportedException();
                 //
@@ -337,7 +339,8 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        private void PopulateListOfBCs(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames)
+        private void PopulateListOfBCs(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames,
+                                       string[] amplitudeNames)
         {
             Step step = _controller.GetStep(_stepName);
             System.Drawing.Color color = _controller.Settings.Pre.BoundaryConditionSymbolColor;
@@ -362,7 +365,7 @@ namespace PrePoMax.Forms
             if (step.IsBoundaryConditionSupported(displacementRotation))
             {
                 ViewDisplacementRotation vdr = new ViewDisplacementRotation(displacementRotation);
-                vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
+                vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames, amplitudeNames);
                 vdr.Color = color;
                 item.Tag = vdr;
                 lvTypes.Items.Add(item);
@@ -385,7 +388,7 @@ namespace PrePoMax.Forms
             if (step.IsBoundaryConditionSupported(temperatureBC))
             {
                 ViewTemperatureBC vtmp = new ViewTemperatureBC(temperatureBC);
-                vtmp.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                vtmp.PopululateDropDownLists(nodeSetNames, surfaceNames, amplitudeNames);
                 vtmp.Color = color;
                 item.Tag = vtmp;
                 lvTypes.Items.Add(item);

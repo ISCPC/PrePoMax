@@ -6064,6 +6064,13 @@ namespace PrePoMax
         {
             return _model.Amplitudes.Keys.ToArray();
         }
+        public string[] GetAmplitudeNamesIncludingDefault()
+        {
+            List<string> names = new List<string>();
+            names.Add("Default");
+            names.AddRange(_model.Amplitudes.Keys);
+            return names.ToArray();
+        }
         public void AddAmplitude(Amplitude amplitude)
         {
             _model.Amplitudes.Add(amplitude.Name, amplitude);
@@ -7198,8 +7205,12 @@ namespace PrePoMax
             if (job.CurrentRunIncrement == 1)
             {
                 ReadWearResults(job);
-                deformations = _wearResults.GetGlobalNonZeroVectors(FOFieldNames.WearDepth);
-                job.Tag = deformations;
+                if (_wearResults != null)
+                {
+                    deformations = _wearResults.GetGlobalNonZeroVectors(FOFieldNames.WearDepth);
+                    job.Tag = deformations;
+                }
+                else job.Kill("Intermediate wear results do not exist.");
             }
             else if (job.CurrentRunIncrement == 2)
             {
@@ -7221,7 +7232,7 @@ namespace PrePoMax
             {
                 FeResults results = FrdFileReader.Read(resultsFileFrd);
                 //
-                if (results == null || results.Mesh == null) job.Kill("Intermediate results do not exist.");
+                if (results == null || results.Mesh == null) job.Kill("Intermediate wear results do not exist.");
                 //
                 _model.GetMaterialAssignments(out Dictionary<int, int> elementIdMaterialId);
                 //

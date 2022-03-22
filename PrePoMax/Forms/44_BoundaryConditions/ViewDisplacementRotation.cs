@@ -65,6 +65,16 @@ namespace PrePoMax
         [Id(6, 3)]
         public double UR3 { get { return _displacementRotation.UR3; } set { _displacementRotation.UR3 = value; } }
         //
+        [CategoryAttribute("Time/Frequency")]
+        [OrderedDisplayName(0, 10, "Amplitude")]
+        [DescriptionAttribute("Select the amplitude for the boundary condition.")]
+        [Id(1, 4)]
+        public string AmplitudeName
+        {
+            get { return _displacementRotation.AmplitudeName; }
+            set { _displacementRotation.AmplitudeName = value; }
+        }
+        //
         public override Color Color { get { return _displacementRotation.Color; } set { _displacementRotation.Color = value; } }
 
 
@@ -94,7 +104,8 @@ namespace PrePoMax
         {
             return _displacementRotation;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames)
+        public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames,
+                                            string[] amplitudeNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
@@ -102,6 +113,11 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
             PopululateDropDownLists(regionTypeListItemsPairs);
+            //
+            List<string> names = new List<string>();
+            names.Add(CaeModel.BoundaryCondition.DefaultAmplitudeName);
+            names.AddRange(amplitudeNames);
+            DynamicCustomTypeDescriptor.PopulateProperty(nameof(AmplitudeName), names.ToArray(), false, 2);
         }
     }
 
