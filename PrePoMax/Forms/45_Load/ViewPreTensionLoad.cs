@@ -103,6 +103,11 @@ namespace PrePoMax
         [Id(1, 5)]
         public double DisplacementMagnitude { get { return _preTenLoad.Magnitude; } set { _preTenLoad.Magnitude = value; } }
         //
+        public override string AmplitudeName
+        {
+            get { return _preTenLoad.AmplitudeName; }
+            set { _preTenLoad.AmplitudeName = value; }
+        }
         public override System.Drawing.Color Color { get { return _preTenLoad.Color; } set { _preTenLoad.Color = value; } }
 
 
@@ -131,12 +136,14 @@ namespace PrePoMax
         {
             return _preTenLoad;
         }
-        public void PopululateDropDownLists(string[] surfaceNames)
+        public void PopululateDropDownLists(string[] surfaceNames, string[] amplitudeNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            PopululateDropDownLists(regionTypeListItemsPairs);
+            //
+            PopululateAmplitudeNames(amplitudeNames);
         }
     }
 

@@ -75,6 +75,7 @@ namespace PrePoMax
             }
         }
         //
+        public override string AmplitudeName { get { return _gLoad.AmplitudeName; } set { _gLoad.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _gLoad.Color; } set { _gLoad.Color = value; } }
 
 
@@ -101,13 +102,15 @@ namespace PrePoMax
         {
             return _gLoad;
         }
-        public void PopululateDropDownLists(string[] partNames, string[] elementSetNames)
+        public void PopululateDropDownLists(string[] partNames, string[] elementSetNames, string[] amplitudeNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.PartName, partNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ElementSetName, elementSetNames);
             PopululateDropDownLists(regionTypeListItemsPairs);
+            //
+            PopululateAmplitudeNames(amplitudeNames);
         }
     }
 

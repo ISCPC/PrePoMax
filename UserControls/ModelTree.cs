@@ -100,7 +100,7 @@ namespace UserControls
         private TreeNode _materials;                //   2
         private TreeNode _sections;                 //   2
         private TreeNode _constraints;              //   2
-        private TreeNode _contact;                  //   2
+        private TreeNode _contacts;                 //   2
         private TreeNode _surfaceInteractions;      //      3
         private TreeNode _contactPairs;             //      3
         private TreeNode _initialConditions;        //   2
@@ -129,7 +129,7 @@ namespace UserControls
         private string _materialsName = "Materials";
         private string _sectionsName = "Sections";
         private string _constraintsName = "Constraints";
-        private string _contactName = "Contact";
+        private string _contactsName = "Contacts";
         private string _surfaceInteractionsName = "Surface interactions";
         private string _contactPairsName = "Contact pairs";
         private string _initialConditionsName = "Initial conditions";
@@ -272,7 +272,7 @@ namespace UserControls
             _materials = cltvModel.Nodes.Find(_materialsName, true)[0];
             _sections = cltvModel.Nodes.Find(_sectionsName, true)[0];
             _constraints = cltvModel.Nodes.Find(_constraintsName, true)[0];
-            _contact = cltvModel.Nodes.Find(_contactName, true)[0];
+            _contacts = cltvModel.Nodes.Find(_contactsName, true)[0];
             _surfaceInteractions = cltvModel.Nodes.Find(_surfaceInteractionsName, true)[0];
             _contactPairs = cltvModel.Nodes.Find(_contactPairsName, true)[0];
             _initialConditions = cltvModel.Nodes.Find(_initialConditionsName, true)[0];
@@ -1483,7 +1483,7 @@ namespace UserControls
             _materials.Nodes.Clear();
             _sections.Nodes.Clear();
             _constraints.Nodes.Clear();
-            _contact.Nodes.Clear();
+            _contacts.Nodes.Clear();
             _surfaceInteractions.Nodes.Clear();
             _contactPairs.Nodes.Clear();
             _initialConditions.Nodes.Clear();
@@ -1525,16 +1525,16 @@ namespace UserControls
             _model.Nodes.Add(_materials);
             _model.Nodes.Add(_sections);
             _model.Nodes.Add(_constraints);
-            _model.Nodes.Add(_contact);
-            _contact.Nodes.Add(_surfaceInteractions);
-            _contact.Nodes.Add(_contactPairs);
+            _model.Nodes.Add(_contacts);
+            _contacts.Nodes.Add(_surfaceInteractions);
+            _contacts.Nodes.Add(_contactPairs);
             _model.Nodes.Add(_initialConditions);
             _model.Nodes.Add(_steps);
             cltvModel.Nodes.Add(_analyses);
             // Expand/Collapse
             _geomParts.ExpandAll();
             _model.ExpandAll();
-            _contact.Collapse();
+            _contacts.Collapse();
             //
             ClearResults(); //calls cltvResults.SelectedNodes.Clear();
         }

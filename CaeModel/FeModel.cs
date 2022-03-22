@@ -1054,16 +1054,18 @@ namespace CaeModel
             GetDistributedNodalValuesFromSurface(load.SurfaceName, out nodalForces, out area);
             //
             List<CLoad> loads = new List<CLoad>();
+            CLoad cLoad;
             foreach (var entry in nodalForces)
             {
                 if (entry.Value != 0 && (load.F1 != 0 || load.F2 != 0 || load.F3 != 0))
                 {
-                    loads.Add(new CLoad("_CLoad_" + entry.Key.ToString(),
-                                        entry.Key,
-                                        load.F1 / area * entry.Value,
-                                        load.F2 / area * entry.Value,
-                                        load.F3 / area * entry.Value,
-                                        load.TwoD));
+                    cLoad = new CLoad("_CLoad_" + entry.Key.ToString(), entry.Key,
+                                      load.F1 / area * entry.Value,
+                                      load.F2 / area * entry.Value,
+                                      load.F3 / area * entry.Value,
+                                      load.TwoD);
+                    cLoad.AmplitudeName = load.AmplitudeName;
+                    loads.Add(cLoad);
                 }
             }
             //

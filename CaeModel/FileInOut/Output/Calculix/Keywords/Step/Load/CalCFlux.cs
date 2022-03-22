@@ -31,9 +31,13 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("** Name: " + _flux.Name);
+            string amplitude = "";
+            if (_flux.AmplitudeName != Load.DefaultAmplitudeName) amplitude = ", Amplitude=" + _flux.AmplitudeName;
             string add = "";
             if (_flux.AddFlux) add = ", Add";
-            sb.AppendLine("*Cflux" + add);
+            //
+            sb.AppendFormat("*Cflux{}{}{}", amplitude, add, Environment.NewLine);
+            //
             return sb.ToString();
         }
         public override string GetDataString()

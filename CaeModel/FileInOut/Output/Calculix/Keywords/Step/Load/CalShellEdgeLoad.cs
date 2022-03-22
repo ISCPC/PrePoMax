@@ -33,7 +33,11 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("** Name: " +_load.Name);
-            sb.AppendLine("*Dload");
+            string amplitude = "";
+            if (_load.AmplitudeName != Load.DefaultAmplitudeName) amplitude = ", Amplitude=" + _load.AmplitudeName;
+            //
+            sb.AppendFormat("*Dload{0}{1}", amplitude, Environment.NewLine);
+            //
             return sb.ToString();
         }
         public override string GetDataString()

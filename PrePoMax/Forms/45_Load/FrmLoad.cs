@@ -383,20 +383,23 @@ namespace PrePoMax.Forms
             string[] solidFaceSurfaceNames = _controller.GetUserSurfaceNames(CaeMesh.FeSurfaceType.Element,
                                                                              CaeMesh.FeSurfaceFaceTypes.SolidFaces);
             string[] referencePointNames = _controller.GetReferencePointNames();
+            string[] amplitudeNames = _controller.GetAmplitudeNames();
+            //
             if (partNames == null) partNames = new string[0];
             if (nodeSetNames == null) nodeSetNames = new string[0];
             if (elementSetNames == null) elementSetNames = new string[0];
             if (elementBasedSurfaceNames == null) elementBasedSurfaceNames = new string[0];
             if (shellEdgeSurfaceNames == null) shellEdgeSurfaceNames = new string[0];
             if (referencePointNames == null) referencePointNames = new string[0];
+            if (amplitudeNames == null) amplitudeNames = new string[0];
             //
             if (_loadNames == null) throw new CaeException("The load names must be defined first.");
             //
             // Only element based surfaces based on solid and shell faces
             string[] noEdgeSurfaceNames = elementBasedSurfaceNames.Except(shellEdgeSurfaceNames).ToArray();
             //
-            PopulateListOfLoads(partNames, nodeSetNames, elementSetNames, referencePointNames,
-                                elementBasedSurfaceNames, solidFaceSurfaceNames, noEdgeSurfaceNames, shellEdgeSurfaceNames);
+            PopulateListOfLoads(partNames, nodeSetNames, elementSetNames, referencePointNames, elementBasedSurfaceNames,
+                                solidFaceSurfaceNames, noEdgeSurfaceNames, shellEdgeSurfaceNames, amplitudeNames);
             // Check if this step supports any loads
             if (lvTypes.Items.Count == 0) return false;
             // Create new load
@@ -439,7 +442,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref referencePointNames, vcl.ReferencePointName, s => { vcl.ReferencePointName = s; });
                     else throw new NotSupportedException();
                     //
-                    vcl.PopululateDropDownLists(nodeSetNames, referencePointNames);
+                    vcl.PopululateDropDownLists(nodeSetNames, referencePointNames, amplitudeNames);
                 }
                 else if (_viewLoad is ViewMomentLoad vml)
                 {
@@ -452,7 +455,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref referencePointNames, vml.ReferencePointName, s => { vml.ReferencePointName = s; });
                     else throw new NotSupportedException();
                     //
-                    vml.PopululateDropDownLists(nodeSetNames, referencePointNames);
+                    vml.PopululateDropDownLists(nodeSetNames, referencePointNames, amplitudeNames);
                 }
                 else if (_viewLoad is ViewDLoad vdl)
                 {
@@ -467,7 +470,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref surfaceNames, vdl.SurfaceName, s => { vdl.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vdl.PopululateDropDownLists(surfaceNames);
+                    vdl.PopululateDropDownLists(surfaceNames, amplitudeNames);
                 }
                 else if (_viewLoad is ViewSTLoad vstl)
                 {
@@ -482,7 +485,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref surfaceNames, vstl.SurfaceName, s => { vstl.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vstl.PopululateDropDownLists(surfaceNames);
+                    vstl.PopululateDropDownLists(surfaceNames, amplitudeNames);
                 }
                 else if (_viewLoad is ViewShellEdgeLoad vsel)
                 {
@@ -493,7 +496,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref shellEdgeSurfaceNames, vsel.SurfaceName, s => { vsel.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vsel.PopululateDropDownLists(shellEdgeSurfaceNames);
+                    vsel.PopululateDropDownLists(shellEdgeSurfaceNames, amplitudeNames);
                 }
                 else if (_viewLoad is ViewGravityLoad vgl)
                 {
@@ -506,7 +509,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref elementSetNames, vgl.ElementSetName, s => { vgl.ElementSetName = s; });
                     else throw new NotSupportedException();
                     //
-                    vgl.PopululateDropDownLists(partNames, elementSetNames);
+                    vgl.PopululateDropDownLists(partNames, elementSetNames, amplitudeNames);
                 }
                 else if (_viewLoad is ViewCentrifLoad vcfl)
                 {
@@ -519,7 +522,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref elementSetNames, vcfl.ElementSetName, s => { vcfl.ElementSetName = s; });
                     else throw new NotSupportedException();
                     //
-                    vcfl.PopululateDropDownLists(partNames, elementSetNames);
+                    vcfl.PopululateDropDownLists(partNames, elementSetNames, amplitudeNames);
                 }
                 else if (_viewLoad is ViewPreTensionLoad vptl)
                 {
@@ -530,7 +533,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref elementBasedSurfaceNames, vptl.SurfaceName, s => { vptl.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vptl.PopululateDropDownLists(solidFaceSurfaceNames);
+                    vptl.PopululateDropDownLists(solidFaceSurfaceNames, amplitudeNames);
                 }
                 // Thermal                                                                                                          
                 else if (_viewLoad is ViewCFlux vcf)
@@ -542,7 +545,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref nodeSetNames, vcf.NodeSetName, s => { vcf.NodeSetName = s; });
                     else throw new NotSupportedException();
                     //
-                    vcf.PopululateDropDownLists(nodeSetNames);
+                    vcf.PopululateDropDownLists(nodeSetNames, amplitudeNames);
                 }
                 else if (_viewLoad is ViewDFlux vdf)
                 {
@@ -557,7 +560,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref surfaceNames, vdf.SurfaceName, s => { vdf.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vdf.PopululateDropDownLists(surfaceNames);
+                    vdf.PopululateDropDownLists(surfaceNames, amplitudeNames);
                 }
                 else if (_viewLoad is ViewBodyFlux vbf)
                 {
@@ -570,7 +573,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref elementSetNames, vbf.ElementSetName, s => { vbf.ElementSetName = s; });
                     else throw new NotSupportedException();
                     //
-                    vbf.PopululateDropDownLists(partNames, elementSetNames);
+                    vbf.PopululateDropDownLists(partNames, elementSetNames, amplitudeNames);
                 }
                 else if (_viewLoad is ViewFilmHeatTransfer vfht)
                 {
@@ -585,7 +588,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref surfaceNames, vfht.SurfaceName, s => { vfht.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vfht.PopululateDropDownLists(surfaceNames);
+                    vfht.PopululateDropDownLists(surfaceNames, amplitudeNames);
                 }
                 else if (_viewLoad is ViewRadiationHeatTransfer vrht)
                 {
@@ -600,7 +603,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref surfaceNames, vrht.SurfaceName, s => { vrht.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vrht.PopululateDropDownLists(surfaceNames);
+                    vrht.PopululateDropDownLists(surfaceNames, amplitudeNames);
                 }
                 else throw new NotSupportedException();
                 //
@@ -617,7 +620,7 @@ namespace PrePoMax.Forms
         private void PopulateListOfLoads(string[] partNames, string[] nodeSetNames, string[] elementSetNames, 
                                          string[] referencePointNames, string[] elementBasedSurfaceNames,
                                          string[] solidFaceSurfaceNames, string[] noEdgeSurfaceNames,
-                                         string[] shellEdgeSurfaceNames)
+                                         string[] shellEdgeSurfaceNames, string[] amplitudeNames)
         {
             Step step = _controller.GetStep(_stepName);
             System.Drawing.Color color = _controller.Settings.Pre.LoadSymbolColor;
@@ -634,7 +637,7 @@ namespace PrePoMax.Forms
             if (step.IsLoadSupported(cLoad))
             {
                 ViewCLoad vcl = new ViewCLoad(cLoad);
-                vcl.PopululateDropDownLists(nodeSetNames, referencePointNames);
+                vcl.PopululateDropDownLists(nodeSetNames, referencePointNames, amplitudeNames);
                 vcl.Color = color;
                 item.Tag = vcl;
                 lvTypes.Items.Add(item);
@@ -647,7 +650,7 @@ namespace PrePoMax.Forms
             if (step.IsLoadSupported(cLoad))
             {
                 ViewMomentLoad vml = new ViewMomentLoad(momentLoad);
-                vml.PopululateDropDownLists(nodeSetNames, referencePointNames);
+                vml.PopululateDropDownLists(nodeSetNames, referencePointNames, amplitudeNames);
                 vml.Color = color;
                 item.Tag = vml;
                 lvTypes.Items.Add(item);
@@ -664,7 +667,7 @@ namespace PrePoMax.Forms
                 else surfaceNames = noEdgeSurfaceNames.ToArray();
                 //
                 ViewDLoad vdl = new ViewDLoad(dLoad);
-                vdl.PopululateDropDownLists(surfaceNames);
+                vdl.PopululateDropDownLists(surfaceNames, amplitudeNames);
                 vdl.Color = color;
                 item.Tag = vdl;
                 lvTypes.Items.Add(item);
@@ -681,7 +684,7 @@ namespace PrePoMax.Forms
                 else surfaceNames = elementBasedSurfaceNames.ToArray();
                 //
                 ViewSTLoad vstl = new ViewSTLoad(sTLoad);
-                vstl.PopululateDropDownLists(surfaceNames);
+                vstl.PopululateDropDownLists(surfaceNames, amplitudeNames);
                 vstl.Color = color;
                 item.Tag = vstl;
                 lvTypes.Items.Add(item);
@@ -694,7 +697,7 @@ namespace PrePoMax.Forms
             if (step.IsLoadSupported(shellEdgeLoad) && !twoD)
             {
                 ViewShellEdgeLoad vsel = new ViewShellEdgeLoad(shellEdgeLoad);
-                vsel.PopululateDropDownLists(shellEdgeSurfaceNames);
+                vsel.PopululateDropDownLists(shellEdgeSurfaceNames, amplitudeNames);
                 vsel.Color = color;
                 item.Tag = vsel;
                 lvTypes.Items.Add(item);
@@ -707,7 +710,7 @@ namespace PrePoMax.Forms
             if (step.IsLoadSupported(gravityLoad))
             {
                 ViewGravityLoad vgl = new ViewGravityLoad(gravityLoad);
-                vgl.PopululateDropDownLists(partNames, elementSetNames);
+                vgl.PopululateDropDownLists(partNames, elementSetNames, amplitudeNames);
                 vgl.Color = color;
                 item.Tag = vgl;
                 lvTypes.Items.Add(item);
@@ -720,7 +723,7 @@ namespace PrePoMax.Forms
             ViewCentrifLoad vcfl = new ViewCentrifLoad(centrifLoad);
             if (step.IsLoadSupported(gravityLoad))
             {
-                vcfl.PopululateDropDownLists(partNames, elementSetNames);
+                vcfl.PopululateDropDownLists(partNames, elementSetNames, amplitudeNames);
                 vcfl.Color = color;
                 item.Tag = vcfl;
                 lvTypes.Items.Add(item);
@@ -733,7 +736,7 @@ namespace PrePoMax.Forms
             if (step.IsLoadSupported(preTensionLoad) && !twoD)
             {
                 ViewPreTensionLoad vptl = new ViewPreTensionLoad(preTensionLoad);
-                vptl.PopululateDropDownLists(solidFaceSurfaceNames);
+                vptl.PopululateDropDownLists(solidFaceSurfaceNames, amplitudeNames);
                 vptl.Color = color;
                 item.Tag = vptl;
                 lvTypes.Items.Add(item);
@@ -747,7 +750,7 @@ namespace PrePoMax.Forms
             if (step.IsLoadSupported(cFlux))
             {
                 ViewCFlux vcf = new ViewCFlux(cFlux);
-                vcf.PopululateDropDownLists(nodeSetNames);
+                vcf.PopululateDropDownLists(nodeSetNames, amplitudeNames);
                 vcf.Color = color;
                 item.Tag = vcf;
                 lvTypes.Items.Add(item);
@@ -764,7 +767,7 @@ namespace PrePoMax.Forms
                 else surfaceNames = noEdgeSurfaceNames.ToArray();
                 //
                 ViewDFlux vdf = new ViewDFlux(dFlux);
-                vdf.PopululateDropDownLists(surfaceNames);
+                vdf.PopululateDropDownLists(surfaceNames, amplitudeNames);
                 vdf.Color = color;
                 item.Tag = vdf;
                 lvTypes.Items.Add(item);
@@ -777,7 +780,7 @@ namespace PrePoMax.Forms
             if (step.IsLoadSupported(bFlux))
             {
                 ViewBodyFlux vbf = new ViewBodyFlux(bFlux);
-                vbf.PopululateDropDownLists(partNames, elementSetNames);
+                vbf.PopululateDropDownLists(partNames, elementSetNames, amplitudeNames);
                 vbf.Color = color;
                 item.Tag = vbf;
                 lvTypes.Items.Add(item);
@@ -794,7 +797,7 @@ namespace PrePoMax.Forms
                 else surfaceNames = noEdgeSurfaceNames.ToArray();
                 //
                 ViewFilmHeatTransfer vfht = new ViewFilmHeatTransfer(filmHeatTransfer);
-                vfht.PopululateDropDownLists(surfaceNames);
+                vfht.PopululateDropDownLists(surfaceNames, amplitudeNames);
                 vfht.Color = color;
                 item.Tag = vfht;
                 lvTypes.Items.Add(item);
@@ -812,7 +815,7 @@ namespace PrePoMax.Forms
                 else surfaceNames = noEdgeSurfaceNames.ToArray();
                 //
                 ViewRadiationHeatTransfer vrht = new ViewRadiationHeatTransfer(radiationHeatTransfer);
-                vrht.PopululateDropDownLists(surfaceNames);
+                vrht.PopululateDropDownLists(surfaceNames, amplitudeNames);
                 vrht.Color = color;
                 item.Tag = vrht;
                 lvTypes.Items.Add(item);

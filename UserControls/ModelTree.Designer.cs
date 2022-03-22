@@ -66,7 +66,7 @@
             System.Windows.Forms.TreeNode treeNode20 = new System.Windows.Forms.TreeNode("Constraints");
             System.Windows.Forms.TreeNode treeNode21 = new System.Windows.Forms.TreeNode("Surface interactions");
             System.Windows.Forms.TreeNode treeNode22 = new System.Windows.Forms.TreeNode("Contact pairs");
-            System.Windows.Forms.TreeNode treeNode23 = new System.Windows.Forms.TreeNode("Contact", new System.Windows.Forms.TreeNode[] {
+            System.Windows.Forms.TreeNode treeNode23 = new System.Windows.Forms.TreeNode("Contacts", new System.Windows.Forms.TreeNode[] {
             treeNode21,
             treeNode22});
             System.Windows.Forms.TreeNode treeNode24 = new System.Windows.Forms.TreeNode("Initial conditions");
@@ -778,10 +778,10 @@
             treeNode22.Text = "Contact pairs";
             treeNode22.ToolTipText = "Contact pairs";
             treeNode23.ImageKey = "Contact.ico";
-            treeNode23.Name = "Contact";
+            treeNode23.Name = "Contacts";
             treeNode23.SelectedImageIndex = 16;
-            treeNode23.Text = "Contact";
-            treeNode23.ToolTipText = "Contact";
+            treeNode23.Text = "Contacts";
+            treeNode23.ToolTipText = "Contacts";
             treeNode24.ImageKey = "InitialConditions.ico";
             treeNode24.Name = "Initial conditions";
             treeNode24.SelectedImageKey = "InitialConditions.ico";

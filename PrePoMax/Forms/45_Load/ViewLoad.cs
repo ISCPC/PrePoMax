@@ -37,6 +37,12 @@ namespace PrePoMax
         [Id(2, 2)]
         public string SelectionHidden { get { return _selectionHidden; } set { _selectionHidden = value; } }
         //
+        [CategoryAttribute("Time/Frequency")]
+        [DisplayName("Amplitude")]
+        [DescriptionAttribute("Select the amplitude for the load.")]
+        [Id(1, 9)]
+        public abstract string AmplitudeName { get; set; }
+        //
         [Category("Appearance")]
         [DisplayName("Color")]
         [Description("Select load color.")]
@@ -58,6 +64,13 @@ namespace PrePoMax
             {
                 DynamicCustomTypeDescriptor.GetProperty(nameof(SelectionHidden)).SetIsBrowsable(false);
             }
+        }
+        public void PopululateAmplitudeNames(string[] amplitudeNames)
+        {
+            List<string> names = new List<string>();
+            names.Add(CaeModel.Load.DefaultAmplitudeName);
+            names.AddRange(amplitudeNames);
+            DynamicCustomTypeDescriptor.PopulateProperty(nameof(AmplitudeName), names.ToArray(), false, 2);
         }
     }
 }

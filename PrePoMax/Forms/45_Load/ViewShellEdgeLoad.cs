@@ -34,6 +34,11 @@ namespace PrePoMax
         [Id(1, 3)]
         public double Magnitude { get { return _shellEdgeLoad.Magnitude; } set { _shellEdgeLoad.Magnitude = value; } }
         //
+        public override string AmplitudeName
+        {
+            get { return _shellEdgeLoad.AmplitudeName; }
+            set { _shellEdgeLoad.AmplitudeName = value; }
+        }
         public override System.Drawing.Color Color { get { return _shellEdgeLoad.Color; } set { _shellEdgeLoad.Color = value; } }
 
 
@@ -56,12 +61,14 @@ namespace PrePoMax
         {
             return _shellEdgeLoad;
         }
-        public void PopululateDropDownLists(string[] surfaceNames)
+        public void PopululateDropDownLists(string[] surfaceNames, string[] amplitudeNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             PopululateDropDownLists(regionTypeListItemsPairs);
+            //
+            PopululateAmplitudeNames(amplitudeNames);
         }
     }
 }

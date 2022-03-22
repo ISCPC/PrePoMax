@@ -30,7 +30,12 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("** Name: " + _filmHeatTransfer.Name);
-            sb.AppendLine("*Film");
+            string amplitude = "";
+            if (_filmHeatTransfer.AmplitudeName != Load.DefaultAmplitudeName)
+                amplitude = ", Amplitude=" + _filmHeatTransfer.AmplitudeName;
+            //
+            sb.AppendFormat("*Film{0}{1}", amplitude, Environment.NewLine);
+            //
             return sb.ToString();
         }
         public override string GetDataString()

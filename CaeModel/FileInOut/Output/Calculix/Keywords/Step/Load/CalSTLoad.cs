@@ -35,7 +35,11 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("** Name: " + _load.Name);
-            sb.AppendLine("*Cload");
+            string amplitude = "";
+            if (_load.AmplitudeName != Load.DefaultAmplitudeName) amplitude = ", Amplitude=" + _load.AmplitudeName;
+            //
+            sb.AppendFormat("*Cload{0}{1}", amplitude, Environment.NewLine);
+            //
             return sb.ToString();
         }
         public override string GetDataString()
@@ -43,28 +47,28 @@ namespace FileInOut.Output.Calculix
             StringBuilder sb = new StringBuilder();
             if (_cLoads != null)
             {
-                foreach (var stLoad in _cLoads)
+                foreach (var cLoad in _cLoads)
                 {
                     int[] rpNodeIds = null;
-                    if (stLoad.RegionType == RegionTypeEnum.ReferencePointName)
-                        rpNodeIds = _referencePointsNodeIds[stLoad.RegionName];
+                    if (cLoad.RegionType == RegionTypeEnum.ReferencePointName)
+                        rpNodeIds = _referencePointsNodeIds[cLoad.RegionName];
                     //
                     List<int> directions = new List<int>();
-                    if (stLoad.F1 != 0) directions.Add(1);
-                    if (stLoad.F2 != 0) directions.Add(2);
-                    if (stLoad.F3 != 0) directions.Add(3);
+                    if (cLoad.F1 != 0) directions.Add(1);
+                    if (cLoad.F2 != 0) directions.Add(2);
+                    if (cLoad.F3 != 0) directions.Add(3);
                     //
                     foreach (var dir in directions)
                     {
-                        if (stLoad.RegionType == RegionTypeEnum.NodeId)
-                            sb.AppendFormat("{0}, {1}, {2}", stLoad.NodeId, dir,
-                                            stLoad.GetDirection(dir - 1).ToCalculiX16String());
-                        else if (stLoad.RegionType == RegionTypeEnum.NodeSetName) // node set
-                            sb.AppendFormat("{0}, {1}, {2}", stLoad.RegionName, dir,
-                                            stLoad.GetDirection(dir - 1).ToCalculiX16String());
-                        else if (stLoad.RegionType == RegionTypeEnum.ReferencePointName) // reference point
+                        if (cLoad.RegionType == RegionTypeEnum.NodeId)
+                            sb.AppendFormat("{0}, {1}, {2}", cLoad.NodeId, dir,
+                                            cLoad.GetDirection(dir - 1).ToCalculiX16String());
+                        else if (cLoad.RegionType == RegionTypeEnum.NodeSetName) // node set
+                            sb.AppendFormat("{0}, {1}, {2}", cLoad.RegionName, dir,
+                                            cLoad.GetDirection(dir - 1).ToCalculiX16String());
+                        else if (cLoad.RegionType == RegionTypeEnum.ReferencePointName) // reference point
                             sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[0], dir,
-                                            stLoad.GetDirection(dir - 1).ToCalculiX16String());
+                                            cLoad.GetDirection(dir - 1).ToCalculiX16String());
 
                         sb.AppendLine();
                     }

@@ -1016,6 +1016,7 @@ namespace FileInOut.Output
                     {
                         int nodeId = referencePointsNodeIds[name][0];
                         CLoad cLoad = new CLoad(ptl.Name, nodeId, ptl.Magnitude, 0, 0, ptl.TwoD);
+                        cLoad.AmplitudeName = ptl.AmplitudeName;
                         calKey = new CalCLoad(cLoad, referencePointsNodeIds);
                     }
                     else if (ptl.Type == PreTensionLoadType.Displacement)
@@ -1023,6 +1024,7 @@ namespace FileInOut.Output
                         DisplacementRotation dr = new DisplacementRotation(ptl.Name, name, RegionTypeEnum.ReferencePointName,
                                                                            ptl.TwoD);
                         dr.U1 = ptl.Magnitude;
+                        dr.AmplitudeName = ptl.AmplitudeName;
                         calKey = new CalDisplacementRotation(dr, referencePointsNodeIds, null);
                     }
                     else throw new NotSupportedException();
