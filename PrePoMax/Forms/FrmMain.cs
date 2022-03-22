@@ -4444,6 +4444,61 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
+        #region Amplitude menu  ####################################################################################################
+        private void tsmiCreateAmplitude_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CreateAmplitude();
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiEditAmplitude_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Amplitudes", _controller.GetAllAmplitudes(), EditAmplitude);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDeleteAmplitude_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Amplitudes", _controller.GetAllAmplitudes(), DeleteAmplitudes);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        //
+        private void CreateAmplitude()
+        {
+            if (_controller.Model.Mesh == null) return;
+            ShowForm(_frmAmplitude, "Create Amplitude", null);
+        }
+        private void EditAmplitude(string amplitudeName)
+        {
+            ShowForm(_frmAmplitude, "Edit Amplitude", amplitudeName);
+        }
+        private void DeleteAmplitudes(string[] amplitudeNames)
+        {
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected amplitudes?" + Environment.NewLine
+                                                 + amplitudeNames.ToRows()) == DialogResult.OK)
+            {
+                _controller.RemoveAmplitudesCommand(amplitudeNames);
+            }
+        }
+
+        #endregion  ################################################################################################################
+
         #region Initial condition menu  ############################################################################################
         private void tsmiCreateInitialCondition_Click(object sender, EventArgs e)
         {
@@ -4502,61 +4557,6 @@ namespace PrePoMax
                                                  + initialConditionNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveInitialConditionsCommand(initialConditionNames);
-            }
-        }
-
-        #endregion  ################################################################################################################
-
-        #region Amplitude menu  ####################################################################################################
-        private void tsmiCreateAmplitude_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                CreateAmplitude();
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
-        private void tsmiEditAmplitude_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                SelectOneEntity("Amplitudes", _controller.GetAllAmplitudes(), EditAmplitude);
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
-        private void tsmiDeleteAmplitude_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                SelectMultipleEntities("Amplitudes", _controller.GetAllAmplitudes(), DeleteAmplitudes);
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
-        //
-        private void CreateAmplitude()
-        {
-            if (_controller.Model.Mesh == null) return;
-            ShowForm(_frmAmplitude, "Create Amplitude", null);
-        }
-        private void EditAmplitude(string amplitudeName)
-        {
-            ShowForm(_frmAmplitude, "Edit Amplitude", amplitudeName);
-        }
-        private void DeleteAmplitudes(string[] amplitudeNames)
-        {
-            if (MessageBoxes.ShowWarningQuestion("OK to delete selected amplitudes?" + Environment.NewLine
-                                                 + amplitudeNames.ToRows()) == DialogResult.OK)
-            {
-                _controller.RemoveAmplitudesCommand(amplitudeNames);
             }
         }
 

@@ -156,7 +156,7 @@ namespace PrePoMax.Forms
                     contactPair.Type = type;
                     contactPair.SurfaceInteractionName = cbSurfaceInteraction.SelectedItem.ToString();
                     contactPair.ContactPairMethod = cbContactPairMethod.SelectedItem.ToString();
-                    contactPair.PopululateDropDownLists(_surfaceInteractionNames, _contactPairMethodNames);
+                    contactPair.PopulateDropDownLists(_surfaceInteractionNames, _contactPairMethodNames);
                     contactPair.MasterSlaveItem = masterSlaveItem;                    
                     contactPairs.Add(contactPair);
                 }

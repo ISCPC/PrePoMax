@@ -246,6 +246,11 @@
             this.tsmiEditInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerInitialCondition1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDeleteInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiAmplitude = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCreateAmplitude = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiEditAmplitude = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerAmplitude1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiDeleteAmplitude = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiStepMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiStep = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateStep = new System.Windows.Forms.ToolStripMenuItem();
@@ -392,11 +397,6 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsmiAmplitude = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiCreateAmplitude = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiEditAmplitude = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDividerAmplitude1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiDeleteAmplitude = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -426,8 +426,8 @@
             this.tsmiModel,
             this.tsmiProperty,
             this.tsmiInteraction,
-            this.tsmiInitialCondition,
             this.tsmiAmplitude,
+            this.tsmiInitialCondition,
             this.tsmiStepMenu,
             this.tsmiAnalysis,
             this.tsmiResults,
@@ -2129,6 +2129,43 @@
             this.tsmiDeleteInitialCondition.Text = "Delete";
             this.tsmiDeleteInitialCondition.Click += new System.EventHandler(this.tsmiDeleteInitialCondition_Click);
             // 
+            // tsmiAmplitude
+            // 
+            this.tsmiAmplitude.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiCreateAmplitude,
+            this.tsmiEditAmplitude,
+            this.tsmiDividerAmplitude1,
+            this.tsmiDeleteAmplitude});
+            this.tsmiAmplitude.Name = "tsmiAmplitude";
+            this.tsmiAmplitude.Size = new System.Drawing.Size(75, 20);
+            this.tsmiAmplitude.Text = "Amplitude";
+            // 
+            // tsmiCreateAmplitude
+            // 
+            this.tsmiCreateAmplitude.Name = "tsmiCreateAmplitude";
+            this.tsmiCreateAmplitude.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateAmplitude.Text = "Create";
+            this.tsmiCreateAmplitude.Click += new System.EventHandler(this.tsmiCreateAmplitude_Click);
+            // 
+            // tsmiEditAmplitude
+            // 
+            this.tsmiEditAmplitude.Name = "tsmiEditAmplitude";
+            this.tsmiEditAmplitude.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditAmplitude.Text = "Edit";
+            this.tsmiEditAmplitude.Click += new System.EventHandler(this.tsmiEditAmplitude_Click);
+            // 
+            // tsmiDividerAmplitude1
+            // 
+            this.tsmiDividerAmplitude1.Name = "tsmiDividerAmplitude1";
+            this.tsmiDividerAmplitude1.Size = new System.Drawing.Size(177, 6);
+            // 
+            // tsmiDeleteAmplitude
+            // 
+            this.tsmiDeleteAmplitude.Name = "tsmiDeleteAmplitude";
+            this.tsmiDeleteAmplitude.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteAmplitude.Text = "Delete";
+            this.tsmiDeleteAmplitude.Click += new System.EventHandler(this.tsmiDeleteAmplitude_Click);
+            // 
             // tsmiStepMenu
             // 
             this.tsmiStepMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -3402,43 +3439,6 @@
             // timerOutput
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
-            // 
-            // tsmiAmplitude
-            // 
-            this.tsmiAmplitude.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiCreateAmplitude,
-            this.tsmiEditAmplitude,
-            this.tsmiDividerAmplitude1,
-            this.tsmiDeleteAmplitude});
-            this.tsmiAmplitude.Name = "tsmiAmplitude";
-            this.tsmiAmplitude.Size = new System.Drawing.Size(75, 20);
-            this.tsmiAmplitude.Text = "Amplitude";
-            // 
-            // tsmiCreateAmplitude
-            // 
-            this.tsmiCreateAmplitude.Name = "tsmiCreateAmplitude";
-            this.tsmiCreateAmplitude.Size = new System.Drawing.Size(180, 22);
-            this.tsmiCreateAmplitude.Text = "Create";
-            this.tsmiCreateAmplitude.Click += new System.EventHandler(this.tsmiCreateAmplitude_Click);
-            // 
-            // tsmiEditAmplitude
-            // 
-            this.tsmiEditAmplitude.Name = "tsmiEditAmplitude";
-            this.tsmiEditAmplitude.Size = new System.Drawing.Size(180, 22);
-            this.tsmiEditAmplitude.Text = "Edit";
-            this.tsmiEditAmplitude.Click += new System.EventHandler(this.tsmiEditAmplitude_Click);
-            // 
-            // tsmiDividerAmplitude1
-            // 
-            this.tsmiDividerAmplitude1.Name = "tsmiDividerAmplitude1";
-            this.tsmiDividerAmplitude1.Size = new System.Drawing.Size(177, 6);
-            // 
-            // tsmiDeleteAmplitude
-            // 
-            this.tsmiDeleteAmplitude.Name = "tsmiDeleteAmplitude";
-            this.tsmiDeleteAmplitude.Size = new System.Drawing.Size(180, 22);
-            this.tsmiDeleteAmplitude.Text = "Delete";
-            this.tsmiDeleteAmplitude.Click += new System.EventHandler(this.tsmiDeleteAmplitude_Click);
             // 
             // FrmMain
             // 

@@ -222,7 +222,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref surfaceNames, vdt.SurfaceName, s => { vdt.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vdt.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                    vdt.PopulateDropDownLists(nodeSetNames, surfaceNames);
                 }
                 else throw new NotSupportedException();
                 //
@@ -249,7 +249,7 @@ namespace PrePoMax.Forms
             if (step.IsDefinedFieldSupported(definedTemperature))
             {
                 ViewDefinedTemperature vdt = new ViewDefinedTemperature(definedTemperature);
-                vdt.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                vdt.PopulateDropDownLists(nodeSetNames, surfaceNames);
                 item.Tag = vdt;
                 lvTypes.Items.Add(item);
             }

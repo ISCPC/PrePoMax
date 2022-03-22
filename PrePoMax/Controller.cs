@@ -5926,7 +5926,73 @@ namespace PrePoMax
                 FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
             }
         }
-        
+
+        #endregion #################################################################################################################
+
+        #region Amplitude menu   ###################################################################################################
+        // COMMANDS ********************************************************************************
+        public void AddAmplitudeCommand(Amplitude amplitude)
+        {
+            Commands.CAddAmplitude comm = new Commands.CAddAmplitude(amplitude);
+            _commands.AddAndExecute(comm);
+        }
+        public void ReplaceAmplitudeCommand(string oldAmplitudeName, Amplitude newAmplitude)
+        {
+            Commands.CReplaceAmplitude comm = new Commands.CReplaceAmplitude(oldAmplitudeName, newAmplitude);
+            _commands.AddAndExecute(comm);
+        }
+        public void RemoveAmplitudesCommand(string[] amplitudeNames)
+        {
+            Commands.CRemoveAmplitudes comm = new Commands.CRemoveAmplitudes(amplitudeNames);
+            _commands.AddAndExecute(comm);
+        }
+        //******************************************************************************************
+        public string[] GetAmplitudeNames()
+        {
+            return _model.Amplitudes.Keys.ToArray();
+        }
+        public string[] GetAmplitudeNamesIncludingDefault()
+        {
+            List<string> names = new List<string>();
+            names.Add("Default");
+            names.AddRange(_model.Amplitudes.Keys);
+            return names.ToArray();
+        }
+        public void AddAmplitude(Amplitude amplitude)
+        {
+            _model.Amplitudes.Add(amplitude.Name, amplitude);
+            //
+            _form.AddTreeNode(ViewGeometryModelResults.Model, amplitude, null);
+            //
+            FeModelUpdate(UpdateType.Check);
+        }
+        public Amplitude GetAmplitude(string amplitudeName)
+        {
+            return _model.Amplitudes[amplitudeName];
+        }
+        public Amplitude[] GetAllAmplitudes()
+        {
+            return _model.Amplitudes.Values.ToArray();
+        }
+        public void ReplaceAmplitude(string oldAmplitudeName, Amplitude amplitude)
+        {
+            _model.Amplitudes.Replace(oldAmplitudeName, amplitude.Name, amplitude);
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldAmplitudeName, amplitude, null);
+            //
+            FeModelUpdate(UpdateType.Check);
+        }
+        public void RemoveAmplitudes(string[] amplitudeNames)
+        {
+            foreach (var name in amplitudeNames)
+            {
+                _model.Amplitudes.Remove(name);
+                _form.RemoveTreeNode<Amplitude>(ViewGeometryModelResults.Model, name, null);
+            }
+            //
+            FeModelUpdate(UpdateType.Check);
+        }
+
         #endregion #################################################################################################################
 
         #region Initial condition menu   ###########################################################################################
@@ -6037,61 +6103,6 @@ namespace PrePoMax
             {
                 if (initialCondition is InitialTemperature) RemoveNodeSets(new string[] { initialCondition.RegionName });
                 else throw new NotSupportedException();
-            }
-        }
-
-        #endregion #################################################################################################################
-
-        #region Amplitude menu   ###################################################################################################
-        // COMMANDS ********************************************************************************
-        public void AddAmplitudeCommand(Amplitude amplitude)
-        {
-            Commands.CAddAmplitude comm = new Commands.CAddAmplitude(amplitude);
-            _commands.AddAndExecute(comm);
-        }
-        public void ReplaceAmplitudeCommand(string oldAmplitudeName, Amplitude newAmplitude)
-        {
-            Commands.CReplaceAmplitude comm = new Commands.CReplaceAmplitude(oldAmplitudeName, newAmplitude);
-            _commands.AddAndExecute(comm);
-        }
-        public void RemoveAmplitudesCommand(string[] amplitudeNames)
-        {
-            Commands.CRemoveAmplitudes comm = new Commands.CRemoveAmplitudes(amplitudeNames);
-            _commands.AddAndExecute(comm);
-        }
-        //******************************************************************************************
-        public string[] GetAmplitudeNames()
-        {
-            return _model.Amplitudes.Keys.ToArray();
-        }
-        public string[] GetAmplitudeNamesIncludingDefault()
-        {
-            List<string> names = new List<string>();
-            names.Add("Default");
-            names.AddRange(_model.Amplitudes.Keys);
-            return names.ToArray();
-        }
-        public void AddAmplitude(Amplitude amplitude)
-        {
-            _model.Amplitudes.Add(amplitude.Name, amplitude);
-        }
-        public Amplitude GetAmplitude(string amplitudeName)
-        {
-            return _model.Amplitudes[amplitudeName];
-        }
-        public Amplitude[] GetAllAmplitudes()
-        {
-            return _model.Amplitudes.Values.ToArray();
-        }
-        public void ReplaceAmplitude(string oldAmplitudeName, Amplitude amplitude)
-        {
-            _model.Amplitudes.Replace(oldAmplitudeName, amplitude.Name, amplitude);
-        }
-        public void RemoveAmplitudes(string[] amplitudeNames)
-        {
-            foreach (var name in amplitudeNames)
-            {
-                _model.Amplitudes.Remove(name);
             }
         }
 

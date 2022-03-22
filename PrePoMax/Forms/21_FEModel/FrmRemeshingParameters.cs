@@ -178,7 +178,7 @@ namespace PrePoMax.Forms
             //
             _controller.Selection.Clear();                
             //
-            _viewRemeshingParameters.PopululateDropDownLists(elementSetNames);
+            _viewRemeshingParameters.PopulateDropDownLists(elementSetNames);
             //
             propertyGrid.SelectedObject = _viewRemeshingParameters;
             propertyGrid.Focus();

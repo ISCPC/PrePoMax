@@ -34,12 +34,11 @@ namespace PrePoMax
         [Id(1, 3)]
         public double Temperature { get { return _temperatureBC.Temperature; } set { _temperatureBC.Temperature = value; } }
         //
-        [CategoryAttribute("Time/Frequency")]
-        [OrderedDisplayName(0, 10, "Amplitude")]
-        [DescriptionAttribute("Select the amplitude for the boundary condition.")]
-        [Id(1, 4)]
-        public string AmplitudeName { get { return _temperatureBC.AmplitudeName; } set { _temperatureBC.AmplitudeName = value; } }
-        //
+        public override string AmplitudeName
+        {
+            get { return _temperatureBC.AmplitudeName; }
+            set { _temperatureBC.AmplitudeName = value; }
+        }
         public override Color Color { get { return _temperatureBC.Color; } set { _temperatureBC.Color = value; } }
 
 
@@ -66,18 +65,15 @@ namespace PrePoMax
         {
             return _temperatureBC;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames, string[] amplitudeNames)
+        public void PopulateDropDownLists(string[] nodeSetNames, string[] surfaceNames, string[] amplitudeNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
-            PopululateDropDownLists(regionTypeListItemsPairs);
+            PopulateDropDownLists(regionTypeListItemsPairs);
             //
-            List<string> names = new List<string>();
-            names.Add(CaeModel.BoundaryCondition.DefaultAmplitudeName);
-            names.AddRange(amplitudeNames);
-            DynamicCustomTypeDescriptor.PopulateProperty(nameof(AmplitudeName), names.ToArray(), false, 2);
+            PopulateAmplitudeNames(amplitudeNames);
         }
     }
 

@@ -198,7 +198,7 @@ namespace PrePoMax.Forms
                                                                                   fieldData.Name, fieldData.Component,
                                                                                   "", RegionTypeEnum.Selection);
             ViewResultHistoryOutputFromField vrhoff = new ViewResultHistoryOutputFromField(rhoff);
-            vrhoff.PopululateDropDownLists(nodeSetNames, surfaceNames, filedNameComponentNames);
+            vrhoff.PopulateDropDownLists(nodeSetNames, surfaceNames, filedNameComponentNames);
             item.Tag = vrhoff;
             lvTypes.Items.Add(item);
         }

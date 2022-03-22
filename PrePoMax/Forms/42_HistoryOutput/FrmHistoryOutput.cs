@@ -227,7 +227,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref referencePointNames, vnho.ReferencePointName, s => { vnho.ReferencePointName = s; });
                     else throw new NotSupportedException();
                     //
-                    vnho.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
+                    vnho.PopulateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
                 }
                 else if (_viewHistoryOutput is ViewElementHistoryOutput veho)
                 {
@@ -238,7 +238,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref elementSetNames, veho.ElementSetName, s => { veho.ElementSetName = s; });
                     else throw new NotSupportedException();
                     //
-                    veho.PopululateDropDownLists(elementSetNames);
+                    veho.PopulateDropDownLists(elementSetNames);
                 }
                 else if (_viewHistoryOutput is ViewContactHistoryOutput vcho)
                 {
@@ -246,7 +246,7 @@ namespace PrePoMax.Forms
                     // Check for deleted entities
                     CheckMissingValueRef(ref contactPairNames, vcho.ContactPairName, s => { vcho.ContactPairName = s; });
                     //
-                    vcho.PopululateDropDownLists(contactPairNames);
+                    vcho.PopulateDropDownLists(contactPairNames);
                 }
                 else throw new NotSupportedException();
                 //
@@ -269,7 +269,7 @@ namespace PrePoMax.Forms
             NodalHistoryOutput nho = new NodalHistoryOutput(GetHistoryOutputName("N"), NodalHistoryVariable.U,
                                                             "", RegionTypeEnum.Selection);
             ViewNodalHistoryOutput vnho = new ViewNodalHistoryOutput(nho);
-            vnho.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
+            vnho.PopulateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
             item.Tag = vnho;
             lvTypes.Items.Add(item);
             // Element output
@@ -277,7 +277,7 @@ namespace PrePoMax.Forms
             ElementHistoryOutput eho = new ElementHistoryOutput(GetHistoryOutputName("E"), ElementHistoryVariable.S,
                                                                 "", RegionTypeEnum.Selection);
             ViewElementHistoryOutput veho = new ViewElementHistoryOutput(eho);
-            veho.PopululateDropDownLists(elementSetNames);
+            veho.PopulateDropDownLists(elementSetNames);
             item.Tag = veho;
             lvTypes.Items.Add(item);
             // Contact output
@@ -291,7 +291,7 @@ namespace PrePoMax.Forms
                                                                     ContactHistoryVariable.CF,
                                                                     contactPairNames[0]);
                 ViewContactHistoryOutput vcho = new ViewContactHistoryOutput(cho);
-                vcho.PopululateDropDownLists(contactPairNames);
+                vcho.PopulateDropDownLists(contactPairNames);
                 item.Tag = vcho;
             }
             else item.Tag = new ViewError("There is no contact pair defined for the history output definition.");

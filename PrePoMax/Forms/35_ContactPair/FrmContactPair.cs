@@ -147,7 +147,7 @@ namespace PrePoMax.Forms
                     ContactPair.MasterColor = _controller.Settings.Pre.ConstraintSymbolColor;
                     ContactPair.SlaveColor = ContactPair.MasterColor;
                     //
-                    _viewContactPair.PopululateDropDownLists(surfaceInteractionNames, surfaceNames);
+                    _viewContactPair.PopulateDropDownLists(surfaceInteractionNames, surfaceNames);
                     //
                     propertyGrid.SelectedObject = _viewContactPair;
                     propertyGrid.Select();
@@ -179,7 +179,7 @@ namespace PrePoMax.Forms
                 if (vcp.SlaveRegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                 else CheckMissingValueRef(ref surfaceNames, vcp.SlaveSurfaceName, s => { vcp.SlaveSurfaceName = s; });
                 //
-                _viewContactPair.PopululateDropDownLists(surfaceInteractionNames, surfaceNames);
+                _viewContactPair.PopulateDropDownLists(surfaceInteractionNames, surfaceNames);
                 //
                 propertyGrid.SelectedObject = _viewContactPair;
                 propertyGrid.Select();

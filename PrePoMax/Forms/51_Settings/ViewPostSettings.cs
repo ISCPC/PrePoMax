@@ -155,7 +155,7 @@ namespace PrePoMax.Settings
         {
             return _postSettings;
         }
-        public void PopululateDropDownList(string[] possibleFieldOutputNames)
+        public void PopulateDropDownList(string[] possibleFieldOutputNames)
         {
             CustomPropertyDescriptor cpd;
             //

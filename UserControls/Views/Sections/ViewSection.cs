@@ -85,19 +85,19 @@ namespace UserControls
         {
             return _section;
         }
-        public void PopululateDropDownLists(string[] materialNames, string[] partNames, string[] elementSetNames)
+        public void PopulateDropDownLists(string[] materialNames, string[] partNames, string[] elementSetNames)
         {
             _dctd.PopulateProperty(() => this.MaterialName, materialNames);
             _dctd.PopulateProperty(() => this.PartName, partNames);
             _dctd.PopulateProperty(() => this.ElementSetName, elementSetNames);
 
             // Prepare the region drop down list
-            PopululateDropDownListForRegionType(partNames, elementSetNames);
+            PopulateDropDownListForRegionType(partNames, elementSetNames);
 
             // Update visible dorp down lists
             UpdateRegionVisibility();
         }
-        private void PopululateDropDownListForRegionType(string[] partNames, string[] elementSetNames)
+        private void PopulateDropDownListForRegionType(string[] partNames, string[] elementSetNames)
         {
             List<string> types = new List<string>();
             if (partNames.Length > 0) types.Add(RegionTypeEnum.PartName.ToFriendlyString());

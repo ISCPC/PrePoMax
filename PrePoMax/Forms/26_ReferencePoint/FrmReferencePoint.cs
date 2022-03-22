@@ -182,7 +182,7 @@ namespace PrePoMax.Forms
                 if (_propertyItemChanged) _controller.UpdateReferencePoint(ReferencePoint);
             }
             //
-            _viewReferencePoint.PopululateDropDownLists(_nodeSetNames, _surfaceNames);
+            _viewReferencePoint.PopulateDropDownLists(_nodeSetNames, _surfaceNames);
             //
             propertyGrid.SelectedObject = _viewReferencePoint;
             propertyGrid.Select();

@@ -63,13 +63,13 @@ namespace PrePoMax
         {
             return _initialTemperature;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames)
+        public void PopulateDropDownLists(string[] nodeSetNames, string[] surfaceNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            base.PopulateDropDownLists(regionTypeListItemsPairs);
         }
     }
 

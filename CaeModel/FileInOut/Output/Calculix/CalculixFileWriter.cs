@@ -170,14 +170,14 @@ namespace FileInOut.Output
             title = new CalTitle("Contact pairs", "");
             keywords.Add(title);
             AppendContactPairs(model, title);
-            // Initial conditions
-            title = new CalTitle("Initial conditions", "");
-            keywords.Add(title);
-            AppendInitialConditions(model, title);
             // Amplitudess
             title = new CalTitle("Amplitudes", "");
             keywords.Add(title);
             AppendAmplitudes(model, title);
+            // Initial conditions
+            title = new CalTitle("Initial conditions", "");
+            keywords.Add(title);
+            AppendInitialConditions(model, title);
             // Steps
             title = new CalTitle("Steps", "");
             keywords.Add(title);
@@ -732,24 +732,6 @@ namespace FileInOut.Output
                 }
             }
         }
-        static private void AppendInitialConditions(FeModel model, CalculixKeyword parent)
-        {
-            if (model.Mesh != null)
-            {
-                foreach (var entry in model.InitialConditions)
-                {
-                    if (entry.Value.Active)
-                    {
-                        if (entry.Value is InitialTemperature it)
-                        {
-                            CalInitialTemperature calInitialTemperature = new CalInitialTemperature(model, it);
-                            parent.AddKeyword(calInitialTemperature);
-                        }
-                    }
-                    else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
-                }
-            }
-        }
         static private void AppendAmplitudes(FeModel model, CalculixKeyword parent)
         {
             if (model.Mesh != null)
@@ -762,6 +744,24 @@ namespace FileInOut.Output
                         {
                             CalAmplitude calAmplitude = new CalAmplitude(a);
                             parent.AddKeyword(calAmplitude);
+                        }
+                    }
+                    else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
+                }
+            }
+        }
+        static private void AppendInitialConditions(FeModel model, CalculixKeyword parent)
+        {
+            if (model.Mesh != null)
+            {
+                foreach (var entry in model.InitialConditions)
+                {
+                    if (entry.Value.Active)
+                    {
+                        if (entry.Value is InitialTemperature it)
+                        {
+                            CalInitialTemperature calInitialTemperature = new CalInitialTemperature(model, it);
+                            parent.AddKeyword(calInitialTemperature);
                         }
                     }
                     else parent.AddKeyword(new CalDeactivated(entry.Value.Name));

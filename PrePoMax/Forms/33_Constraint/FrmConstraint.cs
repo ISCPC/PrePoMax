@@ -307,7 +307,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref referencePointNames, vps.ReferencePointName, s => { vps.ReferencePointName = s; });
                     else throw new NotSupportedException();
                     //
-                    vps.PopululateDropDownLists(nodeSetNames, referencePointNames);
+                    vps.PopulateDropDownLists(nodeSetNames, referencePointNames);
                     // Context menu strip
                     propertyGrid.ContextMenuStrip = null;
                 }
@@ -320,7 +320,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref surfaceNames, vss.SurfaceName, s => { vss.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vss.PopululateDropDownLists(surfaceNames);
+                    vss.PopulateDropDownLists(surfaceNames);
                     // Context menu strip
                     propertyGrid.ContextMenuStrip = null;
                 }
@@ -337,7 +337,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref surfaceNames, vrb.SurfaceName, s => { vrb.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vrb.PopululateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);
+                    vrb.PopulateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);
                     // Context menu strip
                     propertyGrid.ContextMenuStrip = null;
                 }
@@ -351,7 +351,7 @@ namespace PrePoMax.Forms
                     if (vt.SlaveRegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else CheckMissingValueRef(ref surfaceNames, vt.SlaveSurfaceName, s => { vt.SlaveSurfaceName = s; });
                     //
-                    vt.PopululateDropDownLists(surfaceNames);
+                    vt.PopulateDropDownLists(surfaceNames);
                     // Context menu strip
                     propertyGrid.ContextMenuStrip = cmsPropertyGrid;
                 }
@@ -377,7 +377,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem("Point spring");
             PointSpring pointSpring = new PointSpring(GetConstraintName("Point_spring"), "", RegionTypeEnum.Selection, twoD);
             ViewPointSpring vps = new ViewPointSpring(pointSpring);
-            vps.PopululateDropDownLists(nodeSetNames, referencePointNames);
+            vps.PopulateDropDownLists(nodeSetNames, referencePointNames);
             item.Tag = vps;
             vps.Color = color;
             lvTypes.Items.Add(item);
@@ -386,7 +386,7 @@ namespace PrePoMax.Forms
             SurfaceSpring surfaceSpring = new SurfaceSpring(GetConstraintName("Surface_spring"),
                                                             "", RegionTypeEnum.Selection, twoD);
             ViewSurfaceSpring vss = new ViewSurfaceSpring(surfaceSpring);
-            vss.PopululateDropDownLists(surfaceNames);
+            vss.PopulateDropDownLists(surfaceNames);
             item.Tag = vss;
             vss.Color = color;
             lvTypes.Items.Add(item);
@@ -397,7 +397,7 @@ namespace PrePoMax.Forms
                 RigidBody rb = new RigidBody(GetConstraintName("Rigid_body"), referencePointNames[0],
                                              "", RegionTypeEnum.Selection, twoD);
                 ViewRigidBody vrb = new ViewRigidBody(rb);
-                vrb.PopululateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);
+                vrb.PopulateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);
                 vrb.Color = color;
                 item.Tag = vrb;
             }
@@ -407,7 +407,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem("Tie");
             Tie tie = new Tie(GetConstraintName("Tie"), "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection, twoD);
             ViewTie vt = new ViewTie(tie);
-            vt.PopululateDropDownLists(surfaceNames);
+            vt.PopulateDropDownLists(surfaceNames);
             item.Tag = vt;
             vt.MasterColor = color;
             vt.SlaveColor = color;

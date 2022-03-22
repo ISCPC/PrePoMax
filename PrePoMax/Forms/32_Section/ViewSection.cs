@@ -72,7 +72,7 @@ namespace PrePoMax
         {
             return _section;
         }
-        public void PopululateDropDownLists(string[] materialNames, string[] partNames, string[] elementSetNames)
+        public void PopulateDropDownLists(string[] materialNames, string[] partNames, string[] elementSetNames)
         {
             base.DynamicCustomTypeDescriptor.PopulateProperty(() => this.MaterialName, materialNames);
             //
@@ -80,7 +80,7 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.PartName, partNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ElementSetName, elementSetNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            base.PopulateDropDownLists(regionTypeListItemsPairs);
         }
         public override void UpdateRegionVisibility()
         {

@@ -73,7 +73,7 @@ namespace PrePoMax.Forms
         {
             return _surface;
         }
-        public void PopululateDropDownList(string[] nodeSetNames)
+        public void PopulateDropDownList(string[] nodeSetNames)
         {
             CustomPropertyDescriptor cpd;
             // Selection

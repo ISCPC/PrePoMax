@@ -179,7 +179,7 @@ namespace PrePoMax.Forms
                 else throw new NotSupportedException();
             }
             //
-            _viewSurface.PopululateDropDownList(nodeSetNames);
+            _viewSurface.PopulateDropDownList(nodeSetNames);
             //
             propertyGrid.SelectedObject = _viewSurface;
             propertyGrid.Select();

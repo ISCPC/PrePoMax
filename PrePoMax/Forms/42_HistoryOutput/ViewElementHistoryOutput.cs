@@ -95,12 +95,12 @@ namespace PrePoMax
         {
             return _historyOutput;
         }
-        public void PopululateDropDownLists(string[] elementSetNames)
+        public void PopulateDropDownLists(string[] elementSetNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.ElementSetName, elementSetNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            base.PopulateDropDownLists(regionTypeListItemsPairs);
         }
     }
 

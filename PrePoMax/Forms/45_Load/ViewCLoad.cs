@@ -103,15 +103,15 @@ namespace PrePoMax
         {
             return _cLoad;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] referencePointNames, string[] amplitudeNames)
+        public void PopulateDropDownLists(string[] nodeSetNames, string[] referencePointNames, string[] amplitudeNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
-            PopululateDropDownLists(regionTypeListItemsPairs);
+            PopulateDropDownLists(regionTypeListItemsPairs);
             //
-            PopululateAmplitudeNames(amplitudeNames);
+            PopulateAmplitudeNames(amplitudeNames);
         }
         
     }

@@ -113,12 +113,12 @@ namespace PrePoMax.Forms
         {
             return _referencePoint;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames)
+        public void PopulateDropDownLists(string[] nodeSetNames, string[] surfaceNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            base.PopulateDropDownLists(regionTypeListItemsPairs);
             //
             _numOfNodeSets = nodeSetNames.Length;
             _numOfSurfaces = surfaceNames.Length;

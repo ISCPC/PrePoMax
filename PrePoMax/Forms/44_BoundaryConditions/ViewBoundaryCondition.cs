@@ -55,6 +55,12 @@ namespace PrePoMax
         [Id(5, 2)]
         public abstract string ReferencePointName { get; set; }
         //
+        [CategoryAttribute("Time/Frequency")]
+        [OrderedDisplayName(0, 10, "Amplitude")]
+        [DescriptionAttribute("Select the amplitude for the boundary condition.")]
+        [Id(1, 9)]
+        public abstract string AmplitudeName { get; set; }
+        //
         [Category("Appearance")]
         [DisplayName("Color")]
         [Description("Select boundary condition color.")]
@@ -73,6 +79,13 @@ namespace PrePoMax
             // Hide SelectionHidden
             if (base.RegionType == RegionTypeEnum.Selection.ToFriendlyString())
                 DynamicCustomTypeDescriptor.GetProperty(nameof(SelectionHidden)).SetIsBrowsable(false);
+        }
+        public void PopulateAmplitudeNames(string[] amplitudeNames)
+        {
+            List<string> names = new List<string>();
+            names.Add(CaeModel.BoundaryCondition.DefaultAmplitudeName);
+            names.AddRange(amplitudeNames);
+            DynamicCustomTypeDescriptor.PopulateProperty(nameof(AmplitudeName), names.ToArray(), false, 2);
         }
     }
 

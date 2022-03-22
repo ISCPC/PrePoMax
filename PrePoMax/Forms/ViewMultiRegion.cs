@@ -60,16 +60,16 @@ namespace PrePoMax
             foreach (var entry in _regionTypePropertyNamePairs)
                 _regionNameRegionTypePairs.Add(entry.Key.ToFriendlyString(), entry.Key);
         }
-        public void PopululateDropDownLists(Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs)
+        public void PopulateDropDownLists(Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs)
         {
             foreach (var entry in regionTypeListItemsPairs)
                 _dctd.PopulateProperty(_regionTypePropertyNamePairs[entry.Key], entry.Value);
             // Prepare the region drop down list
-            PopululateDropDownListForRegionType(regionTypeListItemsPairs);
+            PopulateDropDownListForRegionType(regionTypeListItemsPairs);
             // Update visible dorp down lists
             UpdateRegionVisibility();
         }
-        private void PopululateDropDownListForRegionType(Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs)
+        private void PopulateDropDownListForRegionType(Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs)
         {
             List<string> types = new List<string>();
             bool selection = false;

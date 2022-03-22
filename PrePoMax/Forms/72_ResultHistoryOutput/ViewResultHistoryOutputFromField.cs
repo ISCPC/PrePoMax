@@ -72,14 +72,14 @@ namespace PrePoMax
         {
             return _historyOutput;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames,
+        public void PopulateDropDownLists(string[] nodeSetNames, string[] surfaceNames,
                                             Dictionary<string, string[]> filedNameComponentNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            base.PopulateDropDownLists(regionTypeListItemsPairs);
             //
             _filedNameComponentNames = filedNameComponentNames;
             DynamicCustomTypeDescriptor.PopulateProperty(nameof(FieldName), _filedNameComponentNames.Keys.ToArray());

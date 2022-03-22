@@ -101,7 +101,7 @@ namespace PrePoMax
         {
             return _tie;
         }
-        public void PopululateDropDownLists(string[] surfaceNames)
+        public void PopulateDropDownLists(string[] surfaceNames)
         {
             Dictionary<RegionTypeEnum, string[]> masterRegionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             masterRegionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
@@ -111,7 +111,7 @@ namespace PrePoMax
             slaveTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             slaveTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             //
-            PopululateDropDownLists(masterRegionTypeListItemsPairs, slaveTypeListItemsPairs);
+            PopulateDropDownLists(masterRegionTypeListItemsPairs, slaveTypeListItemsPairs);
         }
         
     }

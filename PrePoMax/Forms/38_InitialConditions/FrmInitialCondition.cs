@@ -199,7 +199,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref surfaceNames, vit.SurfaceName, s => { vit.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vit.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                    vit.PopulateDropDownLists(nodeSetNames, surfaceNames);
                 }
                 else throw new NotSupportedException();
                 //
@@ -221,7 +221,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem(name);
             InitialTemperature it = new InitialTemperature(GetInitialConditionName(name), "", RegionTypeEnum.Selection);
             ViewInitialTemperature vit = new ViewInitialTemperature(it);
-            vit.PopululateDropDownLists(nodeSetNames, surfaceNames);
+            vit.PopulateDropDownLists(nodeSetNames, surfaceNames);
             item.Tag = vit;
             lvTypes.Items.Add(item);
         }

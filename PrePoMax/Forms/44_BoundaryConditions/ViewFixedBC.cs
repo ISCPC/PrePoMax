@@ -23,6 +23,8 @@ namespace PrePoMax
         public override string ReferencePointName { get { return _fixedBC.RegionName; } set { _fixedBC.RegionName = value; } }
         public override string SurfaceName { get { return _fixedBC.RegionName; } set { _fixedBC.RegionName = value; } }
         //
+        [Browsable(false)]
+        public override string AmplitudeName { get { return _fixedBC.AmplitudeName; } set { _fixedBC.AmplitudeName = value; } }
         public override Color Color { get { return _fixedBC.Color; } set { _fixedBC.Color = value; } }
 
 
@@ -48,14 +50,14 @@ namespace PrePoMax
         {
             return _fixedBC;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames)
+        public void PopulateDropDownLists(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
-            PopululateDropDownLists(regionTypeListItemsPairs);
+            PopulateDropDownLists(regionTypeListItemsPairs);
         }
     }
 

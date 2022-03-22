@@ -80,14 +80,14 @@ namespace PrePoMax
         {
             return _filmHeatTransfer;
         }
-        public void PopululateDropDownLists(string[] surfaceNames, string[] amplitudeNames)
+        public void PopulateDropDownLists(string[] surfaceNames, string[] amplitudeNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
-            PopululateDropDownLists(regionTypeListItemsPairs);
+            PopulateDropDownLists(regionTypeListItemsPairs);
             //
-            PopululateAmplitudeNames(amplitudeNames);
+            PopulateAmplitudeNames(amplitudeNames);
         }
     }
 }

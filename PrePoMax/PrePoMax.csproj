@@ -184,12 +184,12 @@
     <Compile Include="Command\0073_ContactPair\CRemoveContactPairs.cs" />
     <Compile Include="Command\0073_ContactPair\CReplaceContactPair.cs" />
     <Compile Include="Command\0073_ContactPair\CShowContactPairs.cs" />
-    <Compile Include="Command\0074_InitialCondition\CAddInitialCondition.cs" />
-    <Compile Include="Command\0074_InitialCondition\CRemoveInitialConditions.cs" />
-    <Compile Include="Command\0074_InitialCondition\CReplaceInitialCondition.cs" />
-    <Compile Include="Command\0075_Amplitude\CAddAmplitude.cs" />
-    <Compile Include="Command\0075_Amplitude\CRemoveAmplitudes.cs" />
-    <Compile Include="Command\0075_Amplitude\CReplaceAmplitude.cs" />
+    <Compile Include="Command\0075_InitialCondition\CAddInitialCondition.cs" />
+    <Compile Include="Command\0075_InitialCondition\CRemoveInitialConditions.cs" />
+    <Compile Include="Command\0075_InitialCondition\CReplaceInitialCondition.cs" />
+    <Compile Include="Command\0074_Amplitude\CAddAmplitude.cs" />
+    <Compile Include="Command\0074_Amplitude\CRemoveAmplitudes.cs" />
+    <Compile Include="Command\0074_Amplitude\CReplaceAmplitude.cs" />
     <Compile Include="Command\0081_Step\CAddStep.cs" />
     <Compile Include="Command\0081_Step\CDuplicateSteps.cs" />
     <Compile Include="Command\0081_Step\CRemoveSteps.cs" />
@@ -344,17 +344,17 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\35_ContactPair\ViewContactPair.cs" />
-    <Compile Include="Forms\37_InitialConditions\FrmInitialCondition.cs">
+    <Compile Include="Forms\38_InitialConditions\FrmInitialCondition.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\37_InitialConditions\ViewInitialCondition.cs" />
-    <Compile Include="Forms\37_InitialConditions\ViewInitialTemperature.cs" />
-    <Compile Include="Forms\38_Amplitude\AmplitudeDataPoint.cs" />
-    <Compile Include="Forms\38_Amplitude\FrmAmplitude.cs">
+    <Compile Include="Forms\38_InitialConditions\ViewInitialCondition.cs" />
+    <Compile Include="Forms\38_InitialConditions\ViewInitialTemperature.cs" />
+    <Compile Include="Forms\37_Amplitude\AmplitudeDataPoint.cs" />
+    <Compile Include="Forms\37_Amplitude\FrmAmplitude.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\38_Amplitude\ViewAmplitude.cs" />
-    <Compile Include="Forms\38_Amplitude\ViewAmplitudeTabular.cs" />
+    <Compile Include="Forms\37_Amplitude\ViewAmplitude.cs" />
+    <Compile Include="Forms\37_Amplitude\ViewAmplitudeTabular.cs" />
     <Compile Include="Forms\41_Step\ViewCoupledTempDispStep.cs" />
     <Compile Include="Forms\41_Step\ViewSlipWearStep.cs" />
     <Compile Include="Forms\41_Step\ViewUncoupledTempDispStep.cs" />
@@ -646,10 +646,10 @@
     <EmbeddedResource Include="Forms\35_ContactPair\FrmContactPair.resx">
       <DependentUpon>FrmContactPair.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\37_InitialConditions\FrmInitialCondition.resx">
+    <EmbeddedResource Include="Forms\38_InitialConditions\FrmInitialCondition.resx">
       <DependentUpon>FrmInitialCondition.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\38_Amplitude\FrmAmplitude.resx">
+    <EmbeddedResource Include="Forms\37_Amplitude\FrmAmplitude.resx">
       <DependentUpon>FrmAmplitude.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\42_HistoryOutput\FrmHistoryOutput.resx">

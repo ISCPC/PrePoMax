@@ -65,14 +65,14 @@ namespace PrePoMax
         {
             return _cFlux;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] amplitudeNames)
+        public void PopulateDropDownLists(string[] nodeSetNames, string[] amplitudeNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
-            PopululateDropDownLists(regionTypeListItemsPairs);
+            PopulateDropDownLists(regionTypeListItemsPairs);
             //
-            PopululateAmplitudeNames(amplitudeNames);
+            PopulateAmplitudeNames(amplitudeNames);
         }
         
     }

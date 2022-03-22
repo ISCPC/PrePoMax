@@ -200,7 +200,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref elementSetNames, vss.ElementSetName, s => { vss.ElementSetName = s; });
                     else throw new NotSupportedException();
                     //
-                    _viewSection.PopululateDropDownLists(materialNames, partNames, elementSetNames);
+                    _viewSection.PopulateDropDownLists(materialNames, partNames, elementSetNames);
                 }
                 else if (_viewSection is ViewShellSection vshs)
                 {
@@ -214,7 +214,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref elementSetNames, vshs.ElementSetName, s => { vshs.ElementSetName = s; });
                     else throw new NotSupportedException();
                     //
-                    _viewSection.PopululateDropDownLists(materialNames, partNames, elementSetNames);
+                    _viewSection.PopulateDropDownLists(materialNames, partNames, elementSetNames);
                 }
                 else if (_viewSection is ViewMembraneSection vms)
                 {
@@ -228,7 +228,7 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref elementSetNames, vms.ElementSetName, s => { vms.ElementSetName = s; });
                     else throw new NotSupportedException();
                     //
-                    _viewSection.PopululateDropDownLists(materialNames, partNames, elementSetNames);
+                    _viewSection.PopulateDropDownLists(materialNames, partNames, elementSetNames);
                 }
                 else throw new NotSupportedException();
                 //
@@ -255,7 +255,7 @@ namespace PrePoMax.Forms
                 SolidSection ss = new SolidSection(GetSectionName("Solid"), materialNames[0], "",
                                                    RegionTypeEnum.Selection, 1, showThickness);
                 ViewSolidSection vss = new ViewSolidSection(ss);
-                vss.PopululateDropDownLists(materialNames, partNames, elementSetNames);
+                vss.PopulateDropDownLists(materialNames, partNames, elementSetNames);
                 item.Tag = vss;
             }
             else item.Tag = new ViewError("There is no material defined for the solid section definition.");
@@ -267,7 +267,7 @@ namespace PrePoMax.Forms
                 ShellSection ss = new ShellSection(GetSectionName("Shell"), materialNames[0], "",
                                                    RegionTypeEnum.Selection, 1, twoD);
                 ViewShellSection vss = new ViewShellSection(ss);
-                vss.PopululateDropDownLists(materialNames, partNames, elementSetNames);
+                vss.PopulateDropDownLists(materialNames, partNames, elementSetNames);
                 item.Tag = vss;
             }
             else item.Tag = new ViewError("There is no material defined for the shell section definition.");
@@ -279,7 +279,7 @@ namespace PrePoMax.Forms
                 MembraneSection ms = new MembraneSection(GetSectionName("Membrane"), materialNames[0], "",
                                                          RegionTypeEnum.Selection, 1, twoD);
                 ViewMembraneSection vms = new ViewMembraneSection(ms);
-                vms.PopululateDropDownLists(materialNames, partNames, elementSetNames);
+                vms.PopulateDropDownLists(materialNames, partNames, elementSetNames);
                 item.Tag = vms;
             }
             else item.Tag = new ViewError("There is no material defined for the membrane section definition.");

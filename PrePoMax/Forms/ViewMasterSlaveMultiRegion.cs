@@ -98,7 +98,7 @@ namespace PrePoMax
                     _slaveRegionNameRegionTypePairs.Add(entry.Key.ToFriendlyString(), entry.Key);
             }
         }
-        public void PopululateDropDownLists(Dictionary<RegionTypeEnum, string[]> masterRegionTypeListItemsPairs,
+        public void PopulateDropDownLists(Dictionary<RegionTypeEnum, string[]> masterRegionTypeListItemsPairs,
                                             Dictionary<RegionTypeEnum, string[]> slaveRegionTypeListItemsPairs)
         {
             // Master
@@ -114,11 +114,11 @@ namespace PrePoMax
                     _dctd.PopulateProperty(_slaveRegionTypePropertyNamePairs[entry.Key], entry.Value);
             }
             // Prepare the region drop down list
-            PopululateDropDownListForRegionType(masterRegionTypeListItemsPairs, slaveRegionTypeListItemsPairs);
+            PopulateDropDownListForRegionType(masterRegionTypeListItemsPairs, slaveRegionTypeListItemsPairs);
             // Update visible dorp down lists
             UpdateRegionVisibility();
         }
-        private void PopululateDropDownListForRegionType(Dictionary<RegionTypeEnum, string[]> masterRegionTypeListItemsPairs,
+        private void PopulateDropDownListForRegionType(Dictionary<RegionTypeEnum, string[]> masterRegionTypeListItemsPairs,
                                                          Dictionary<RegionTypeEnum, string[]> slaveRegionTypeListItemsPairs)
         {
             // Master

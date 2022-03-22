@@ -180,9 +180,9 @@ namespace PrePoMax.Forms
                     if (entry.Value is ViewPostSettings vps)
                     {
                         if (controller.Results != null)
-                            vps.PopululateDropDownList(controller.Results.GetExistingDeformationFieldOutputNames());
+                            vps.PopulateDropDownList(controller.Results.GetExistingDeformationFieldOutputNames());
                         else
-                            vps.PopululateDropDownList(CaeResults.FeResults.GetPossibleDeformationFieldOutputNames());
+                            vps.PopulateDropDownList(CaeResults.FeResults.GetPossibleDeformationFieldOutputNames());
                     }
                 }
             }

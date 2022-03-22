@@ -77,7 +77,7 @@ namespace PrePoMax
         {
             return _rigidBody;
         }
-        public void PopululateDropDownLists(string[] referencePointNames, string[] nodeSetNames, string[] surfaceNames)
+        public void PopulateDropDownLists(string[] referencePointNames, string[] nodeSetNames, string[] surfaceNames)
         {
             base.DynamicCustomTypeDescriptor.PopulateProperty(nameof(ReferencePointName), referencePointNames);
             // Master
@@ -89,7 +89,7 @@ namespace PrePoMax
             slaveRegionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             slaveRegionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             //
-            base.PopululateDropDownLists(masterRegionTypeListItemsPairs, slaveRegionTypeListItemsPairs);
+            base.PopulateDropDownLists(masterRegionTypeListItemsPairs, slaveRegionTypeListItemsPairs);
         }
         
     }

@@ -65,6 +65,8 @@ namespace PrePoMax
         [Id(6, 3)]
         public bool UR3 { get { return _submodel.UR3; } set { _submodel.UR3 = value; } }
         //
+        [Browsable(false)]
+        public override string AmplitudeName { get { return _submodel.AmplitudeName; } set { _submodel.AmplitudeName = value; } }
         public override Color Color { get { return _submodel.Color; } set { _submodel.Color = value; } }
 
 
@@ -101,13 +103,13 @@ namespace PrePoMax
         {
             return _submodel;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames)
+        public void PopulateDropDownLists(string[] nodeSetNames, string[] surfaceNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
-            PopululateDropDownLists(regionTypeListItemsPairs);
+            PopulateDropDownLists(regionTypeListItemsPairs);
         }
     }
 

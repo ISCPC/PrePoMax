@@ -23,8 +23,8 @@ namespace CaeModel
         private OrderedDictionary<string, Constraint> _constraints;                             //ISerializable
         private OrderedDictionary<string, SurfaceInteraction> _surfaceInteractions;             //ISerializable
         private OrderedDictionary<string, ContactPair> _contactPairs;                           //ISerializable
-        private OrderedDictionary<string, InitialCondition> _initialConditions;                 //ISerializable
         private OrderedDictionary<string, Amplitude> _amplitudes;                               //ISerializable
+        private OrderedDictionary<string, InitialCondition> _initialConditions;                 //ISerializable
         private StepCollection _stepCollection;                                                 //ISerializable
         private OrderedDictionary<int[], Calculix.CalculixUserKeyword> _calculixUserKeywords;   //ISerializable
         private ModelProperties _properties;                                                    //ISerializable
@@ -41,8 +41,8 @@ namespace CaeModel
         public OrderedDictionary<string, Constraint> Constraints { get { return _constraints; } }
         public OrderedDictionary<string, SurfaceInteraction> SurfaceInteractions { get { return _surfaceInteractions; } }
         public OrderedDictionary<string, ContactPair> ContactPairs { get { return _contactPairs; } }
-        public OrderedDictionary<string, InitialCondition> InitialConditions { get { return _initialConditions; } }
         public OrderedDictionary<string, Amplitude> Amplitudes { get { return _amplitudes; } }
+        public OrderedDictionary<string, InitialCondition> InitialConditions { get { return _initialConditions; } }
         public StepCollection StepCollection { get { return _stepCollection; } }
         public OrderedDictionary<int[], Calculix.CalculixUserKeyword> CalculixUserKeywords 
         { 
@@ -142,10 +142,10 @@ namespace CaeModel
                         _surfaceInteractions = (OrderedDictionary<string, SurfaceInteraction>)entry.Value; break;
                     case "_contactPairs":
                         _contactPairs = (OrderedDictionary<string, ContactPair>)entry.Value; break;
-                    case "_initialConditions":
-                        _initialConditions = (OrderedDictionary<string, InitialCondition>)entry.Value; break;
                     case "_amplitudes":
                         _amplitudes = (OrderedDictionary<string, Amplitude>)entry.Value; break;
+                    case "_initialConditions":
+                        _initialConditions = (OrderedDictionary<string, InitialCondition>)entry.Value; break;
                     case "_stepCollection":
                         _stepCollection = (StepCollection)entry.Value; break;
                     case "_calculixUserKeywords":
@@ -346,7 +346,7 @@ namespace CaeModel
                 // Boundary conditions
                 foreach (var bcEntry in step.BoundaryConditions)
                 {
-                    bc = bcEntry.Value;
+                    bc = bcEntry.Value;                    
                     if (bc is FixedBC fix)
                     {
                         valid = (fix.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(fix.RegionName))
@@ -373,6 +373,9 @@ namespace CaeModel
                     }
                     else 
                         throw new NotSupportedException();
+                    // Amplitude
+                    if (bc.AmplitudeName != BoundaryCondition.DefaultAmplitudeName &&
+                        !_amplitudes.ContainsValidKey(bc.AmplitudeName)) valid = false;
                     //
                     SetItemValidity(step.Name, bc, valid, items);
                     if (!valid && bc.Active) invalidItems.Add("Boundary condition: " + step.Name + ", " + bc.Name);
@@ -451,6 +454,9 @@ namespace CaeModel
                         valid = (_mesh.Surfaces.TryGetValue(rht.SurfaceName, out s) && s.Valid);
                     }
                     else throw new NotSupportedException();
+                    // Amplitude
+                    if (load.AmplitudeName != BoundaryCondition.DefaultAmplitudeName && 
+                        !_amplitudes.ContainsValidKey(load.AmplitudeName)) valid = false;
                     //
                     SetItemValidity(step.Name, load, valid, items);
                     if (!valid && load.Active) invalidItems.Add("Load: " + step.Name + ", " + load.Name);
@@ -1237,8 +1243,8 @@ namespace CaeModel
             info.AddValue("_constraints", _constraints, typeof(OrderedDictionary<string, Constraint>));
             info.AddValue("_surfaceInteractions", _surfaceInteractions, typeof(OrderedDictionary<string, SurfaceInteraction>));
             info.AddValue("_contactPairs", _contactPairs, typeof(OrderedDictionary<string, ContactPair>));
-            info.AddValue("_initialConditions", _initialConditions, typeof(OrderedDictionary<string, InitialCondition>));
             info.AddValue("_amplitudes", _amplitudes, typeof(OrderedDictionary<string, Amplitude>));
+            info.AddValue("_initialConditions", _initialConditions, typeof(OrderedDictionary<string, InitialCondition>));
             info.AddValue("_stepCollection", _stepCollection, typeof(StepCollection));
             info.AddValue("_calculixUserKeywords", _calculixUserKeywords, typeof(OrderedDictionary<int[], Calculix.CalculixUserKeyword>));
             info.AddValue("_properties", _properties, typeof(ModelProperties));

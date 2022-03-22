@@ -57,14 +57,14 @@ namespace PrePoMax
         {
             return _springConstraint;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] referencePointNames)
+        public void PopulateDropDownLists(string[] nodeSetNames, string[] referencePointNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
             //
-            PopululateDropDownLists(regionTypeListItemsPairs, null);
+            PopulateDropDownLists(regionTypeListItemsPairs, null);
         }
     }
 

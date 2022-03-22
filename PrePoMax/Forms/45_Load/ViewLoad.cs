@@ -65,7 +65,7 @@ namespace PrePoMax
                 DynamicCustomTypeDescriptor.GetProperty(nameof(SelectionHidden)).SetIsBrowsable(false);
             }
         }
-        public void PopululateAmplitudeNames(string[] amplitudeNames)
+        public void PopulateAmplitudeNames(string[] amplitudeNames)
         {
             List<string> names = new List<string>();
             names.Add(CaeModel.Load.DefaultAmplitudeName);
