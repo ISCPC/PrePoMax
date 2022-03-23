@@ -7078,8 +7078,6 @@ namespace PrePoMax
         }
         public bool PrepareAndRunJob(string inputFileName, AnalysisJob job)
         {
-            job.Tag = null;
-            //
             if (File.Exists(job.Executable))
             {
                 if (CheckModelBeforeJobRun() && DeleteFilesBeforeJobRun(inputFileName)) // must be separete due to exception
@@ -7124,12 +7122,20 @@ namespace PrePoMax
             }
             // Check for wear coefficients in a wear analysis
             Dictionary<int, double> materialIdCoefficient;
-            if (_model.Properties.ModelType == ModelType.SlipWearModel &&
-                !_model.AreSlipWearCoefficientsDefined(out materialIdCoefficient))
+            if (_model.Properties.ModelType == ModelType.SlipWearModel)                
             {
-                string msg = "No slip wear material coefficients are defined. Continue?";
-                if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
-                                    MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
+                if (!_model.AreSlipWearCoefficientsDefined(out materialIdCoefficient))
+                {
+                    string msg = "No slip wear material coefficients are defined. Continue?";
+                    if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
+                                        MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
+                }
+                if (!_model.StepCollection.AreContactHistoryOutputsDefined())
+                {
+                    string msg = "Contact history output variables CDIS are not defined for each analysis step. Continue?";
+                    if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
+                                        MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
+                }
             }
             //
             return true;
@@ -7232,7 +7238,7 @@ namespace PrePoMax
         }
         private void LastWearRunCompleted(AnalysisJob job)
         {
-            if (job.JobStatus == JobStatus.OK) DeleteFilesBeforeJobRun(job.InputFileName);
+            //if (job.JobStatus == JobStatus.OK) DeleteFilesBeforeJobRun(job.InputFileName);
         }
         private void ReadWearResults(AnalysisJob job)
         {
@@ -12726,6 +12732,7 @@ namespace PrePoMax
                     // Get visualization nodes and renumbered elements  - to scale min nad max nodes coor
                     PartExchangeData actorResultData =
                         _results.GetVisualizationNodesCellsAndValues(entry.Value, _currentFieldData);
+                    //
                     _form.UpdateActorSurfaceScalarField(entry.Key, actorResultData.Nodes.Values, actorResultData.ExtremeNodes,
                                                         locatorResultData.Nodes.Values, false);
                 }

@@ -140,12 +140,15 @@ namespace PrePoMax.Forms
                 }
                 else
                 {
-                    // It's on the same thread, no need for Invoke
-                    tbOutput.AutoScrollAppendText(_job.OutputData);
-                    //
-                    tbStatus.AutoScrollSetText(_job.StatusFileData);
-                    //
-                    tbConvergence.AutoScrollSetText(_job.ConvergenceFileData);
+                    if (_job != null)
+                    {
+                        // It's on the same thread, no need for Invoke
+                        tbOutput.AutoScrollAppendText(_job.OutputData);
+                        //
+                        tbStatus.AutoScrollSetText(_job.StatusFileData);
+                        //
+                        tbConvergence.AutoScrollSetText(_job.ConvergenceFileData);
+                    }
                 }
             }
             catch

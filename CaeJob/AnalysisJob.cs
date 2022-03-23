@@ -192,6 +192,9 @@ namespace CaeJob
         public void Submit(int numOfRunSteps, int numOfRunIncrements)
         {
             if (numOfRunSteps < 1 || numOfRunIncrements < 1) throw new NotSupportedException();
+            // Reset job
+            _tag = null;
+            _jobStatus = JobStatus.None;
             //
             _inputFileName = Path.Combine(_workDirectory, _name + ".inp");  // must be first for the timer to work
             //
@@ -200,8 +203,6 @@ namespace CaeJob
             //
             _numOfRunIncrements = numOfRunIncrements;
             _currentRunIncrement = -1;
-            //
-            _tag = null;
             //
             _timer = new System.Windows.Threading.DispatcherTimer();
             _timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);

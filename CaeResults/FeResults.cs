@@ -2479,7 +2479,8 @@ namespace CaeResults
             //
             return normalComponents;
         }
-        private void CreateAveragedFieldFromElementFaceHistory(string fieldName, HistoryResultComponent historyResultComponent,
+        private void CreateAveragedFieldFromElementFaceHistory(string fieldName,
+                                                               HistoryResultComponent historyResultComponent,
                                                                bool areaAverage)
         {
             if (historyResultComponent != null)
@@ -2497,17 +2498,18 @@ namespace CaeResults
                 FieldData fieldData = new FieldData(fieldName, historyResultComponent.Name, 0, 0);
                 int count = 0;
                 int[] stepIds = GetAllStepIds();
+                int[] stepIncrementIds;
                 //
                 fieldData.Type = StepType.Static;
                 //
                 for (int i = 0; i < stepIds.Length; i++)
                 {
-                    int[] stepIncrementIds = GetIncrementIds(stepIds[i]);
+                    stepIncrementIds = GetIncrementIds(stepIds[i]);
                     //
                     for (int j = 0; j < stepIncrementIds.Length; j++)
                     {
                         if (i == 0 && j == 0) continue; // Zero increment - Find all occurances!!!
-                        // Field
+                                                        // Field
                         values = timeAvgValues[sortedTime[count]];
                         fieldData.StepId = stepIds[i];
                         fieldData.StepIncrementId = stepIncrementIds[j];

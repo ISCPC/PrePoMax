@@ -432,5 +432,25 @@ namespace CaeModel
             }
             return stepIds.ToArray();
         }
+        public bool AreContactHistoryOutputsDefined()
+        {
+            bool defined;
+            foreach (var step in _steps)
+            {
+                defined = false;
+                foreach (var entry in step.HistoryOutputs)
+                {
+                    if (entry.Value.Active &&
+                        entry.Value is ContactHistoryOutput cho &&
+                        cho.Variables.HasFlag(ContactHistoryVariable.CDIS))
+                    {
+                        defined = true;
+                        break;
+                    }
+                }
+                if (!defined) return false;
+            }
+            return true;
+        }
     }
 }

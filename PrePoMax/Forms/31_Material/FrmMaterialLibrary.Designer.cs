@@ -39,7 +39,7 @@
             this.gbLibraryMaterials = new System.Windows.Forms.GroupBox();
             this.btnDeleteFromLibrary = new System.Windows.Forms.Button();
             this.btnAddCategory = new System.Windows.Forms.Button();
-            this.btvLibrary = new UserControls.BufferedTreeView();
+            this.cltvLibrary = new UserControls.CodersLabTreeView();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
@@ -133,7 +133,7 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.gbLibraryMaterials.Controls.Add(this.btnDeleteFromLibrary);
             this.gbLibraryMaterials.Controls.Add(this.btnAddCategory);
-            this.gbLibraryMaterials.Controls.Add(this.btvLibrary);
+            this.gbLibraryMaterials.Controls.Add(this.cltvLibrary);
             this.gbLibraryMaterials.Controls.Add(this.tbCategoryName);
             this.gbLibraryMaterials.Controls.Add(this.btnRename);
             this.gbLibraryMaterials.Location = new System.Drawing.Point(12, 157);
@@ -165,20 +165,24 @@
             // 
             // btvLibrary
             // 
-            this.btvLibrary.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.cltvLibrary.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.btvLibrary.Location = new System.Drawing.Point(6, 51);
-            this.btvLibrary.Name = "btvLibrary";
+            this.cltvLibrary.DisableMouse = false;
+            this.cltvLibrary.HighlightForeErrorColor = System.Drawing.Color.Red;
+            this.cltvLibrary.Location = new System.Drawing.Point(6, 51);
+            this.cltvLibrary.Name = "btvLibrary";
             treeNode1.Name = "Materials";
             treeNode1.Text = "Materials";
-            this.btvLibrary.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
+            this.cltvLibrary.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1});
-            this.btvLibrary.Size = new System.Drawing.Size(268, 302);
-            this.btvLibrary.TabIndex = 4;
-            this.btvLibrary.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.btvLibrary_AfterSelect);
-            this.btvLibrary.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.btvLibrary_MouseDoubleClick);
-            this.btvLibrary.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btvLibrary_MouseDown);
+            this.cltvLibrary.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            this.cltvLibrary.SelectionMode = UserControls.TreeViewSelectionMode.SingleSelect;
+            this.cltvLibrary.Size = new System.Drawing.Size(268, 302);
+            this.cltvLibrary.TabIndex = 4;
+            this.cltvLibrary.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.cltvLibrary_AfterSelect);
+            this.cltvLibrary.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltvLibrary_MouseDoubleClick);
+            this.cltvLibrary.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltvLibrary_MouseDown);
             // 
             // btnOK
             // 
@@ -356,7 +360,7 @@
         private System.Windows.Forms.Button btnRename;
         private System.Windows.Forms.TextBox tbCategoryName;
         private System.Windows.Forms.GroupBox gbLibraryMaterials;
-        private UserControls.BufferedTreeView btvLibrary;
+        private UserControls.CodersLabTreeView cltvLibrary;
         private System.Windows.Forms.Button btnAddCategory;
         private System.Windows.Forms.Button btnCopyToLibrary;
         private System.Windows.Forms.Button btnCopyToModel;

@@ -43,39 +43,32 @@ namespace PrePoMax.Forms
 
 
         // Event handlers                                                                                                           
-        private void btvKeywordsTree_AfterSelect(object sender, TreeViewEventArgs e)
+        private void cltvKeywordsTree_AfterSelect(object sender, TreeViewEventArgs e)
         {
             // Set tree selection color
             bool userNode = false;
-            if (btvKeywordsTree.SelectedNode != null)
+            if (cltvKeywordsTree.SelectedNode != null)
             {
-                if (btvKeywordsTree.SelectedNode.ForeColor == Color.Red)
+                if (cltvKeywordsTree.SelectedNode.Tag is CalculixUserKeyword)
                 {
                     userNode = true;
-                    btvKeywordsTree.ColorSelectedFocusedBack = Color.Red;
                 }
-                else btvKeywordsTree.ResetHighlightColors();
             }
-
             // De-reference text changed event
             rtbKeyword.TextChanged -= rtbKeyword_TextChanged;
-
             // Clear keyword textbox
             rtbKeyword.Clear();
-
             // Add keyword data to keyword textbox
             rtbKeyword.Tag = e.Node.Tag;
-
             if (e.Node.Tag != null)
             {
                 rtbKeyword.AppendText(FileInOut.Output.CalculixFileWriter.GetShortKeywordData(e.Node.Tag as CalculixKeyword));
                 FormatInp(rtbKeyword);
                 rtbKeyword.ReadOnly = !userNode;
             }
-
             // Re-reference text changed event
             rtbKeyword.TextChanged += rtbKeyword_TextChanged;
-
+            //
             UpdateKeywordTextBox();
         }
         //
@@ -93,26 +86,26 @@ namespace PrePoMax.Forms
         }
         private void btnAddKeyword_Click(object sender, EventArgs e)
         {
-            if (btvKeywordsTree.SelectedNode != null)
+            if (cltvKeywordsTree.SelectedNode != null)
             {
                 CalculixUserKeyword keyword = new CalculixUserKeyword("User keyword");
-                TreeNode node = btvKeywordsTree.SelectedNode.Nodes.Add("User keyword");
+                TreeNode node = cltvKeywordsTree.SelectedNode.Nodes.Add("User keyword");
                 //
+                cltvKeywordsTree.Focus();   // must be first
                 AddUserKeywordToTreeNode(keyword, node);
-                btvKeywordsTree.SelectedNode.Expand();
-                btvKeywordsTree.SelectedNode = node;
-                btvKeywordsTree.Focus();
+                cltvKeywordsTree.SelectedNode.Expand();
+                cltvKeywordsTree.SelectedNode = node;
             }
             UpdateKeywordTextBoxDelayed();
         }
         private void btnMoveUp_Click(object sender, EventArgs e)
         {
-            if (btvKeywordsTree.SelectedNode != null)
+            if (cltvKeywordsTree.SelectedNode != null)
             {
-                TreeNode child = btvKeywordsTree.SelectedNode;
+                TreeNode child = cltvKeywordsTree.SelectedNode;
                 if (child.Tag is CalculixUserKeyword)
                 {
-                    TreeNode parent = btvKeywordsTree.SelectedNode.Parent;
+                    TreeNode parent = cltvKeywordsTree.SelectedNode.Parent;
                     if (parent != null)
                     {
                         int index = parent.Nodes.IndexOf(child);
@@ -124,16 +117,16 @@ namespace PrePoMax.Forms
                     }
                     else
                     {
-                        int index = btvKeywordsTree.Nodes.IndexOf(child);
+                        int index = cltvKeywordsTree.Nodes.IndexOf(child);
                         if (index > 0)
                         {
-                            btvKeywordsTree.Nodes.RemoveAt(index);
-                            btvKeywordsTree.Nodes.Insert(index - 1, child);
+                            cltvKeywordsTree.Nodes.RemoveAt(index);
+                            cltvKeywordsTree.Nodes.Insert(index - 1, child);
                         }
                     }
 
-                    btvKeywordsTree.SelectedNode = child;
-                    btvKeywordsTree.Focus();
+                    cltvKeywordsTree.SelectedNode = child;
+                    cltvKeywordsTree.Focus();
                 }
             }
 
@@ -141,12 +134,12 @@ namespace PrePoMax.Forms
         }
         private void btnMoveDown_Click(object sender, EventArgs e)
         {
-            if (btvKeywordsTree.SelectedNode != null)
+            if (cltvKeywordsTree.SelectedNode != null)
             {
-                TreeNode child = btvKeywordsTree.SelectedNode;
+                TreeNode child = cltvKeywordsTree.SelectedNode;
                 if (child.Tag is CalculixUserKeyword)
                 {
-                    TreeNode parent = btvKeywordsTree.SelectedNode.Parent;
+                    TreeNode parent = cltvKeywordsTree.SelectedNode.Parent;
                     if (parent != null)
                     {
                         int index = parent.Nodes.IndexOf(child);
@@ -158,16 +151,16 @@ namespace PrePoMax.Forms
                     }
                     else
                     {
-                        int index = btvKeywordsTree.Nodes.IndexOf(child);
-                        if (index < btvKeywordsTree.Nodes.Count - 1)
+                        int index = cltvKeywordsTree.Nodes.IndexOf(child);
+                        if (index < cltvKeywordsTree.Nodes.Count - 1)
                         {
-                            btvKeywordsTree.Nodes.RemoveAt(index);
-                            btvKeywordsTree.Nodes.Insert(index + 1, child);
+                            cltvKeywordsTree.Nodes.RemoveAt(index);
+                            cltvKeywordsTree.Nodes.Insert(index + 1, child);
                         }
                     }
 
-                    btvKeywordsTree.SelectedNode = child;
-                    btvKeywordsTree.Focus();
+                    cltvKeywordsTree.SelectedNode = child;
+                    cltvKeywordsTree.Focus();
                 }
             }
 
@@ -175,17 +168,17 @@ namespace PrePoMax.Forms
         }
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if (btvKeywordsTree.SelectedNode != null)
+            if (cltvKeywordsTree.SelectedNode != null)
             {
-                TreeNode child = btvKeywordsTree.SelectedNode;
+                TreeNode child = cltvKeywordsTree.SelectedNode;
                 if (child.Tag is CalculixUserKeyword)
                 {
-                    TreeNode parent = btvKeywordsTree.SelectedNode.Parent;
+                    TreeNode parent = cltvKeywordsTree.SelectedNode.Parent;
 
                     if (parent != null) parent.Nodes.Remove(child);
-                    else btvKeywordsTree.Nodes.Remove(child);
+                    else cltvKeywordsTree.Nodes.Remove(child);
 
-                    btvKeywordsTree.Focus();
+                    cltvKeywordsTree.Focus();
                 }
             }
 
@@ -202,7 +195,7 @@ namespace PrePoMax.Forms
         {
             _userKeywords = new OrderedDictionary<int[], CalculixUserKeyword>();
             //
-            FindUserKeywords(btvKeywordsTree.Nodes[0], _userKeywords);
+            FindUserKeywords(cltvKeywordsTree.Nodes[0], _userKeywords);
             //
             this.DialogResult = DialogResult.OK;
         }
@@ -237,7 +230,7 @@ namespace PrePoMax.Forms
         {
             TreeNode node = new TreeNode();
             node.Text = "CalculiX inp file";
-            btvKeywordsTree.Nodes.Add(node);
+            cltvKeywordsTree.Nodes.Add(node);
             // Build the keyword tree
             int index;
             foreach (CalculixKeyword keyword in _keywords)
@@ -250,7 +243,7 @@ namespace PrePoMax.Forms
             // Apply formating
             FormatInp(rtbInpFile);
             // Expant first tree node
-            btvKeywordsTree.Nodes[0].Expand();
+            cltvKeywordsTree.Nodes[0].Expand();
             // Add user keywords
             if (_userKeywords != null)
             {
@@ -283,7 +276,7 @@ namespace PrePoMax.Forms
         private void AddUserKeywordToTreeByIndex(int[] indices, CalculixKeyword keyword)
         {
             bool deactivated = false;
-            TreeNode node = btvKeywordsTree.Nodes[0];
+            TreeNode node = cltvKeywordsTree.Nodes[0];
             //
             for (int i = 0; i < indices.Length - 1; i++)
             {
@@ -306,7 +299,7 @@ namespace PrePoMax.Forms
         {
             node.Text = GetFirstLineFromMultiline(keyword.GetKeywordString());
             node.Tag = keyword;
-            Font font = new Font(btvKeywordsTree.Font, FontStyle.Bold);
+            Font font = new Font(cltvKeywordsTree.Font, FontStyle.Bold);
             node.NodeFont = font;
             node.ForeColor = Color.Red;
         }
@@ -316,7 +309,7 @@ namespace PrePoMax.Forms
             _selectedKeywordFirstLine = -1;
             _selectedKeywordNumOfLines = -1;
             //
-            string[] newLines = WriteTreeNodeToLines(btvKeywordsTree.Nodes[0], 0).ToArray();
+            string[] newLines = WriteTreeNodeToLines(cltvKeywordsTree.Nodes[0], 0).ToArray();
             string[] oldLines = rtbInpFile.Lines;
             bool equal = true;
             //
@@ -342,21 +335,19 @@ namespace PrePoMax.Forms
         private List<string> WriteTreeNodeToLines(TreeNode node, int lineCount)
         {
             List<string> lines = new List<string>();
-
+            //
             if (node.Tag != null && node.Tag is CalculixKeyword)
             {
-                if (node.IsSelected) 
-                    _selectedKeywordFirstLine = lineCount;
+                if (cltvKeywordsTree.SelectedNodes.Contains(node)) _selectedKeywordFirstLine = lineCount;
                 lines.AddRange(WriteKeywordToLines(node.Tag as CalculixKeyword));
-                if (node.IsSelected) 
-                    _selectedKeywordNumOfLines = lines.Count;
+                if (cltvKeywordsTree.SelectedNodes.Contains(node)) _selectedKeywordNumOfLines = lines.Count;
             }
-
+            //
             foreach (TreeNode childNode in node.Nodes)
             {
                 lines.AddRange(WriteTreeNodeToLines(childNode, lineCount + lines.Count));
             }
-
+            //
             return lines;
         }
         private string[] WriteKeywordToLines(CalculixKeyword keyword)
@@ -377,17 +368,16 @@ namespace PrePoMax.Forms
             {
                 // De-reference text changed event
                 rtbKeyword.TextChanged -= rtbKeyword_TextChanged;
-
                 // rtbKeyword.Tag is set by clicking on the tree node
-                if (!rtbKeyword.ReadOnly && rtbKeyword.Tag != null && btvKeywordsTree.SelectedNode != null)
+                if (!rtbKeyword.ReadOnly && rtbKeyword.Tag != null && cltvKeywordsTree.SelectedNode != null)
                 {
                     CalculixUserKeyword userKeyword = rtbKeyword.Tag as CalculixUserKeyword;
-
+                    //
                     if (userKeyword != null)
                     {
                         userKeyword.Data = "";
                         int count = 0;
-                        // get only lines that contain data
+                        // Get only lines that contain data
                         foreach (var line in rtbKeyword.Lines)
                         {
                             if (line.Length > 0)
@@ -397,21 +387,19 @@ namespace PrePoMax.Forms
                                 count++;
                             }
                         }
-
                         // Change the name of the Selected tree node
-                        LockWindowUpdate(btvKeywordsTree.Handle);
-                        if (rtbKeyword.Lines.Length > 0 && rtbKeyword.Lines[0].Length > 0) btvKeywordsTree.SelectedNode.Text = rtbKeyword.Lines[0];
-                        else btvKeywordsTree.SelectedNode.Text = "User keyword";
+                        LockWindowUpdate(cltvKeywordsTree.Handle);
+                        if (rtbKeyword.Lines.Length > 0 && rtbKeyword.Lines[0].Length > 0) cltvKeywordsTree.SelectedNode.Text = rtbKeyword.Lines[0];
+                        else cltvKeywordsTree.SelectedNode.Text = "User keyword";
                         LockWindowUpdate(IntPtr.Zero);
-
+                        //
                         FormatInp(rtbKeyword);
                     }
                 }
-
+                //
                 WriteTreeToTextBox();
-
+                //
                 SelectKeywordLinesAndScrollToSelection();
-
                 // Re-reference text changed event
                 rtbKeyword.TextChanged += rtbKeyword_TextChanged;
             }
@@ -421,29 +409,26 @@ namespace PrePoMax.Forms
         private void SelectKeywordLinesAndScrollToSelection()
         {
             if (_selectedKeywordFirstLine == -1 || _selectedKeywordNumOfLines == -1) return;
-
             // Apply selection
             rtbInpFile.SelectionStart = rtbInpFile.GetFirstCharIndexFromLine(_selectedKeywordFirstLine);
             int lastSelectedChar = rtbInpFile.GetFirstCharIndexFromLine(_selectedKeywordFirstLine + _selectedKeywordNumOfLines);
             if (lastSelectedChar == -1) lastSelectedChar = rtbInpFile.TextLength;       //if last line value = -1
             rtbInpFile.SelectionLength = lastSelectedChar - rtbInpFile.SelectionStart;
-
             // Apply formatting
             rtbInpFile.SelectionBackColor = Color.FromArgb(255, 210, 210);
             rtbInpFile.SelectionColor = Color.Red;
             Font font = new System.Drawing.Font(rtbInpFile.Font, FontStyle.Bold);
             rtbInpFile.SelectionFont = font;
-
             // Scroll to carret
             int firstVisibleChar = rtbInpFile.GetCharIndexFromPosition(new Point(0, 0));
             int firstVisibleLine = rtbInpFile.GetLineFromCharIndex(firstVisibleChar);
-
+            //
             int lastVisibleChar = rtbInpFile.GetCharIndexFromPosition(new Point(0, rtbInpFile.Height));
             int lastVisibleLine = rtbInpFile.GetLineFromCharIndex(lastVisibleChar);
-
+            //
             int numOfVisibleLines = lastVisibleLine - firstVisibleLine;
             int deltaLines = (numOfVisibleLines - _selectedKeywordNumOfLines) / 2;
-
+            //
             if (_selectedKeywordFirstLine < firstVisibleLine || _selectedKeywordFirstLine + _selectedKeywordNumOfLines > lastVisibleLine)
             {
                 firstVisibleLine = _selectedKeywordFirstLine - deltaLines;

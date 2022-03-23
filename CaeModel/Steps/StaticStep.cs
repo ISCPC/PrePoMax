@@ -54,6 +54,8 @@ namespace CaeModel
             {
                 if (value <= 0) throw new Exception("The max time increment value must be positive.");
                 _maxTimeIncrement = value;
+                // Initial time increment must not be larger than max time increment
+                if (_initialTimeIncrement > _maxTimeIncrement) _initialTimeIncrement = _maxTimeIncrement;
             }
         }
         public bool Direct { get { return _direct; } set { _direct = value; } }

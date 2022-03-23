@@ -243,7 +243,8 @@ namespace PrePoMax.Forms
                 {
                     // Slip wear step
                     item = new ListViewItem("Slip wear step");
-                    SlipWearStep slipWearStep = new SlipWearStep(GetStepName());
+                    //SlipWearStep slipWearStep = new SlipWearStep(GetStepName());
+                    SlipWearStep slipWearStep = (SlipWearStep)CreateNewOrCloneLast(typeof(SlipWearStep));
                     slipWearStep.SolverType = defaultSolverType;
                     item.Tag = new ViewSlipWearStep(slipWearStep);
                     lvTypes.Items.Add(item);
@@ -306,6 +307,15 @@ namespace PrePoMax.Forms
             if (prevOrLastStep == null || prevOrLastStep.GetType() != stepTypeToCreate)
             {
                 newStep = (Step)Activator.CreateInstance(stepTypeToCreate, new object[] { GetStepName() });
+                //
+                if (prevOrLastStep != null)
+                {
+                    newStep.Perturbation = prevOrLastStep.Perturbation;
+                    newStep.Nlgeom = prevOrLastStep.Nlgeom;
+                    newStep.MaxIncrements = prevOrLastStep.MaxIncrements;
+                    newStep.IncrementationType = prevOrLastStep.IncrementationType;
+                    newStep.SolverType = prevOrLastStep.SolverType;
+                }
             }
             else
             {

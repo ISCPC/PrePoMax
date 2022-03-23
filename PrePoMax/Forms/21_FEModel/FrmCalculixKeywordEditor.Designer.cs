@@ -35,7 +35,7 @@
             this.btnOK = new System.Windows.Forms.Button();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.label2 = new System.Windows.Forms.Label();
-            this.btvKeywordsTree = new UserControls.BufferedTreeView();
+            this.cltvKeywordsTree = new UserControls.CodersLabTreeView();
             this.btnMoveDown = new System.Windows.Forms.Button();
             this.btnMoveUp = new System.Windows.Forms.Button();
             this.btnDelete = new System.Windows.Forms.Button();
@@ -98,7 +98,7 @@
             // splitContainer1.Panel1
             // 
             this.splitContainer1.Panel1.Controls.Add(this.label2);
-            this.splitContainer1.Panel1.Controls.Add(this.btvKeywordsTree);
+            this.splitContainer1.Panel1.Controls.Add(this.cltvKeywordsTree);
             this.splitContainer1.Panel1.Controls.Add(this.btnMoveDown);
             this.splitContainer1.Panel1.Controls.Add(this.btnMoveUp);
             this.splitContainer1.Panel1.Controls.Add(this.btnDelete);
@@ -124,23 +124,23 @@
             this.label2.TabIndex = 10;
             this.label2.Text = "CalculiX keywords tree";
             // 
-            // btvKeywordsTree
+            // cltvKeywordsTree
             // 
-            this.btvKeywordsTree.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.cltvKeywordsTree.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.btvKeywordsTree.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawText;
-            this.btvKeywordsTree.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btvKeywordsTree.ColorDeselectedBack = System.Drawing.SystemColors.Highlight;
-            this.btvKeywordsTree.ColorDeselectedFore = System.Drawing.SystemColors.ScrollBar;
-            this.btvKeywordsTree.ColorHighlightError = System.Drawing.Color.Red;
-            this.btvKeywordsTree.ColorSelectedFocusedBack = System.Drawing.SystemColors.Highlight;
-            this.btvKeywordsTree.ColorSelectedFocusedFore = System.Drawing.SystemColors.HighlightText;
-            this.btvKeywordsTree.Location = new System.Drawing.Point(3, 18);
-            this.btvKeywordsTree.Name = "btvKeywordsTree";
-            this.btvKeywordsTree.Size = new System.Drawing.Size(430, 571);
-            this.btvKeywordsTree.TabIndex = 2;
-            this.btvKeywordsTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.btvKeywordsTree_AfterSelect);
+            this.cltvKeywordsTree.ChangeHighlightOnFocusLost = false;
+            this.cltvKeywordsTree.DisableMouse = false;
+            this.cltvKeywordsTree.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.cltvKeywordsTree.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.cltvKeywordsTree.HighlightForeErrorColor = System.Drawing.Color.Red;
+            this.cltvKeywordsTree.Location = new System.Drawing.Point(3, 18);
+            this.cltvKeywordsTree.Name = "cltvKeywordsTree";
+            this.cltvKeywordsTree.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            this.cltvKeywordsTree.SelectionMode = UserControls.TreeViewSelectionMode.SingleSelect;
+            this.cltvKeywordsTree.Size = new System.Drawing.Size(430, 571);
+            this.cltvKeywordsTree.TabIndex = 2;
+            this.cltvKeywordsTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.cltvKeywordsTree_AfterSelect);
             // 
             // btnMoveDown
             // 
@@ -264,8 +264,7 @@
         private System.Windows.Forms.Button btnDelete;
         private System.Windows.Forms.Button btnAddKeyword;
         private System.Windows.Forms.Button btnOK;
-        //private UserControls.BufferedTreeView btvKeywordsTree; CodersLabTreeView
-        private UserControls.BufferedTreeView btvKeywordsTree; 
+        private UserControls.CodersLabTreeView cltvKeywordsTree; 
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Timer timerUpdate;
         private System.Windows.Forms.Label label3;

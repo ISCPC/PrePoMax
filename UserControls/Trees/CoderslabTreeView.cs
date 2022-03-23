@@ -177,16 +177,28 @@ namespace UserControls
 
         // Variables                                                                                                                
         private Color _highlightForeErrorColor = Color.Red;
-        private bool _disableMouse = true;
+		private Color _focusedSelectionBackColor = SystemColors.Highlight;
+		private Color _unfocusedSelectionBackColor = SystemColors.Control;
+		private bool _changeHighlightOnFocusLost = true;
+		private bool _disableMouse = false;
         
 
         // Properties                                                                                                               
-        public Color HighlightForeErrorColor { get { return _highlightForeErrorColor; } set { _highlightForeErrorColor = value; } }
+        public Color HighlightForeErrorColor
+		{
+			get { return _highlightForeErrorColor; }
+			set { _highlightForeErrorColor = value; }
+		}
         public bool DisableMouse { get { return _disableMouse; } set { _disableMouse = value; } }
+		public bool ChangeHighlightOnFocusLost
+		{
+			get { return _changeHighlightOnFocusLost; }
+			set { _changeHighlightOnFocusLost = value; }
+		}
 
 
-        // Methods                                                                                                                  
-        public void SetNodeForeColor(TreeNode node, Color color)
+		// Methods                                                                                                                  
+		public void SetNodeForeColor(TreeNode node, Color color)
         {
             if (htblSelectedNodesOrigColors.ContainsKey(node.GetHashCode()))
             {
@@ -198,7 +210,7 @@ namespace UserControls
 
                 // if the selected node got error, change its back color 
                 if (originalColors[1] == _highlightForeErrorColor) node.BackColor = _highlightForeErrorColor; 
-                else node.BackColor = SelectionBackColor;
+                else node.BackColor = _selectionBackColor;
             }
             else
             {
@@ -300,7 +312,7 @@ namespace UserControls
 		/// <summary>
 		/// Backcolor for selected nodes.
 		/// </summary>
-		private Color selectionBackColor = System.Drawing.SystemColors.Highlight;
+		private Color _selectionBackColor = SystemColors.Highlight;
 
 		/// <summary>
 		/// Keeps track whether a node click has been handled by the mouse down event. This is almost always the
@@ -382,11 +394,12 @@ namespace UserControls
 		{
 			get
 			{
-				return selectionBackColor;
+				return _selectionBackColor;
 			}
 			set
 			{
-				selectionBackColor = value;
+				_selectionBackColor = value;
+				_focusedSelectionBackColor = value;
 			}
 		}
 
@@ -635,10 +648,9 @@ namespace UserControls
 		private bool SelectNode(TreeNode tn, bool select, TreeViewAction tva)
 		{
 			bool blnSelected = false;
-
-			if (tn == null)
-				return false;
-
+			//
+			if (tn == null) return false;
+			//
 			if (select)
 			{
 				// Only try to select node if it was not already selected																		
@@ -647,32 +659,19 @@ namespace UserControls
 					// Check if node selection is cancelled
 					TreeViewCancelEventArgs tvcea = new TreeViewCancelEventArgs(tn, false, tva);
 					base.OnBeforeSelect(tvcea);
-					if (tvcea.Cancel)
-					{
-						// This node selection was cancelled!						
-						return false;
-					}
-
+					// This node selection was cancelled!
+					if (tvcea.Cancel) return false;
+					//
 					PreserveNodeColors(tn);
-
-                    if (tn.ForeColor == _highlightForeErrorColor)
-                    {
-                        tn.BackColor = _highlightForeErrorColor;
-                        tn.ForeColor = BackColor;
-                    }
-                    else
-                    {
-                        tn.BackColor = SelectionBackColor; // GKM moved from above
-                        tn.ForeColor = BackColor; // GKM moved from above									
-                    }
-
+					HighlightNode(tn);
+					//
 					htblSelectedNodes.Add(tn.GetHashCode(), tn);
 					blnSelected = true;
 					blnSelectionChanged = true;
-
+					//
 					base.OnAfterSelect(new TreeViewEventArgs(tn, tva));
 				}
-
+				//
 				tnMostRecentSelectedNode = tn;
 			}
 			else
@@ -681,19 +680,18 @@ namespace UserControls
 				if (IsNodeSelected(tn))
 				{
 					OnBeforeDeselect(tn);
-
+					//
 					Color[] originalColors = (Color[])this.htblSelectedNodesOrigColors[tn.GetHashCode()];
 					if (originalColors != null)
 					{
 						htblSelectedNodes.Remove(tn.GetHashCode());
 						blnSelectionChanged = true;
 						htblSelectedNodesOrigColors.Remove(tn.GetHashCode());
-
-						// GKM - Restore original node colors
-						tn.BackColor = originalColors[0]; // GKM - was BackColor;
-						tn.ForeColor = originalColors[1]; // GKM - was ForeColor;
+						//
+						tn.BackColor = originalColors[0];
+						tn.ForeColor = originalColors[1];
 					}
-
+					//
 					OnAfterDeselect(tn);
 				}
 			}
@@ -972,14 +970,14 @@ namespace UserControls
 			{
 				this.Invalidate(rect, false);
 				Update();
-				if (tn.BackColor != SelectionBackColor)
+				if (tn.BackColor != _selectionBackColor)
 				{
-					g.DrawRectangle(new Pen(new SolidBrush(SelectionBackColor), 1), rect);
+					g.DrawRectangle(new Pen(new SolidBrush(_selectionBackColor), 1), rect);
 				}
 			}
 			else
 			{
-				if (tn.BackColor != SelectionBackColor)
+				if (tn.BackColor != _selectionBackColor)
 				{
 					g.DrawRectangle(new Pen(new SolidBrush(BackColor), 1), tnMostRecentSelectedNode.Bounds.X, tnMostRecentSelectedNode.Bounds.Y, tnMostRecentSelectedNode.Bounds.Width, tnMostRecentSelectedNode.Bounds.Height);
 				}
@@ -1080,6 +1078,8 @@ namespace UserControls
 		/// <param name="e"></param>
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
+			Focus();
+
             tnKeysStartNode = null;
 
 			// Store number of mouse clicks in OnMouseDown event, because here we also get e.Clicks = 2 when an item was doubleclicked
@@ -1147,7 +1147,7 @@ namespace UserControls
 			// Only flash node is it's not yet selected
 			if (!IsNodeSelected(tn))
 			{
-				tn.BackColor = SelectionBackColor;
+				tn.BackColor = _selectionBackColor;
 				tn.ForeColor = this.BackColor;
 				this.Invalidate();
 				this.Refresh();
@@ -1742,6 +1742,61 @@ namespace UserControls
 
 		#endregion
 
+		#region OnGot/OnLost Focus
+		protected override void OnGotFocus(EventArgs e)
+        {
+			if (_changeHighlightOnFocusLost)
+			{
+				foreach (TreeNode node in SelectedNodes) HighlightNode(node);
+			}
+			//
+			base.OnGotFocus(e);
+        }
+        protected override void OnLostFocus(EventArgs e)
+        {
+			if (_changeHighlightOnFocusLost)
+			{
+				foreach (TreeNode node in SelectedNodes) HighlightNode(node);
+			}
+			//
+			base.OnLostFocus(e);
+        }
+
+		private void HighlightNode(TreeNode node)
+        {
+			if (Focused || !_changeHighlightOnFocusLost)
+			{
+				if (node.ForeColor == _highlightForeErrorColor)
+				{
+					node.BackColor = _highlightForeErrorColor;
+					node.ForeColor = BackColor;
+				}
+				else
+				{
+					node.BackColor = _selectionBackColor;
+					node.ForeColor = BackColor;
+				}
+			}
+			// Unfocused
+			else
+            {
+				Color[] originalColors = (Color[])htblSelectedNodesOrigColors[node.GetHashCode()];
+				if (originalColors != null)
+				{
+					if (node.ForeColor == _highlightForeErrorColor)
+					{
+						node.BackColor = _unfocusedSelectionBackColor;
+						node.ForeColor = _highlightForeErrorColor;
+					}
+					else
+					{
+						node.BackColor = _unfocusedSelectionBackColor;
+						node.ForeColor = originalColors[1];
+					}
+				}
+			}
+		}
+		#endregion
 	}
 
 	#region SelectedNodesCollection

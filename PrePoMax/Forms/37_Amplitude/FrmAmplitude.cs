@@ -55,9 +55,18 @@ namespace PrePoMax.Forms
         }
         private void InitializeComponent()
         {
+            this.tcProperties.SuspendLayout();
+            this.tpProperties.SuspendLayout();
             this.gbType.SuspendLayout();
-            this.gbProperties.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // tpProperties
+            // 
+            this.tpProperties.Size = new System.Drawing.Size(302, 284);
+            // 
+            // tpDataPoints
+            // 
+            this.tpDataPoints.Size = new System.Drawing.Size(302, 284);
             // 
             // gbType
             // 
@@ -74,18 +83,43 @@ namespace PrePoMax.Forms
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 285);
+            this.propertyGrid.Size = new System.Drawing.Size(296, 278);
             // 
-            // FrmFieldOutput
+            // FrmAmplitude
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.ClientSize = new System.Drawing.Size(334, 461);
             this.Name = "FrmAmplitude";
             this.Text = "Edit Amplitude";
+            this.VisibleChanged += new System.EventHandler(this.FrmAmplitude_VisibleChanged);
+            this.tcProperties.ResumeLayout(false);
+            this.tpProperties.ResumeLayout(false);
             this.gbType.ResumeLayout(false);
-            this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
 
+        }
+
+
+        // Event hadlers                                                                                                            
+        private void FrmAmplitude_VisibleChanged(object sender, EventArgs e)
+        {
+            if (Visible) { }
+            else dgvData.HidePlot();
+        }
+        private void TabPage_Paint(object sender, PaintEventArgs e)
+        {
+            SolidBrush fillBrush = new SolidBrush(((TabPage)sender).BackColor);
+            e.Graphics.FillRectangle(fillBrush, e.ClipRectangle);
+            // Enable copy/paste without first selecting the cell 0,0
+            if (sender == tpDataPoints)
+            {
+                ActiveControl = dgvData;
+                dgvData[0, 0].Selected = true;
+            }
+        }
+        private void Binding_ListChanged(object sender, ListChangedEventArgs e)
+        {
+            _propertyItemChanged = true;
         }
 
 
@@ -180,23 +214,7 @@ namespace PrePoMax.Forms
             //
             return true;
         }
-
-        // Event hadlers                                                                                                            
-        private void TabPage_Paint(object sender, PaintEventArgs e)
-        {
-            SolidBrush fillBrush = new SolidBrush(((TabPage)sender).BackColor);
-            e.Graphics.FillRectangle(fillBrush, e.ClipRectangle);
-            // Enable copy/paste without first selecting the cell 0,0
-            if (sender == tpDataPoints)
-            {
-                ActiveControl = dgvData;
-                dgvData[0, 0].Selected = true;
-            }
-        }
-        private void Binding_ListChanged(object sender, ListChangedEventArgs e)
-        {
-            _propertyItemChanged = true;
-        }
+        
 
         // Methods                                                                                                                  
         private void PopulateListOfAmplitudes()
@@ -253,5 +271,7 @@ namespace PrePoMax.Forms
                 col.Width += 10;
             }
         }
+
+       
     }
 }

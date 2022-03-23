@@ -1164,7 +1164,7 @@ namespace CaeModel
             // Mesh
             FeModel bdmModel = new FeModel("BDMmodel");
             bdmModel.Properties = _properties;
-            bdmModel.Mesh.AddMesh(_mesh, null);
+            bdmModel.Mesh.AddMesh(_mesh, null, true, false);
             // Materials
             Material materialElastic = new Material("Elastic");
             materialElastic.AddProperty(new Elastic(new double[][] { new double[] { 1000, 0, 0 } }));

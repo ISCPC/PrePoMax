@@ -614,6 +614,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cltvGeometry.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.cltvGeometry.ChangeHighlightOnFocusLost = false;
             this.cltvGeometry.DisableMouse = false;
             this.cltvGeometry.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.cltvGeometry.HideSelection = false;
@@ -716,6 +717,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cltvModel.BackColor = System.Drawing.SystemColors.Window;
             this.cltvModel.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.cltvModel.ChangeHighlightOnFocusLost = false;
             this.cltvModel.DisableMouse = false;
             this.cltvModel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.cltvModel.HideSelection = false;
@@ -857,6 +859,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cltvResults.BackColor = System.Drawing.SystemColors.Window;
             this.cltvResults.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.cltvResults.ChangeHighlightOnFocusLost = false;
             this.cltvResults.DisableMouse = false;
             this.cltvResults.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.cltvResults.HighlightForeErrorColor = System.Drawing.Color.Red;

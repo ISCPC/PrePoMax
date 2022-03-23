@@ -7208,20 +7208,16 @@ namespace CaeMesh
         }
         private int[] GetRenumberedNodesAndCells(int firstNodeId, out double[][] nodeCoor, ref int[][] cells)
         {
-            HashSet<int> nodeIds = new HashSet<int>();
+            HashSet<int> nodeIdsHash = new HashSet<int>();
             // Get all cells and all nodes ids for elementSet
-            for (int i = 0; i < cells.Length; i++)
-            {
-                nodeIds.UnionWith(cells[i]);
-                //for (int j = 0; j < cells[i].Length; j++)
-                //{
-                //    nodeIds.Add(cells[i][j]);
-                //}
-            }
+            for (int i = 0; i < cells.Length; i++) nodeIdsHash.UnionWith(cells[i]);
+            int[] nodeIds = nodeIdsHash.ToArray();
+            // Sort nodes
+            Array.Sort(nodeIds);
             // Get all node coordinates and prepare re-numbering map
             Dictionary<int, int> oldIds = new Dictionary<int, int>();   // the order of items is not retained
-            int[] orderedNodeIds = new int[nodeIds.Count];
-            nodeCoor = new double[nodeIds.Count][];
+            int[] orderedNodeIds = new int[nodeIds.Length];
+            nodeCoor = new double[nodeIds.Length][];
             int count = 0;
             foreach (int nodeId in nodeIds)
             {
