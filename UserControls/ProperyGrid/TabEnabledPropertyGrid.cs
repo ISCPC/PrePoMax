@@ -9,7 +9,7 @@ using System.Reflection;
 namespace UserControls
 {
     // http://kiwigis.blogspot.si/2009/05/adding-tab-key-support-to-propertygrid.html
-    public class TabbedPropertyGrid : PropertyGrid
+    public class TabEnabledPropertyGrid : PropertyGrid
     {
         // Variables                                                                                                                
         private bool _readOnly;
@@ -20,7 +20,7 @@ namespace UserControls
 
 
         // Constructors                                                                                                             
-        public TabbedPropertyGrid() : base() 
+        public TabEnabledPropertyGrid() : base() 
         {
             this.LineColor = System.Drawing.SystemColors.Control;
             this.DisabledItemForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
@@ -191,6 +191,7 @@ namespace UserControls
                     }
                 }
             }
+            else base.OnSelectedGridItemChanged(e);
         }
         //
         private void InitializeComponent()

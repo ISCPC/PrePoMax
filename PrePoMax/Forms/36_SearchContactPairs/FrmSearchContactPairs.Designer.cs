@@ -51,7 +51,7 @@ namespace PrePoMax.Forms
             this.gbPairs = new System.Windows.Forms.GroupBox();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
-            this.propertyGrid = new UserControls.TabbedPropertyGrid();
+            this.propertyGrid = new UserControls.TabEnabledPropertyGrid();
             this.tbAngle = new UserControls.UnitAwareTextBox();
             this.tbDistance = new UserControls.UnitAwareTextBox();
             this.lMethod = new System.Windows.Forms.Label();
@@ -344,7 +344,7 @@ namespace PrePoMax.Forms
 
         private System.Windows.Forms.DataGridView dgvData;
         private System.Windows.Forms.GroupBox gbSearch;
-        private UserControls.TabbedPropertyGrid propertyGrid;
+        private UserControls.TabEnabledPropertyGrid propertyGrid;
         private UserControls.UnitAwareTextBox tbAngle;
         private System.Windows.Forms.Label lAngle;
         private UserControls.UnitAwareTextBox tbDistance;

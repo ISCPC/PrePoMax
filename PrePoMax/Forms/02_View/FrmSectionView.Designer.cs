@@ -33,7 +33,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.hsbPosition = new System.Windows.Forms.HScrollBar();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.propertyGrid = new UserControls.TabbedPropertyGrid();
+            this.propertyGrid = new UserControls.TabEnabledPropertyGrid();
             this.cmsNormal = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
@@ -246,7 +246,7 @@
         private System.Windows.Forms.HScrollBar hsbPosition;
         private System.Windows.Forms.Timer timerUpdate;
         private System.Windows.Forms.Button btnOK;
-        protected UserControls.TabbedPropertyGrid propertyGrid;
+        protected UserControls.TabEnabledPropertyGrid propertyGrid;
         private System.Windows.Forms.ContextMenuStrip cmsNormal;
         private System.Windows.Forms.ToolStripMenuItem xNormalToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem yNormalToolStripMenuItem;

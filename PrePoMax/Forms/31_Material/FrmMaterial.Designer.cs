@@ -54,7 +54,7 @@
             System.Windows.Forms.ListViewItem listViewItem14 = new System.Windows.Forms.ListViewItem("4");
             System.Windows.Forms.ListViewItem listViewItem15 = new System.Windows.Forms.ListViewItem("5");
             this.tvProperties = new UserControls.CodersLabTreeView();
-            this.propertyGrid = new UserControls.TabbedPropertyGrid();
+            this.propertyGrid = new UserControls.TabEnabledPropertyGrid();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.gbData = new System.Windows.Forms.GroupBox();
@@ -459,7 +459,7 @@
         #endregion
 
         private UserControls.CodersLabTreeView tvProperties;
-        private UserControls.TabbedPropertyGrid propertyGrid;
+        private UserControls.TabEnabledPropertyGrid propertyGrid;
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.GroupBox gbData;

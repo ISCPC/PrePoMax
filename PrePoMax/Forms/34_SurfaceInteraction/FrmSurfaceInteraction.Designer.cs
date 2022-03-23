@@ -34,7 +34,7 @@
             System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Gap conductance");
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tvProperties = new System.Windows.Forms.TreeView();
-            this.propertyGrid = new UserControls.TabbedPropertyGrid();
+            this.propertyGrid = new UserControls.TabEnabledPropertyGrid();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.gbData = new System.Windows.Forms.GroupBox();
@@ -336,7 +336,7 @@
         #endregion
 
         private System.Windows.Forms.TreeView tvProperties;
-        private UserControls.TabbedPropertyGrid propertyGrid;
+        private UserControls.TabEnabledPropertyGrid propertyGrid;
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.GroupBox gbData;

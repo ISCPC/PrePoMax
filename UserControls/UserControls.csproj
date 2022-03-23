@@ -176,7 +176,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ProperyGrid\ColorEditorEx.cs" />
-    <Compile Include="ProperyGrid\TabbedPropertyGrid.cs">
+    <Compile Include="ProperyGrid\TabEnabledPropertyGrid.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Trees\CodersLabTreeView.cs">
@@ -252,8 +252,8 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ProperyGrid\TabbedPropertyGrid.resx">
-      <DependentUpon>TabbedPropertyGrid.cs</DependentUpon>
+    <EmbeddedResource Include="ProperyGrid\TabEnabledPropertyGrid.resx">
+      <DependentUpon>TabEnabledPropertyGrid.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Trees\CodersLabTreeView.resx">
       <DependentUpon>CodersLabTreeView.cs</DependentUpon>

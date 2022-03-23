@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.gbProperties = new System.Windows.Forms.GroupBox();
-            this.propertyGrid = new UserControls.TabbedPropertyGrid();
+            this.propertyGrid = new UserControls.TabEnabledPropertyGrid();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOkAddNew = new System.Windows.Forms.Button();
@@ -127,7 +127,7 @@
         #endregion
 
         protected System.Windows.Forms.GroupBox gbProperties;
-        protected UserControls.TabbedPropertyGrid propertyGrid;
+        protected UserControls.TabEnabledPropertyGrid propertyGrid;
         protected System.Windows.Forms.Button btnOK;
         protected System.Windows.Forms.Button btnCancel;
         protected System.Windows.Forms.Button btnOkAddNew;

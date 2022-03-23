@@ -32,7 +32,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.hsbPosition = new System.Windows.Forms.HScrollBar();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.propertyGrid = new UserControls.TabbedPropertyGrid();
+            this.propertyGrid = new UserControls.TabEnabledPropertyGrid();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnDisable = new System.Windows.Forms.Button();
@@ -169,7 +169,7 @@
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.HScrollBar hsbPosition;
         private System.Windows.Forms.Button btnOK;
-        protected UserControls.TabbedPropertyGrid propertyGrid;
+        protected UserControls.TabEnabledPropertyGrid propertyGrid;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button btnDisable;
         private System.Windows.Forms.Panel panel1;

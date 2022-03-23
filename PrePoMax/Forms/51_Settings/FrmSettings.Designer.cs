@@ -34,7 +34,7 @@
             System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("3");
             this.gbProperties = new System.Windows.Forms.GroupBox();
             this.lvSettings = new UserControls.ListViewWithSelection();
-            this.propertyGrid = new UserControls.TabbedPropertyGrid();
+            this.propertyGrid = new UserControls.TabEnabledPropertyGrid();
             this.cmsPropertyGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiResetAll = new System.Windows.Forms.ToolStripMenuItem();
             this.btnOK = new System.Windows.Forms.Button();
@@ -176,7 +176,7 @@
         #endregion
 
         private System.Windows.Forms.GroupBox gbProperties;
-        private UserControls.TabbedPropertyGrid propertyGrid;
+        private UserControls.TabEnabledPropertyGrid propertyGrid;
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
         private UserControls.ListViewWithSelection lvSettings;
