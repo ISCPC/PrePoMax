@@ -131,11 +131,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btvKeywordsTree.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawText;
             this.btvKeywordsTree.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btvKeywordsTree.HighLightDeselectedColor = System.Drawing.SystemColors.Highlight;
-            this.btvKeywordsTree.HighLightDeselectedTextColor = System.Drawing.SystemColors.ScrollBar;
-            this.btvKeywordsTree.HighlightErrorColor = System.Drawing.Color.Red;
-            this.btvKeywordsTree.HighLightSelectedColor = System.Drawing.SystemColors.Highlight;
-            this.btvKeywordsTree.HighLightSelectedTextColor = System.Drawing.SystemColors.HighlightText;
+            this.btvKeywordsTree.ColorDeselectedBack = System.Drawing.SystemColors.Highlight;
+            this.btvKeywordsTree.ColorDeselectedFore = System.Drawing.SystemColors.ScrollBar;
+            this.btvKeywordsTree.ColorHighlightError = System.Drawing.Color.Red;
+            this.btvKeywordsTree.ColorSelectedFocusedBack = System.Drawing.SystemColors.Highlight;
+            this.btvKeywordsTree.ColorSelectedFocusedFore = System.Drawing.SystemColors.HighlightText;
             this.btvKeywordsTree.Location = new System.Drawing.Point(3, 18);
             this.btvKeywordsTree.Name = "btvKeywordsTree";
             this.btvKeywordsTree.Size = new System.Drawing.Size(430, 571);

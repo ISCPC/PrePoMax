@@ -52,7 +52,7 @@ namespace PrePoMax.Forms
                 if (btvKeywordsTree.SelectedNode.ForeColor == Color.Red)
                 {
                     userNode = true;
-                    btvKeywordsTree.HighLightSelectedColor = Color.Red;
+                    btvKeywordsTree.ColorSelectedFocusedBack = Color.Red;
                 }
                 else btvKeywordsTree.ResetHighlightColors();
             }

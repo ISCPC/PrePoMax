@@ -23,8 +23,8 @@ namespace PrePoMax.Forms
         private Material _material;
         private Controller _controller;
         private TabPage[] _pages;
-        private bool _useSimpleEditor;
-        private bool _preview;
+        private bool _useSimpleEditor;      // a switch to change the form into a simple material editor form
+        private bool _preview;              // a switch to change the form into a preview material form
 
 
         // Properties                                                                                                               
@@ -78,6 +78,12 @@ namespace PrePoMax.Forms
             cbTemperatureDependent.Enabled = !(_useSimpleEditor || _preview);
             tvProperties.Visible = !_useSimpleEditor;
             lvAddedProperties.Visible = !_useSimpleEditor;
+            //
+            if (Visible) { }
+            else
+            {
+                dgvData.HidePlot();
+            }
         }
         private void TabPage_Paint(object sender, PaintEventArgs e)
         {
@@ -313,11 +319,7 @@ namespace PrePoMax.Forms
         {
             _useSimpleEditor = false;
             //
-            if (!_preview)
-            {
-                dgvData.HidePlot();
-                Hide();
-            }
+            Hide();
         }
         private void FrmMaterial_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -484,7 +486,7 @@ namespace PrePoMax.Forms
             // Buttons
             btnOKAddNew.Visible = !_preview;
             btnOK.Visible = !_preview;
-            btnCancel.Visible = !_preview;
+            //btnCancel.Visible = !_preview;
         }
         private void ClearControls()
         {

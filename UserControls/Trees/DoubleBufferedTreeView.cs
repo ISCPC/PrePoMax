@@ -17,25 +17,29 @@ namespace UserControls
 
 
         // Variables                                                                    
-        private Color _highlightSelectedTextColor;
-        private Color _highlightSelectedColor;
-        private Color _highlightDeselectedTextColor;
-        private Color _highlightDeselectedColor;
+        private Color _selectedFocusedForeColor;
+        private Color _selectedFocusedBackColor;
+        private Color _selectedUnfocusedForeColor;
+        private Color _selectedUnfocusedBackColor;
+        private Color _deselectedForeColor;
+        private Color _deselectedBackColor;
         private Color _highlightErrorColor;
 
 
         // Properties                                                                   
-        public Color HighLightSelectedTextColor { get { return _highlightSelectedTextColor; } set { _highlightSelectedTextColor = value; } }
-        public Color HighLightSelectedColor { get { return _highlightSelectedColor; } set { _highlightSelectedColor = value; } }
-        public Color HighLightDeselectedTextColor { get { return _highlightDeselectedTextColor; } set { _highlightDeselectedTextColor = value; } }
-        public Color HighLightDeselectedColor { get { return _highlightDeselectedColor; } set { _highlightDeselectedColor = value; } }
-        public Color HighlightErrorColor { get { return _highlightErrorColor; } set { _highlightErrorColor = value; } }
+        public Color ColorSelectedFocusedFore { get { return _selectedFocusedForeColor; } set { _selectedFocusedForeColor = value; } }
+        public Color ColorSelectedFocusedBack { get { return _selectedFocusedBackColor; } set { _selectedFocusedBackColor = value; } }
+        public Color ColorSelectedUnfocusedFore { get { return _selectedUnfocusedForeColor; } set { _selectedUnfocusedForeColor = value; } }
+        public Color ColorSelectedUnfocusedBack { get { return _selectedUnfocusedBackColor; } set { _selectedUnfocusedBackColor = value; } }
+        public Color ColorDeselectedFore { get { return _deselectedForeColor; } set { _deselectedForeColor = value; } }
+        public Color ColorDeselectedBack { get { return _deselectedBackColor; } set { _deselectedBackColor = value; } }
+        public Color ColorHighlightError { get { return _highlightErrorColor; } set { _highlightErrorColor = value; } }
 
 
         // Constructor                                                                  
         public BufferedTreeView()
         {
-            //this.SetStyle(ControlStyles.DoubleBuffer, true);
+            this.SetStyle(ControlStyles.DoubleBuffer, true);
             this.DrawMode = TreeViewDrawMode.OwnerDrawText;
             //
             ResetHighlightColors();
@@ -77,61 +81,59 @@ namespace UserControls
         // Methods                                                                      
         protected override void OnDrawNode(DrawTreeNodeEventArgs e)
         {
-            TreeNodeStates treeState = e.State;
             Font treeFont = e.Node.NodeFont ?? e.Node.TreeView.Font;
-
+            // New brush
+            SolidBrush selectedFocusedTreeBrush = new SolidBrush(_selectedFocusedBackColor);
+            SolidBrush selectedUnfocusedTreeBrush = new SolidBrush(_selectedUnfocusedBackColor);
+            SolidBrush deselectedTreeBrush = new SolidBrush(_deselectedBackColor);
             // Colors
             Color foreColor = e.Node.ForeColor;
-            string strDeselectedColor = @"#6B6E77";
-            string strSelectedColor = @"#94C7FC";
-            Color selectedColor = System.Drawing.ColorTranslator.FromHtml(strSelectedColor);
-            Color deselectedColor = System.Drawing.ColorTranslator.FromHtml(strDeselectedColor);
-
-            selectedColor = HighLightSelectedColor;
-            deselectedColor = HighLightDeselectedColor;
-
-            // New brush
-            SolidBrush selectedTreeBrush = new SolidBrush(selectedColor);
-            SolidBrush deselectedTreeBrush = new SolidBrush(deselectedColor);
-
-            if (foreColor == _highlightErrorColor) selectedTreeBrush = new SolidBrush(_highlightErrorColor);
-
-            // Set default font color
-            if (foreColor == Color.Empty)
-                foreColor = e.Node.TreeView.ForeColor;
-
+            if (foreColor == Color.Empty) foreColor = e.Node.TreeView.ForeColor;
+            if (foreColor == _highlightErrorColor)
+            {
+                selectedFocusedTreeBrush = new SolidBrush(_highlightErrorColor);
+                selectedUnfocusedTreeBrush = new SolidBrush(_highlightErrorColor);
+            }
             // Change bounds
             Rectangle rect = new Rectangle(e.Bounds.Left + 1, e.Bounds.Top, e.Bounds.Width - 2, e.Bounds.Height);
+
+            //rect = new Rectangle(e.Bounds.Left , e.Bounds.Top, e.Bounds.Width , e.Bounds.Height);
 
             // Draw bounding box and fill
             if (e.Node == e.Node.TreeView.SelectedNode)
             {
-                // Change fore color
-                foreColor = SystemColors.HighlightText;
                 // Use appropriate brush depending on if the tree has focus
                 if (this.Focused)
                 {
-                    e.Graphics.FillRectangle(selectedTreeBrush, rect);
-                    ControlPaint.DrawFocusRectangle(e.Graphics, rect, foreColor, SystemColors.Highlight);
+                    foreColor = _selectedFocusedForeColor;
+                    //
+                    e.Graphics.FillRectangle(selectedFocusedTreeBrush, rect);
+                    ControlPaint.DrawFocusRectangle(e.Graphics, rect, _selectedFocusedBackColor, _selectedFocusedBackColor);
                     TextRenderer.DrawText(e.Graphics, e.Node.Text, treeFont, rect, foreColor, TextFormatFlags.VerticalCenter);
                 }
                 else
+                // Unfocused
                 {
-                    e.Graphics.FillRectangle(deselectedTreeBrush, rect);
-                    ControlPaint.DrawFocusRectangle(e.Graphics, rect, foreColor, SystemColors.Highlight);
+                    foreColor = _selectedUnfocusedForeColor;
+                    //
+                    e.Graphics.FillRectangle(selectedUnfocusedTreeBrush, rect);
+                    ControlPaint.DrawFocusRectangle(e.Graphics, rect, _selectedUnfocusedBackColor, _selectedUnfocusedBackColor);
                     TextRenderer.DrawText(e.Graphics, e.Node.Text, treeFont, rect, foreColor, TextFormatFlags.VerticalCenter);
                 }
             }
             else
             {
+                // Change fore color
+                foreColor = _deselectedForeColor;
+                //
                 if ((e.State & TreeNodeStates.Hot) == TreeNodeStates.Hot)
                 {
-                    e.Graphics.FillRectangle(SystemBrushes.Window, rect);
-                    TextRenderer.DrawText(e.Graphics, e.Node.Text, treeFont, rect, System.Drawing.Color.Black, TextFormatFlags.VerticalCenter);
+                    e.Graphics.FillRectangle(deselectedTreeBrush, rect);
+                    TextRenderer.DrawText(e.Graphics, e.Node.Text, treeFont, rect, foreColor, TextFormatFlags.VerticalCenter);
                 }
                 else
                 {
-                    e.Graphics.FillRectangle(SystemBrushes.Window, rect);
+                    e.Graphics.FillRectangle(deselectedTreeBrush, rect);
                     TextRenderer.DrawText(e.Graphics, e.Node.Text, treeFont, rect, foreColor, TextFormatFlags.VerticalCenter);
                 }
             }
@@ -139,12 +141,15 @@ namespace UserControls
         //
         public void ResetHighlightColors()
         {
-            _highlightSelectedTextColor = SystemColors.HighlightText;
-            _highlightSelectedColor = SystemColors.Highlight;
-
-            _highlightDeselectedTextColor = SystemColors.ScrollBar;
-            _highlightDeselectedColor = SystemColors.Highlight;
-
+            _selectedFocusedForeColor = SystemColors.HighlightText; // white
+            _selectedFocusedBackColor = SystemColors.Highlight;     // blue
+            //
+            _selectedUnfocusedForeColor = SystemColors.ControlText; // black
+            _selectedUnfocusedBackColor = SystemColors.Control;     // light gray
+            //
+            _deselectedForeColor = SystemColors.ControlText;        // black
+            _deselectedBackColor = SystemColors.Window;             // white
+            //
             _highlightErrorColor = Color.Red;
         }
         //

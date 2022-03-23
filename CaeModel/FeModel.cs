@@ -316,7 +316,7 @@ namespace CaeModel
             HistoryOutput historyOutput;
             BoundaryCondition bc;
             Load load;
-            FeSurface s;
+            //
             foreach (var step in _stepCollection.StepsList)
             {
                 // History output
@@ -346,33 +346,9 @@ namespace CaeModel
                 // Boundary conditions
                 foreach (var bcEntry in step.BoundaryConditions)
                 {
-                    bc = bcEntry.Value;                    
-                    if (bc is FixedBC fix)
-                    {
-                        valid = (fix.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(fix.RegionName))
-                                || (fix.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(fix.RegionName)))
-                                || (fix.RegionType == RegionTypeEnum.ReferencePointName
-                                && (_mesh.ReferencePoints.ContainsValidKey(fix.RegionName)));
-                    }
-                    else if (bc is DisplacementRotation dr)
-                    {
-                        valid = (dr.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(dr.RegionName))
-                                || (dr.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(dr.RegionName)))
-                                || (dr.RegionType == RegionTypeEnum.ReferencePointName
-                                && (_mesh.ReferencePoints.ContainsValidKey(dr.RegionName)));
-                    }
-                    else if (bc is SubmodelBC sm)
-                    {
-                        valid = (sm.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(sm.RegionName))
-                                || (sm.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(sm.RegionName)));
-                    }
-                    else if (bc is TemperatureBC tmp)
-                    {
-                        valid = (tmp.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(tmp.RegionName))
-                                || (tmp.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(tmp.RegionName)));
-                    }
-                    else 
-                        throw new NotSupportedException();
+                    bc = bcEntry.Value;
+                    // Region
+                    valid = IsBoundaryConditionRegionValid(bc);
                     // Amplitude
                     if (bc.AmplitudeName != BoundaryCondition.DefaultAmplitudeName &&
                         !_amplitudes.ContainsValidKey(bc.AmplitudeName)) valid = false;
@@ -384,76 +360,8 @@ namespace CaeModel
                 foreach (var loadEntry in step.Loads)
                 {
                     load = loadEntry.Value;
-                    if (load is CLoad cl)
-                    {
-                        valid = (cl.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(cl.RegionName))
-                                || (cl.RegionType == RegionTypeEnum.ReferencePointName
-                                && (_mesh.ReferencePoints.ContainsValidKey(cl.RegionName)));
-                    }
-                    else if (load is MomentLoad ml)
-                    {
-                        valid = (ml.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(ml.RegionName))
-                                || (ml.RegionType == RegionTypeEnum.ReferencePointName
-                                && (_mesh.ReferencePoints.ContainsValidKey(ml.RegionName)));
-                    }
-                    else if (load is DLoad dl)
-                    {
-                        valid = (_mesh.Surfaces.TryGetValue(dl.SurfaceName, out s) && s.Valid);
-                    }
-                    else if (load is STLoad stl)
-                    {
-                        valid = (_mesh.Surfaces.TryGetValue(stl.SurfaceName, out s) && s.Valid);
-                    }
-                    else if (load is ShellEdgeLoad sel)
-                    {
-                        valid = (_mesh.Surfaces.TryGetValue(sel.SurfaceName, out s) && s.Valid);
-                    }
-                    else if (load is GravityLoad gl)
-                    {
-                        valid = (gl.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(gl.RegionName))
-                                || (gl.RegionType == RegionTypeEnum.ElementSetName
-                                && _mesh.ElementSets.ContainsValidKey(gl.RegionName)
-                                || (gl.RegionType == RegionTypeEnum.Selection && _mesh.GetPartNamesByIds(gl.CreationIds) != null &&
-                                   _mesh.GetPartNamesByIds(gl.CreationIds).Length == gl.CreationIds.Length));
-                    }
-                    else if (load is CentrifLoad cf)
-                    {
-                        valid = (cf.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(cf.RegionName))
-                                || (cf.RegionType == RegionTypeEnum.ElementSetName
-                                && _mesh.ElementSets.ContainsValidKey(cf.RegionName)
-                                || (cf.RegionType == RegionTypeEnum.Selection && _mesh.GetPartNamesByIds(cf.CreationIds) != null &&
-                                   _mesh.GetPartNamesByIds(cf.CreationIds).Length == cf.CreationIds.Length));
-                    }
-                    else if (load is PreTensionLoad ptl)
-                    {
-                        valid = (_mesh.Surfaces.TryGetValue(ptl.SurfaceName, out s) && s.Valid && s.Type == FeSurfaceType.Element);
-                    }
-                    // Thermal
-                    else if (load is CFlux cfl)
-                    {
-                        valid = (cfl.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(cfl.RegionName));
-                    }
-                    else if (load is DFlux df)
-                    {
-                        valid = (_mesh.Surfaces.TryGetValue(df.SurfaceName, out s) && s.Valid);
-                    }
-                    else if (load is BodyFlux bf)
-                    {
-                        valid = (bf.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(bf.RegionName))
-                                || (bf.RegionType == RegionTypeEnum.ElementSetName
-                                && _mesh.ElementSets.ContainsValidKey(bf.RegionName)
-                                || (bf.RegionType == RegionTypeEnum.Selection && _mesh.GetPartNamesByIds(bf.CreationIds) != null &&
-                                   _mesh.GetPartNamesByIds(bf.CreationIds).Length == bf.CreationIds.Length));
-                    }
-                    else if (load is FilmHeatTransfer fht)
-                    {
-                        valid = (_mesh.Surfaces.TryGetValue(fht.SurfaceName, out s) && s.Valid);
-                    }
-                    else if (load is RadiationHeatTransfer rht)
-                    {
-                        valid = (_mesh.Surfaces.TryGetValue(rht.SurfaceName, out s) && s.Valid);
-                    }
-                    else throw new NotSupportedException();
+                    // Region
+                    valid = IsLoadRegionValid(load);
                     // Amplitude
                     if (load.AmplitudeName != BoundaryCondition.DefaultAmplitudeName && 
                         !_amplitudes.ContainsValidKey(load.AmplitudeName)) valid = false;
@@ -464,6 +372,116 @@ namespace CaeModel
             }
             //
             return invalidItems.ToArray();
+        }
+        public bool IsBoundaryConditionRegionValid(BoundaryCondition bc)
+        {
+            bool valid;
+            //
+            if (bc is FixedBC fix)
+            {
+                valid = (fix.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(fix.RegionName))
+                        || (fix.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(fix.RegionName)))
+                        || (fix.RegionType == RegionTypeEnum.ReferencePointName
+                        && (_mesh.ReferencePoints.ContainsValidKey(fix.RegionName)));
+            }
+            else if (bc is DisplacementRotation dr)
+            {
+                valid = (dr.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(dr.RegionName))
+                        || (dr.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(dr.RegionName)))
+                        || (dr.RegionType == RegionTypeEnum.ReferencePointName
+                        && (_mesh.ReferencePoints.ContainsValidKey(dr.RegionName)));
+            }
+            else if (bc is SubmodelBC sm)
+            {
+                valid = (sm.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(sm.RegionName))
+                        || (sm.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(sm.RegionName)));
+            }
+            else if (bc is TemperatureBC tmp)
+            {
+                valid = (tmp.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(tmp.RegionName))
+                        || (tmp.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(tmp.RegionName)));
+            }
+            else throw new NotSupportedException();
+            //
+            return valid;
+        }
+        public bool IsLoadRegionValid(Load load)
+        {
+            bool valid;
+            FeSurface s;
+            //
+            if (load is CLoad cl)
+            {
+                valid = (cl.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(cl.RegionName))
+                        || (cl.RegionType == RegionTypeEnum.ReferencePointName
+                        && (_mesh.ReferencePoints.ContainsValidKey(cl.RegionName)));
+            }
+            else if (load is MomentLoad ml)
+            {
+                valid = (ml.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(ml.RegionName))
+                        || (ml.RegionType == RegionTypeEnum.ReferencePointName
+                        && (_mesh.ReferencePoints.ContainsValidKey(ml.RegionName)));
+            }
+            else if (load is DLoad dl)
+            {
+                valid = (_mesh.Surfaces.TryGetValue(dl.SurfaceName, out s) && s.Valid);
+            }
+            else if (load is STLoad stl)
+            {
+                valid = (_mesh.Surfaces.TryGetValue(stl.SurfaceName, out s) && s.Valid);
+            }
+            else if (load is ShellEdgeLoad sel)
+            {
+                valid = (_mesh.Surfaces.TryGetValue(sel.SurfaceName, out s) && s.Valid);
+            }
+            else if (load is GravityLoad gl)
+            {
+                valid = (gl.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(gl.RegionName))
+                        || (gl.RegionType == RegionTypeEnum.ElementSetName
+                        && _mesh.ElementSets.ContainsValidKey(gl.RegionName)
+                        || (gl.RegionType == RegionTypeEnum.Selection && _mesh.GetPartNamesByIds(gl.CreationIds) != null &&
+                           _mesh.GetPartNamesByIds(gl.CreationIds).Length == gl.CreationIds.Length));
+            }
+            else if (load is CentrifLoad cf)
+            {
+                valid = (cf.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(cf.RegionName))
+                        || (cf.RegionType == RegionTypeEnum.ElementSetName
+                        && _mesh.ElementSets.ContainsValidKey(cf.RegionName)
+                        || (cf.RegionType == RegionTypeEnum.Selection && _mesh.GetPartNamesByIds(cf.CreationIds) != null &&
+                           _mesh.GetPartNamesByIds(cf.CreationIds).Length == cf.CreationIds.Length));
+            }
+            else if (load is PreTensionLoad ptl)
+            {
+                valid = (_mesh.Surfaces.TryGetValue(ptl.SurfaceName, out s) && s.Valid && s.Type == FeSurfaceType.Element);
+            }
+            // Thermal
+            else if (load is CFlux cfl)
+            {
+                valid = (cfl.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(cfl.RegionName));
+            }
+            else if (load is DFlux df)
+            {
+                valid = (_mesh.Surfaces.TryGetValue(df.SurfaceName, out s) && s.Valid);
+            }
+            else if (load is BodyFlux bf)
+            {
+                valid = (bf.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(bf.RegionName))
+                        || (bf.RegionType == RegionTypeEnum.ElementSetName
+                        && _mesh.ElementSets.ContainsValidKey(bf.RegionName)
+                        || (bf.RegionType == RegionTypeEnum.Selection && _mesh.GetPartNamesByIds(bf.CreationIds) != null &&
+                           _mesh.GetPartNamesByIds(bf.CreationIds).Length == bf.CreationIds.Length));
+            }
+            else if (load is FilmHeatTransfer fht)
+            {
+                valid = (_mesh.Surfaces.TryGetValue(fht.SurfaceName, out s) && s.Valid);
+            }
+            else if (load is RadiationHeatTransfer rht)
+            {
+                valid = (_mesh.Surfaces.TryGetValue(rht.SurfaceName, out s) && s.Valid);
+            }
+            else throw new NotSupportedException();
+            //
+            return valid;
         }
         private void SetItemValidity(string stepName, NamedClass item, bool validity, List<Tuple<NamedClass, string>> items)
         {

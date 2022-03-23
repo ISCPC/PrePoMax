@@ -168,12 +168,6 @@
             this.btvLibrary.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.btvLibrary.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawText;
-            this.btvLibrary.HighLightDeselectedColor = System.Drawing.SystemColors.Highlight;
-            this.btvLibrary.HighLightDeselectedTextColor = System.Drawing.SystemColors.ScrollBar;
-            this.btvLibrary.HighlightErrorColor = System.Drawing.Color.Red;
-            this.btvLibrary.HighLightSelectedColor = System.Drawing.SystemColors.Highlight;
-            this.btvLibrary.HighLightSelectedTextColor = System.Drawing.SystemColors.HighlightText;
             this.btvLibrary.Location = new System.Drawing.Point(6, 51);
             this.btvLibrary.Name = "btvLibrary";
             treeNode1.Name = "Materials";

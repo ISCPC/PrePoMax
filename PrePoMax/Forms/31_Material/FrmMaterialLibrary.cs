@@ -65,6 +65,7 @@ namespace PrePoMax.Forms
                 //
                 _frmMaterial = new FrmMaterial(_controller);
                 _frmMaterial.Text = "Preview Material Properties";
+                _frmMaterial.VisibleChanged += _frmMaterial_VisibleChanged;
                 _frmMaterial.PrepareFormForPreview();
                 //
                 btvLibrary_AfterSelect(null, null);
@@ -74,6 +75,16 @@ namespace PrePoMax.Forms
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void _frmMaterial_VisibleChanged(object sender, EventArgs e)
+        {
+            if (_frmMaterial.Visible) { }
+            else
+            {
+                if (cbPreview.Checked) cbPreview.Checked = false;
+            }
+        }
+
+
         // Libraries
         private void btnNew_Click(object sender, EventArgs e)
         {

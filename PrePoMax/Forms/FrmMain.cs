@@ -783,6 +783,7 @@ namespace PrePoMax
                 else if (nodeName == "Constraints") tsmiCreateConstraint_Click(null, null);
                 else if (nodeName == "Surface interactions") tsmiCreateSurfaceInteraction_Click(null, null);
                 else if (nodeName == "Contact pairs") tsmiCreateContactPair_Click(null, null);
+                else if (nodeName == "Amplitudes") tsmiCreateAmplitude_Click(null, null);
                 else if (nodeName == "Initial conditions") tsmiCreateInitialCondition_Click(null, null);
                 else if (nodeName == "Steps") tsmiCreateStep_Click(null, null);
                 else if (nodeName == "History outputs" && stepName != null) CreateHistoryOutput(stepName);
@@ -823,6 +824,7 @@ namespace PrePoMax
                 else if (namedClass is CaeModel.Constraint) EditConstraint(namedClass.Name);
                 else if (namedClass is SurfaceInteraction) EditSurfaceInteraction(namedClass.Name);
                 else if (namedClass is ContactPair) EditContactPair(namedClass.Name);
+                else if (namedClass is Amplitude) EditAmplitude(namedClass.Name);
                 else if (namedClass is InitialCondition) EditInitialCondition(namedClass.Name);
                 else if (namedClass is Step) EditStep(namedClass.Name);
                 else if (namedClass is HistoryOutput) EditHistoryOutput(stepName, namedClass.Name);
@@ -961,6 +963,7 @@ namespace PrePoMax
                 ApplyActionOnItems<CaeModel.Constraint>(items, DeleteConstraints);
                 ApplyActionOnItems<SurfaceInteraction>(items, DeleteSurfaceInteractions);
                 ApplyActionOnItems<ContactPair>(items, DeleteContactPairs);
+                ApplyActionOnItems<Amplitude>(items, DeleteAmplitudes);
                 ApplyActionOnItems<InitialCondition>(items, DeleteInitialConditions);
                 // First delete step items and then steps
                 DeleteParentItems<HistoryOutput>(items, parentNames, DeleteHistoryOutputs);
