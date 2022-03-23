@@ -81,12 +81,15 @@ namespace UserControls
         // Methods                                                                      
         protected override void OnDrawNode(DrawTreeNodeEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("OnDraw" + DateTime.Now);
+            //
             Font treeFont = e.Node.NodeFont ?? e.Node.TreeView.Font;
             // New brush
             SolidBrush selectedFocusedTreeBrush = new SolidBrush(_selectedFocusedBackColor);
             SolidBrush selectedUnfocusedTreeBrush = new SolidBrush(_selectedUnfocusedBackColor);
             SolidBrush deselectedTreeBrush = new SolidBrush(_deselectedBackColor);
             // Colors
+            Color backColor = e.Node.BackColor;
             Color foreColor = e.Node.ForeColor;
             if (foreColor == Color.Empty) foreColor = e.Node.TreeView.ForeColor;
             if (foreColor == _highlightErrorColor)
@@ -124,16 +127,21 @@ namespace UserControls
             else
             {
                 // Change fore color
-                foreColor = _deselectedForeColor;
+                foreColor = e.Node.ForeColor;
+                backColor = e.Node.BackColor;
+                SolidBrush backBrush = new SolidBrush(backColor);
+                //foreColor = _deselectedForeColor;
                 //
                 if ((e.State & TreeNodeStates.Hot) == TreeNodeStates.Hot)
                 {
-                    e.Graphics.FillRectangle(deselectedTreeBrush, rect);
+                    //e.Graphics.FillRectangle(deselectedTreeBrush, rect);
+                    e.Graphics.FillRectangle(backBrush, rect);
                     TextRenderer.DrawText(e.Graphics, e.Node.Text, treeFont, rect, foreColor, TextFormatFlags.VerticalCenter);
                 }
                 else
                 {
-                    e.Graphics.FillRectangle(deselectedTreeBrush, rect);
+                    //e.Graphics.FillRectangle(deselectedTreeBrush, rect);
+                    e.Graphics.FillRectangle(backBrush, rect);
                     TextRenderer.DrawText(e.Graphics, e.Node.Text, treeFont, rect, foreColor, TextFormatFlags.VerticalCenter);
                 }
             }
