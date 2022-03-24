@@ -175,7 +175,7 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        public static void WriteToFile(FeModel model, System.IO.BinaryWriter bw)
+        public static void WriteToFile(FeModel model, BinaryWriter bw)
         {
             // Write geometry
             if (model == null || model.Geometry == null)
@@ -198,7 +198,7 @@ namespace CaeModel
                 FeMesh.WriteToBinaryFile(model.Mesh, bw);
             }
         }
-        public static void ReadFromFile(FeModel model, System.IO.BinaryReader br)
+        public static void ReadFromFile(FeModel model, BinaryReader br)
         {
             // Read geometry
             int geometryExists = br.ReadInt32();
@@ -1029,6 +1029,11 @@ namespace CaeModel
             }
             _mesh.AddMesh(mesh, reservedPartNames, forceRenameParts, renumberNodesAndElements);
         }
+        // Setters
+        public void SetMesh(FeMesh mesh)
+        {
+            _mesh = mesh;
+        }
         // Getters
         public string[] GetAllMeshEntityNames()
         {
@@ -1164,7 +1169,7 @@ namespace CaeModel
             // Mesh
             FeModel bdmModel = new FeModel("BDMmodel");
             bdmModel.Properties = _properties;
-            bdmModel.Mesh.AddMesh(_mesh, null, true, false);
+            bdmModel.SetMesh(_mesh.DeepCopy());
             // Materials
             Material materialElastic = new Material("Elastic");
             materialElastic.AddProperty(new Elastic(new double[][] { new double[] { 1000, 0, 0 } }));

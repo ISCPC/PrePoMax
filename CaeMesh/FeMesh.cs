@@ -8350,19 +8350,25 @@ namespace CaeMesh
         public FeMesh DeepCopy()
         {
             FeMesh copy = this.DeepClone();
-
+            //
             copy.Nodes = new Dictionary<int, FeNode>();
             foreach (var entry in _nodes)
             {
                 copy.Nodes.Add(entry.Key, entry.Value.DeepCopy());
             }
-
+            //
             copy.Elements = new Dictionary<int, FeElement>();
             foreach (var entry in _elements)
             {
                 copy.Elements.Add(entry.Key, entry.Value.DeepCopy());
             }
-
+            //
+            if (_octree != null) copy._octree = _octree.DeepClone();
+            else copy._octree = null;
+            //
+            if (_partOffsets != null) copy._partOffsets = _partOffsets.DeepClone();
+            else copy._partOffsets = null;
+            //
             return copy;
         }
 
