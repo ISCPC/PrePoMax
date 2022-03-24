@@ -12,19 +12,32 @@ using System.Drawing;
 namespace PrePoMax
 {
     [Serializable]
-    public enum DeformationScaleFactorType
+    public enum DeformationScaleFactorTypeEnum
     {
         [StandardValue("Automatic", Description = "Automatic")]
         Automatic,
-
+        //
         [StandardValue("TrueScale", DisplayName = "True scale", Description = "True scale")]
         TrueScale,
-
+        //
         [StandardValue("Off", DisplayName = "Off", Description = "Off")]
         Off,
-
+        //
         [StandardValue("UserDefined", DisplayName = "User defined", Description = "User defined")]
-        UserDefined,
+        UserDefined
+    }
+    //
+    [Serializable]
+    public enum UndeformedModelTypeEnum
+    {
+        [StandardValue("None", Description = "None")]
+        None,
+        //
+        [StandardValue("WireframeBody", DisplayName = "Wireframe body", Description = "Wireframe body")]
+        WireframeBody,
+        //
+        [StandardValue("SolidBody", DisplayName = "Solid body", Description = "Solid body")]
+        SolidBody
     }
 
 
@@ -33,10 +46,9 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         private string _deformationFieldOutputName;
-        private DeformationScaleFactorType _dsfType;
+        private DeformationScaleFactorTypeEnum _dsfType;
         private double _deformationScaleFactorValue;
-        private bool _drawUndeformedModel;
-        private bool _drawUndeformedModelAsEdges;
+        private UndeformedModelTypeEnum _undeformedModelType;
         private Color _undeformedModelColor;
         private bool _showMinValueLocation;
         private bool _showMaxValueLocation;
@@ -49,7 +61,7 @@ namespace PrePoMax
             get { return _deformationFieldOutputName; }
             set { _deformationFieldOutputName = value; }
         }
-        public DeformationScaleFactorType DeformationScaleFactorType
+        public DeformationScaleFactorTypeEnum DeformationScaleFactorType
         {
             get { return _dsfType; }
             set
@@ -57,13 +69,13 @@ namespace PrePoMax
                 if (_dsfType != value)
                 {
                     _dsfType = value;
-                    if (_dsfType == DeformationScaleFactorType.Automatic)
+                    if (_dsfType == DeformationScaleFactorTypeEnum.Automatic)
                         _deformationScaleFactorValue = -1;
-                    else if (_dsfType == DeformationScaleFactorType.TrueScale)
+                    else if (_dsfType == DeformationScaleFactorTypeEnum.TrueScale)
                         _deformationScaleFactorValue = 1;
-                    else if (_dsfType == DeformationScaleFactorType.Off)
+                    else if (_dsfType == DeformationScaleFactorTypeEnum.Off)
                         _deformationScaleFactorValue = 0;
-                    else if (_dsfType == DeformationScaleFactorType.UserDefined)
+                    else if (_dsfType == DeformationScaleFactorTypeEnum.UserDefined)
                         _deformationScaleFactorValue = 1;
                     else throw new NotSupportedException();
                 }
@@ -78,15 +90,10 @@ namespace PrePoMax
                 if (_deformationScaleFactorValue < -1) _deformationScaleFactorValue = -1;
             } 
         }
-        public bool DrawUndeformedModel
+        public UndeformedModelTypeEnum UndeformedModelType
         {
-            get { return _drawUndeformedModel; }
-            set { _drawUndeformedModel = value; }
-        }
-        public bool DrawUndeformedModelAsEdges
-        {
-            get { return _drawUndeformedModelAsEdges; }
-            set { _drawUndeformedModelAsEdges = value; }
+            get { return _undeformedModelType; }
+            set { _undeformedModelType = value; }
         }
         public Color UndeformedModelColor
         {
@@ -120,10 +127,9 @@ namespace PrePoMax
         public void Reset()
         {
             _deformationFieldOutputName = CaeResults.FOFieldNames.Disp;
-            _dsfType = DeformationScaleFactorType.Automatic;
+            _dsfType = DeformationScaleFactorTypeEnum.Automatic;
             _deformationScaleFactorValue = -1;
-            _drawUndeformedModel = true;
-            _drawUndeformedModelAsEdges = true;
+            _undeformedModelType = UndeformedModelTypeEnum.WireframeBody;
             _undeformedModelColor = Color.Black;
             //
             _showMinValueLocation = false;

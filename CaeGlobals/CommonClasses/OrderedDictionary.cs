@@ -401,7 +401,9 @@ namespace CaeGlobals
         /// 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            return ((IDictionary<TKey, TValue>)dictionary).TryGetValue(key, out value);
+            value = default(TValue);
+            if (key == null) return false;
+            else return ((IDictionary<TKey, TValue>)dictionary).TryGetValue(key, out value);
         }
 
         /// <summary>

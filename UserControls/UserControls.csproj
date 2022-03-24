@@ -148,9 +148,6 @@
     <Compile Include="TextBoxes\UnitAwareTextBox.Designer.cs">
       <DependentUpon>UnitAwareTextBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="Trees\DoubleBufferedTreeView.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="MenuStrip\MenuStripFocus.cs">
       <SubType>Component</SubType>
     </Compile>

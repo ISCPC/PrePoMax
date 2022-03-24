@@ -64,7 +64,7 @@ namespace FileInOut.Output.Calculix
                 }
                 //
                 magnitude = _load.Magnitude;
-                sb.AppendFormat("{0}, EDNOR{1}, {2}", entry.Value, faceKey, magnitude.ToCalculiX16String()).AppendLine();
+                sb.AppendFormat("{0}, {1}, {2}", entry.Value, faceKey, magnitude.ToCalculiX16String()).AppendLine();
             }
             return sb.ToString();
         }

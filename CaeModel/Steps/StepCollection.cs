@@ -79,6 +79,7 @@ namespace CaeModel
         {
             // IsRegionNameSelection(newRegion.RegionName) is used for Propagate
             if ((newRegion.RegionType == RegionTypeEnum.Selection || IsRegionNameSelection(newRegion.RegionName)) &&
+                existingRegion.CreationIds != null && newRegion.CreationIds != null &&
                 IsRegionNameSelection(existingRegion.RegionName) &&
                 newRegion.CreationIds.Length == existingRegion.CreationIds.Length &&
                 newRegion.GetType() == existingRegion.GetType() &&

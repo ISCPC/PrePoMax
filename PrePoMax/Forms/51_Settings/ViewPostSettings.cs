@@ -33,20 +33,20 @@ namespace PrePoMax.Settings
         [OrderedDisplayName(1, 10, "Deformation scale factor")]
         [DescriptionAttribute("Select the deformation scale factor type.")]
         [Id(2, 1)]
-        public DeformationScaleFactorType DeformationScaleFactorType
+        public DeformationScaleFactorTypeEnum DeformationScaleFactorType
         {
             get { return _postSettings.DeformationScaleFactorType; }
             set
             {
                 _postSettings.DeformationScaleFactorType = value;
                 //
-                if (value == DeformationScaleFactorType.Automatic)
+                if (value == DeformationScaleFactorTypeEnum.Automatic)
                     _dctd.GetProperty(nameof(DeformationScaleFactorValue)).SetIsBrowsable(false);
-                else if (value == DeformationScaleFactorType.TrueScale)
+                else if (value == DeformationScaleFactorTypeEnum.TrueScale)
                     _dctd.GetProperty(nameof(DeformationScaleFactorValue)).SetIsBrowsable(false);
-                else if (value == DeformationScaleFactorType.Off)
+                else if (value == DeformationScaleFactorTypeEnum.Off)
                     _dctd.GetProperty(nameof(DeformationScaleFactorValue)).SetIsBrowsable(false);
-                else if (value == DeformationScaleFactorType.UserDefined)
+                else if (value == DeformationScaleFactorTypeEnum.UserDefined)
                     _dctd.GetProperty(nameof(DeformationScaleFactorValue)).SetIsBrowsable(true);
                 else throw new NotSupportedException();
             }
@@ -70,30 +70,19 @@ namespace PrePoMax.Settings
         [OrderedDisplayName(3, 10, "Draw undeformed model")]
         [DescriptionAttribute("Draw undeformed model.")]
         [Id(4, 1)]
-        public bool DrawUndeformedModel
+        public UndeformedModelTypeEnum UndeformedModelType
         {
-            get { return _postSettings.DrawUndeformedModel; }
+            get { return _postSettings.UndeformedModelType; }
             set
             {
-                _postSettings.DrawUndeformedModel = value;
+                _postSettings.UndeformedModelType = value;
                 //
-                _dctd.GetProperty(nameof(DrawUndeformedModelAsEdges)).SetIsBrowsable(_postSettings.DrawUndeformedModel);
-                _dctd.GetProperty(nameof(UndeformedModelColor)).SetIsBrowsable(_postSettings.DrawUndeformedModel);
+                _dctd.GetProperty(nameof(UndeformedModelColor)).SetIsBrowsable(value != UndeformedModelTypeEnum.None);
             }
         }
         //
         [CategoryAttribute("Deformation")]
-        [OrderedDisplayName(4, 10, "Draw undeformed model as")]
-        [DescriptionAttribute("Draw undeformed model as a solid or wireframe shape.")]
-        [Id(5, 1)]
-        public bool DrawUndeformedModelAsEdges
-        {
-            get { return _postSettings.DrawUndeformedModelAsEdges; }
-            set { _postSettings.DrawUndeformedModelAsEdges = value; }
-        }
-        //
-        [CategoryAttribute("Deformation")]
-        [OrderedDisplayName(5, 10, "Undeformed model color")]
+        [OrderedDisplayName(4, 10, "Undeformed model color")]
         [DescriptionAttribute("Set the color of the undeformed model.")]
         [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
         [Id(5, 1)]
@@ -141,12 +130,10 @@ namespace PrePoMax.Settings
             _dctd = ProviderInstaller.Install(this);
             //
             DeformationScaleFactorType = _postSettings.DeformationScaleFactorType;  // add this also to Reset()
-            DrawUndeformedModel = _postSettings.DrawUndeformedModel;                // add this also to Reset()
+            UndeformedModelType = _postSettings.UndeformedModelType;                // add this also to Reset()
             // Now lets display Yes/No instead of True/False
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowMinValueLocation));
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowMaxValueLocation));
-            _dctd.RenameBooleanPropertyToYesNo(nameof(DrawUndeformedModel));
-            _dctd.RenameBooleanProperty(nameof(DrawUndeformedModelAsEdges), "Wireframe body", "Shaded body");
         }
 
 
@@ -172,7 +159,7 @@ namespace PrePoMax.Settings
             _postSettings.Reset();
             //
             DeformationScaleFactorType = _postSettings.DeformationScaleFactorType;
-            DrawUndeformedModel = _postSettings.DrawUndeformedModel;
+            UndeformedModelType = _postSettings.UndeformedModelType;
         }
     }
 

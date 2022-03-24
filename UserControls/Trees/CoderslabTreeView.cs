@@ -135,43 +135,51 @@ namespace UserControls
         }
         protected override void WndProc(ref Message m)
         {
-            //
-            // 0200        512     WM_MOUSEFIRST
-            // 0200        512     WM_MOUSEMOVE
-            // 0201        513     WM_LBUTTONDOWN
-            // 0202        514     WM_LBUTTONUP
-            // 0203        515     WM_LBUTTONDBLCLK
-            // 0204        516     WM_RBUTTONDOWN
-            // 0205        517     WM_RBUTTONUP
-            // 0206        518     WM_RBUTTONDBLCLK
-            // 0207        519     WM_MBUTTONDOWN
-            // 0208        520     WM_MBUTTONUP
-            // 0209        521     WM_MBUTTONDBLCLK
-            // 0209        521     WM_MOUSELAST
-            // 020a        522     WM_MOUSEWHEEL
-            //
-            // 0100        256     WM_KEYDOWN
-            // 0100        256     WM_KEYFIRST
-            // 0101        257     WM_KEYUP
-            // 0102        258     WM_CHAR
-            // 0103        259     WM_DEADCHAR
-            // 0104        260     WM_SYSKEYDOWN
-            // 0105        261     WM_SYSKEYUP
-            // 0106        262     WM_SYSCHAR
-            // 0107        263     WM_SYSDEADCHAR
-            // 0108        264     WM_KEYLAST
-            // 0109        265     WM_UNICHAR
-            //
-            // Eat left and right mouse clicks and buttons
-            if (_disableMouse && ((m.Msg >= 512 && m.Msg <= 522) || (m.Msg >= 512 && m.Msg <= 522)))
+			// 0200        512     WM_MOUSEFIRST
+			// 0200        512     WM_MOUSEMOVE
+			// 0201        513     WM_LBUTTONDOWN
+			// 0202        514     WM_LBUTTONUP
+			// 0203        515     WM_LBUTTONDBLCLK
+			// 0204        516     WM_RBUTTONDOWN
+			// 0205        517     WM_RBUTTONUP
+			// 0206        518     WM_RBUTTONDBLCLK
+			// 0207        519     WM_MBUTTONDOWN
+			// 0208        520     WM_MBUTTONUP
+			// 0209        521     WM_MBUTTONDBLCLK
+			// 0209        521     WM_MOUSELAST
+			// 020a        522     WM_MOUSEWHEEL
+			//
+			// 0100        256     WM_KEYDOWN
+			// 0100        256     WM_KEYFIRST
+			// 0101        257     WM_KEYUP
+			// 0102        258     WM_CHAR
+			// 0103        259     WM_DEADCHAR
+			// 0104        260     WM_SYSKEYDOWN
+			// 0105        261     WM_SYSKEYUP
+			// 0106        262     WM_SYSCHAR
+			// 0107        263     WM_SYSDEADCHAR
+			// 0108        264     WM_KEYLAST
+			// 0109        265     WM_UNICHAR
+			//
+			// 0114		   276	   WM_HSCROLL
+			// 0115		   277	   WM_VSCROLL
+			// 020a        522     WM_MOUSEWHEEL
+			//
+			// Eat left and right mouse clicks and buttons
+			//
+			if (_disableMouse && ((m.Msg >= 512 && m.Msg <= 522) || (m.Msg >= 512 && m.Msg <= 522)))
             {
-                // eat message
-                m.Msg = m.Msg;
+                // Eat message
             }
             else
             {
+				// Scroll events
+				if (m.Msg == 277 || m.Msg == 276) OnBeforeScroll();
+				//
                 base.WndProc(ref m);
-            }
+				//
+				if (m.Msg == 277 || m.Msg == 276) OnAfterScroll();
+			}
         }
 
 
@@ -1691,7 +1699,6 @@ namespace UserControls
 		/// Occurs after a node is collapsed.
 		/// </summary>
 		/// <param name="e"></param>
-
 		protected override void OnAfterCollapse(TreeViewEventArgs e)
 		{
 			blnSelectionChanged = false;
@@ -1724,7 +1731,15 @@ namespace UserControls
 			if (intMouseClicks == 1) EndUpdate();
             base.OnAfterExpand(e);
         }
+		private void OnBeforeScroll()
+        {
 
+			BeginUpdate();
+		}
+		private void OnAfterScroll()
+        {
+			EndUpdate();
+		}
 
         #endregion
 

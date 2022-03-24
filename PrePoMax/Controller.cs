@@ -12355,8 +12355,7 @@ namespace PrePoMax
                 SetStatusBlock(scale);
                 //
                 _results.SetMeshDeformation(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId);
-                DrawAllResultParts(_currentFieldData, _settings.Post.DrawUndeformedModel,
-                                   _settings.Post.DrawUndeformedModelAsEdges, _settings.Post.UndeformedModelColor);
+                DrawAllResultParts(_currentFieldData, _settings.Post.UndeformedModelType, _settings.Post.UndeformedModelColor);
                 // Transformation
                 ApplyTransformation();
                 //
@@ -12372,8 +12371,8 @@ namespace PrePoMax
                 if (rendering) _form.RenderingOn = true;
             }
         }
-        private void DrawAllResultParts(FieldData fieldData, bool drawUndeformedModel, 
-                                        bool drawUndeformedModelAsEdges, Color undeformedModelColor)
+        private void DrawAllResultParts(FieldData fieldData, UndeformedModelTypeEnum undeformedModelType,
+                                        Color undeformedModelColor)
         {
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             List<string> hiddenActors = new List<string>();
@@ -12392,8 +12391,8 @@ namespace PrePoMax
                     else
                     {
                         // Undeformed 
-                        if (drawUndeformedModel) DrawUndeformedPartCopy(resultPart, drawUndeformedModelAsEdges,
-                                                                        undeformedModelColor, layer);
+                        if (undeformedModelType != UndeformedModelTypeEnum.None)
+                            DrawUndeformedPartCopy(resultPart, undeformedModelType, undeformedModelColor, layer);
                         // Deformed
                         DrawResultPart(resultPart, fieldData, false);
                     }
@@ -12472,9 +12471,9 @@ namespace PrePoMax
                 if (entry.Value is ResultPart resultPart)
                 {
                     // Udeformed
-                    if (postSettings.DrawUndeformedModel) DrawUndeformedPartCopy(resultPart,
-                                                                                 postSettings.DrawUndeformedModelAsEdges,
-                                                                                 postSettings.UndeformedModelColor, layer);
+                    if (postSettings.UndeformedModelType != UndeformedModelTypeEnum.None)
+                        DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelType,
+                                               postSettings.UndeformedModelColor, layer);
                     // Deformed
                     data = GetScaleFactorAnimationDataFromPart(resultPart, _currentFieldData, scale, numFrames);
                     // Min max
@@ -12550,9 +12549,9 @@ namespace PrePoMax
                 if (entry.Value is ResultPart resultPart)
                 {
                     // Udeformed shape
-                    if (postSettings.DrawUndeformedModel) DrawUndeformedPartCopy(resultPart,
-                                                                                 postSettings.DrawUndeformedModelAsEdges,
-                                                                                 postSettings.UndeformedModelColor, layer);
+                    if (postSettings.UndeformedModelType != UndeformedModelTypeEnum.None)
+                        DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelType,
+                                               postSettings.UndeformedModelColor, layer);
                     // Results
                     data = GetTimeIncrementAnimationDataFromPart(resultPart, _currentFieldData, scale);
                     // Min max
@@ -12742,7 +12741,8 @@ namespace PrePoMax
             //
             _form.UpdateScalarsAndRedraw();
         }
-        public void DrawUndeformedPartCopy(BasePart part, bool drawAsEdges, Color color, vtkControl.vtkRendererLayer layer)
+        public void DrawUndeformedPartCopy(BasePart part, UndeformedModelTypeEnum undeformedModelType,
+                                           Color color, vtkControl.vtkRendererLayer layer)
         {
             vtkControl.vtkMaxActorData data;
             data = new vtkControl.vtkMaxActorData();
@@ -12752,13 +12752,13 @@ namespace PrePoMax
             data.CanHaveElementEdges = false;
             data.SmoothShaded = part.SmoothShaded;
             //
-            if (drawAsEdges)
+            if (undeformedModelType == UndeformedModelTypeEnum.WireframeBody)
             {
                 if (data.Color.A == 255) data.Color = Color.FromArgb(254, data.Color);
                 _results.GetUndeformedModelEdges(part, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds,
                                                  out data.Geometry.Cells.Types);
             }
-            else
+            else if(undeformedModelType == UndeformedModelTypeEnum.SolidBody)
             {
                 _results.GetUndeformedNodesAndCells(part, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds,
                                                     out data.Geometry.Cells.Types);
@@ -12849,7 +12849,7 @@ namespace PrePoMax
             //
             float scale = 1;
             //
-            if (_settings.Post.DeformationScaleFactorType == DeformationScaleFactorType.Automatic &&
+            if (_settings.Post.DeformationScaleFactorType == DeformationScaleFactorTypeEnum.Automatic &&
                 _results != null && _results.Mesh != null)
             {
                 float size;
@@ -12871,7 +12871,7 @@ namespace PrePoMax
             //
             float scale = 1;
             //
-            if (_settings.Post.DeformationScaleFactorType == DeformationScaleFactorType.Automatic)
+            if (_settings.Post.DeformationScaleFactorType == DeformationScaleFactorTypeEnum.Automatic)
             {
                 float size = (float)_results.Mesh.GetBoundingBoxVolumeAsCubeSide();
                 float maxDisp = _results.GetMaxDisplacement();

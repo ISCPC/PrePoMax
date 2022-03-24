@@ -192,6 +192,8 @@ namespace PrePoMax
                 }
                 // Reset the color limits
                 ClearColorSpectrums();
+                // Reset the deformed variable
+                _post.DeformationFieldOutputName = CaeResults.FeResults.GetPossibleDeformationFieldOutputNames()[0];
             }
             catch
             {
