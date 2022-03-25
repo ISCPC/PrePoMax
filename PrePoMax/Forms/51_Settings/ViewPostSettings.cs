@@ -20,7 +20,7 @@ namespace PrePoMax.Settings
 
         // Deformation                                                          
         [CategoryAttribute("Deformation")]
-        [OrderedDisplayName(0, 10, "Deformation field")]
+        [OrderedDisplayName(0, 10, "Deformation variable")]
         [DescriptionAttribute("Select the deformation field output to be used for the mesh deformation.")]
         [Id(1, 1)]
         public string DeformationFieldOutputName
