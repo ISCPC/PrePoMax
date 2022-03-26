@@ -103,9 +103,9 @@
             // numIncrementStep
             // 
             this.numIncrementStep.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.numIncrementStep.Location = new System.Drawing.Point(232, 47);
+            this.numIncrementStep.Location = new System.Drawing.Point(228, 47);
             this.numIncrementStep.Maximum = new decimal(new int[] {
-            1000,
+            9999,
             0,
             0,
             0});
@@ -115,7 +115,7 @@
             0,
             0});
             this.numIncrementStep.Name = "numIncrementStep";
-            this.numIncrementStep.Size = new System.Drawing.Size(42, 23);
+            this.numIncrementStep.Size = new System.Drawing.Size(45, 23);
             this.numIncrementStep.TabIndex = 6;
             this.numIncrementStep.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.numIncrementStep.Value = new decimal(new int[] {
@@ -129,7 +129,7 @@
             // 
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(141, 49);
+            this.label6.Location = new System.Drawing.Point(137, 49);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(86, 15);
             this.label6.TabIndex = 5;
@@ -139,7 +139,7 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(123, 24);
+            this.label2.Location = new System.Drawing.Point(119, 24);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(104, 15);
             this.label2.TabIndex = 4;
@@ -159,9 +159,9 @@
             // numNumOfFrames
             // 
             this.numNumOfFrames.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.numNumOfFrames.Location = new System.Drawing.Point(232, 22);
+            this.numNumOfFrames.Location = new System.Drawing.Point(228, 22);
             this.numNumOfFrames.Maximum = new decimal(new int[] {
-            1000,
+            9999,
             0,
             0,
             0});
@@ -171,7 +171,7 @@
             0,
             0});
             this.numNumOfFrames.Name = "numNumOfFrames";
-            this.numNumOfFrames.Size = new System.Drawing.Size(42, 23);
+            this.numNumOfFrames.Size = new System.Drawing.Size(45, 23);
             this.numNumOfFrames.TabIndex = 3;
             this.numNumOfFrames.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.numNumOfFrames.Value = new decimal(new int[] {
@@ -213,7 +213,7 @@
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(201, 24);
+            this.label1.Location = new System.Drawing.Point(198, 24);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(26, 15);
             this.label1.TabIndex = 10;
@@ -222,7 +222,7 @@
             // numFramesPerSecond
             // 
             this.numFramesPerSecond.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.numFramesPerSecond.Location = new System.Drawing.Point(233, 22);
+            this.numFramesPerSecond.Location = new System.Drawing.Point(230, 22);
             this.numFramesPerSecond.Maximum = new decimal(new int[] {
             120,
             0,
@@ -234,7 +234,7 @@
             0,
             0});
             this.numFramesPerSecond.Name = "numFramesPerSecond";
-            this.numFramesPerSecond.Size = new System.Drawing.Size(42, 23);
+            this.numFramesPerSecond.Size = new System.Drawing.Size(45, 23);
             this.numFramesPerSecond.TabIndex = 9;
             this.numFramesPerSecond.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.numFramesPerSecond.Value = new decimal(new int[] {
@@ -283,7 +283,7 @@
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(93, 19);
+            this.label3.Location = new System.Drawing.Point(92, 19);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(47, 15);
             this.label3.TabIndex = 14;
@@ -376,14 +376,19 @@
             // numCurrFrame
             // 
             this.numCurrFrame.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.numCurrFrame.Location = new System.Drawing.Point(146, 17);
+            this.numCurrFrame.Location = new System.Drawing.Point(145, 17);
+            this.numCurrFrame.Maximum = new decimal(new int[] {
+            9999,
+            0,
+            0,
+            0});
             this.numCurrFrame.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
             this.numCurrFrame.Name = "numCurrFrame";
-            this.numCurrFrame.Size = new System.Drawing.Size(42, 23);
+            this.numCurrFrame.Size = new System.Drawing.Size(45, 23);
             this.numCurrFrame.TabIndex = 18;
             this.numCurrFrame.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.numCurrFrame.Value = new decimal(new int[] {
@@ -437,18 +442,23 @@
             // numLastFrame
             // 
             this.numLastFrame.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.numLastFrame.Location = new System.Drawing.Point(231, 17);
+            this.numLastFrame.Location = new System.Drawing.Point(228, 17);
+            this.numLastFrame.Maximum = new decimal(new int[] {
+            9999,
+            0,
+            0,
+            0});
             this.numLastFrame.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
             this.numLastFrame.Name = "numLastFrame";
-            this.numLastFrame.Size = new System.Drawing.Size(42, 23);
+            this.numLastFrame.Size = new System.Drawing.Size(45, 23);
             this.numLastFrame.TabIndex = 23;
             this.numLastFrame.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.numLastFrame.Value = new decimal(new int[] {
-            2,
+            9999,
             0,
             0,
             0});
@@ -468,13 +478,18 @@
             // 
             this.numFirstFrame.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.numFirstFrame.Location = new System.Drawing.Point(41, 17);
+            this.numFirstFrame.Maximum = new decimal(new int[] {
+            9999,
+            0,
+            0,
+            0});
             this.numFirstFrame.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
             this.numFirstFrame.Name = "numFirstFrame";
-            this.numFirstFrame.Size = new System.Drawing.Size(42, 23);
+            this.numFirstFrame.Size = new System.Drawing.Size(45, 23);
             this.numFirstFrame.TabIndex = 21;
             this.numFirstFrame.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.numFirstFrame.Value = new decimal(new int[] {
