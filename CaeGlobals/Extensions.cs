@@ -39,9 +39,9 @@ namespace CaeGlobals
                 BinaryFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(stream, a);
                 stream.Position = 0;
-
+                //
                 FileStream fs = new FileStream(fileName, FileMode.Create);
-
+                //
                 stream.WriteTo(fs);
                 fs.Close();
             }

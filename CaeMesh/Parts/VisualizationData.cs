@@ -27,6 +27,9 @@ namespace CaeMesh
         protected int[][] _edgeCellIdsByEdge;
         protected double[] _edgeLengths;
         protected int[] _vertexNodeIds;
+        //
+        [NonSerialized]
+        private Dictionary<int[], CellNeighbour> _cellNeighboursOverCell; // this are solid cell neighbours to extract surface
 
 
         // Properties                                                                                                               
@@ -135,10 +138,7 @@ namespace CaeMesh
         /// [0...num. of vertices] -> global node id (a vertice is a node where more than two edge cells meet)
         /// </summary>
         public int[] VertexNodeIds { get { return _vertexNodeIds; } set { _vertexNodeIds = value; } }
-
-        [NonSerialized]
-        private Dictionary<int[], CellNeighbour> _cellNeighboursOverCell; // this are solid cell neighbours to extract surface
-
+        
 
         // Constructors                                                                                                             
         public VisualizationData()
@@ -152,7 +152,7 @@ namespace CaeMesh
             _edgeCellIdsByEdge = null;
             _edgeLengths = null;
             _vertexNodeIds = null;
-            _cellNeighboursOverCell = null;
+            ResetCellNeighboursOverCell();
         }
         public VisualizationData(VisualizationData visualization)
             : this()
@@ -216,6 +216,11 @@ namespace CaeMesh
 
 
         // Methods
+        public void ResetCellNeighboursOverCell()
+        {
+            _cellNeighboursOverCell = null;
+        }
+        //
         public void ExtractVisualizationCellsFromElements3D(Dictionary<int, FeElement> elements, int[] elementIds)
         {
             if (_cellNeighboursOverCell == null) ExtractCellNeighboursOverCell(elements, elementIds);
@@ -317,8 +322,8 @@ namespace CaeMesh
                 //
                 foreach (var entry in _cellNeighboursOverCell)
                 {
-                    renumberedKkey = new int[entry.Key.Length];
-                    renumberedCell = new int[entry.Value.Cell1.Length];
+                    renumberedKkey = entry.Key.ToArray();           // not all nodes are renumbered
+                    renumberedCell = entry.Value.Cell1.ToArray();   // not all nodes are renumbered
                     //
                     for (int i = 0; i < renumberedCell.Length; i++)
                     {

@@ -2513,12 +2513,13 @@ namespace CaeMesh
                         if (newIds.TryGetValue(element.NodeIds[i], out id)) element.NodeIds[i] = id;
                     }
                 }
-                // Renumber 3D part's node labels, visualization cells and edges
+                // Renumber 3D part's node labels
                 for (int i = 0; i < part2.NodeLabels.Length; i++)
                 {
                     if (newIds.TryGetValue(part2.NodeLabels[i], out id)) part2.NodeLabels[i] = id;
                 }
-                //
+                // Rename visualization cells and edges
+                //part2.Visualization.ResetCellNeighboursOverCell();  // internal cells now become external cells: Reset
                 part2.RenumberVisualizationNodes(newIds);
             }
         }

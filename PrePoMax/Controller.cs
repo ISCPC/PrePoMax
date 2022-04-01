@@ -14,11 +14,12 @@ using System.IO.Compression;
 using System.Drawing;
 using System.ComponentModel;
 using System.Management;
+using System.Runtime.Serialization;
 
 namespace PrePoMax
 {
     [Serializable]
-    public class Controller
+    public class Controller //: ISerializable
     {
         // Variables                                                                                                                
         [NonSerialized] protected FrmMain _form;
@@ -344,8 +345,33 @@ namespace PrePoMax
             ApplySettings();
         }
 
+        //public Controller(SerializationInfo info, StreamingContext context)
+        //{
+
+        //}
+        //// ISerialization
+        //public void GetObjectData(SerializationInfo info, StreamingContext context)
+        //{
+        //    //// Using typeof() works also for null fields
+        //    //info.AddValue("_name", Name, typeof(string));
+        //    //info.AddValue("_geometry", _geometry, typeof(FeMesh));
+        //    //info.AddValue("_mesh", _mesh, typeof(FeMesh));
+        //    //info.AddValue("_materials", _materials, typeof(OrderedDictionary<string, Material>));
+        //    //info.AddValue("_sections", _sections, typeof(OrderedDictionary<string, Section>));
+        //    //info.AddValue("_constraints", _constraints, typeof(OrderedDictionary<string, Constraint>));
+        //    //info.AddValue("_surfaceInteractions", _surfaceInteractions, typeof(OrderedDictionary<string, SurfaceInteraction>));
+        //    //info.AddValue("_contactPairs", _contactPairs, typeof(OrderedDictionary<string, ContactPair>));
+        //    //info.AddValue("_amplitudes", _amplitudes, typeof(OrderedDictionary<string, Amplitude>));
+        //    //info.AddValue("_initialConditions", _initialConditions, typeof(OrderedDictionary<string, InitialCondition>));
+        //    //info.AddValue("_stepCollection", _stepCollection, typeof(StepCollection));
+        //    //info.AddValue("_calculixUserKeywords", _calculixUserKeywords, typeof(OrderedDictionary<int[], Calculix.CalculixUserKeyword>));
+        //    //info.AddValue("_properties", _properties, typeof(ModelProperties));
+        //    //info.AddValue("_unitSystem", _unitSystem, typeof(UnitSystem));
+        //    //info.AddValue("_hashName", _hashName, typeof(string));
+        //}
+
         #region Commands   #########################################################################################################
-        
+
         private void _commands_CommandExecuted(string undo, string redo)
         {
             _form.EnableDisableUndoRedo(undo, redo);
@@ -744,7 +770,7 @@ namespace PrePoMax
                     if (fileVersion != Globals.ProgramName)
                     {
                         _form.WriteDataToOutput("Warning: The opened file is from an uncompatible version: " + fileVersion);
-                        _form.WriteDataToOutput("Some items might not be correctly loaded. Check the model.");
+                        _form.WriteDataToOutput("Some items might not be loaded correctly. Check the model.");
                     }
                     //
                     using (BinaryReader br = new BinaryReader(Decompress(fs)))
@@ -1390,7 +1416,7 @@ namespace PrePoMax
             {
                 SuppressExplodedViews();
                 FeModel newModel = new FeModel("Deformed");
-                newModel.Properties.ModelSpace = _model.Properties.ModelSpace;
+                newModel.Properties.ModelSpace = ModelSpaceEnum.ThreeD;
                 newModel.Mesh.AddPartsFromMesh(_results.Mesh, partNames, null, false, false);
                 FileInOut.Output.CalculixFileWriter.Write(fileName, newModel);
                 ResumeExplodedViews(false);
@@ -1793,10 +1819,10 @@ namespace PrePoMax
                     //_form.SetExplodedViewStatus(true);
                 }
             }
-            // Resume section view
-            if (sectionViewPlane != null) ApplySectionView(sectionViewPlane.Point.Coor, sectionViewPlane.Normal.Coor);
             // Resume symbols
             DrawSymbolsForStep(drawSymbolsForStep, false);  // Clears highlight
+            // Resume section view
+            if (sectionViewPlane != null) ApplySectionView(sectionViewPlane.Point.Coor, sectionViewPlane.Normal.Coor);
             //
             if (_selection.Nodes.Count > 0) HighlightSelection();
             else _form.UpdateHighlightFromTree();

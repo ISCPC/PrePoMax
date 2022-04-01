@@ -97,11 +97,6 @@ namespace PrePoMax.Forms
             }
             else
             {
-                // Resume section view
-                if (_sectionViewPlane != null) _controller.ApplySectionView(_sectionViewPlane.Point.Coor,
-                                                                            _sectionViewPlane.Normal.Coor);
-                
-                //
                 if (DialogResult == DialogResult.OK) _controller.ApplyExplodedView(_viewExplodedViewParameters.Parameters);
                 else if (DialogResult == DialogResult.Abort) Cancel(true);
                 else if (DialogResult == DialogResult.Cancel) Cancel(_cancelParam.ScaleFactor == -1);
@@ -110,6 +105,9 @@ namespace PrePoMax.Forms
                 //
                 // Resume symbols
                 _controller.DrawSymbolsForStep(_drawSymbolsForStep, false);
+                // Resume section view
+                if (_sectionViewPlane != null) _controller.ApplySectionView(_sectionViewPlane.Point.Coor,
+                                                                            _sectionViewPlane.Normal.Coor);
             }
         }
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)

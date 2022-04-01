@@ -741,6 +741,7 @@ namespace PrePoMax
                 //
                 CloseAllForms();
                 _controller.SelectBy = vtkSelectBy.Default;
+                //_vtk.RenderingOn = true;    // reset
                 //
                 if (viewType == ViewType.Geometry) _controller.CurrentView = ViewGeometryModelResults.Geometry;
                 else if (viewType == ViewType.Model) _controller.CurrentView = ViewGeometryModelResults.Model;
@@ -2091,11 +2092,16 @@ namespace PrePoMax
         {
             try
             {
+                SetStateWorking(Globals.ExplodeParts);
                 _controller.TurnExplodedViewOnOff(animate);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.ExplodeParts);
             }
         }
         
@@ -6513,8 +6519,10 @@ namespace PrePoMax
                 //
                 if (working) tspbProgress.Style = ProgressBarStyle.Marquee;
                 else tspbProgress.Style = ProgressBarStyle.Blocks;
+                // Rendering
+                if (text == Globals.ExplodeParts) _vtk.RenderingOn = true;
+                else _vtk.RenderingOn = !working;
                 //
-                _vtk.RenderingOn = !working;
                 _vtk.Enabled = !working;
                 _modelTree.DisableMouse = working;
                 menuStripMain.DisableMouseButtons = working;

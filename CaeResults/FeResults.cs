@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
 using System.ComponentModel;
+using System.Runtime.Serialization;
 
 namespace CaeResults
 {
     [Serializable]
-    public class FeResults
+    public class FeResults //: ISerializable
     {
         // Variables                                                                                                                
         [NonSerialized]
@@ -76,7 +77,25 @@ namespace CaeResults
             _unitSystem = new UnitSystem();
             _deformationFieldOutputName = FOFieldNames.Disp;
         }
+        //public FeResults(SerializationInfo info, StreamingContext context)
+        //{
 
+        //}
+        //// ISerialization
+        //public void GetObjectData(SerializationInfo info, StreamingContext context)
+        //{
+        //    // Using typeof() works also for null fields
+        //    //info.AddValue("_meshRepresentation", _meshRepresentation, typeof(MeshRepresentation));
+        //    //info.AddValue("_meshRefinements", _meshRefinements, typeof(OrderedDictionary<string, FeMeshRefinement>));
+        //    //info.AddValue("_parts", _parts, typeof(OrderedDictionary<string, BasePart>));
+        //    //info.AddValue("_nodeSets", _nodeSets, typeof(OrderedDictionary<string, FeNodeSet>));
+        //    //info.AddValue("_elementSets", _elementSets, typeof(OrderedDictionary<string, FeElementSet>));
+        //    //info.AddValue("_surfaces", _surfaces, typeof(OrderedDictionary<string, FeSurface>));
+        //    //info.AddValue("_referencePoints", _referencePoints, typeof(OrderedDictionary<string, FeReferencePoint>));
+        //    //info.AddValue("_maxNodeId", _maxNodeId, typeof(int));
+        //    //info.AddValue("_maxElementId", _maxElementId, typeof(int));
+        //    //info.AddValue("_boundingBox", _boundingBox, typeof(BoundingBox));
+        //}
 
         // Static methods                                                                                                           
         public static void WriteToFile(FeResults results, System.IO.BinaryWriter bw)
@@ -418,8 +437,9 @@ namespace CaeResults
                                 }
                                 // Geometry parts
                                 else deformedNode = node;
-                                //
-                                deformedNodes.Add(deformedNode.Id, deformedNode);
+                                // Check for merged nodes as in compound parts
+                                if (!deformedNodes.ContainsKey(deformedNode.Id))
+                                    deformedNodes.Add(deformedNode.Id, deformedNode);
                             }
                         }
                     }

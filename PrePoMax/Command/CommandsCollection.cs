@@ -112,7 +112,7 @@ namespace PrePoMax.Commands
             if (command is CSaveToPmx)
             {
                 command.Execute(_controller);
-                WriteToFile();  // repeare the write in order to save
+                WriteToFile();  // repeate the write in order to save the hash
             }
         }
         public void ExecuteAllCommandsFromLastSave()
@@ -268,17 +268,16 @@ namespace PrePoMax.Commands
         {
             if (_commands.Count > 1)
             {
-                // write to files
+                // Write to files
                 File.WriteAllLines(_historyFileNameTxt, _history.ToArray());
                 _commands.DumpToFile(_historyFileNameBin);
 
                 // Use other file
-                //string fileName =
-                //   Controller.GetNonExistentRandomFileName(System.Windows.Forms.Application.StartupPath, "pmh");
-                //_commands.DumpToFile(fileName);
-                ////
-                //File.Copy(fileName, _historyFileNameBin, true);
-                //File.Delete(fileName);
+                string fileName = Tools.GetNonExistentRandomFileName(System.Windows.Forms.Application.StartupPath, "pmh");
+                _commands.DumpToFile(fileName);
+                //
+                File.Copy(fileName, _historyFileNameBin, true);
+                File.Delete(fileName);
             }
         }
         public void ReadFromFile(string fileName)
