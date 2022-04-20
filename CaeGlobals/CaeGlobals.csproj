@@ -106,6 +106,7 @@
     <Compile Include="Octree\Data\Ray.cs" />
     <Compile Include="Octree\PointOctree.cs" />
     <Compile Include="Octree\PointOctreeNode.cs" />
+    <Compile Include="ReadWrite.cs" />
     <Compile Include="Selection\Enums\vtkSelectBy.cs" />
     <Compile Include="Selection\Enums\vtkSelectionMode.cs" />
     <Compile Include="Selection\Enums\vtkSelectItem.cs" />

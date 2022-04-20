@@ -98,7 +98,7 @@ namespace CaeResults
                 bw.Write(fieldData.StepIncrementId);
             }
         }
-        public static FieldData ReadFromFile(System.IO.BinaryReader br, int major, int minor, int build)
+        public static FieldData ReadFromFile(System.IO.BinaryReader br, int version)
         {
             //
             int fieldDataExists = br.ReadInt32();
@@ -110,7 +110,7 @@ namespace CaeResults
                 if (componentExists == 1) fieldData.Component = br.ReadString();
                 //
                 fieldData.GlobalIncrementId = br.ReadInt32();
-                if (major >= 1 && minor >= 3) fieldData.MethodId = br.ReadInt32();
+                if (version >= 1_003_000) fieldData.MethodId = br.ReadInt32();
                 fieldData.Type = (StepType)br.ReadInt32();
                 fieldData.Time = br.ReadSingle();
                 fieldData.StepId = br.ReadInt32();

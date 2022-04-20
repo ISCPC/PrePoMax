@@ -102,22 +102,22 @@ namespace CaeResults
         {
             if (results == null)
             {
-                bw.Write((int)0);
+                bw.Write(-1);
             }
             else
             {
-                bw.Write((int)1);
+                bw.Write(1);
                 // Mesh
                 Dictionary<int, FeNode> tmp = results.Mesh.Nodes;
                 results.Mesh.Nodes = results._undeformedNodes;
                 FeMesh.WriteToBinaryFile(results.Mesh, bw);
                 results.Mesh.Nodes = tmp;
                 // Node lookup
-                if (results._nodeIdsLookUp == null) bw.Write((int)0);
+                if (results._nodeIdsLookUp == null) bw.Write(-1);
                 else
                 {
-                    bw.Write((int)1);
-
+                    bw.Write(1);
+                    //
                     bw.Write(results._nodeIdsLookUp.Count);
                     foreach (var entry in results._nodeIdsLookUp)
                     {
@@ -126,12 +126,12 @@ namespace CaeResults
                     }
                 }
                 // Fields
-                if (results._fields == null) bw.Write((int)0);
+                if (results._fields == null) bw.Write(-1);
                 else
                 {
-                    bw.Write((int)1);
-
-                    bw.Write((int)results._fields.Count);
+                    bw.Write(1);
+                    //
+                    bw.Write(results._fields.Count);
                     foreach (var entry in results._fields)
                     {
                         FieldData.WriteToFile(entry.Key, bw);
@@ -140,17 +140,17 @@ namespace CaeResults
                 }
             }
         }
-        public static void ReadFromFile(FeResults results, System.IO.BinaryReader br, int major, int minor, int build)
+        public static void ReadFromFile(FeResults results, System.IO.BinaryReader br, int version)
         {
             int numItems;
             FieldData fieldData;
             Field field;
-
+            //
             int exist = br.ReadInt32();
             if (exist == 1)
             {
                 // Mesh
-                FeMesh.ReadFromBinaryFile(results.Mesh, br);
+                FeMesh.ReadFromBinaryFile(results.Mesh, br, version);
                 results.InitializeUndeformedNodes();
                 // Node lookup
                 exist = br.ReadInt32();
@@ -160,7 +160,6 @@ namespace CaeResults
                     results._nodeIdsLookUp = new Dictionary<int, int>();
                     for (int i = 0; i < numItems; i++) results._nodeIdsLookUp.Add(br.ReadInt32(), br.ReadInt32());
                 }
-
                 // Fields
                 exist = br.ReadInt32();
                 if (exist == 1)
@@ -169,7 +168,7 @@ namespace CaeResults
                     results._fields = new Dictionary<FieldData, Field>();
                     for (int i = 0; i < numItems; i++)
                     {
-                        fieldData = FieldData.ReadFromFile(br, major, minor, build);
+                        fieldData = FieldData.ReadFromFile(br, version);
                         field = Field.ReadFromFile(br);
                         results._fields.Add(fieldData, field);
                     }
@@ -193,6 +192,14 @@ namespace CaeResults
             string[] addedPartNames = _mesh.AddPartsFromMesh(mesh, partNames, null, false);
             InitializeUndeformedNodes();
             return addedPartNames;
+        }
+        public string[] RemoveParts(string[] partNames)
+        {
+            _mesh.Nodes = _undeformedNodes;
+            string[] removedPartNames;
+            _mesh.RemoveParts(partNames, out removedPartNames, false);
+            InitializeUndeformedNodes();
+            return removedPartNames;
         }
         private void InitializeUndeformedNodes()
         {

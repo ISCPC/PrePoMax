@@ -52,6 +52,7 @@ namespace CaeMesh
         public OrderedDictionary<string, BasePart> Parts
         {
             get { return _parts; }
+            set { _parts = value; }
         }
         public OrderedDictionary<string, FeNodeSet> NodeSets
         {
@@ -264,18 +265,44 @@ namespace CaeMesh
 
 
         // Static methods                                                                                                           
+        public static void PrepareForSavig(FeMesh mesh)
+        {
+            if (mesh != null && mesh._parts != null)
+            {
+                foreach (var entry in mesh._parts)
+                {
+                    entry.Value.VisualizationCopy = entry.Value.Visualization;
+                    entry.Value.Visualization = null;
+                }
+            }
+        }
+        public static void ResetAfterSavig(FeMesh mesh)
+        {
+            if (mesh != null && mesh._parts != null)
+            {
+                foreach (var entry in mesh._parts)
+                {
+                    if (entry.Value.VisualizationCopy != null)
+                    {
+                        entry.Value.Visualization = entry.Value.VisualizationCopy;
+                        entry.Value.VisualizationCopy = null;
+                    }
+                }
+            }
+        }
         public static void WriteToBinaryFile(FeMesh mesh, System.IO.BinaryWriter bw)
         {
             if (mesh == null)
             {
-                bw.Write((int)0);   // 0 nodes
-                bw.Write((int)0);   // 0 elements
+                bw.Write(0);   // 0 nodes
+                bw.Write(0);   // 0 elements
+                bw.Write(0);   // 0 parts
             }
             else
             {
                 // Nodes
                 Dictionary<int, FeNode> nodes = mesh.Nodes;
-                if (nodes == null) bw.Write((int)0);
+                if (nodes == null) bw.Write(0);
                 else
                 {
                     bw.Write(nodes.Count);
@@ -287,10 +314,9 @@ namespace CaeMesh
                         bw.Write(entry.Value.Z);
                     }
                 }
-
                 // Elements
                 Dictionary<int, FeElement> elements = mesh.Elements;
-                if (elements == null) bw.Write((int)0);
+                if (elements == null) bw.Write(0);
                 else
                 {
                     bw.Write(elements.Count);
@@ -307,13 +333,25 @@ namespace CaeMesh
                         }
                     }
                 }
+                // Parts
+                OrderedDictionary<string, BasePart> parts = mesh._parts;
+                if (parts == null) bw.Write(-1);
+                else
+                {
+                    bw.Write(parts.Count);
+                    foreach (var entry in parts)
+                    {
+                        VisualizationData.WriteToBinaryStream(entry.Value.VisualizationCopy, bw);
+                    }
+                }
             }
         }
-        public static void ReadFromBinaryFile(FeMesh mesh, System.IO.BinaryReader br)
+        public static void ReadFromBinaryFile(FeMesh mesh, System.IO.BinaryReader br, int version)
         {
+            // Nodes
             if (mesh.Nodes == null) mesh.Nodes = new Dictionary<int, FeNode>();
             else mesh.Nodes.Clear();
-
+            //
             int numOfNodes = br.ReadInt32();
             int id;
             double x, y, z;
@@ -325,15 +363,14 @@ namespace CaeMesh
                 z = br.ReadDouble();
                 mesh.Nodes.Add(id, new FeNode(id, x, y, z));
             }
-
+            // Elements
             if (mesh.Elements == null) mesh.Elements = new Dictionary<int, FeElement>();
             else mesh.Elements.Clear();
-
+            //
             int partId;
             int[] nodeIds;
             vtkCellType cellType;
             int numOfElements = br.ReadInt32();
-
             for (int i = 0; i < numOfElements; i++)
             {
                 partId = br.ReadInt32();
@@ -346,7 +383,7 @@ namespace CaeMesh
                 {
                     nodeIds[j] = br.ReadInt32();
                 }
-
+                //
                 switch (cellType)
                 {
                     case vtkCellType.VTK_LINE:
@@ -387,6 +424,20 @@ namespace CaeMesh
                         break;
                     default:
                         break;
+                }
+            }
+            // Parts
+            if (version >= 1_003_001)
+            {
+                //if (mesh.Parts == null) mesh.Parts = new OrderedDictionary<string, BasePart>();
+                //else mesh.Parts.Clear();
+                //
+                int numOfParts = br.ReadInt32();
+                VisualizationData visualization;
+                foreach (var entry in mesh._parts)
+                {
+                    VisualizationData.ReadFromBinaryStream(out visualization, br);
+                    entry.Value.Visualization = visualization;
                 }
             }
         }
@@ -1559,7 +1610,7 @@ namespace CaeMesh
             d[2] = n2.Z - n1.Z;
             return d;
         }
-        private FeNode ComputeNormalFromFaceCellIndices(int[] cell)
+        public FeNode ComputeNormalFromFaceCellIndices(int[] cell)
         {
             FeNode node1 = _nodes[cell[0]];
             FeNode node2 = _nodes[cell[1]];
@@ -6235,13 +6286,7 @@ namespace CaeMesh
             BasePart newPart;
             foreach (var entry in mesh.Parts)
             {
-                newPart = entry.Value;
-                if (_meshRepresentation != mesh._meshRepresentation)
-                {
-                    if (_meshRepresentation == MeshRepresentation.Geometry) newPart = new GeometryPart(newPart);
-                    else if (_meshRepresentation == MeshRepresentation.Mesh) newPart = new MeshPart(newPart);
-                    else if (_meshRepresentation == MeshRepresentation.Results) newPart = new ResultPart(newPart);
-                }
+                newPart = entry.Value.DeepCopy();
                 // Set color after renumbering
                 SetPartColorFromColorTable(newPart);
                 //
@@ -7776,16 +7821,16 @@ namespace CaeMesh
         public string[] RotateParts(string[] partNames, double[] rotateCenter, double[] rotateAxis, double rotateAngle, bool copy,
                                     ICollection<string> reservedPartNames)
         {
-            string[] scaledPartNames = partNames.ToArray();
+            string[] rotatedPartNames = partNames.ToArray();
             //
             if (copy)
             {
                 FeMesh mesh = this.DeepCopy();
-                scaledPartNames = this.AddPartsFromMesh(mesh, scaledPartNames, reservedPartNames);
+                rotatedPartNames = this.AddPartsFromMesh(mesh, rotatedPartNames, reservedPartNames);
             }
             //
             HashSet<int> nodeLabels = new HashSet<int>();
-            foreach (var partName in scaledPartNames) nodeLabels.UnionWith(_parts[partName].NodeLabels);
+            foreach (var partName in rotatedPartNames) nodeLabels.UnionWith(_parts[partName].NodeLabels);
             // Rotate nodes
             FeNode node;
             double[] x;
@@ -7818,7 +7863,7 @@ namespace CaeMesh
             // Update bounding box
             ComputeBoundingBox();
             //
-            if (copy) return scaledPartNames;
+            if (copy) return rotatedPartNames;
             else return null;
         }
 

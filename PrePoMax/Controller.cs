@@ -345,6 +345,26 @@ namespace PrePoMax
             ApplySettings();
         }
 
+        // Static methods                                                                                                           
+        public static void PrepareForSavig(Controller controller)
+        {
+            if (controller != null)
+            {
+                if (controller.Model != null) FeMesh.PrepareForSavig(controller.Model.Geometry);
+                if (controller.Model != null) FeMesh.PrepareForSavig(controller.Model.Mesh);
+                if (controller.Results != null) FeMesh.PrepareForSavig(controller.Results.Mesh);
+            }
+        }
+        public static void ResetAfterSavig(Controller controller)
+        {
+            if (controller != null)
+            {
+                if (controller.Model != null) FeMesh.ResetAfterSavig(controller.Model.Geometry);
+                if (controller.Model != null) FeMesh.ResetAfterSavig(controller.Model.Mesh);
+                if (controller.Results != null) FeMesh.ResetAfterSavig(controller.Results.Mesh);
+            }
+        }
+
         //public Controller(SerializationInfo info, StreamingContext context)
         //{
 
@@ -788,8 +808,9 @@ namespace PrePoMax
                         int.TryParse(versions[versions.Length - 2], out minor);
                         int.TryParse(versions[versions.Length - 1], out build);
                         //
-                        FeModel.ReadFromFile(model, br);
-                        FeResults.ReadFromFile(results, br, major, minor, build);
+                        int version = major * 1000 * 1000 + minor * 1000 + build;
+                        FeModel.ReadFromFile(model, br, version);
+                        FeResults.ReadFromFile(results, br, version);
                     }
                     //
                     model.UpdateMeshPartsElementTypes();
@@ -817,8 +838,8 @@ namespace PrePoMax
                     model = tmp._model;
                     results = tmp._results;
                     //
-                    FeModel.ReadFromFile(model, br);
-                    FeResults.ReadFromFile(results, br, 0, 0, 0);
+                    FeModel.ReadFromFile(model, br, 0_000_000);
+                    FeResults.ReadFromFile(results, br, 0_000_000);
                 }
                 //
                 model.UpdateMeshPartsElementTypes();
@@ -1337,8 +1358,10 @@ namespace PrePoMax
             {
                 _savingFile = true;
                 //
+                PrepareForSavig(this);
                 bool[][] states = _form.GetTreeExpandCollapseState();
                 OpenedFileName = fileName;
+                //
                 object[] data = new object[] { this, _jobs, states };
                 // Use a temporary file to save the data and copy it at the end
                 string tmpFileName = Tools.GetNonExistentRandomFileName(Path.GetDirectoryName(fileName), ".tmp");
@@ -1398,6 +1421,7 @@ namespace PrePoMax
             }
             finally
             {
+                ResetAfterSavig(this);
                 _savingFile = false;
             }
         }
@@ -1418,6 +1442,16 @@ namespace PrePoMax
                 FeModel newModel = new FeModel("Deformed");
                 newModel.Properties.ModelSpace = ModelSpaceEnum.ThreeD;
                 newModel.Mesh.AddPartsFromMesh(_results.Mesh, partNames, null, false, false);
+                // Change result parts to mesh parts
+                OrderedDictionary<string, BasePart> meshParts = new OrderedDictionary<string, BasePart>();
+                MeshPart meshPart;
+                foreach (var entry in newModel.Mesh.Parts)
+                {
+                    meshPart = new MeshPart(entry.Value);
+                    meshParts.Add(meshPart.Name, meshPart);
+                }
+                newModel.Mesh.Parts = meshParts;
+                //
                 FileInOut.Output.CalculixFileWriter.Write(fileName, newModel);
                 ResumeExplodedViews(false);
                 //
@@ -7462,11 +7496,10 @@ namespace PrePoMax
         }
         public void RemoveResultParts(string[] partNames)
         {
-            string[] removedParts;
-            _results.Mesh.RemoveParts(partNames, out removedParts, false);
+            string[] removedPartNames = _results.RemoveParts(partNames);
             //
             ViewGeometryModelResults view = ViewGeometryModelResults.Results;
-            foreach (var name in removedParts) _form.RemoveTreeNode<BasePart>(view, name, null);
+            foreach (var name in removedPartNames) _form.RemoveTreeNode<BasePart>(view, name, null);
             //
             DrawResults(false);
         }

@@ -101,7 +101,7 @@ namespace CaeMesh
             _errorEdgeCellIds = part.ErrorEdgeCellIds != null ? part.ErrorEdgeCellIds.ToArray() : null;
             _freeNodeIds = part.FreeNodeIds != null ? part.FreeNodeIds.ToArray() : null;
             _errorNodeIds = part.ErrorNodeIds != null ? part.ErrorNodeIds.ToArray() : null;
-            _cadFileData = part._cadFileData != null ? _cadFileData : null;
+            _cadFileData = part._cadFileData != null ? part._cadFileData : null;
         }
 
 

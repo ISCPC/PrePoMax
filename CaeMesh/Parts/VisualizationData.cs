@@ -147,6 +147,8 @@ namespace CaeMesh
             _cellIds = null;
             _cellIdsByFace = null;
             _faceAreas = null;
+            _faceTypes = null;
+            _faceEdgeIds = null;
             _cellNeighboursOverCellEdge = null;
             _edgeCells = null;
             _edgeCellIdsByEdge = null;
@@ -215,7 +217,75 @@ namespace CaeMesh
         }
 
 
-        // Methods
+        // Static methods                                                                                                           
+        public static void WriteToBinaryStream(VisualizationData visualizationData, System.IO.BinaryWriter bw)
+        {
+            if (visualizationData == null)
+            {
+                bw.Write(-1);
+            }
+            else
+            {
+                bw.Write(1);    // must be here
+                //
+                ReadWrite.WriteToBinaryStream(visualizationData._cells, bw);
+                ReadWrite.WriteToBinaryStream(visualizationData._cellIds, bw);
+                ReadWrite.WriteToBinaryStream(visualizationData._cellIdsByFace, bw);
+                ReadWrite.WriteToBinaryStream(visualizationData._faceAreas, bw);
+                WriteToBinaryStream(visualizationData._faceTypes, bw);
+                ReadWrite.WriteToBinaryStream(visualizationData._faceEdgeIds, bw);
+                ReadWrite.WriteToBinaryStream(visualizationData._cellNeighboursOverCellEdge, bw);
+                ReadWrite.WriteToBinaryStream(visualizationData._edgeCells, bw);
+                ReadWrite.WriteToBinaryStream(visualizationData._edgeCellIdsByEdge, bw);
+                ReadWrite.WriteToBinaryStream(visualizationData._edgeLengths, bw);
+                ReadWrite.WriteToBinaryStream(visualizationData._vertexNodeIds, bw);
+            }
+        }
+        public static void ReadFromBinaryStream(out VisualizationData visualizationData, System.IO.BinaryReader br)
+        {
+            int exists = br.ReadInt32();
+            if (exists <= -1) visualizationData = null;
+            else
+            {
+                visualizationData = new VisualizationData();
+                ReadWrite.ReadFromBinaryStream(out visualizationData._cells, br);
+                ReadWrite.ReadFromBinaryStream(out visualizationData._cellIds, br);
+                ReadWrite.ReadFromBinaryStream(out visualizationData._cellIdsByFace, br);
+                ReadWrite.ReadFromBinaryStream(out visualizationData._faceAreas, br);
+                ReadFromBinaryStream(out visualizationData._faceTypes, br);
+                ReadWrite.ReadFromBinaryStream(out visualizationData._faceEdgeIds, br);
+                ReadWrite.ReadFromBinaryStream(out visualizationData._cellNeighboursOverCellEdge, br);
+                ReadWrite.ReadFromBinaryStream(out visualizationData._edgeCells, br);
+                ReadWrite.ReadFromBinaryStream(out visualizationData._edgeCellIdsByEdge, br);
+                ReadWrite.ReadFromBinaryStream(out visualizationData._edgeLengths, br);
+                ReadWrite.ReadFromBinaryStream(out visualizationData._vertexNodeIds, br);
+            }
+        }
+        private static void WriteToBinaryStream(GeomFaceType[] data, System.IO.BinaryWriter bw)
+        {
+            if (data == null)
+            {
+                bw.Write(-1);
+            }
+            else
+            {
+                bw.Write(data.Length);
+                for (int i = 0; i < data.Length; i++) bw.Write((int)data[i]);
+            }
+        }
+        private static void ReadFromBinaryStream(out GeomFaceType[] data, System.IO.BinaryReader br)
+        {
+            int numOfEntries = br.ReadInt32();
+            if (numOfEntries <= -1) data = null;
+            else
+            {
+                data = new GeomFaceType[numOfEntries];
+                for (int i = 0; i < data.Length; i++) data[i] = (GeomFaceType)br.ReadInt32();
+            }
+        }
+
+
+        // Methods                                                                                                                  
         public void ResetCellNeighboursOverCell()
         {
             _cellNeighboursOverCell = null;

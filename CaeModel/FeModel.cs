@@ -198,19 +198,19 @@ namespace CaeModel
                 FeMesh.WriteToBinaryFile(model.Mesh, bw);
             }
         }
-        public static void ReadFromFile(FeModel model, BinaryReader br)
+        public static void ReadFromFile(FeModel model, BinaryReader br, int version)
         {
             // Read geometry
             int geometryExists = br.ReadInt32();
             if (geometryExists == 1)
             {
-                FeMesh.ReadFromBinaryFile(model.Geometry, br);
+                FeMesh.ReadFromBinaryFile(model.Geometry, br, version);
             }
             // Read mesh
             int meshExists = br.ReadInt32();
             if (meshExists == 1)
             {
-                FeMesh.ReadFromBinaryFile(model.Mesh, br);
+                FeMesh.ReadFromBinaryFile(model.Mesh, br, version);
             }
         }
         //
@@ -372,6 +372,40 @@ namespace CaeModel
             }
             //
             return invalidItems.ToArray();
+        }
+        private void Check2D(FeMesh mesh)
+        {
+            // Check for 2D geometry - the same check in ImportGeometry
+            if (_properties.ModelSpace.IsTwoD())
+            {
+                if (!mesh.BoundingBox.Is2D())
+                    throw new CaeException("The selected file does not contain 2D geometry in x-y plane.");
+                else if (!Check2DSurfaceNormals(mesh))
+                {
+                    MessageBoxes.ShowWarning("The imported geometry contains faces oriented in the wrong direction (negative Z). " +
+                                             "To use them in the analysis, change their orientation.");
+                }
+            }
+        }
+        private bool Check2DSurfaceNormals(FeMesh mesh)
+        {
+            int cellId;
+            int[] cell;
+            FeNode normal;
+            foreach (var entry in mesh.Parts)
+            {
+                for (int i = 0; i < entry.Value.Visualization.CellIdsByFace.Length; i++)
+                {
+                    if (entry.Value.Visualization.CellIdsByFace[i].Length > 0)
+                    {
+                        cellId = entry.Value.Visualization.CellIdsByFace[i][0];
+                        cell = entry.Value.Visualization.Cells[cellId];
+                        normal = mesh.ComputeNormalFromFaceCellIndices(cell);
+                        if (normal.Z < 0) return false;
+                    }
+                }
+            }
+            return true;
         }
         public bool IsBoundaryConditionRegionValid(BoundaryCondition bc)
         {
@@ -998,11 +1032,7 @@ namespace CaeModel
         //
         private string[] ImportGeometry(FeMesh mesh, ICollection<string> reservedPartNames)
         {
-            // Check for 2D geometry
-            if (_properties.ModelSpace.IsTwoD() && !mesh.BoundingBox.Is2D())
-            {
-                throw new CaeException("The selected file does not contain 2D geometry in x-y plane.");
-            }
+            Check2D(mesh);
             //
             if (_geometry == null)
             {                
@@ -1016,11 +1046,7 @@ namespace CaeModel
         public void ImportMesh(FeMesh mesh, ICollection<string> reservedPartNames, bool forceRenameParts = true,
                                bool renumberNodesAndElements = true)
         {
-            // Check for 2D mesh
-            if (_properties.ModelSpace.IsTwoD() && !mesh.BoundingBox.Is2D())
-            {
-                throw new CaeException("The selected file does not contain 2D geometry in x-y plane.");
-            }
+            Check2D(mesh);
             //
             if (_mesh == null)
             {

@@ -4128,7 +4128,7 @@ namespace vtkControl
         private void HideShowActors(string[] actorNames, bool updateColorContours, bool visible)
         {
             string[] tmp;
-            string[] splitter = new string[] { "_animation-frame-" };
+            string[] splitter = new string[] { "_animation-frame-", "_undeformed" };
             HashSet<string> actorNamesHash = new HashSet<string>(actorNames);
             foreach (var entry in _actors)
             {
