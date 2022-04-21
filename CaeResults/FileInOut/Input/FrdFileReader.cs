@@ -451,7 +451,6 @@ namespace CaeResults
                 case FOFieldNames.Stress:
                 case FOFieldNames.ToStrain:
                 case FOFieldNames.MeStrain:
-                case FOFieldNames.Pe:
                 // Error
                 case FOFieldNames.ZZStr:
                     field = CreateStressField(fieldData.Name, components, values);
