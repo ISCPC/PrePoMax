@@ -113,6 +113,12 @@ namespace CaeResults
             if (_components.ContainsKey(name)) return _components[name].Values;
             else return null;
         }
+        public float GetComponentAbsMax(string name)
+        {
+            float max = _components[name].Max.Value;
+            float min = _components[name].Min.Value;
+            return Math.Max(min, max);
+        }
         public float GetComponentMax(string name)
         {
             return _components[name].Max.Value;

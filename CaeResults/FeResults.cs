@@ -226,7 +226,7 @@ namespace CaeResults
             FieldData fieldData;
             foreach (var fieldName in fieldNames)
             {
-                componentNames = GetComponentNames(fieldName);
+                componentNames = GetFieldComponentNames(fieldName);
                 foreach (var componentName in componentNames)
                 {
                     fieldData = GetFieldData(fieldName, componentName, lastStepId, lastStepIncrementId);
@@ -520,16 +520,20 @@ namespace CaeResults
         }
         public float[][] GetNodalMeshDeformations(int stepId, int stepIncrementId)
         {
+            return GetNodalMeshDeformations(_deformationFieldOutputName, stepId, stepIncrementId);
+        }
+        public float[][] GetNodalMeshDeformations(string deformationFieldOutputName, int stepId, int stepIncrementId)
+        {
             float[][] deformations = null;
-            string[] componentNames = GetDeformationFieldOutputComponentNames();
-            string[] existingComponentNames = GetComponentNames(_deformationFieldOutputName);
+            string[] componentNames = GetDeformationFieldOutputComponentNames(deformationFieldOutputName);
+            string[] existingComponentNames = GetFieldComponentNames(deformationFieldOutputName);
             //
             if (existingComponentNames != null &&
                 existingComponentNames.Contains(componentNames[0]) &&
                 existingComponentNames.Contains(componentNames[1]) &&
                 existingComponentNames.Contains(componentNames[2]))
             {
-                Field deformationField = GetField(new FieldData(_deformationFieldOutputName, "", stepId, stepIncrementId));
+                Field deformationField = GetField(new FieldData(deformationFieldOutputName, "", stepId, stepIncrementId));
                 if (deformationField == null) return null;
                 //
                 deformations = new float[3][];
@@ -568,30 +572,30 @@ namespace CaeResults
             }
             return existingFieldNames.ToArray();
         }
-        private string[] GetDeformationFieldOutputComponentNames()
+        private string[] GetDeformationFieldOutputComponentNames(string deformationFieldOutputName)
         {
             string[] componentNames = null;
-            if (_deformationFieldOutputName == FOFieldNames.Disp)
+            if (deformationFieldOutputName == FOFieldNames.Disp)
             {
                 componentNames = new string[] { FOComponentNames.U1, FOComponentNames.U2, FOComponentNames.U3 };
             }
-            else if (_deformationFieldOutputName == FOFieldNames.Forc)
+            else if (deformationFieldOutputName == FOFieldNames.Forc)
             {
                 componentNames = new string[] { FOComponentNames.F1, FOComponentNames.F2, FOComponentNames.F3 };
             }
-            else if (_deformationFieldOutputName == FOFieldNames.SurfaceNormal)
+            else if (deformationFieldOutputName == FOFieldNames.SurfaceNormal)
             {
                 componentNames = new string[] { FOComponentNames.N1, FOComponentNames.N2, FOComponentNames.N3 };
             }
-            else if (_deformationFieldOutputName == FOFieldNames.WearDepth)
+            else if (deformationFieldOutputName == FOFieldNames.WearDepth)
             {
                 componentNames = new string[] { FOComponentNames.H1, FOComponentNames.H2, FOComponentNames.H3 };
             }
-            else if (_deformationFieldOutputName == FOFieldNames.MeshDeformation)
+            else if (deformationFieldOutputName == FOFieldNames.MeshDeformation)
             {
                 componentNames = new string[] { FOComponentNames.U1, FOComponentNames.U2, FOComponentNames.U3 };
             }
-            else if (_deformationFieldOutputName == FOFieldNames.DispDeformationDepth)
+            else if (deformationFieldOutputName == FOFieldNames.DispDeformationDepth)
             {
                 componentNames = new string[] { FOComponentNames.U1, FOComponentNames.U2, FOComponentNames.U3 };
             }
@@ -1000,7 +1004,7 @@ namespace CaeResults
             return historyResultSet;
         }
         //
-        public string[] GetComponentNames()
+        public string[] GetAllComponentNames()
         {
             HashSet<string> componentNames = new HashSet<string>();
             foreach (var entry in _fields)
@@ -1009,7 +1013,7 @@ namespace CaeResults
             }
             return componentNames.ToArray();
         }
-        public string[] GetComponentNames(string fieldName)
+        public string[] GetFieldComponentNames(string fieldName)
         {
             foreach (var entry in _fields)
             {
@@ -1074,7 +1078,7 @@ namespace CaeResults
         public FieldData GetFirstComponentOfTheFirstFieldAtLastIncrement()
         {
             string name = GetAllFieldNames()[0];
-            string component = GetComponentNames(name)[0];
+            string component = GetFieldComponentNames(name)[0];
             int stepId = GetAllStepIds().Last();
             int stepIncrementId = GetIncrementIds(stepId).Last();
             //
@@ -1095,7 +1099,7 @@ namespace CaeResults
                 int stepId = GetAllStepIds().Last();
                 int stepIncrementId = GetIncrementIds(stepId).Last();
                 string name = GetStepFieldNames(stepId)[0];
-                string component = GetComponentNames(name)[0];
+                string component = GetFieldComponentNames(name)[0];
                 //
                 fieldData = GetFieldData(name, component, stepId, stepIncrementId);
                 if (fieldData == null)
@@ -1728,7 +1732,7 @@ namespace CaeResults
         {
             closestFieldName = null;
             closestComponentName = null;
-            string[] existingComponentNames = GetComponentNames(fieldName);
+            string[] existingComponentNames = GetFieldComponentNames(fieldName);
             //
             for (int i = 0; i < existingComponentNames.Length; i++)
             {
@@ -1754,7 +1758,7 @@ namespace CaeResults
                         // Find the next field output with at least one component
                         while (++i < existingFieldNames.Length)
                         {
-                            existingComponentNames = GetComponentNames(existingFieldNames[i]);
+                            existingComponentNames = GetFieldComponentNames(existingFieldNames[i]);
                             if (existingComponentNames.Length > 0)
                             {
                                 closestFieldName = existingFieldNames[i];
@@ -1765,7 +1769,7 @@ namespace CaeResults
                         // Find the prevous field output with at least one component
                         while (--i > 0)
                         {
-                            existingComponentNames = GetComponentNames(existingFieldNames[i]);
+                            existingComponentNames = GetFieldComponentNames(existingFieldNames[i]);
                             if (existingComponentNames.Length > 0)
                             {
                                 closestFieldName = existingFieldNames[i];
@@ -1992,18 +1996,22 @@ namespace CaeResults
             return ratios;
         }
         //
-        public void ScaleNodeCoordinates(float scale, int stepId, int stepIncrementId, int[] globalNodeIds, ref double[][] nodes)
+        public void ScaleNodeCoordinates(string deformationFieldOutputName, float scale, int stepId, int stepIncrementId,
+                                         int[] globalNodeIds, ref double[][] nodes)
         {
+            if (deformationFieldOutputName == FOFieldNames.Default) deformationFieldOutputName = _deformationFieldOutputName;
             if (scale != 0)
             {
-                float[][] deformations = GetNodalMeshDeformations(stepId, stepIncrementId);
+                float[][] deformations = GetNodalMeshDeformations(deformationFieldOutputName, stepId, stepIncrementId);
                 if (deformations != null)
                 {
                     for (int i = 0; i < nodes.Length; i++)
                     {
+                        int resultId = _nodeIdsLookUp[globalNodeIds[i]];
+                        //
                         for (int j = 0; j < 3; j++)
                         {
-                            nodes[i][j] += scale * deformations[j][i];
+                            nodes[i][j] += scale * deformations[j][resultId];
                         }
                     }
                 }
@@ -2026,32 +2034,48 @@ namespace CaeResults
             }
         }
         //
-        public float GetMaxDisplacement()
+        public float GetMaxDeformation()
         {
-            float max = -float.MaxValue;
-            float fieldMax;
+            double fieldMax;
+            double max = -double.MaxValue;
+            string[] componentNames = GetFieldComponentNames(_deformationFieldOutputName);
+            //
             foreach (var entry in _fields)
             {
-                if (entry.Key.Name == FOFieldNames.Disp)
+                if (entry.Key.Name == _deformationFieldOutputName)
                 {
-                    fieldMax = entry.Value.GetComponentMax(FOComponentNames.All);
+                    fieldMax = 0;
+                    //
+                    foreach (var componentName in componentNames)
+                        fieldMax += Math.Pow(entry.Value.GetComponentAbsMax(componentName), 2);
+                    //
+                    if (fieldMax > 0) fieldMax = Math.Sqrt(fieldMax);
+                    //
                     if (fieldMax > max) max = fieldMax;
                 }
             }
-            return max;
+            return (float)max;
         }
-        public float GetMaxDisplacement(int stepId, int stepIncrementId)
+        public float GetMaxDeformation(int stepId, int stepIncrementId)
         {
-            float max = -float.MaxValue;
+            double max = -double.MaxValue;
             foreach (var entry in _fields)
             {
                 if (entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId &&
-                    entry.Key.Name == FOFieldNames.Disp)
+                    entry.Key.Name == _deformationFieldOutputName)
                 {
-                    max = entry.Value.GetComponentMax(FOComponentNames.All);
+                    max = 0;
+                    string[] componentNames = GetFieldComponentNames(_deformationFieldOutputName);
+                    //
+                    foreach (var componentName in componentNames)
+                        max += Math.Pow(entry.Value.GetComponentAbsMax(componentName), 2);
+                    //
+                    if (max > 0) max = Math.Sqrt(max);
+                    //
+                    break;
                 }
             }
-            return max;
+            return (float)max;
         }
         //
         public double GetEdgeLength(int geometryEdgeId)

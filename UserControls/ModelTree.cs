@@ -1748,7 +1748,7 @@ namespace UserControls
                             allComponents = new string[fieldNames.Length][];
                             for (int i = 0; i < fieldNames.Length; i++)
                             {
-                                allComponents[i] = results.GetComponentNames(fieldNames[i]);
+                                allComponents[i] = results.GetFieldComponentNames(fieldNames[i]);
                             }
                             SetFieldOutputAndComponentNames(fieldNames, allComponents);
                             //SelectFirstComponentOfFirstFieldOutput();

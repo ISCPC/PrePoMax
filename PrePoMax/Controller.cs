@@ -7576,7 +7576,7 @@ namespace PrePoMax
         }
         public string[] GetResultFieldOutputComponents(string fieldOutputName)
         {
-            return _results.GetComponentNames(fieldOutputName);
+            return _results.GetFieldComponentNames(fieldOutputName);
         }
         public int[] GetResultStepIDs()
         {
@@ -7597,7 +7597,7 @@ namespace PrePoMax
             ViewGeometryModelResults view = ViewGeometryModelResults.Results;
             foreach (var name in fieldOutputNames) _form.RemoveTreeNode<Field>(view, name, null);
             //
-            if (_results.GetComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
+            if (_results.GetAllComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
             //
             DrawResults(false); // in all cases redraw the 
         }
@@ -7609,7 +7609,7 @@ namespace PrePoMax
             ViewGeometryModelResults view = ViewGeometryModelResults.Results;
             foreach (var name in componentNames) _form.RemoveTreeNode<FieldData>(view, name, fieldOutputName);
             //
-            if (_results.GetComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
+            if (_results.GetAllComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
             //
             DrawResults(false); // in all cases redraw the 
         }
@@ -12403,7 +12403,7 @@ namespace PrePoMax
                 _form.Clear3D();    // Removes section cut
                 //
                 if (_results == null || _results.Mesh == null) return;
-                if (_results.GetComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
+                if (_results.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
                 //
                 ApplyResultsUnitSystem();
                 // Settings - must be here before drawing parts to correctly set the numer of colors
@@ -12510,7 +12510,7 @@ namespace PrePoMax
             _form.Clear3D();
             //
             if (_results == null || _results.Mesh == null) return false;
-            if (_results.GetComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
+            if (_results.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
             //
             ApplyResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
@@ -12588,7 +12588,7 @@ namespace PrePoMax
             //
             numFrames = -1;
             if (_results == null ||_results.Mesh == null) return false;
-            if (_results.GetComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
+            if (_results.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
             //
             ApplyResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
@@ -12864,12 +12864,16 @@ namespace PrePoMax
         // Scale 
         public FeNode GetScaledNode(float scale, int nodeId)
         {
+            return GetScaledNode(FOFieldNames.Default, scale, nodeId);
+        }
+        public FeNode GetScaledNode(string deformationFieldOutputName, float scale, int nodeId)
+        {
             if (_currentView == ViewGeometryModelResults.Results)
             {
                 FeNode node = _results.UndeformedNodes[nodeId];
                 double[][] coor = new double[][] { node.Coor };
-                _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                              new int[] { nodeId }, ref coor);
+                _results.ScaleNodeCoordinates(deformationFieldOutputName, scale, _currentFieldData.StepId,
+                                              _currentFieldData.StepIncrementId, new int[] { nodeId }, ref coor);
                 node.X = coor[0][0];
                 node.Y = coor[0][1];
                 node.Z = coor[0][2];
@@ -12879,13 +12883,17 @@ namespace PrePoMax
         }
         public FeNode[] GetScaledNodes(float scale, int[] nodeIds)
         {
+            return GetScaledNodes(FOFieldNames.Default, scale, nodeIds);
+        }
+        public FeNode[] GetScaledNodes(string deformationFieldOutputName, float scale, int[] nodeIds)
+        {
             if (_currentView == ViewGeometryModelResults.Results)
             {
                 double[][] coor = new double[nodeIds.Length][];
                 for (int i = 0; i < nodeIds.Length; i++) coor[i] = _results.UndeformedNodes[nodeIds[i]].Coor;
                 //
-                _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                              nodeIds, ref coor);
+                _results.ScaleNodeCoordinates(deformationFieldOutputName, scale, _currentFieldData.StepId,
+                                              _currentFieldData.StepIncrementId, nodeIds, ref coor);
                 //
                 FeNode[] nodes = new FeNode[nodeIds.Length];
                 for (int i = 0; i < nodes.Length; i++) nodes[i] = new FeNode(nodeIds[i], coor[i]);
@@ -12917,7 +12925,7 @@ namespace PrePoMax
                 // 3D
                 else size = (float)_results.Mesh.GetBoundingBoxVolumeAsCubeSide();
                 //
-                float maxDisp = _results.GetMaxDisplacement(_currentFieldData.StepId, _currentFieldData.StepIncrementId);
+                float maxDisp = _results.GetMaxDeformation(_currentFieldData.StepId, _currentFieldData.StepIncrementId);
                 if (maxDisp == -float.MaxValue) scale = 0;       // the displacement filed does not exist
                 else if (maxDisp != 0) scale = size * 0.25f / maxDisp;
             }
@@ -12933,7 +12941,7 @@ namespace PrePoMax
             if (_settings.Post.DeformationScaleFactorType == DeformationScaleFactorTypeEnum.Automatic)
             {
                 float size = (float)_results.Mesh.GetBoundingBoxVolumeAsCubeSide();
-                float maxDisp = _results.GetMaxDisplacement();
+                float maxDisp = _results.GetMaxDeformation();
                 if (maxDisp == -float.MaxValue) scale = 0;       // the displacement filed does not exist
                 else if (maxDisp != 0) scale = size * 0.25f / maxDisp;
             }

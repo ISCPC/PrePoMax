@@ -9,6 +9,7 @@ namespace CaeResults
     public class FOFieldNames
     {
         public const string None = "NONE";
+        public const string Default = "DEFAULT";
         //
         public const string Disp = "DISP";
         // Stress
