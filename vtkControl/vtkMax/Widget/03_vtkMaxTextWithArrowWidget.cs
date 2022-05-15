@@ -14,11 +14,11 @@ namespace vtkControl
         private bool _anchorAlreadySet;
         vtkCoordinate _worldAnchorPoint;
         vtkCoordinate _worldPositionPoint;
-
+        //
         vtkPolyData _leaderPolyData;
         vtkPolyDataMapper2D _leaderMapper2D;
         vtkActor2D _leaderActor2D;
-
+        //
         vtkPolyData _headPolyData;
         vtkGlyph3D _headGlyph;
         vtkActor2D _headActor2D;
@@ -187,7 +187,7 @@ namespace vtkControl
             SetPositionFromWorldPosition();
             RecomputeLeader();
         }
-
+        //
         public override void MiddleButtonPress(int x, int y)
         {
             if (!_visibility) return;
@@ -239,7 +239,7 @@ namespace vtkControl
             SetPositionFromWorldPosition();
             RecomputeLeader();
         }
-
+        //
         public override void VisibilityOn()
         {
             if (_visibility == false)
@@ -259,19 +259,27 @@ namespace vtkControl
                 if (_headActor2D != null) _renderer.RemoveActor(_headActor2D);
             }
         }
-
+        //
         public void ResetInitialPosition()
         {
             _anchorAlreadySet = false;
         }
 
+
         // Public setters                                                                                                           
         public override void SetInteractor(vtkRenderer renderer, vtkRenderWindowInteractor renderWindowInteractor)
         {
             base.SetInteractor(renderer, renderWindowInteractor);
-
+            //
             _renderer.AddActor(_leaderActor2D);
             _renderer.AddActor(_headActor2D);
+        }
+        public override void RemoveInteractor()
+        {
+            _renderer.RemoveActor(_leaderActor2D);
+            _renderer.RemoveActor(_headActor2D);
+            //
+            base.RemoveInteractor();
         }
         public void SetAnchorPoint(double x, double y, double z)
         {
@@ -348,7 +356,5 @@ namespace vtkControl
 
 
         // Public getters                                                                                                           
-        
-
     }
 }

@@ -39,6 +39,8 @@ namespace PrePoMax
         [NonSerialized] protected vtkSelectBy _selectBy;
         [NonSerialized] protected double _selectAngle;
         [NonSerialized] protected Selection _selection;
+        // Widgets
+        [NonSerialized] protected Dictionary<ViewGeometryModelResults, List<WidgetBase>> _widgets;
         // Results
         [NonSerialized] protected ViewResultsType _viewResultsType;
         [NonSerialized] protected FieldData _currentFieldData;
@@ -327,6 +329,11 @@ namespace PrePoMax
             _explodedViewParameters.Add(ViewGeometryModelResults.Results, new ExplodedViewParameters());
             // Selection
             _selection = new Selection();
+            // Widgets
+            _widgets = new Dictionary<ViewGeometryModelResults, List<WidgetBase>>();
+            _widgets.Add(ViewGeometryModelResults.Geometry, new List<WidgetBase>());
+            _widgets.Add(ViewGeometryModelResults.Model, new List<WidgetBase>());
+            _widgets.Add(ViewGeometryModelResults.Results, new List<WidgetBase>());
             // Results
             ViewResultsType = ViewResultsType.ColorContours;
             // Errors - must be here before Clear
@@ -7089,6 +7096,13 @@ namespace PrePoMax
 
         #endregion #################################################################################################################
 
+        #region Query menu   #######################################################################################################
+        public void AddWidget(WidgetBase widget)
+        {
+            _widgets[_currentView].Add(widget);
+        }
+        #endregion   ###############################################################################################################
+
         #region Analysis menu   ####################################################################################################
         // COMMANDS ********************************************************************************
         public void AddJobCommand(AnalysisJob job)
@@ -7714,7 +7728,7 @@ namespace PrePoMax
         }
 
         #endregion #################################################################################################################
-        //
+        
         #region Selection  #########################################################################################################
         public void SetSelectionView(ViewGeometryModelResults selectionView)
         {
@@ -8501,7 +8515,6 @@ namespace PrePoMax
             int[] ids;
             int[] nodeIds;
             int[] elementIds;
-            int[] geomIds;
             // Create surface by area selecting nodes or elements
             if (selectBy == vtkSelectBy.Node || selectBy == vtkSelectBy.Element)
             {
@@ -9175,7 +9188,8 @@ namespace PrePoMax
                         {
                             ApplyModelUnitSystem();
                             //
-                            DrawAllGeomParts();
+                            DrawGeomParts();
+                            DrawWidgets();
                             AnnotateWithColorLegend();
                             //
                             Octree.Plane plane = _sectionViewPlanes[_currentView];
@@ -9193,7 +9207,7 @@ namespace PrePoMax
                 // Do not throw an error - it might cancel a procedure
             }
         }
-        public void DrawAllGeomParts()
+        public void DrawGeomParts()
         {
             if (_model == null) return;
             //
@@ -9711,6 +9725,52 @@ namespace PrePoMax
             _form.DrawColorBarBackground(ps.ColorBarBackgroundType == WidgetBackgroundType.White);
             _form.DrawColorBarBorder(ps.ColorBarDrawBorder);
             //
+        }
+        // Widgets
+        public void DrawWidgets()
+        {
+            foreach (var widget in _widgets[_currentView])
+            {
+                if (widget is NodeWidget nw) DrawNodeWidget(nw);
+                else throw new NotSupportedException();
+            }
+        }
+        public void DrawNodeWidget(NodeWidget nodeWidget)
+        {
+            string data;
+            string lenUnit = GetLengthUnit();
+            //
+            Vec3D baseV = new Vec3D(GetNode(nodeWidget.NodeId).Coor);
+            //
+            data = "Node id: " + nodeWidget.NodeId;
+            //
+            if (_currentView == ViewGeometryModelResults.Results)
+            {
+                float fieldValue = GetNodalValue(nodeWidget.NodeId);
+                string fieldUnit = "[" + GetCurrentResultsUnitAbbreviation() + "]";
+                //
+                Vec3D trueScaledV = new Vec3D(GetScaledNode(1, nodeWidget.NodeId).Coor);
+                Vec3D disp = trueScaledV - baseV;
+                //
+                float scale = GetScale();
+                baseV = new Vec3D(GetScaledNode(scale, nodeWidget.NodeId).Coor); // for the _coorNodesToDraw
+                //
+                data += string.Format("{0}Field value: {1} {2}", Environment.NewLine, fieldValue.ToString(), fieldUnit);
+            }
+            //
+            _form.AddArrowWidget(data, baseV.Coor);
+        }
+        private string GetLengthUnit()
+        {
+            string unit;
+            //
+            if (_currentView == ViewGeometryModelResults.Geometry || _currentView == ViewGeometryModelResults.Model)
+                unit = _model.UnitSystem.LengthUnitAbbreviation;
+            else if (_currentView == ViewGeometryModelResults.Results)
+                unit = _results.UnitSystem.LengthUnitAbbreviation;
+            else throw new NotSupportedException();
+            //
+            return "[" + unit + "]";
         }
         // Reference points
         public void DrawAllReferencePoints()

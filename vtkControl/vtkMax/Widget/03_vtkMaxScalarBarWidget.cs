@@ -13,18 +13,18 @@ namespace vtkControl
         // Variables                                                                                                                
         protected vtkPolyDataMapper2D _scalarBarBorderMapper;
         protected vtkActor2D _scalarBarBorderActor;
-
+        //
         protected vtkPolyDataMapper2D _scalarBarColorsMapper;
         protected vtkActor2D _scalarBarColorsActor;
-
+        //
         protected vtkLookupTable _lookupTable;
-
+        //
         protected vtkActor2D _textActorFooter;
         protected vtkTextMapper _textMapperFooter;
-
+        //
         protected vtkActor2D _textActorLabel;
         protected vtkTextMapper _textMapperLabel;
-
+        //
         private int _numberOfColors;
         private string[] _labels;
         private string _labelFormat;
@@ -381,7 +381,6 @@ namespace vtkControl
         }
 
 
-
         // Public methods                                                                                                           
         public override void OnSizeChanged()
         {
@@ -423,7 +422,6 @@ namespace vtkControl
             base.SetText(text);
             OnSizeChanged();
         }
-
         
 
         // Public setters                                                                                                           
@@ -434,6 +432,15 @@ namespace vtkControl
             _renderer.AddActor(_textActorLabel);
             _renderer.AddActor(_scalarBarColorsActor);
             _renderer.AddActor(_scalarBarBorderActor);
+        }
+        public override void RemoveInteractor()
+        {
+            _renderer.RemoveActor(_textActorFooter);
+            _renderer.RemoveActor(_textActorLabel);
+            _renderer.RemoveActor(_scalarBarColorsActor);
+            _renderer.RemoveActor(_scalarBarBorderActor);
+            //
+            base.RemoveInteractor();
         }
         public void SetNumberOfColors(int numOfColors)
         {

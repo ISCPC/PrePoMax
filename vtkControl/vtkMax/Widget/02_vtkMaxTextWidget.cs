@@ -12,9 +12,7 @@ namespace vtkControl
         // Variables                                                                                                                
         protected vtkActor2D _textActor;
         protected vtkTextMapper _textMapper;
-
         protected int _padding;
-        
 
 
         // Constructors                                                                                                             
@@ -58,7 +56,6 @@ namespace vtkControl
                 if (_textActor != null) _renderer.RemoveActor(_textActor);
             }
         }
-
         public override void OnSizeChanged()
         {
             int[] textSize = vtkMaxWidgetTools.GetTextSize(_textMapper, _renderer);
@@ -69,14 +66,20 @@ namespace vtkControl
 
 
         // Private methods                                                                                                          
-       
 
 
         // Public setters                                                                                                           
         public override void SetInteractor(vtkRenderer renderer, vtkRenderWindowInteractor renderWindowInteractor)
         {
             base.SetInteractor(renderer, renderWindowInteractor);
+            //
             _renderer.AddActor(_textActor);
+        }
+        public override void RemoveInteractor()
+        {
+            _renderer.RemoveActor(_textActor);
+            //
+            base.RemoveInteractor();
         }
         public virtual void SetTextProperty(vtkTextProperty textProperty)
         {

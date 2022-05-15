@@ -7207,6 +7207,15 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SaveAnimationAsImages, fileName, firstLastFrame, step, scalarRangeFromAllFrames, swing);
         }
+        // Widgets
+        public void AddArrowWidget(string text, double[] anchorPoint)
+        {
+            InvokeIfRequired(_vtk.AddArrowWidget, text, anchorPoint);
+        }
+        public void ClearAllArrowWidgets()
+        {
+            InvokeIfRequired(_vtk.ClearAllArrowWidgets);
+        }
 
         #endregion  ################################################################################################################
 

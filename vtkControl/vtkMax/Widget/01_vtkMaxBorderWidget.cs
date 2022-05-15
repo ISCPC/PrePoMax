@@ -425,25 +425,35 @@ namespace vtkControl
         // Public setters                                                                                                           
         public virtual void SetInteractor(vtkRenderer renderer, vtkRenderWindowInteractor renderWindowInteractor)
         {
-            // dereference
+            // Dereference
             if (_renderWindowInteractor != null && _renderWindowInteractor.GetRenderWindow() != null)
                 _renderWindowInteractor.GetRenderWindow().ModifiedEvt -= renderWindow_ModifiedEvt;
-
-            // get pointers
+            // Get pointers
             if (renderWindowInteractor == null) return;
             _renderWindowInteractor = renderWindowInteractor;
             _renderer = renderer;
-
-            // reference
+            // Reference
             _renderWindowInteractor.GetRenderWindow().ModifiedEvt += renderWindow_ModifiedEvt;
-
-            // Widget
+            // Add widget
             if (_renderWindowInteractor.GetInteractorStyle() is vtkInteractorStyleControl visc) visc.AddVtkMaxWidget(this);
-
+            //
             _renderer.AddActor(_backgroundActor);
             _renderer.AddActor(_borderActor);
         }
-        
+        public virtual void RemoveInteractor()
+        {
+            // Dereference
+            if (_renderWindowInteractor != null && _renderWindowInteractor.GetRenderWindow() != null)
+                _renderWindowInteractor.GetRenderWindow().ModifiedEvt -= renderWindow_ModifiedEvt;
+            // Remove widget
+            if (_renderWindowInteractor.GetInteractorStyle() is vtkInteractorStyleControl visc) visc.RemoveVtkMaxWidget(this);
+            //
+            _renderer.RemoveActor(_backgroundActor);
+            _renderer.RemoveActor(_borderActor);
+            // Pointers
+            _renderWindowInteractor = null;
+            _renderer = null;
+        }
 
         public void SetPosition(double x, double y)
         {

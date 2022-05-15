@@ -344,21 +344,26 @@ namespace vtkControl
                 if (_colorBarColorsActor != null) _renderer.RemoveActor(_colorBarColorsActor);
             }
         }
-        //public void SetText(string text)
-        //{
-        //    base.SetText(text);
-        //    OnSizeChanged();
-        //}
-        
+
 
         // Public setters                                                                                                           
         public override void SetInteractor(vtkRenderer renderer, vtkRenderWindowInteractor renderWindowInteractor)
         {
             base.SetInteractor(renderer, renderWindowInteractor);
+            //
             _renderer.AddActor(_textActorFooter);
             _renderer.AddActor(_textActorLabel);
             _renderer.AddActor(_colorBarColorsActor);
             _renderer.AddActor(_colorBarBorderActor);
+        }
+        public override void RemoveInteractor()
+        {
+            _renderer.RemoveActor(_textActorFooter);
+            _renderer.RemoveActor(_textActorLabel);
+            _renderer.RemoveActor(_colorBarColorsActor);
+            _renderer.RemoveActor(_colorBarBorderActor);
+            //
+            base.RemoveInteractor();
         }
         public void ClearColorsAndLabels()
         {

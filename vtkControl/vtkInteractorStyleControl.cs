@@ -527,6 +527,10 @@ namespace vtkControl
         {
             _widgets.Add(widget);
         }
+        public void RemoveVtkMaxWidget(vtkMaxBorderWidget widget)
+        {
+            _widgets.Remove(widget);
+        }
 
         public void Reset()
         {

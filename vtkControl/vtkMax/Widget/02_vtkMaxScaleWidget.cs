@@ -325,6 +325,17 @@ namespace vtkControl
             //
             OnSizeChanged();
         }
+        public override void RemoveInteractor()
+        {
+            _renderer.RemoveActor(_scaleBackgroundActor);
+            _renderer.RemoveActor(_scaleBorderActor);
+            for (int i = 0; i < _scaleTextActors.Length; i++)
+            {
+                _renderer.RemoveActor(_scaleTextActors[i]);
+            }
+            //
+            base.RemoveInteractor();
+        }
         public void SetWidth(int width)
         {
             _width = width;

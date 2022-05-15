@@ -224,6 +224,8 @@ namespace PrePoMax.Forms
                 //
                 _coorNodesToDraw[0] = baseV.Coor;
                 _coorLinesToDraw = null;
+                //
+                _controller.AddWidget(new NodeWidget(nodeId));
             }
         }
         public void OneElementPicked(int id)

@@ -7,8 +7,6 @@ using Kitware.VTK;
 
 namespace vtkControl
 {
-    
-
     class vtkMaxStatusBlockWidget : vtkMaxTextWidget
     {
         // Variables                                                                                                                

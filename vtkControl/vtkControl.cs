@@ -46,6 +46,7 @@ namespace vtkControl
         private vtkLight _light1;
         private vtkLight _light2;
         private vtkLight _light3;
+        // Widgets
         private vtkOrientationMarkerWidget _coorSys;
         private vtkMaxScaleWidget _scaleWidget;
         private vtkLookupTable _lookupTable;
@@ -60,6 +61,7 @@ namespace vtkControl
         //
         private vtkMaxTextWithArrowWidget _minValueWidget;
         private vtkMaxTextWithArrowWidget _maxValueWidget;
+        private List<vtkMaxTextWithArrowWidget> _arrowWidgets;
         private vtkMaxTextWidget _probeWidget;
         //
         private Dictionary<string, vtkMaxActor> _actors;
@@ -1805,6 +1807,9 @@ namespace vtkControl
             _probeWidget.SetPadding(5);
             _probeWidget.GetBackgroundProperty().SetColor(1, 1, 1);
             _probeWidget.VisibilityOff();
+
+            // Arroewidgets
+            _arrowWidgets = new List<vtkMaxTextWithArrowWidget>();
 
             // Add the actors to the scene
             //Hexahedron();
@@ -3982,7 +3987,6 @@ namespace vtkControl
         #endregion  ################################################################################################################
 
         #region Highlight geometry  ################################################################################################
-
         public void HighlightActor(string actorName)
         {
             string sectionViewActorName = GetSectionViewActorName(actorName);
@@ -4116,7 +4120,6 @@ namespace vtkControl
         #endregion  ################################################################################################################
 
         #region Hide/Show geometry  ################################################################################################
-
         public void HideActors(string[] actorNames, bool updateColorContours)
         {
             HideShowActors(actorNames, updateColorContours, false);
@@ -5135,7 +5138,6 @@ namespace vtkControl
         #endregion #################################################################################################################
 
         #region Scalar fields ######################################################################################################
-
         public void AddScalarFieldOnCells(vtkMaxActorData data, bool update)
         {
             // Create actor
@@ -5936,7 +5938,31 @@ namespace vtkControl
         }
         #endregion #################################################################################################################
 
-
+        #region WidgetsClear #######################################################################################################
+        public void AddArrowWidget(string text, double[] anchorPoint)
+        {
+            vtkMaxTextWithArrowWidget arrowWidget = new vtkMaxTextWithArrowWidget();
+            arrowWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
+            arrowWidget.SetBorderColor(0, 0, 0);
+            arrowWidget.SetTextProperty(CreateNewTextProperty());
+            arrowWidget.SetPadding(5);
+            arrowWidget.GetBackgroundProperty().SetColor(1, 1, 1);
+            arrowWidget.SetText(text);
+            arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
+            arrowWidget.VisibilityOn();
+            //
+            _arrowWidgets.Add(arrowWidget);
+        }
+        public void ClearAllArrowWidgets()
+        {
+            foreach (vtkMaxTextWithArrowWidget arrowWidget in _arrowWidgets)
+            {
+                arrowWidget.RemoveInteractor();
+            }
+            //
+            _arrowWidgets.Clear();
+        }
+        #endregion #################################################################################################################
         public void SwithchLights()
         {
             _renderer.RemoveAllLights();
