@@ -17,7 +17,8 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public NodeWidget(int nodeId)
+        public NodeWidget(string name, int nodeId)
+            : base(name)
         {
             _nodeId = nodeId;
         }

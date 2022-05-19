@@ -61,7 +61,7 @@ namespace vtkControl
         //
         private vtkMaxTextWithArrowWidget _minValueWidget;
         private vtkMaxTextWithArrowWidget _maxValueWidget;
-        private List<vtkMaxTextWithArrowWidget> _arrowWidgets;
+        private Dictionary<string, vtkMaxTextWithArrowWidget> _arrowWidgets;
         private vtkMaxTextWidget _probeWidget;
         //
         private Dictionary<string, vtkMaxActor> _actors;
@@ -1809,7 +1809,7 @@ namespace vtkControl
             _probeWidget.VisibilityOff();
 
             // Arroewidgets
-            _arrowWidgets = new List<vtkMaxTextWithArrowWidget>();
+            _arrowWidgets = new Dictionary<string, vtkMaxTextWithArrowWidget>();
 
             // Add the actors to the scene
             //Hexahedron();
@@ -5843,6 +5843,8 @@ namespace vtkControl
             if (_minValueWidget != null) _minValueWidget.VisibilityOff();
             if (_maxValueWidget != null) _maxValueWidget.VisibilityOff();
             if (_style != null) _style.Reset();
+            // Widgets
+            HideAllArrowWidgets();
             //
             ClearSelection();
             ClearOverlay();
@@ -5938,31 +5940,95 @@ namespace vtkControl
         }
         #endregion #################################################################################################################
 
-        #region WidgetsClear #######################################################################################################
-        public void AddArrowWidget(string text, double[] anchorPoint)
+        #region Widgets ############################################################################################################
+        public void AddArrowWidget(string name, string text, double[] anchorPoint, bool drawBackground,
+                                   bool drawBorder)
         {
-            vtkMaxTextWithArrowWidget arrowWidget = new vtkMaxTextWithArrowWidget();
-            arrowWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
-            arrowWidget.SetBorderColor(0, 0, 0);
-            arrowWidget.SetTextProperty(CreateNewTextProperty());
-            arrowWidget.SetPadding(5);
-            arrowWidget.GetBackgroundProperty().SetColor(1, 1, 1);
+            vtkMaxTextWithArrowWidget arrowWidget;
+            if (!_arrowWidgets.TryGetValue(name, out arrowWidget))
+            {
+                arrowWidget = new vtkMaxTextWithArrowWidget();
+                arrowWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
+                arrowWidget.SetBorderColor(0, 0, 0);
+                arrowWidget.SetTextProperty(CreateNewTextProperty());
+                arrowWidget.SetPadding(5);
+                arrowWidget.GetBackgroundProperty().SetColor(1, 1, 1);
+                arrowWidget.SetText(text);
+                arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
+                //
+                _arrowWidgets.Add(name, arrowWidget);
+                //
+                ArrangeVisibleArrowWidgets();
+            }
+            //
             arrowWidget.SetText(text);
             arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
+            //
+            if (drawBackground) arrowWidget.BackgroundVisibilityOn();
+            else arrowWidget.BackgroundVisibilityOff();
+            if (drawBorder) arrowWidget.BorderVisibilityOn();
+            else arrowWidget.BorderVisibilityOff();
+            //
             arrowWidget.VisibilityOn();
             //
-            _arrowWidgets.Add(arrowWidget);
+            this.Invalidate();
         }
-        public void ClearAllArrowWidgets()
+        private void ArrangeVisibleArrowWidgets()
         {
-            foreach (vtkMaxTextWithArrowWidget arrowWidget in _arrowWidgets)
+            // Count visible
+            int count = 0;
+            foreach (var entry in _arrowWidgets)
             {
-                arrowWidget.RemoveInteractor();
+                if (entry.Value.GetVisibility() == 1) count++;
             }
+            CaeMesh.BoundingBox[] boxes = new CaeMesh.BoundingBox[count];
+            CaeMesh.BoundingBox[] fixedBoxes = new CaeMesh.BoundingBox[count];
+            // Get bounding boxes
+            count = 0;
+            foreach (var entry in _arrowWidgets)
+            {
+                if (entry.Value.GetVisibility() == 1)
+                {
+                    boxes[count] = entry.Value.GetBoundingBox();
+                    fixedBoxes[count] = entry.Value.GetAnchorPointBox();
+                    count++;
+                }
+            }
+            // Compute BB offsets
+            int explodedType = 4; // z = 0
+            double scaleFactor = 1;
+            double[][] offsets = CaeMesh.BoundingBox.GetExplodedBBOffsets(explodedType, scaleFactor, boxes, fixedBoxes);
+            // Modify position
+            count = 0;
+            foreach (var entry in _arrowWidgets)
+            {
+                if (entry.Value.GetVisibility() == 1)
+                {
+                    entry.Value.OffsetPosition(offsets[count][0], offsets[count][1]);
+                    count++;
+                }
+            }
+        }
+        public void RemoveAllArrowWidgets()
+        {
+            foreach (var entry in _arrowWidgets) entry.Value.RemoveInteractor();
             //
             _arrowWidgets.Clear();
         }
+        public void RemoveArrowWidgets(string[] widgetNames)
+        {
+            foreach (var name in widgetNames)
+            {
+                _arrowWidgets[name].RemoveInteractor();
+                _arrowWidgets.Remove(name);
+            }
+        }
+        public void HideAllArrowWidgets()
+        {
+            foreach (var entry in _arrowWidgets) entry.Value.VisibilityOff();
+        }
         #endregion #################################################################################################################
+
         public void SwithchLights()
         {
             _renderer.RemoveAllLights();

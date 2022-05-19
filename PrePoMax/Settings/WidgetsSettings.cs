@@ -12,29 +12,15 @@ using System.Runtime.InteropServices;
 namespace PrePoMax
 {
     [Serializable]
-    public enum WidgetNumberFormat
-    {
-        Scientific,
-        General
-    }
-
-    [Serializable]
-    public enum WidgetBackgroundType
-    {
-        None,
-        White
-    }
-
-
-    [Serializable]
-    public class LegendSettings : ISettings
+    public class WidgetsSettings : ISettings
     {
         // Variables                                                                                                                
         private WidgetNumberFormat _numberFormat;
         private int _numberOfSignificantDigits;
-        private vtkControl.vtkMaxColorSpectrum _colorSpectrum;
         private WidgetBackgroundType _backgroundType;
         private bool _drawBorder;
+        private bool _showNodeId;
+        private bool _showCoordinates;
 
 
         // Properties                                                                                                               
@@ -49,7 +35,6 @@ namespace PrePoMax
                 if (_numberOfSignificantDigits > 8) _numberOfSignificantDigits = 8;
             }
         }
-        public vtkControl.vtkMaxColorSpectrum ColorSpectrum { get { return _colorSpectrum; } set { _colorSpectrum = value; } }
         public WidgetBackgroundType BackgroundType
         {
             get { return _backgroundType; }
@@ -63,10 +48,12 @@ namespace PrePoMax
             }
         }
         public bool DrawBorder { get { return _drawBorder; } set { _drawBorder = value; } }
+        public bool ShowCoordinates { get { return _showCoordinates; } set { _showCoordinates = value; } }
+        public bool ShowNodeId { get { return _showNodeId; } set { _showNodeId = value; } }
 
 
         // Constructors                                                                                                             
-        public LegendSettings()
+        public WidgetsSettings()
         {
             Reset();
         }
@@ -81,13 +68,13 @@ namespace PrePoMax
             _numberFormat = WidgetNumberFormat.General;
             _numberOfSignificantDigits = 4;
             //
-            _colorSpectrum = new vtkControl.vtkMaxColorSpectrum();
+            _backgroundType = WidgetBackgroundType.White;
+            _drawBorder = true;
             //
-            _backgroundType = WidgetBackgroundType.None;
-            _drawBorder = false;
+            _showNodeId = true;
+            _showCoordinates = true;
         }
-        //
-        public string GetColorChartNumberFormat()
+        public string GetNumberFormat()
         {
             string numberformat;
             if (_numberFormat == WidgetNumberFormat.General)

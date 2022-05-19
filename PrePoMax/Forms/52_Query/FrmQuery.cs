@@ -44,6 +44,8 @@ namespace PrePoMax.Forms
         }
         private void lvQueries_SelectedIndexChanged(object sender, EventArgs e)
         {
+            _controller.RemoveAllArrowWidgets();
+            //
             if (lvQueries.SelectedItems.Count > 0)
             {
                 switch (lvQueries.SelectedItems[0].Text)
@@ -225,7 +227,7 @@ namespace PrePoMax.Forms
                 _coorNodesToDraw[0] = baseV.Coor;
                 _coorLinesToDraw = null;
                 //
-                _controller.AddWidget(new NodeWidget(nodeId));
+                _controller.AddWidget(new NodeWidget(_controller.GetFreeWidgetName(), nodeId));
             }
         }
         public void OneElementPicked(int id)

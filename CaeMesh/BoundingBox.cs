@@ -7,7 +7,7 @@ using CaeGlobals;
 
 namespace CaeMesh
 {
-    class BoundingBoxVolmeComparer : IComparer<BoundingBox>
+    public class BoundingBoxVolmeComparer : IComparer<BoundingBox>
     {
         public int Compare(BoundingBox bb1, BoundingBox bb2)
         {
@@ -61,6 +61,83 @@ namespace CaeMesh
             BoundingBox bb = new BoundingBox();
             foreach (var box in boxes) bb.IncludeBox(box);
             return bb.GetCenter();
+        }
+        public static double[][] GetExplodedBBOffsets(int explodedType, double scaleFactor, BoundingBox[] boxes,
+                                                      BoundingBox[] fixedBoxes = null)
+        {
+            //
+            // https://stackoverflow.com/questions/3265986/an-algorithm-to-space-out-overlapping-rectangles
+            //
+            // Renumber and add scale
+            for (int i = 0; i < boxes.Length; i++)
+            {
+                boxes[i].Tag = i;
+                boxes[i].Scale(1.2);
+            }
+            Array.Sort(boxes, new BoundingBoxVolmeComparer());
+            //
+            int firstBoxId = 0;
+            BoundingBox globalBox = new BoundingBox();
+            double[][] offsets = new double[boxes.Length][];
+            List<BoundingBox> nonIntersectingBBs = new List<BoundingBox>();
+            // Add fixed boxes
+            if (fixedBoxes != null && fixedBoxes.Length > 0)
+            {
+                nonIntersectingBBs.AddRange(fixedBoxes);
+                globalBox.IncludeBox(fixedBoxes[0]);
+            }
+            else
+            {
+                // Add the largest box
+                firstBoxId = 1;
+                globalBox.IncludeBox(boxes[0]);
+                nonIntersectingBBs.Add(boxes[0]);
+                offsets[(int)boxes[0].Tag] = new double[] { 0, 0, 0 };
+            }
+            int count;
+            Vec3D center;
+            Vec3D offset;
+            Vec3D direction;
+            BoundingBox box;
+            for (int i = firstBoxId; i < boxes.Length; i++)
+            {
+                box = boxes[i];
+                center = new Vec3D(globalBox.GetCenter());
+                offset = new Vec3D();
+                direction = new Vec3D(box.GetCenter()) - center;
+                // Set the offset type
+                if (explodedType == 1) direction.Y = direction.Z = 0;
+                else if (explodedType == 2) direction.X = direction.Z = 0;
+                else if (explodedType == 3) direction.X = direction.Y = 0;
+                else if (explodedType == 4) direction.Z = 0;
+                else if (explodedType == 5) direction.Y = 0;
+                else if (explodedType == 6) direction.X = 0;
+                // Fix the 0 length direction
+                if (direction.Len2 < 1E-6 * globalBox.GetDiagonal()) direction.Coor = new double[] { 1, 1, 1 };
+                // Set the offset type
+                if (explodedType == 1) direction.Y = direction.Z = 0;
+                else if (explodedType == 2) direction.X = direction.Z = 0;
+                else if (explodedType == 3) direction.X = direction.Y = 0;
+                else if (explodedType == 4) direction.Z = 0;
+                else if (explodedType == 5) direction.Y = 0;
+                else if (explodedType == 6) direction.X = 0;
+                //
+                direction.Normalize();
+                direction *= (0.01 * globalBox.GetDiagonal());
+                //
+                count = 0;
+                while (box.Intersects(nonIntersectingBBs) && count++ < 10000)
+                {
+                    box.AddOffset(direction.Coor);
+                    offset += direction;
+                }
+                nonIntersectingBBs.Add(box);
+                globalBox.IncludeBox(box);
+                //
+                offsets[(int)box.Tag]= (offset * scaleFactor).Coor;
+            }
+            //
+            return offsets;
         }
 
 
@@ -154,17 +231,6 @@ namespace CaeMesh
             if (coors.Length > 0) IncludeFirstCoor(coors[0]);
             for (int i = 0; i < coors.Length; i++) IncludeCoorFast(coors[i]);
         }
-        public void IncludeNode(FeNode node)
-        {
-            if (node.X > MaxX) MaxX = node.X;
-            if (node.X < MinX) MinX = node.X;
-            //
-            if (node.Y > MaxY) MaxY = node.Y;
-            if (node.Y < MinY) MinY = node.Y;
-            //
-            if (node.Z > MaxZ) MaxZ = node.Z;
-            if (node.Z < MinZ) MinZ = node.Z;
-        }
         public void IncludeBox(BoundingBox box)
         {
             if (box.MaxX > MaxX) MaxX = box.MaxX;
@@ -175,6 +241,17 @@ namespace CaeMesh
             //
             if (box.MaxZ > MaxZ) MaxZ = box.MaxZ;
             if (box.MinZ < MinZ) MinZ = box.MinZ;
+        }
+        public void IncludeNode(FeNode node)
+        {
+            if (node.X > MaxX) MaxX = node.X;
+            if (node.X < MinX) MinX = node.X;
+            //
+            if (node.Y > MaxY) MaxY = node.Y;
+            if (node.Y < MinY) MinY = node.Y;
+            //
+            if (node.Z > MaxZ) MaxZ = node.Z;
+            if (node.Z < MinZ) MinZ = node.Z;
         }
         //
         public bool Intersects(BoundingBox box)

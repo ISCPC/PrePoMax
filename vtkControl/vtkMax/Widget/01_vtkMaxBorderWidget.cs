@@ -188,7 +188,7 @@ namespace vtkControl
                 if (_backgroundActor != null) _renderer.RemoveActor(_backgroundActor);
             }
         }
-
+        //
         public virtual void OnRenderWindowModified()
         {
             // triggered at window resized
@@ -281,7 +281,7 @@ namespace vtkControl
         {
             OnMovedOrSizeChanged();
         }
-
+        //
         public bool LeftButtonPress(int x, int y)
         {
             if (!_visibility) return false;
@@ -319,18 +319,23 @@ namespace vtkControl
         {
             if (!_visibility) return false;
             //
-            _clickPos = null;
-            //
-            int[] size = _renderer.GetSize();
-            double[] position = _position.ToArray();
-            if (_widgetPosition == vtkMaxWidgetPosition.FromTopLeft)
-            {
-                position[1] = size[1] - _size[1] - position[1];
+            if (_clickPos != null)
+            {                
+                int[] size = _renderer.GetSize();
+                double[] position = _position.ToArray();
+                if (_widgetPosition == vtkMaxWidgetPosition.FromTopLeft)
+                {
+                    position[1] = size[1] - _size[1] - position[1];
+                }
+                // Inside click
+                if (x >= position[0] && x <= position[0] + _size[0] && y >= position[1] && y <= position[1] + _size[1])
+                {
+                    _clickPos = null;
+                    return true;
+                }
             }
-            // Inside click
-            if (x >= position[0] && x <= position[0] + _size[0] && y >= position[1] && y <= position[1] + _size[1]) return true;
-            // Outside click
-            else return false;
+            //
+            return false;
         }
         public virtual void MiddleButtonPress(int x, int y)
         {
@@ -360,11 +365,11 @@ namespace vtkControl
             else
                 return false;
         }
-
+        //
         public virtual bool MouseMove(int x, int y)
         {
             if (!_visibility) return false;
-
+            //
             if (_clickPos != null)
             {
                 int[] delta = new int[] { x - _clickPos[0], y - _clickPos[1] };
@@ -373,13 +378,13 @@ namespace vtkControl
                 else if (_widgetPosition == vtkMaxWidgetPosition.FromTopLeft) _position[1] -= delta[1];
                 else if (_widgetPosition == vtkMaxWidgetPosition.HorizontallyRelative) _position[1] += delta[1];
                 else throw new NotSupportedException();
-
+                //
                 _clickPos[0] = x;
                 _clickPos[1] = y;
-                
+                //
                 UpdateBorderGeometry();
                 OnMovedOrSizeChanged();
-
+                //
                 return true;
             }
             else return false;
@@ -400,7 +405,7 @@ namespace vtkControl
         {
             if (!_visibility) return;
         }
-
+        
 
         // Private methods                                                                                                          
         public virtual void UpdateBorderGeometry()
@@ -454,32 +459,32 @@ namespace vtkControl
             _renderWindowInteractor = null;
             _renderer = null;
         }
-
+        //
         public void SetPosition(double x, double y)
         {
             _widgetPosition = vtkMaxWidgetPosition.FromBottomLeft;
-
+            //
             _position[0] = x;
             _position[1] = y;
-            
+            //
             OnMovedOrSizeChanged();
         }
         public void SetTopLeftPosition(int x, int y)
         {
             _widgetPosition = vtkMaxWidgetPosition.FromTopLeft;
-
+            //
             _position[0] = x;
             _position[1] = y;
-
+            //
             OnMovedOrSizeChanged();
         }
         public void SetHorizontallyRelativePosition(double x, double y)
         {
             _widgetPosition = vtkMaxWidgetPosition.HorizontallyRelative;
-
+            //
             _position[0] = x;
             _position[1] = y;
-
+            //
             OnMovedOrSizeChanged();
         }
         public void SetNormalizedPosition(double x, double y)
@@ -514,7 +519,22 @@ namespace vtkControl
             if (_backgroundVisibility) return 1;
             else return 0;
         }
-
+        //
+        public double[] GetPosition()
+        {
+            return _position.ToArray();
+        }
+        public CaeMesh.BoundingBox GetBoundingBox()
+        {
+            CaeMesh.BoundingBox box = new CaeMesh.BoundingBox();
+            box.MinX = _position[0];
+            box.MaxX = _position[0] + _size[0];
+            box.MinY = _position[1];
+            box.MaxY = _position[1] + _size[1];
+            box.MinZ = 0;
+            box.MaxZ = 1;
+            return box;
+        }       
         public int GetWidth()
         {
             return (int)Math.Round(_size[0]);

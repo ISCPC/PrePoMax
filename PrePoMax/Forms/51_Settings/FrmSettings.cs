@@ -48,6 +48,8 @@ namespace PrePoMax.Forms
                         _viewSettings.Add(entry.Key, new ViewGraphicsSettings(grs.DeepClone()));
                     else if (entry.Value is ColorSettings cos)
                         _viewSettings.Add(entry.Key, new ViewColorSettings(cos.DeepClone()));
+                    else if (entry.Value is WidgetsSettings wis)
+                        _viewSettings.Add(entry.Key, new ViewWidgetsSettings(wis.DeepClone()));
                     else if (entry.Value is MeshingSettings ms)
                         _viewSettings.Add(entry.Key, new ViewMeshingSettings(ms.DeepClone()));
                     else if (entry.Value is PreSettings prs)

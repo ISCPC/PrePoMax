@@ -17,13 +17,4 @@ namespace CaeMesh
         Compound = 10,
         Unknown = 100
     }
-    public static class Extensions
-    {
-        public static bool HasEdges(this PartType partType)
-        {
-            if (partType == PartType.Solid || partType == PartType.SolidAsShell || partType == PartType.Shell ||
-                partType == PartType.Wire) return true;
-            else throw new NotSupportedException();
-        }
-    }
 }

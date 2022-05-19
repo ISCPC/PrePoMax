@@ -3018,7 +3018,7 @@ namespace PrePoMax
             //
             if (!_controller.MeshJobIdle) throw new Exception("The meshing is already in progress.");
             //
-            MeshingParameters defaultMeshingParameters = _controller.Settings.MeshingSettings.MeshingParameters.DeepClone();
+            MeshingParameters defaultMeshingParameters = _controller.Settings.Meshing.MeshingParameters.DeepClone();
             double factorMax = 20;
             double factorMin = 1000;
             double factorHausdorff = 500;
@@ -5367,27 +5367,30 @@ namespace PrePoMax
         }
         public void SelectNewModelProperties()
         {
-            try
+            InvokeIfRequired(() =>
             {
-                // Disable the form during regenerate - check that the state is ready
-                if (tsslState.Text != Globals.RegeneratingText)
+                try
                 {
-                    UnitSystemType unitSystemType = _controller.Model.UnitSystem.UnitSystemType;
-                    ModelSpaceEnum modelSpace = _controller.Model.Properties.ModelSpace;
-                    //
-                    if (unitSystemType == UnitSystemType.Undefined || modelSpace == ModelSpaceEnum.Undefined)
+                    // Disable the form during regenerate - check that the state is ready
+                    if (tsslState.Text != Globals.RegeneratingText)
                     {
-                        CloseAllForms();
-                        SetFormLoaction(_frmNewModel);
+                        UnitSystemType unitSystemType = _controller.Model.UnitSystem.UnitSystemType;
+                        ModelSpaceEnum modelSpace = _controller.Model.Properties.ModelSpace;
                         //
-                        if (_frmNewModel.PrepareForm("", "New Model")) _frmNewModel.ShowDialog(this);
+                        if (unitSystemType == UnitSystemType.Undefined || modelSpace == ModelSpaceEnum.Undefined)
+                        {
+                            CloseAllForms();
+                            SetFormLoaction(_frmNewModel);
+                            //
+                            if (_frmNewModel.PrepareForm("", "New Model")) _frmNewModel.ShowDialog(this);
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
+                catch (Exception ex)
+                {
+                    ExceptionTools.Show(this, ex);
+                }
+            });
         }
         public void SelectResultsUnitSystem()
         {
@@ -7208,13 +7211,17 @@ namespace PrePoMax
             InvokeIfRequired(_vtk.SaveAnimationAsImages, fileName, firstLastFrame, step, scalarRangeFromAllFrames, swing);
         }
         // Widgets
-        public void AddArrowWidget(string text, double[] anchorPoint)
+        public void AddArrowWidget(string name, string text, double[] anchorPoint, bool drawBackground, bool drawBorder)
         {
-            InvokeIfRequired(_vtk.AddArrowWidget, text, anchorPoint);
+            InvokeIfRequired(_vtk.AddArrowWidget, name, text, anchorPoint, drawBackground, drawBorder);
         }
-        public void ClearAllArrowWidgets()
+        public void RemoveAllArrowWidgets()
         {
-            InvokeIfRequired(_vtk.ClearAllArrowWidgets);
+            InvokeIfRequired(_vtk.RemoveAllArrowWidgets);
+        }
+        public void RemoveArrowWidgets(string[] widgetNames)
+        {
+            InvokeIfRequired(_vtk.RemoveArrowWidgets, widgetNames);
         }
 
         #endregion  ################################################################################################################

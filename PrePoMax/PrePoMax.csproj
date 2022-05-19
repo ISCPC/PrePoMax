@@ -377,6 +377,7 @@
     <Compile Include="Forms\46_DefinedField\ViewDefinedTemperature.cs" />
     <Compile Include="Forms\51_Settings\ViewCalculixSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewColorSettings.cs" />
+    <Compile Include="Forms\51_Settings\ViewWidgetsSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewMeshingSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewUnitSystemlSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewStatusBlockSettings.cs" />
@@ -583,6 +584,7 @@
     <Compile Include="Selection\ItemSet\ItemSetDataEditor.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Settings\ColorSettings.cs" />
+    <Compile Include="Settings\WidgetsSettings.cs" />
     <Compile Include="Settings\MeshingSettings.cs" />
     <Compile Include="Settings\UnitSystemSettings.cs" />
     <Compile Include="Settings\GeneralSettings.cs" />

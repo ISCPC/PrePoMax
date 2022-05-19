@@ -3166,7 +3166,7 @@ namespace CaeMesh
             }
         }
         // Exploded view
-        public Dictionary<string, double[]> GetExplodedViewOffsets(int explodedType, double scaleFactor, string[] partNames = null)
+        public Dictionary<string, double[]> GetExplodedViewOffsets_(int explodedType, double scaleFactor, string[] partNames = null)
         {
             //
             // https://stackoverflow.com/questions/3265986/an-algorithm-to-space-out-overlapping-rectangles
@@ -3182,12 +3182,7 @@ namespace CaeMesh
             foreach (var connectedParts in allConnectedParts)
             {
                 boxes[count] = new BoundingBox();
-                foreach (var connectedPart in connectedParts)
-                {
-                    if (connectedPart.Name == "Solid_part-2")
-                        count = count;
-                    boxes[count].IncludeBox(connectedPart.BoundingBox);
-                }
+                foreach (var connectedPart in connectedParts) boxes[count].IncludeBox(connectedPart.BoundingBox);
                 //
                 boxes[count].Scale(1.2);
                 boxes[count].Tag = connectedParts;
@@ -3210,8 +3205,6 @@ namespace CaeMesh
                 center = new Vec3D(globalBox.GetCenter());
                 offset = new Vec3D();
                 direction = new Vec3D(box.GetCenter()) - center;
-                
-
                 // Set the offset type
                 if (explodedType == 1) direction.Y = direction.Z = 0;
                 else if (explodedType == 2) direction.X = direction.Z = 0;
@@ -3219,8 +3212,6 @@ namespace CaeMesh
                 else if (explodedType == 4) direction.Z = 0;
                 else if (explodedType == 5) direction.Y = 0;
                 else if (explodedType == 6) direction.X = 0;
-
-
                 // Fix the 0 length direction
                 if (direction.Len2 < 1E-6 * globalBox.GetDiagonal()) direction.Coor = new double[] { 1, 1, 1 };
                 // Set the offset type
@@ -3230,8 +3221,6 @@ namespace CaeMesh
                 else if (explodedType == 4) direction.Z = 0;
                 else if (explodedType == 5) direction.Y = 0;
                 else if (explodedType == 6) direction.X = 0;
-
-
                 //
                 direction.Normalize();
                 direction *= (0.01 * globalBox.GetDiagonal());
@@ -3244,9 +3233,39 @@ namespace CaeMesh
                 }
                 nonIntersectingBBs.Add(box);
                 globalBox.IncludeBox(box);
-                //
+                // Compound parts
                 parts = (List<BasePart>)box.Tag;
                 foreach (var part in parts) partOffsets.Add(part.Name, (offset * scaleFactor).Coor);
+            }
+            //
+            return partOffsets;
+        }
+        public Dictionary<string, double[]> GetExplodedViewOffsets(int explodedType, double scaleFactor, string[] partNames = null)
+        {
+            //
+            // https://stackoverflow.com/questions/3265986/an-algorithm-to-space-out-overlapping-rectangles
+            //
+            if (partNames == null) partNames = _parts.Keys.ToArray();
+            // Get connected part names
+            List<List<BasePart>> allConnectedParts = GetAllConnectedParts(partNames);
+            // Get bounding boxes of the selected parts
+            int count = 0;
+            BoundingBox[] boxes = new BoundingBox[allConnectedParts.Count];
+            foreach (var connectedParts in allConnectedParts)
+            {
+                boxes[count] = new BoundingBox();
+                foreach (var connectedPart in connectedParts) boxes[count].IncludeBox(connectedPart.BoundingBox);
+                count++;
+            }
+            // Compute BB offsets
+            double[][] offsets = BoundingBox.GetExplodedBBOffsets(explodedType, scaleFactor, boxes);
+            //
+            count = 0;
+            Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
+            foreach (var connectedParts in allConnectedParts)
+            {
+                foreach (var connectedPart in connectedParts) partOffsets.Add(connectedPart.Name, offsets[count]);
+                count++;
             }
             //
             return partOffsets;

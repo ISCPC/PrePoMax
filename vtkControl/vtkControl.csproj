@@ -146,6 +146,10 @@
       <Project>{104caebc-0761-4850-a97d-3fc59116c5b6}</Project>
       <Name>CaeGlobals</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CaeMesh\CaeMesh.csproj">
+      <Project>{69d01fc1-1bc1-4470-b371-84d22282be98}</Project>
+      <Name>CaeMesh</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

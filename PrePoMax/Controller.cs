@@ -40,7 +40,7 @@ namespace PrePoMax
         [NonSerialized] protected double _selectAngle;
         [NonSerialized] protected Selection _selection;
         // Widgets
-        [NonSerialized] protected Dictionary<ViewGeometryModelResults, List<WidgetBase>> _widgets;
+        [NonSerialized] protected Dictionary<ViewGeometryModelResults, Dictionary<string, WidgetBase>> _widgets;
         // Results
         [NonSerialized] protected ViewResultsType _viewResultsType;
         [NonSerialized] protected FieldData _currentFieldData;
@@ -186,6 +186,8 @@ namespace PrePoMax
         }
         public double SelectAngle { get { return _selectAngle; } set { _selectAngle = value; } }
         public Selection Selection { get { return _selection; } set { _selection = value; } }
+        // Widgets
+        public Dictionary<ViewGeometryModelResults, Dictionary<string, WidgetBase>> Widgets { get { return _widgets; } }
         // Results
         public FeResults Results { get { return _results; } }        
         public ViewResultsType ViewResultsType
@@ -330,10 +332,10 @@ namespace PrePoMax
             // Selection
             _selection = new Selection();
             // Widgets
-            _widgets = new Dictionary<ViewGeometryModelResults, List<WidgetBase>>();
-            _widgets.Add(ViewGeometryModelResults.Geometry, new List<WidgetBase>());
-            _widgets.Add(ViewGeometryModelResults.Model, new List<WidgetBase>());
-            _widgets.Add(ViewGeometryModelResults.Results, new List<WidgetBase>());
+            _widgets = new Dictionary<ViewGeometryModelResults, Dictionary<string, WidgetBase>>();
+            _widgets.Add(ViewGeometryModelResults.Geometry, new Dictionary<string, WidgetBase>());
+            _widgets.Add(ViewGeometryModelResults.Model, new Dictionary<string, WidgetBase>());
+            _widgets.Add(ViewGeometryModelResults.Results, new Dictionary<string, WidgetBase>());
             // Results
             ViewResultsType = ViewResultsType.ColorContours;
             // Errors - must be here before Clear
@@ -7097,9 +7099,80 @@ namespace PrePoMax
         #endregion #################################################################################################################
 
         #region Query menu   #######################################################################################################
+        public string GetFreeWidgetName()
+        {
+            string prefix = "";
+            if (_currentView == ViewGeometryModelResults.Geometry) prefix = "G_";
+            else if (_currentView == ViewGeometryModelResults.Model) prefix = "M_";
+            else if (_currentView == ViewGeometryModelResults.Results) prefix = "R_";
+            else throw new NotSupportedException();
+            //
+            return _widgets[_currentView].GetNextNumberedKey(prefix + "Widget");
+        }
+        public void GetWidgetData(NodeWidget nodeWidget, string numberFormat, out string text, out double[] coor)
+        {
+            Vec3D nodeVec;
+            Vec3D arrowVec;
+            string fieldData = "";
+            text = "";
+            //
+            if (_currentView == ViewGeometryModelResults.Geometry || _currentView == ViewGeometryModelResults.Model)
+            {
+                nodeVec = new Vec3D(GetNode(nodeWidget.NodeId).Coor);
+                arrowVec = nodeVec;
+            }
+            else if (_currentView == ViewGeometryModelResults.Results)
+            {
+                nodeVec = new Vec3D(GetScaledNode(1, nodeWidget.NodeId).Coor);
+                //
+                float fieldValue = GetNodalValue(nodeWidget.NodeId);
+                string fieldUnit = GetCurrentResultsUnitAbbreviation();
+                // Arrow
+                float scale = GetScale();
+                arrowVec = new Vec3D(GetScaledNode(scale, nodeWidget.NodeId).Coor); // for the arrow
+                // Data
+                fieldData = string.Format("Value: {1} {2}", Environment.NewLine, fieldValue.ToString(numberFormat), fieldUnit);
+            }
+            else throw new NotSupportedException();
+            //
+            string lengthUnit = GetLengthUnit();
+            //
+            bool addNodeData = Settings.Widgets.ShowNodeId;
+            bool addCoorData = Settings.Widgets.ShowCoordinates;
+            bool addFieldData = fieldData.Length > 0;
+            if (!addCoorData && !addFieldData) addNodeData = true;
+            // Node data
+            if (addNodeData) text = "Node id: " + nodeWidget.NodeId;
+            // Coordinates data
+            if (addCoorData)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                //
+                text += string.Format("X: {1} {4}{0}Y: {2} {4}{0}Z: {3} {4}", Environment.NewLine,
+                    nodeVec.Coor[0].ToString(numberFormat),
+                    nodeVec.Coor[1].ToString(numberFormat),
+                    nodeVec.Coor[2].ToString(numberFormat),
+                    lengthUnit);
+            }
+            // Field value data
+            if (addFieldData)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += fieldData;
+            }
+            //
+            coor = arrowVec.Coor;
+        }
         public void AddWidget(WidgetBase widget)
         {
-            _widgets[_currentView].Add(widget);
+            _widgets[_currentView].Add(widget.Name, widget);
+            //
+            DrawWidgets();
+        }
+        public void RemoveAllArrowWidgets()
+        {
+            _form.RemoveArrowWidgets(_widgets[_currentView].Keys.ToArray());
+            _widgets[_currentView].Clear();
         }
         #endregion   ###############################################################################################################
 
@@ -9281,6 +9354,8 @@ namespace PrePoMax
         // Model
         public void DrawModel(bool resetCamera)
         {
+            bool rendering = _form.RenderingOn;
+            //
             try
             {
                 // Set the current view and call DrawModel
@@ -9288,7 +9363,6 @@ namespace PrePoMax
                 // Draw model
                 else
                 {
-                    bool rendering = _form.RenderingOn;
                     if (rendering) _form.RenderingOn = false;
                     _form.Clear3D();    // Removes section cut
                     //
@@ -9302,6 +9376,7 @@ namespace PrePoMax
                             {
                                 DrawAllModelParts();
                                 DrawSymbols();
+                                DrawWidgets();
                                 AnnotateWithColorLegend();
                                 //
                                 Octree.Plane plane = _sectionViewPlanes[_currentView];
@@ -9313,14 +9388,16 @@ namespace PrePoMax
                     }
                     //
                     if (resetCamera) _form.SetFrontBackView(false, true);
-                    //
                     //_form.AdjustCameraDistanceAndClipping();
-                    if (rendering) _form.RenderingOn = true;
                 }
             }
             catch
             {
                 // Do not throw an error - it might cancel a procedure
+            }
+            finally
+            {
+                if (rendering) _form.RenderingOn = true;
             }
         }
         public void DrawAllModelParts()
@@ -9729,37 +9806,22 @@ namespace PrePoMax
         // Widgets
         public void DrawWidgets()
         {
-            foreach (var widget in _widgets[_currentView])
+            string text;
+            double[] arrowCoor;
+            //
+            string numberFormat = Settings.Widgets.GetNumberFormat();
+            bool drawBackground = Settings.Widgets.BackgroundType == WidgetBackgroundType.White;
+            bool drawBorder = Settings.Widgets.DrawBorder;
+            //
+            foreach (var entry in _widgets[_currentView])
             {
-                if (widget is NodeWidget nw) DrawNodeWidget(nw);
+                if (entry.Value is NodeWidget nw) GetWidgetData(nw, numberFormat, out text, out arrowCoor);
                 else throw new NotSupportedException();
+                //
+                _form.AddArrowWidget(entry.Value.Name, text, arrowCoor, drawBackground, drawBorder);
             }
         }
-        public void DrawNodeWidget(NodeWidget nodeWidget)
-        {
-            string data;
-            string lenUnit = GetLengthUnit();
-            //
-            Vec3D baseV = new Vec3D(GetNode(nodeWidget.NodeId).Coor);
-            //
-            data = "Node id: " + nodeWidget.NodeId;
-            //
-            if (_currentView == ViewGeometryModelResults.Results)
-            {
-                float fieldValue = GetNodalValue(nodeWidget.NodeId);
-                string fieldUnit = "[" + GetCurrentResultsUnitAbbreviation() + "]";
-                //
-                Vec3D trueScaledV = new Vec3D(GetScaledNode(1, nodeWidget.NodeId).Coor);
-                Vec3D disp = trueScaledV - baseV;
-                //
-                float scale = GetScale();
-                baseV = new Vec3D(GetScaledNode(scale, nodeWidget.NodeId).Coor); // for the _coorNodesToDraw
-                //
-                data += string.Format("{0}Field value: {1} {2}", Environment.NewLine, fieldValue.ToString(), fieldUnit);
-            }
-            //
-            _form.AddArrowWidget(data, baseV.Coor);
-        }
+        
         private string GetLengthUnit()
         {
             string unit;
@@ -9770,7 +9832,7 @@ namespace PrePoMax
                 unit = _results.UnitSystem.LengthUnitAbbreviation;
             else throw new NotSupportedException();
             //
-            return "[" + unit + "]";
+            return unit;
         }
         // Reference points
         public void DrawAllReferencePoints()
@@ -12451,42 +12513,51 @@ namespace PrePoMax
         #region Results  ###########################################################################################################
         public void DrawResults(bool resetCamera)
         {
-            //bool test = _form.RenderingOn;
-            //_form.RenderingOn = false;
-            // Set the current view and call DrawResults
-            if (CurrentView != ViewGeometryModelResults.Results) CurrentView = ViewGeometryModelResults.Results;
-            // Draw results
-            else
+            bool rendering = _form.RenderingOn;
+            try
             {
-                bool rendering = _form.RenderingOn;
-                if (rendering) _form.RenderingOn = false;
-                _form.Clear3D();    // Removes section cut
-                //
-                if (_results == null || _results.Mesh == null) return;
-                if (_results.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
-                //
-                ApplyResultsUnitSystem();
-                // Settings - must be here before drawing parts to correctly set the numer of colors
-                SetPostLegendAndStatusBlockSettings();
-                AnnotateWithColorLegend();
-                //
-                float scale = GetScale();
-                SetStatusBlock(scale);
-                //
-                _results.SetMeshDeformation(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId);
-                DrawAllResultParts(_currentFieldData, _settings.Post.UndeformedModelType, _settings.Post.UndeformedModelColor);
-                // Transformation
-                ApplyTransformation();
-                //
-                Octree.Plane plane = _sectionViewPlanes[_currentView];
-                if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
-                //
-                UpdateHighlight();
-                //
-                if (resetCamera) _form.SetFrontBackView(true, true); // animation:true is here to correctly draw max/min widgets 
-                //
-                _form.UpdateScalarsAndCameraAndRedraw();
-                //
+                // Set the current view and call DrawResults
+                if (CurrentView != ViewGeometryModelResults.Results) CurrentView = ViewGeometryModelResults.Results;
+                // Draw results
+                else
+                {
+                    if (rendering) _form.RenderingOn = false;
+                    _form.Clear3D();    // Removes section cut
+                    //
+                    if (_results == null || _results.Mesh == null) return;
+                    if (_results.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
+                    //
+                    ApplyResultsUnitSystem();
+                    // Settings - must be here before drawing parts to correctly set the numer of colors
+                    SetPostLegendAndStatusBlockSettings();
+                    AnnotateWithColorLegend();
+                    //
+                    float scale = GetScale();
+                    SetStatusBlock(scale);
+                    //
+                    _results.SetMeshDeformation(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId);
+                    DrawAllResultParts(_currentFieldData, _settings.Post.UndeformedModelType, _settings.Post.UndeformedModelColor);
+                    // Transformation
+                    ApplyTransformation();
+                    // Widgets
+                    DrawWidgets();
+                    // Section view
+                    Octree.Plane plane = _sectionViewPlanes[_currentView];
+                    if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
+                    //
+                    UpdateHighlight();
+                    //
+                    if (resetCamera) _form.SetFrontBackView(true, true); // animation:true is here to correctly draw max/min widgets 
+                    //
+                    _form.UpdateScalarsAndCameraAndRedraw();
+                }
+            }
+            catch
+            {
+                // Do not throw an error - it might cancel a procedure
+            }
+            finally
+            {
                 if (rendering) _form.RenderingOn = true;
             }
         }
@@ -12855,6 +12926,8 @@ namespace PrePoMax
                                                         locatorResultData.Nodes.Values, false);
                 }
             }
+            // Widgets
+            DrawWidgets();
             //
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
             //

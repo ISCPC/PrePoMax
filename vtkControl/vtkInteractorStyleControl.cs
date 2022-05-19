@@ -114,8 +114,9 @@ namespace vtkControl
         protected vtkActor2D _selectionBorderActor;
         //
         protected List<vtkMaxBorderWidget> _widgets;
+        protected List<vtkMaxBorderWidget> _reversedWidgets;
 
-        
+
         // Properties                                                                                                               
         public new const string MRFullTypeName = "Kitware.VTK.vtkInteractorStyleControl";
         public bool Selection { get { return _selection; } set { _selection = value; } }
@@ -152,6 +153,7 @@ namespace vtkControl
             //
             _rubberBandEnabled = true;
             _widgets = new List<vtkMaxBorderWidget>();
+            _reversedWidgets = new List<vtkMaxBorderWidget>();
             //
             this.LeftButtonPressEvt += vtkInteractorStyleControl_LeftButtonPressEvt;
             this.LeftButtonReleaseEvt += vtkInteractorStyleControl_LeftButtonReleaseEvt;
@@ -182,7 +184,7 @@ namespace vtkControl
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
             // Widgets - left pressed
-            foreach (vtkMaxBorderWidget widget in _widgets)
+            foreach (vtkMaxBorderWidget widget in _reversedWidgets)
             {
                 if (widget.LeftButtonPress(x, y)) return;
             }
@@ -218,7 +220,7 @@ namespace vtkControl
             // Widgets
             if (!_rubberBandSelection)
             {
-                foreach (vtkMaxBorderWidget widget in _widgets)
+                foreach (vtkMaxBorderWidget widget in _reversedWidgets)
                 {
                     if (widget.LeftButtonRelease(x, y)) return;
                 }
@@ -526,10 +528,12 @@ namespace vtkControl
         public void AddVtkMaxWidget(vtkMaxBorderWidget widget)
         {
             _widgets.Add(widget);
+            _reversedWidgets.Insert(0, widget);
         }
         public void RemoveVtkMaxWidget(vtkMaxBorderWidget widget)
         {
             _widgets.Remove(widget);
+            _reversedWidgets.Remove(widget);
         }
 
         public void Reset()

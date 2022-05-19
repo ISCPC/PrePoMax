@@ -269,10 +269,11 @@ namespace vtkControl
         // Public setters                                                                                                           
         public override void SetInteractor(vtkRenderer renderer, vtkRenderWindowInteractor renderWindowInteractor)
         {
-            base.SetInteractor(renderer, renderWindowInteractor);
+            // Arrow first
+            renderer.AddActor(_leaderActor2D);
+            renderer.AddActor(_headActor2D);
             //
-            _renderer.AddActor(_leaderActor2D);
-            _renderer.AddActor(_headActor2D);
+            base.SetInteractor(renderer, renderWindowInteractor);
         }
         public override void RemoveInteractor()
         {
@@ -317,44 +318,80 @@ namespace vtkControl
         }
         private void SetPositionFromWorldPosition()
         {
-            vtkCamera camera = _renderer.GetActiveCamera();
             double[] positionWorld = _worldPositionPoint.GetValue();
-
-            // get display projection from the world position
+            // Get display projection from the world position
             _renderer.SetWorldPoint(positionWorld[0], positionWorld[1], positionWorld[2], 1.0);
             _renderer.WorldToDisplay();
             double[] displayPosition = _renderer.GetDisplayPoint();
+            //
+            if (false)
+            {
+                CaeGlobals.Vec3D center = new CaeGlobals.Vec3D(displayPosition[0], displayPosition[1], 0);
+                CaeGlobals.Vec3D size = new CaeGlobals.Vec3D(_size[0], _size[1], 0);
+                RecomputeLeaderStart();
+                vtkPoints pts = _leaderPolyData.GetPoints();
+                CaeGlobals.Vec3D arrow = new CaeGlobals.Vec3D(pts.GetPoint(1));
 
-            // move to the center of the caption
+                CaeGlobals.Vec3D direction = center - arrow;
+                double minDist = size.Len / 2 + 20;
+                if (direction.Len < minDist)
+                {
+                    direction.Normalize();
+                    center = arrow + direction * minDist;
+                    displayPosition[0] = center.X;
+                    displayPosition[1] = center.Y;
+                }
+            }
+            //
             displayPosition[0] -= _size[0] / 2;
             displayPosition[1] -= _size[1] / 2;
-
-            // convert
-            //_renderer.DisplayToNormalizedDisplay(ref displayPosition[0], ref displayPosition[1]);
-
+            //
             SetPosition(displayPosition[0], displayPosition[1]);
         }
         private void SetWorldPositionFromPosition()
         {
             if (_position == null) return;      // if borederRepresentation is changed before _positionInPixels is initialized
-
+            //
             vtkCamera camera = _renderer.GetActiveCamera();
-
-            // get world projection from display position
+            // Get world projection from display position
             _renderer.SetDisplayPoint(_position[0] + _size[0] / 2, _position[1] + _size[1] / 2, 0);
             _renderer.DisplayToWorld();
             double[] positionWorld = _renderer.GetWorldPoint();
-
-            // project world position on the plane through anchor point
+            // Project world position on the plane through anchor point
             double[] normal = camera.GetViewPlaneNormal();
             double[] pointOnPlane = _worldAnchorPoint.GetValue();
             double[] projectedOnPlane = ProjectPointOnPlane(positionWorld, pointOnPlane, normal);
-
-            // set world position
+            // Set world position
             _worldPositionPoint.SetValue(projectedOnPlane[0], projectedOnPlane[1], projectedOnPlane[2]);
         }
-
-
+        //
+        public void OffsetPosition(double x, double y)
+        {
+            _position[0] += x;
+            _position[1] += y;
+            //
+            SetWorldPositionFromPosition();
+        }
+        
+        
         // Public getters                                                                                                           
+        public CaeMesh.BoundingBox GetAnchorPointBox()
+        {
+            vtkPoints pts = _leaderPolyData.GetPoints();
+            double[] head = pts.GetPoint(1);
+            //
+            double offset = 15; //px
+            CaeMesh.BoundingBox box = new CaeMesh.BoundingBox();
+            box.MinX = head[0] - offset;
+            box.MaxX = head[0] + offset;
+            box.MinY = head[1] - offset;
+            box.MaxY = head[1] + offset;
+            box.MinZ = head[2] - offset;
+            box.MaxZ = head[2] + offset;
+            box.MinZ = 0;
+            box.MaxZ = 1;
+            //
+            return box;
+        }
     }
 }
