@@ -42,6 +42,7 @@
             this.gbQueries = new System.Windows.Forms.GroupBox();
             this.lvQueries = new UserControls.ListViewWithSelection();
             this.colName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.btnClear = new System.Windows.Forms.Button();
             this.gbQueries.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -114,12 +115,29 @@
             this.lvQueries.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lvQueries_MouseDown);
             this.lvQueries.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lvQueries_MouseUp);
             // 
+            // colName
+            // 
+            this.colName.Width = 107;
+            // 
+            // btnClear
+            // 
+            this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClear.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnClear.Location = new System.Drawing.Point(26, 276);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(75, 23);
+            this.btnClear.TabIndex = 11;
+            this.btnClear.Text = "Clear";
+            this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
             // FrmQuery
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnClose;
             this.ClientSize = new System.Drawing.Size(194, 311);
+            this.Controls.Add(this.btnClear);
             this.Controls.Add(this.gbQueries);
             this.Controls.Add(this.btnClose);
             this.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -142,5 +160,6 @@
         private System.Windows.Forms.GroupBox gbQueries;
         private UserControls.ListViewWithSelection lvQueries;
         private System.Windows.Forms.ColumnHeader colName;
+        private System.Windows.Forms.Button btnClear;
     }
 }

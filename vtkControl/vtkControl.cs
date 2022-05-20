@@ -241,6 +241,7 @@ namespace vtkControl
 
 
         // Callbacks                                                                                                                
+        public Func<int, string> Controller_GetWidgetText;
         public Func<int[], vtkMaxActorData> Controller_GetNodeActorData;
         public Func<int[], int[], vtkMaxActorData> Controller_GetCellActorData;
         public Func<int, int[], vtkMaxActorData> Controller_GetCellFaceActorData;
@@ -589,25 +590,14 @@ namespace vtkControl
             if (showLabel)
             {
                 // Probe widget
-                string format = _scalarBarWidget.GetLabelFormat();
-                //
                 _renderer.SetWorldPoint(pickedPoint[0], pickedPoint[1], pickedPoint[2], 1.0);
                 _renderer.WorldToDisplay();
                 double[] display = _renderer.GetDisplayPoint();
-                //double w = ((float)display[0] + 20) / Width;
-                //double h = ((float)display[1] + 10) / Height;
                 double w = x + 20d;
                 double h = y + 10d;
                 //
                 _probeWidget.SetPosition(w, h);
-                _probeWidget.SetText("Node id: " + globalPointId);
-                //
-                if (data.Geometry.Nodes.Values != null)
-                {
-                    // Probe widget
-                    _probeWidget.SetText(_probeWidget.GetText() + Environment.NewLine +
-                                         "Value: " + data.Geometry.Nodes.Values[0].ToString(format) + GetUnitAbbreviation());
-                }
+                _probeWidget.SetText(Controller_GetWidgetText(globalPointId));
                 //
                 if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
             }
@@ -620,44 +610,39 @@ namespace vtkControl
                 if (_probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
                 return;
             }
-
+            //
             vtkCell cell;
             vtkCellLocator cellLocator;
             string actorName = GetActorName(pickedActor);
             int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
-
+            //
             _mouseSelectionCurrentIds = new int[] { globalCellId };
-
+            //
             vtkMaxActorData actorData = Controller_GetCellActorData(_mouseSelectionCurrentIds, null);
-
+            //
             vtkMaxActor actor = new vtkMaxActor(actorData, true, false);
             actor.GeometryMapper.GetInput().GetPointData().RemoveArray(Globals.ScalarArrayName);
             _mouseSelectionActorCurrent = actor;
-            
+            //
             AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
             _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
-
+            //
             if (actor.ElementEdges != null)
             {
                 AddActorEdges(_mouseSelectionActorCurrent, false, vtkRendererLayer.Selection);
                 _selectedActors.Remove(_mouseSelectionActorCurrent);
             }
-
+            //
             if (showLabel)
             {
                 // Probe widget
-                //if (_frustumLocators[pickedActor].GetDataSet().GetCellData().GetGlobalIds() != null)
-                {
-                    string format = _scalarBarWidget.GetLabelFormat();
-
-                    double w = x + 20;
-                    double h = y + 10;
-
-                    _probeWidget.SetPosition(w, h);
-                    _probeWidget.SetText("Element id: " + globalCellId);
-
-                    if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
-                }
+                double w = x + 20;
+                double h = y + 10;
+                //
+                _probeWidget.SetPosition(w, h);
+                _probeWidget.SetText(Controller_GetWidgetText(globalCellId));
+                //
+                if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
             }
         }
         private void PickByEdge(out vtkActor pickedActor, int x, int y, bool showLabel)
@@ -6022,6 +6007,8 @@ namespace vtkControl
                 _arrowWidgets[name].RemoveInteractor();
                 _arrowWidgets.Remove(name);
             }
+            //
+            this.Invalidate();
         }
         public void HideAllArrowWidgets()
         {

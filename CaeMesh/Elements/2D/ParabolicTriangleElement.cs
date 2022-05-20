@@ -161,7 +161,7 @@ namespace CaeMesh
                 return GeometryTools.EdgeLength(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]]);
             else throw new NotSupportedException();
         }
-        public override double[] GetCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
+        public override double[] GetFaceCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
         {
             int[] cell = GetVtkCellFromFaceName(faceName);
             if (cell.Length == 6)

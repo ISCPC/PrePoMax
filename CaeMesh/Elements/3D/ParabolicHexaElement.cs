@@ -193,7 +193,7 @@ namespace CaeMesh
             return GeometryTools.RectangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]], nodes[cell[3]],
                                                nodes[cell[4]], nodes[cell[5]], nodes[cell[6]], nodes[cell[7]]);
         }
-        public override double[] GetCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
+        public override double[] GetFaceCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
         {
             int[] cell = GetVtkCellFromFaceName(faceName);
             double[] cg = GeometryTools.RectangleCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]], nodes[cell[3]],

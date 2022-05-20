@@ -4131,7 +4131,7 @@ namespace CaeMesh
                     {
                         foreach (var elementId in _elementSets[entry.Value].Labels)
                         {
-                            elCg = _elements[elementId].GetCG(entry.Key, _nodes, out elArea);
+                            elCg = _elements[elementId].GetFaceCG(entry.Key, _nodes, out elArea);
                             cg[0] += elCg[0] * elArea;
                             cg[1] += elCg[1] * elArea;
                             cg[2] += elCg[2] * elArea;

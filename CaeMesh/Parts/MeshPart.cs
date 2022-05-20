@@ -377,6 +377,21 @@ namespace CaeMesh
                     !elementEnums.Contains(_parabolicHexaType)) _parabolicHexaType = (FeElementTypeParabolicHexa)elementEnums.First();
             }
         }
+        public string GetElementType(FeElement element)
+        {
+            if (element is LinearTriangleElement) return _linearTriaType.ToString();
+            else if (element is ParabolicTriangleElement) return _parabolicTriaType.ToString();
+            else if (element is LinearQuadrilateralElement) return _linearQuadType.ToString();
+            else if (element is ParabolicQuadrilateralElement) return _parabolicQuadType.ToString();
+            //
+            else if (element is LinearTetraElement) return _linearTetraType.ToString();
+            else if (element is ParabolicTetraElement) return _parabolicTetraType.ToString();
+            else if (element is LinearWedgeElement) return _linearWedgeType.ToString();
+            else if (element is ParabolicWedgeElement) return _parabolicWedgeType.ToString();
+            else if (element is LinearHexaElement) return _linearHexaType.ToString();
+            else if (element is ParabolicHexaElement) return _parabolicHexaType.ToString();
+            else throw new NotSupportedException();
+        }
 
 
 

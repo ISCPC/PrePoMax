@@ -43,9 +43,7 @@ namespace PrePoMax.Forms
         {
         }
         private void lvQueries_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            _controller.RemoveAllArrowWidgets();
-            //
+        {            
             if (lvQueries.SelectedItems.Count > 0)
             {
                 switch (lvQueries.SelectedItems[0].Text)
@@ -107,6 +105,13 @@ namespace PrePoMax.Forms
                 }
                 _controller.ClearSelectionHistoryAndCallSelectionChanged();
             }
+        }
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            // Widgets
+            _controller.RemoveAllArrowWidgets();
+            // Selection
+            _controller.ClearSelectionHistoryAndCallSelectionChanged();
         }
         private void btnClose_Click(object sender, EventArgs e)
         {
@@ -235,11 +240,20 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput("");
             string data = string.Format("{0,16}{1,8}", "Element id:".PadRight(16), id);
             Form_WriteDataToOutput(data);
+            if (_controller.CurrentView == ViewGeometryModelResults.Model)
+            {
+                string elementType = _controller.GetElementType(id);
+                data = string.Format("{0,16}{1,8}", "Element type:".PadRight(16), elementType);
+                Form_WriteDataToOutput(data);
+            }
+            //
             Form_WriteDataToOutput("");
             //
             _controller.ClearSelectionHistoryAndCallSelectionChanged();
             //
             _controller.HighlightElement(id);
+            //
+            _controller.AddWidget(new ElementWidget(_controller.GetFreeWidgetName(), id));
         }
         public void OneEdgePicked(int geometryId)
         {

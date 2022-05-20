@@ -63,7 +63,7 @@ namespace CaeMesh
         {
             throw new NotImplementedException();
         }
-        public override double[] GetCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
+        public override double[] GetFaceCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
         {
             throw new NotImplementedException();
         }

@@ -3479,6 +3479,21 @@ namespace PrePoMax
             else if (_currentView == ViewGeometryModelResults.Results) return _results.Mesh.GetVisibleElementIds();
             else throw new NotSupportedException();
         }
+        public FeElement GetElement(int elementId)
+        {
+            return DisplayedMesh.Elements[elementId];
+        }
+        public string GetElementType(int elementId)
+        {
+            if (_currentView == ViewGeometryModelResults.Model)
+            {
+                FeMesh mesh = DisplayedMesh;
+                FeElement element = mesh.Elements[elementId];
+                MeshPart part = (MeshPart)mesh.GetPartById(element.PartId);
+                return part.GetElementType(element);
+            }
+            else return null;
+        }
         //
         public bool AreElementsAllSolidElements3D(int[] elementIds)
         {
@@ -7109,7 +7124,23 @@ namespace PrePoMax
             //
             return _widgets[_currentView].GetNextNumberedKey(prefix + "Widget");
         }
-        public void GetWidgetData(NodeWidget nodeWidget, string numberFormat, out string text, out double[] coor)
+        public string GetWidgetText(int itemId)
+        {
+            string text = "";
+            string numberFormat = Settings.Widgets.GetNumberFormat();
+            if (_selectBy == vtkSelectBy.QueryNode)
+            {
+                GetNodeWidgetData(itemId, numberFormat, out text, out double[] coor);
+            }
+            else if (_selectBy == vtkSelectBy.QueryElement)
+            {
+                GetElementWidgetData(itemId, numberFormat, out text, out double[] coor);
+            }
+            else throw new NotSupportedException();
+            //
+            return text;
+        }
+        public void GetNodeWidgetData(int nodeId, string numberFormat, out string text, out double[] coor)
         {
             Vec3D nodeVec;
             Vec3D arrowVec;
@@ -7118,18 +7149,18 @@ namespace PrePoMax
             //
             if (_currentView == ViewGeometryModelResults.Geometry || _currentView == ViewGeometryModelResults.Model)
             {
-                nodeVec = new Vec3D(GetNode(nodeWidget.NodeId).Coor);
+                nodeVec = new Vec3D(GetNode(nodeId).Coor);
                 arrowVec = nodeVec;
             }
             else if (_currentView == ViewGeometryModelResults.Results)
             {
-                nodeVec = new Vec3D(GetScaledNode(1, nodeWidget.NodeId).Coor);
+                nodeVec = new Vec3D(GetScaledNode(1, nodeId).Coor);
                 //
-                float fieldValue = GetNodalValue(nodeWidget.NodeId);
+                float fieldValue = GetNodalValue(nodeId);
                 string fieldUnit = GetCurrentResultsUnitAbbreviation();
                 // Arrow
                 float scale = GetScale();
-                arrowVec = new Vec3D(GetScaledNode(scale, nodeWidget.NodeId).Coor); // for the arrow
+                arrowVec = new Vec3D(GetScaledNode(scale, nodeId).Coor); // for the arrow
                 // Data
                 fieldData = string.Format("Value: {1} {2}", Environment.NewLine, fieldValue.ToString(numberFormat), fieldUnit);
             }
@@ -7137,12 +7168,12 @@ namespace PrePoMax
             //
             string lengthUnit = GetLengthUnit();
             //
-            bool addNodeData = Settings.Widgets.ShowNodeId;
+            bool addNodeIdData = Settings.Widgets.ShowNodeId;
             bool addCoorData = Settings.Widgets.ShowCoordinates;
             bool addFieldData = fieldData.Length > 0;
-            if (!addCoorData && !addFieldData) addNodeData = true;
+            if (!addCoorData && !addFieldData) addNodeIdData = true;
             // Node data
-            if (addNodeData) text = "Node id: " + nodeWidget.NodeId;
+            if (addNodeIdData) text = "Node id: " + nodeId;
             // Coordinates data
             if (addCoorData)
             {
@@ -7162,6 +7193,13 @@ namespace PrePoMax
             }
             //
             coor = arrowVec.Coor;
+        }
+        public void GetElementWidgetData(int elementId, string numberFormat, out string text, out double[] coor)
+        {
+            text = string.Format("Element id: {0}{1}", elementId, Environment.NewLine);
+            string elementType = GetElementType(elementId);
+            text += string.Format("Element type: {0}", elementType);
+            coor = GetElement(elementId).GetCG(DisplayedMesh.Nodes);
         }
         public void AddWidget(WidgetBase widget)
         {
@@ -9813,13 +9851,26 @@ namespace PrePoMax
             bool drawBackground = Settings.Widgets.BackgroundType == WidgetBackgroundType.White;
             bool drawBorder = Settings.Widgets.DrawBorder;
             //
+            List<string> unvalidWidgetNames = new List<string>(); 
             foreach (var entry in _widgets[_currentView])
             {
-                if (entry.Value is NodeWidget nw) GetWidgetData(nw, numberFormat, out text, out arrowCoor);
-                else throw new NotSupportedException();
-                //
-                _form.AddArrowWidget(entry.Value.Name, text, arrowCoor, drawBackground, drawBorder);
+                try // some widgets might become unvalid
+                {
+                    if (entry.Value is NodeWidget nw)
+                        GetNodeWidgetData(nw.NodeId, numberFormat, out text, out arrowCoor);
+                    else if (entry.Value is ElementWidget ew)
+                        GetElementWidgetData(ew.ElementId, numberFormat, out text, out arrowCoor);
+                    else throw new NotSupportedException();
+                    //
+                    _form.AddArrowWidget(entry.Value.Name, text, arrowCoor, drawBackground, drawBorder);
+                }
+                catch
+                {
+                    unvalidWidgetNames.Add(entry.Key);
+                }
             }
+            // Remove unvalid widgets
+            if (unvalidWidgetNames.Count > 0) _form.RemoveArrowWidgets(unvalidWidgetNames.ToArray());
         }
         
         private string GetLengthUnit()
