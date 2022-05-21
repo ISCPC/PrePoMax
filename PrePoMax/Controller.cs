@@ -7136,6 +7136,10 @@ namespace PrePoMax
             {
                 GetElementWidgetData(itemId, numberFormat, out text, out double[] coor);
             }
+            else if (_selectBy == vtkSelectBy.QueryEdge)
+            {
+                GetEdgeWidgetData(itemId, numberFormat, out text, out double[] coor);
+            }
             else throw new NotSupportedException();
             //
             return text;
@@ -7200,6 +7204,68 @@ namespace PrePoMax
             string elementType = GetElementType(elementId);
             text += string.Format("Element type: {0}", elementType);
             coor = GetElement(elementId).GetCG(DisplayedMesh.Nodes);
+        }
+        public void GetEdgeWidgetData(int geometryId, string numberFormat, out string text, out double[] coor)
+        {
+            int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
+            FeMesh mesh = DisplayedMesh;
+            BasePart part = mesh.GetPartById(itemTypePartIds[2]);
+            double length = mesh.GetEdgeLength(geometryId);
+            string lenUnit = GetLengthUnit();
+            //
+            text = string.Format("Part: {0}{1}", part.Name, Environment.NewLine);
+            text += string.Format("Edge id: {0}{1}", itemTypePartIds[0], Environment.NewLine);
+            //
+            FeNode n1;
+            FeNode n2;
+            int[] nodeIds;
+            mesh.GetEdgeNodeCoor(geometryId, out nodeIds, out double[][] nodeCoor);
+            if (_currentView == ViewGeometryModelResults.Geometry || _currentView == ViewGeometryModelResults.Model)
+            {
+                n1 = mesh.Nodes[nodeIds[nodeIds.Length / 2]];
+                if (nodeIds.Length == 2)
+                {
+                    n2 = mesh.Nodes[nodeIds[0]];
+                    coor = FeMesh.GetMidNodeCoor(n1, n2);
+                }
+                else coor = n1.Coor;
+            }
+            else if (_currentView == ViewGeometryModelResults.Results)
+            {
+                n1 = GetScaledNode(GetScale(), nodeIds[nodeIds.Length / 2]);
+                if (nodeIds.Length == 2)
+                {
+                    n2 = GetScaledNode(GetScale(), nodeIds[0]);
+                    coor = FeMesh.GetMidNodeCoor(n1, n2);
+                }
+                else coor = n1.Coor;
+                // Recompute the length
+                FeNode[] nodes = GetScaledNodes(1, nodeIds);
+                length = 0;
+                Vec3D v1;
+                Vec3D v2;
+                for (int i = 0; i < nodes.Length - 1; i++)
+                {
+                    v1 = new Vec3D(nodes[i].Coor);
+                    v2 = new Vec3D(nodes[i + 1].Coor);
+                    length += (v2 - v1).Len;
+                }
+            }
+            else throw new NotSupportedException();
+            //
+            text += string.Format("Edge length: {0} {1}", length.ToString(numberFormat), lenUnit);
+        }
+        private string GetLengthUnit()
+        {
+            string unit;
+            //
+            if (_currentView == ViewGeometryModelResults.Geometry || _currentView == ViewGeometryModelResults.Model)
+                unit = _model.UnitSystem.LengthUnitAbbreviation;
+            else if (_currentView == ViewGeometryModelResults.Results)
+                unit = _results.UnitSystem.LengthUnitAbbreviation;
+            else throw new NotSupportedException();
+            //
+            return unit;
         }
         public void AddWidget(WidgetBase widget)
         {
@@ -8945,7 +9011,7 @@ namespace PrePoMax
                 DisplayedMesh.GetNodesAndCellsForEdges(edgeCells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
                                                        out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
                 // Set the name for the probe widget
-                data.Name = DisplayedMesh.GetEdgeIdFromNodeIds(elementId, edgeNodeIds).ToString();
+                data.Name = DisplayedMesh.GetEdgeGeometryIdFromNodeIds(elementId, edgeNodeIds).ToString();
                 //
                 return data;
             }
@@ -9858,8 +9924,10 @@ namespace PrePoMax
                 {
                     if (entry.Value is NodeWidget nw)
                         GetNodeWidgetData(nw.NodeId, numberFormat, out text, out arrowCoor);
-                    else if (entry.Value is ElementWidget ew)
-                        GetElementWidgetData(ew.ElementId, numberFormat, out text, out arrowCoor);
+                    else if (entry.Value is ElementWidget elw)
+                        GetElementWidgetData(elw.ElementId, numberFormat, out text, out arrowCoor);
+                    else if (entry.Value is EdgeWidget edw)
+                        GetEdgeWidgetData(edw.GeometryId, numberFormat, out text, out arrowCoor);
                     else throw new NotSupportedException();
                     //
                     _form.AddArrowWidget(entry.Value.Name, text, arrowCoor, drawBackground, drawBorder);
@@ -9870,21 +9938,15 @@ namespace PrePoMax
                 }
             }
             // Remove unvalid widgets
-            if (unvalidWidgetNames.Count > 0) _form.RemoveArrowWidgets(unvalidWidgetNames.ToArray());
+            if (unvalidWidgetNames.Count > 0)
+            {
+                foreach (var name in unvalidWidgetNames) _widgets[_currentView].Remove(name);
+                _form.RemoveArrowWidgets(unvalidWidgetNames.ToArray());
+            }
+            
         }
         
-        private string GetLengthUnit()
-        {
-            string unit;
-            //
-            if (_currentView == ViewGeometryModelResults.Geometry || _currentView == ViewGeometryModelResults.Model)
-                unit = _model.UnitSystem.LengthUnitAbbreviation;
-            else if (_currentView == ViewGeometryModelResults.Results)
-                unit = _results.UnitSystem.LengthUnitAbbreviation;
-            else throw new NotSupportedException();
-            //
-            return unit;
-        }
+        
         // Reference points
         public void DrawAllReferencePoints()
         {

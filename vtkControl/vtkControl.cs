@@ -654,9 +654,6 @@ namespace vtkControl
                 return;
             }
             //
-            //pickedPoint = new double[] { 69.5036385225361, 46.5475130793349, 18.5134144946738 };
-            //System.Diagnostics.Debug.WriteLine("x: " + pickedPoint[0] + "   y: " + pickedPoint[1] + "   z: " + pickedPoint[2]);
-            //
             vtkCell cell;
             vtkCellLocator cellLocator;
             int globalPointId = GetNodeIdOnCellFaceClosestToPoint(pickedPoint);
@@ -669,34 +666,30 @@ namespace vtkControl
             int[] edgeCell = null;
             int edgeCellType;
             GetClosestEdgeCell(pickedPoint, cellFaceData, out nodeIds, out nodeCoor, out edgeCell, out edgeCellType);
-
+            //
             vtkMaxActorData edgeData = Controller_GetEdgeActorData(globalCellId, nodeIds);
-          
+          //
             if (edgeData != null)
             {
                 vtkMaxActor actor = new vtkMaxActor(edgeData);
                 _mouseSelectionActorCurrent = actor;
-
+                //
                 AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
                 _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
-
+                //
                 if (showLabel)
                 {
-                    string edgeId = edgeData.Name;
-
                     // Probe widget
-                    string format = _scalarBarWidget.GetLabelFormat();
-
                     _renderer.SetWorldPoint(pickedPoint[0], pickedPoint[1], pickedPoint[2], 1.0);
                     _renderer.WorldToDisplay();
                     double[] display = _renderer.GetDisplayPoint();
-
+                    //
                     double w = x + 20d;
                     double h = y + 10d;
-
+                    //
                     _probeWidget.SetPosition(w, h);
-                    _probeWidget.SetText("Edge id: " + edgeId);
-
+                    _probeWidget.SetText(Controller_GetWidgetText(int.Parse(edgeData.Name)));
+                    //
                     if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
                 }
             }

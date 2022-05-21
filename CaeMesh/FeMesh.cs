@@ -751,7 +751,7 @@ namespace CaeMesh
             }
             return newNode;
         }
-        private static double[] GetMidNodeCoor(FeNode n1, FeNode n2)
+        public static double[] GetMidNodeCoor(FeNode n1, FeNode n2)
         {
             double[] coor = new double[3];
             coor[0] = 0.5 * (n1.X + n2.X);
@@ -4267,12 +4267,13 @@ namespace CaeMesh
             int partEdgeId;
             return GetEdgeCells(elementId, edgeNodeIds, out part, out partEdgeId);
         }
-        public int GetEdgeIdFromNodeIds(int elementId, int[] edgeNodeIds)
+        public int GetEdgeGeometryIdFromNodeIds(int elementId, int[] edgeNodeIds)
         {
             BasePart part;
             int partEdgeId;
             GetEdgeCells(elementId, edgeNodeIds, out part, out partEdgeId);
-            return partEdgeId;
+            int geometryId = partEdgeId * 100000 + (int)GeometryType.Edge * 10000 + part.PartId;
+            return geometryId;
         }
         public int[][] GetEdgeCells(int elementId, int[] edgeNodeIds, out BasePart part, out int edgeId)
         {

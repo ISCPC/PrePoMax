@@ -294,6 +294,8 @@ namespace PrePoMax.Forms
             _controller.ClearSelectionHistoryAndCallSelectionChanged();
             //
             _controller.HighlightItemsByGeometryEdgeIds(new int[] { geometryId }, false);
+            //
+            _controller.AddWidget(new EdgeWidget(_controller.GetFreeWidgetName(), geometryId));
         }
         public void OneSurfacePicked(int geometryId)
         {
