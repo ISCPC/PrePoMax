@@ -19,8 +19,15 @@ namespace PrePoMax
         private int _numberOfSignificantDigits;
         private WidgetBackgroundType _backgroundType;
         private bool _drawBorder;
+        //
         private bool _showNodeId;
         private bool _showCoordinates;
+        //
+        private bool _showEdgeId;
+        private bool _showEdgeLength;
+        private bool _showEdgeMax;
+        private bool _showEdgeMin;
+        private bool _showEdgeAvg;
 
 
         // Properties                                                                                                               
@@ -48,8 +55,15 @@ namespace PrePoMax
             }
         }
         public bool DrawBorder { get { return _drawBorder; } set { _drawBorder = value; } }
-        public bool ShowCoordinates { get { return _showCoordinates; } set { _showCoordinates = value; } }
+        //
         public bool ShowNodeId { get { return _showNodeId; } set { _showNodeId = value; } }
+        public bool ShowCoordinates { get { return _showCoordinates; } set { _showCoordinates = value; } }
+        //
+        public bool ShowEdgeId { get { return _showEdgeId; } set { _showEdgeId = value; } }
+        public bool ShowEdgeLength { get { return _showEdgeLength; } set { _showEdgeLength = value; } }
+        public bool ShowEdgeMax { get { return _showEdgeMax; } set { _showEdgeMax = value; } }
+        public bool ShowEdgeMin { get { return _showEdgeMin; } set { _showEdgeMin = value; } }
+        public bool ShowEdgeAvg { get { return _showEdgeAvg; } set { _showEdgeAvg = value; } }
 
 
         // Constructors                                                                                                             
@@ -73,6 +87,12 @@ namespace PrePoMax
             //
             _showNodeId = true;
             _showCoordinates = true;
+            //
+            _showEdgeId = true;
+            _showEdgeLength = true;
+            _showEdgeMax = true;
+            _showEdgeMin = true;
+            _showEdgeAvg = true;
         }
         public string GetNumberFormat()
         {

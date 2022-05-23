@@ -1739,6 +1739,7 @@ namespace UserControls
 		private void OnAfterScroll()
         {
 			EndUpdate();
+			Application.DoEvents();
 		}
 
         #endregion

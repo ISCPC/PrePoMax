@@ -7209,17 +7209,24 @@ namespace PrePoMax
         {
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
             FeMesh mesh = DisplayedMesh;
+            int edgeId = itemTypePartIds[0] + 1; // add 1
             BasePart part = mesh.GetPartById(itemTypePartIds[2]);
-            double length = mesh.GetEdgeLength(geometryId);
+            double length;
             string lenUnit = GetLengthUnit();
-            //
-            text = string.Format("Part: {0}{1}", part.Name, Environment.NewLine);
-            text += string.Format("Edge id: {0}{1}", itemTypePartIds[0], Environment.NewLine);
+            string fieldUnit = GetCurrentResultsUnitAbbreviation();
             //
             FeNode n1;
             FeNode n2;
+            bool results = false;
+            float min = float.MaxValue;
+            float max = -float.MaxValue;
+            float avg = 0;
             int[] nodeIds;
+            double[] nodeWeights;
+            //
             mesh.GetEdgeNodeCoor(geometryId, out nodeIds, out double[][] nodeCoor);
+            nodeWeights = new double[nodeIds.Length];
+            //
             if (_currentView == ViewGeometryModelResults.Geometry || _currentView == ViewGeometryModelResults.Model)
             {
                 n1 = mesh.Nodes[nodeIds[nodeIds.Length / 2]];
@@ -7229,9 +7236,13 @@ namespace PrePoMax
                     coor = FeMesh.GetMidNodeCoor(n1, n2);
                 }
                 else coor = n1.Coor;
+                //
+                length = mesh.GetEdgeLength(geometryId);
             }
             else if (_currentView == ViewGeometryModelResults.Results)
             {
+                results = true;
+                //
                 n1 = GetScaledNode(GetScale(), nodeIds[nodeIds.Length / 2]);
                 if (nodeIds.Length == 2)
                 {
@@ -7239,21 +7250,66 @@ namespace PrePoMax
                     coor = FeMesh.GetMidNodeCoor(n1, n2);
                 }
                 else coor = n1.Coor;
-                // Recompute the length
-                FeNode[] nodes = GetScaledNodes(1, nodeIds);
-                length = 0;
+                //
                 Vec3D v1;
                 Vec3D v2;
+                float value;
+                double segLen;
+                length = 0;
+                FeNode[] nodes = GetScaledNodes(1, nodeIds);
+                // Length
                 for (int i = 0; i < nodes.Length - 1; i++)
                 {
                     v1 = new Vec3D(nodes[i].Coor);
                     v2 = new Vec3D(nodes[i + 1].Coor);
-                    length += (v2 - v1).Len;
+                    segLen = (v2 - v1).Len;
+                    nodeWeights[i] += segLen * 0.5;
+                    nodeWeights[i + 1] += segLen * 0.5;
+                    length += segLen;
                 }
+                // Values
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    value = GetNodalValue(nodeIds[i]);
+                    if (value < min) min = value;
+                    if (value > max) max = value;
+                    avg += (float)(value * nodeWeights[i]);
+                }
+                avg /= (float)length;
             }
             else throw new NotSupportedException();
             //
-            text += string.Format("Edge length: {0} {1}", length.ToString(numberFormat), lenUnit);
+            bool addEdgeIdData = Settings.Widgets.ShowEdgeId;
+            bool addEdgeLengthData = Settings.Widgets.ShowEdgeLength;
+            bool addEdgeMaxData = Settings.Widgets.ShowEdgeMax && results;
+            bool addEdgeMinData = Settings.Widgets.ShowEdgeMin && results;
+            bool addEdgeAvgData = Settings.Widgets.ShowEdgeAvg && results;
+            if (!addEdgeLengthData && !addEdgeMaxData && !addEdgeMinData && !addEdgeAvgData) addEdgeIdData = true;
+            text = "";
+            if (addEdgeIdData)
+            {
+                text += string.Format("Edge id: {0} on {1}", edgeId, part.Name);
+            }
+            if (addEdgeLengthData)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Edge length: {0} {1}", length.ToString(numberFormat), lenUnit);
+            }
+            if (addEdgeMaxData)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Max: {0} {1}", max.ToString(numberFormat), fieldUnit);
+            }
+            if (addEdgeMinData)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Min: {0} {1}", max.ToString(numberFormat), fieldUnit);
+            }
+            if (addEdgeAvgData)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Avg: {0} {1}", max.ToString(numberFormat), fieldUnit);
+            }
         }
         private string GetLengthUnit()
         {
