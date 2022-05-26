@@ -109,7 +109,7 @@ namespace PrePoMax.Forms
         private void btnClear_Click(object sender, EventArgs e)
         {
             // Widgets
-            _controller.RemoveAllArrowWidgets();
+            _controller.RemoveCurrentViewArrowWidgets();
             // Selection
             _controller.ClearSelectionHistoryAndCallSelectionChanged();
         }
@@ -235,14 +235,14 @@ namespace PrePoMax.Forms
                 _controller.AddWidget(new NodeWidget(_controller.GetFreeWidgetName(), nodeId));
             }
         }
-        public void OneElementPicked(int id)
+        public void OneElementPicked(int elementId)
         {
             Form_WriteDataToOutput("");
-            string data = string.Format("{0,16}{1,8}", "Element id:".PadRight(16), id);
+            string data = string.Format("{0,16}{1,8}", "Element id:".PadRight(16), elementId);
             Form_WriteDataToOutput(data);
             if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
-                string elementType = _controller.GetElementType(id);
+                string elementType = _controller.GetElementType(elementId);
                 data = string.Format("{0,16}{1,8}", "Element type:".PadRight(16), elementType);
                 Form_WriteDataToOutput(data);
             }
@@ -251,9 +251,9 @@ namespace PrePoMax.Forms
             //
             _controller.ClearSelectionHistoryAndCallSelectionChanged();
             //
-            _controller.HighlightElement(id);
+            _controller.HighlightElement(elementId);
             //
-            _controller.AddWidget(new ElementWidget(_controller.GetFreeWidgetName(), id));
+            _controller.AddWidget(new ElementWidget(_controller.GetFreeWidgetName(), elementId));
         }
         public void OneEdgePicked(int geometryId)
         {
@@ -265,7 +265,7 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput("");
             string data = string.Format("Edge on part: {0}", part.Name);            
             Form_WriteDataToOutput(data);
-            data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Edge".PadRight(16), "[/]", "id:", itemTypePartIds[0]);
+            data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Edge".PadRight(16), "[/]", "id:", itemTypePartIds[0] + 1);
             Form_WriteDataToOutput(data);
             data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Base".PadRight(16), lenUnit, "L:", length1);
             Form_WriteDataToOutput(data);
@@ -301,7 +301,7 @@ namespace PrePoMax.Forms
         {
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
             BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePartIds[2]);
-            int faceId = itemTypePartIds[0];
+            int surfaceId = itemTypePartIds[0];
             double area1 = _controller.DisplayedMesh.GetSurfaceArea(geometryId);
             string areaUnit = GetAreaUnit();
             //
@@ -309,10 +309,10 @@ namespace PrePoMax.Forms
             string data = string.Format("Surface on part: {0}", part.Name);
             if (part.Visualization.FaceTypes != null)
             {
-                data += string.Format("   Surface type: {0}", part.Visualization.FaceTypes[faceId]);
+                data += string.Format("   Surface type: {0}", part.Visualization.FaceTypes[surfaceId]);
             }
             Form_WriteDataToOutput(data);
-            data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Surface".PadRight(16), "[/]", "id:", faceId);
+            data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Surface".PadRight(16), "[/]", "id:", surfaceId + 1);
             Form_WriteDataToOutput(data);
             data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Base".PadRight(16), areaUnit, "A:", area1);
             Form_WriteDataToOutput(data);
@@ -324,7 +324,7 @@ namespace PrePoMax.Forms
                 FeNode[] nodes = _controller.GetScaledNodes(1, nodeIds);
                 Dictionary<int, FeNode> nodesDic = new Dictionary<int, FeNode>();
                 for (int i = 0; i < nodes.Length; i++) nodesDic.Add(nodes[i].Id, nodes[i]);
-                double area2 = _controller.DisplayedMesh.ComputeFaceArea(part.Visualization, faceId, nodesDic);
+                double area2 = _controller.DisplayedMesh.ComputeFaceArea(part.Visualization, surfaceId, nodesDic);
                 //
                 data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Deformed".PadRight(16), areaUnit, "A:", area2);
                 Form_WriteDataToOutput(data);
@@ -336,6 +336,8 @@ namespace PrePoMax.Forms
             _controller.ClearSelectionHistoryAndCallSelectionChanged();    // in order to prevent SHIFT ADD
             //
             _controller.HighlightItemsBySurfaceIds(new int[] { geometryId }, false);
+            //
+            _controller.AddWidget(new SurfaceWidget(_controller.GetFreeWidgetName(), geometryId));
         }
         public void OnePartPicked(int id)
         {

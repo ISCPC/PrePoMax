@@ -667,11 +667,11 @@ namespace vtkControl
             int edgeCellType;
             GetClosestEdgeCell(pickedPoint, cellFaceData, out nodeIds, out nodeCoor, out edgeCell, out edgeCellType);
             //
-            vtkMaxActorData edgeData = Controller_GetEdgeActorData(globalCellId, nodeIds);
-          //
-            if (edgeData != null)
+            vtkMaxActorData actorData = Controller_GetEdgeActorData(globalCellId, nodeIds);
+            //
+            if (actorData != null)
             {
-                vtkMaxActor actor = new vtkMaxActor(edgeData);
+                vtkMaxActor actor = new vtkMaxActor(actorData);
                 _mouseSelectionActorCurrent = actor;
                 //
                 AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
@@ -688,7 +688,7 @@ namespace vtkControl
                     double h = y + 10d;
                     //
                     _probeWidget.SetPosition(w, h);
-                    _probeWidget.SetText(Controller_GetWidgetText(int.Parse(edgeData.Name)));
+                    _probeWidget.SetText(Controller_GetWidgetText(int.Parse(actorData.Name)));
                     //
                     if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
                 }
@@ -921,7 +921,6 @@ namespace vtkControl
             //
             if (showLabel)
             {
-                string surfaceId = actorData.Name;
                 // Probe widget
                 _renderer.SetWorldPoint(pickedPoint[0], pickedPoint[1], pickedPoint[2], 1.0);
                 _renderer.WorldToDisplay();
@@ -930,7 +929,7 @@ namespace vtkControl
                 double h = y + 10d;
                 //
                 _probeWidget.SetPosition(w, h);
-                _probeWidget.SetText("Surface id: " + surfaceId);
+                _probeWidget.SetText(Controller_GetWidgetText(int.Parse(actorData.Name)));
                 //
                 if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
             }
@@ -5933,21 +5932,23 @@ namespace vtkControl
                 arrowWidget.GetBackgroundProperty().SetColor(1, 1, 1);
                 arrowWidget.SetText(text);
                 arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
+                arrowWidget.VisibilityOn();
                 //
                 _arrowWidgets.Add(name, arrowWidget);
                 //
                 ArrangeVisibleArrowWidgets();
             }
-            //
-            arrowWidget.SetText(text);
-            arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
+            else
+            {
+                arrowWidget.SetText(text);
+                arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
+                arrowWidget.VisibilityOn();
+            }
             //
             if (drawBackground) arrowWidget.BackgroundVisibilityOn();
             else arrowWidget.BackgroundVisibilityOff();
             if (drawBorder) arrowWidget.BorderVisibilityOn();
             else arrowWidget.BorderVisibilityOff();
-            //
-            arrowWidget.VisibilityOn();
             //
             this.Invalidate();
         }

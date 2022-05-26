@@ -442,9 +442,12 @@ namespace PrePoMax
             }
             //
             ClearModel();
-            ClearResults();            
+            ClearResults();
+            RemoveAllArrowWidgets();
             //
             SetSelectByToDefault();
+            //
+
             //
             _modelChanged = false;  // must be here since ClearResults can set it to true
         }
@@ -6332,17 +6335,20 @@ namespace PrePoMax
         {
             return _model.StepCollection.GetStep(stepName).HistoryOutputs.Values.ToArray();
         }
-        public void ReplaceHistoryOutput(string stepName, string oldHistoryOutputName, HistoryOutput historyOutput)
+        public void ReplaceHistoryOutput(string stepName, string oldHistoryOutputName, HistoryOutput historyOutput,
+                                         bool propageted = false)
         {
             HistoryOutput oldHistoryOutput = GetHistoryOutput(stepName, oldHistoryOutputName);
             // First check for a valid region since MultiRegionChanged changes the region type and region name
-            if (!_model.RegionValid(oldHistoryOutput) || StepCollection.MultiRegionChanged(oldHistoryOutput, historyOutput))
+            if ((!_model.RegionValid(oldHistoryOutput) || StepCollection.MultiRegionChanged(oldHistoryOutput, historyOutput)) &&
+                !propageted)
             {
                 DeleteSelectionBasedHistoryOutputSets(stepName, oldHistoryOutputName);
                 ConvertSelectionBasedHistoryOutput(historyOutput);
             }
             //
-            _model.StepCollection.GetStep(stepName).HistoryOutputs.Replace(oldHistoryOutputName, historyOutput.Name, historyOutput);
+            _model.StepCollection.GetStep(stepName).HistoryOutputs.Replace(oldHistoryOutputName, historyOutput.Name,
+                                                                           historyOutput);
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldHistoryOutputName, historyOutput, stepName);
             //
@@ -6358,7 +6364,7 @@ namespace PrePoMax
                 step = _model.StepCollection.GetStep(nextStepName);
                 //
                 if (step.HistoryOutputs.ContainsKey(historyOutputName))
-                    ReplaceHistoryOutput(nextStepName, historyOutputName, historyOutput);
+                    ReplaceHistoryOutput(nextStepName, historyOutputName, historyOutput, true);
                 else
                     AddHistoryOutput(nextStepName, historyOutput);
             }
@@ -6586,11 +6592,11 @@ namespace PrePoMax
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void ReplaceBoundaryCondition(string stepName, string oldBoundaryConditionName,
-                                             BoundaryCondition boundaryCondition)
+                                             BoundaryCondition boundaryCondition, bool propageted = false)
         {
             BoundaryCondition oldBC = GetBoundaryCondition(stepName, oldBoundaryConditionName);
             // First check for a valid region since MultiRegionChanged changes the region type and region name
-            if (!_model.RegionValid(oldBC) || StepCollection.MultiRegionChanged(oldBC, boundaryCondition))
+            if ((!_model.RegionValid(oldBC) || StepCollection.MultiRegionChanged(oldBC, boundaryCondition)) && !propageted)
             {
                 DeleteSelectionBasedBoundaryConditionSets(stepName, oldBoundaryConditionName);
                 ConvertSelectionBasedBoundaryCondition(boundaryCondition);
@@ -6611,7 +6617,7 @@ namespace PrePoMax
             foreach (var nextStepName in nextStepNames)
             {
                 if (_model.StepCollection.GetStep(nextStepName).BoundaryConditions.ContainsKey(boundaryConditionName))
-                    ReplaceBoundaryCondition(nextStepName, boundaryConditionName, boundaryCondition);
+                    ReplaceBoundaryCondition(nextStepName, boundaryConditionName, boundaryCondition, true);
                 else
                     AddBoundaryCondition(nextStepName, boundaryCondition);
             }
@@ -6761,11 +6767,11 @@ namespace PrePoMax
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
-        public void ReplaceLoad(string stepName, string oldLoadName, Load load)
+        public void ReplaceLoad(string stepName, string oldLoadName, Load load, bool propageted = false)
         {
             Load oldLoad = GetLoad(stepName, oldLoadName);
             // First check for a valid region since MultiRegionChanged changes the region type and region name
-            if (!_model.RegionValid(oldLoad) || StepCollection.MultiRegionChanged(oldLoad, load))
+            if ((!_model.RegionValid(oldLoad) || StepCollection.MultiRegionChanged(oldLoad, load)) && !propageted)
             {
                 DeleteSelectionBasedLoadSets(stepName, oldLoadName);
                 ConvertSelectionBasedLoad(load);
@@ -6784,7 +6790,7 @@ namespace PrePoMax
             foreach (var nextStepName in nextStepNames)
             {
                 if (_model.StepCollection.GetStep(nextStepName).Loads.ContainsKey(loadName))
-                    ReplaceLoad(nextStepName, loadName, load);
+                    ReplaceLoad(nextStepName, loadName, load, true);
                 else
                     AddLoad(nextStepName, load);
             }
@@ -6946,11 +6952,13 @@ namespace PrePoMax
         {
             return _model.StepCollection.GetStep(stepName).DefinedFields.Values.ToArray();
         }
-        public void ReplaceDefinedField(string stepName, string oldDefinedFieldName, DefinedField definedField)
+        public void ReplaceDefinedField(string stepName, string oldDefinedFieldName, DefinedField definedField,
+                                        bool propageted = false)
         {
             DefinedField oldDefinedField = GetDefinedField(stepName, oldDefinedFieldName);
             // First check for a valid region since MultiRegionChanged changes the region type and region name
-            if (!_model.RegionValid(oldDefinedField) || StepCollection.MultiRegionChanged(oldDefinedField, definedField))
+            if ((!_model.RegionValid(oldDefinedField) || StepCollection.MultiRegionChanged(oldDefinedField, definedField)) &&
+                !propageted)
             {
                 DeleteSelectionBasedDefinedFieldSets(stepName, oldDefinedFieldName);
                 ConvertSelectionBasedDefinedField(definedField);
@@ -6969,7 +6977,7 @@ namespace PrePoMax
             foreach (var nextStepName in nextStepNames)
             {
                 if (_model.StepCollection.GetStep(nextStepName).DefinedFields.ContainsKey(definedFieldName))
-                    ReplaceDefinedField(nextStepName, definedFieldName, definedField);
+                    ReplaceDefinedField(nextStepName, definedFieldName, definedField, true);
                 else
                     AddDefinedField(nextStepName, definedField);
             }
@@ -7140,6 +7148,10 @@ namespace PrePoMax
             {
                 GetEdgeWidgetData(itemId, numberFormat, out text, out double[] coor);
             }
+            else if (_selectBy == vtkSelectBy.QuerySurface)
+            {
+                GetSurfaceWidgetData(itemId, numberFormat, out text, out double[] coor);
+            }
             else throw new NotSupportedException();
             //
             return text;
@@ -7200,20 +7212,23 @@ namespace PrePoMax
         }
         public void GetElementWidgetData(int elementId, string numberFormat, out string text, out double[] coor)
         {
-            text = string.Format("Element id: {0}{1}", elementId, Environment.NewLine);
+            text = string.Format("Element id: {0}", elementId);
             string elementType = GetElementType(elementId);
-            text += string.Format("Element type: {0}", elementType);
+            if (elementType != null)
+            {
+                text += string.Format("{0}Element type: {1}", Environment.NewLine, elementType);
+            }
             coor = GetElement(elementId).GetCG(DisplayedMesh.Nodes);
         }
         public void GetEdgeWidgetData(int geometryId, string numberFormat, out string text, out double[] coor)
         {
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
             FeMesh mesh = DisplayedMesh;
-            int edgeId = itemTypePartIds[0] + 1; // add 1
+            int edgeId = itemTypePartIds[0];
             BasePart part = mesh.GetPartById(itemTypePartIds[2]);
             double length;
             string lenUnit = GetLengthUnit();
-            string fieldUnit = GetCurrentResultsUnitAbbreviation();
+            string fieldUnit = "";
             //
             FeNode n1;
             FeNode n2;
@@ -7229,13 +7244,13 @@ namespace PrePoMax
             //
             if (_currentView == ViewGeometryModelResults.Geometry || _currentView == ViewGeometryModelResults.Model)
             {
-                n1 = mesh.Nodes[nodeIds[nodeIds.Length / 2]];
+                n2 = mesh.Nodes[nodeIds[nodeIds.Length / 2]];
                 if (nodeIds.Length == 2)
                 {
-                    n2 = mesh.Nodes[nodeIds[0]];
+                    n1 = mesh.Nodes[nodeIds[0]];
                     coor = FeMesh.GetMidNodeCoor(n1, n2);
                 }
-                else coor = n1.Coor;
+                else coor = n2.Coor;
                 //
                 length = mesh.GetEdgeLength(geometryId);
             }
@@ -7243,13 +7258,13 @@ namespace PrePoMax
             {
                 results = true;
                 //
-                n1 = GetScaledNode(GetScale(), nodeIds[nodeIds.Length / 2]);
+                n2 = GetScaledNode(GetScale(), nodeIds[nodeIds.Length / 2]);
                 if (nodeIds.Length == 2)
                 {
-                    n2 = GetScaledNode(GetScale(), nodeIds[0]);
+                    n1 = GetScaledNode(GetScale(), nodeIds[0]);
                     coor = FeMesh.GetMidNodeCoor(n1, n2);
                 }
-                else coor = n1.Coor;
+                else coor = n2.Coor;
                 //
                 Vec3D v1;
                 Vec3D v2;
@@ -7276,19 +7291,21 @@ namespace PrePoMax
                     avg += (float)(value * nodeWeights[i]);
                 }
                 avg /= (float)length;
+                // Units
+                fieldUnit = GetCurrentResultsUnitAbbreviation();
             }
             else throw new NotSupportedException();
             //
-            bool addEdgeIdData = Settings.Widgets.ShowEdgeId;
-            bool addEdgeLengthData = Settings.Widgets.ShowEdgeLength;
-            bool addEdgeMaxData = Settings.Widgets.ShowEdgeMax && results;
-            bool addEdgeMinData = Settings.Widgets.ShowEdgeMin && results;
-            bool addEdgeAvgData = Settings.Widgets.ShowEdgeAvg && results;
+            bool addEdgeIdData = Settings.Widgets.ShowEdgeSurId;
+            bool addEdgeLengthData = Settings.Widgets.ShowEdgeSurSize;
+            bool addEdgeMaxData = Settings.Widgets.ShowEdgeSurMax && results;
+            bool addEdgeMinData = Settings.Widgets.ShowEdgeSurMin && results;
+            bool addEdgeAvgData = Settings.Widgets.ShowEdgeSurAvg && results;
             if (!addEdgeLengthData && !addEdgeMaxData && !addEdgeMinData && !addEdgeAvgData) addEdgeIdData = true;
             text = "";
             if (addEdgeIdData)
             {
-                text += string.Format("Edge id: {0} on {1}", edgeId, part.Name);
+                text += string.Format("Edge id: {0} on {1}", edgeId + 1, part.Name);
             }
             if (addEdgeLengthData)
             {
@@ -7303,12 +7320,103 @@ namespace PrePoMax
             if (addEdgeMinData)
             {
                 if (text.Length > 0) text += Environment.NewLine;
-                text += string.Format("Min: {0} {1}", max.ToString(numberFormat), fieldUnit);
+                text += string.Format("Min: {0} {1}", min.ToString(numberFormat), fieldUnit);
             }
             if (addEdgeAvgData)
             {
                 if (text.Length > 0) text += Environment.NewLine;
-                text += string.Format("Avg: {0} {1}", max.ToString(numberFormat), fieldUnit);
+                text += string.Format("Avg: {0} {1}", avg.ToString(numberFormat), fieldUnit);
+            }
+        }
+        public void GetSurfaceWidgetData(int geometryId, string numberFormat, out string text, out double[] coor)
+        {
+            int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
+            FeMesh mesh = DisplayedMesh;
+            int surfaceId = itemTypePartIds[0];
+            BasePart part = mesh.GetPartById(itemTypePartIds[2]);
+            double area;
+            string areaUnit = GetAreaUnit();
+            string fieldUnit = "";
+            //
+            bool results = false;
+            float min = float.MaxValue;
+            float max = -float.MaxValue;
+            float avg = 0;
+            int[] nodeIds;
+            double[][] nodeCoor;
+            //
+            mesh.GetFaceNodes(geometryId, out nodeIds);
+            nodeCoor = new double[nodeIds.Length][];
+            //
+            if (_currentView == ViewGeometryModelResults.Geometry || _currentView == ViewGeometryModelResults.Model)
+            {
+                // Area
+                area = mesh.GetSurfaceArea(geometryId);
+                // Coor
+                for (int i = 0; i < nodeIds.Length; i++) nodeCoor[i] = mesh.Nodes[nodeIds[i]].Coor;
+            }
+            else if (_currentView == ViewGeometryModelResults.Results)
+            {
+                results = true;
+                //
+                float value;
+                FeNode[] nodes = GetScaledNodes(1, nodeIds);
+                // Area
+                Dictionary<int, double> weights;
+                Dictionary<int, FeNode> nodesDic = new Dictionary<int, FeNode>();
+                for (int i = 0; i < nodes.Length; i++) nodesDic.Add(nodes[i].Id, nodes[i]);
+                mesh.GetFaceNodeLumpedWeights(part.Visualization, surfaceId, nodesDic, out weights, out area);
+                // Values
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    value = GetNodalValue(nodeIds[i]);
+                    if (value < min) min = value;
+                    if (value > max) max = value;
+                    avg += (float)(value * weights[nodeIds[i]]);
+                }
+                avg /= (float)area;
+                // Coor
+                nodes = GetScaledNodes(GetScale(), nodeIds);
+                // Area
+                for (int i = 0; i < nodes.Length; i++) nodeCoor[i] = nodes[i].Coor;
+                // Units
+                fieldUnit = GetCurrentResultsUnitAbbreviation();
+            }
+            else throw new NotSupportedException();
+            // Coor
+            int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(nodeCoor, 1);
+            coor = nodeCoor[distributedElementIds[0]];
+            //
+            bool addSurfaceIdData = Settings.Widgets.ShowEdgeSurId;
+            bool addSurfaceLengthData = Settings.Widgets.ShowEdgeSurSize;
+            bool addSurfaceMaxData = Settings.Widgets.ShowEdgeSurMax && results;
+            bool addSurfaceMinData = Settings.Widgets.ShowEdgeSurMin && results;
+            bool addSurfaceAvgData = Settings.Widgets.ShowEdgeSurAvg && results;
+            if (!addSurfaceLengthData && !addSurfaceMaxData && !addSurfaceMinData && !addSurfaceAvgData) addSurfaceIdData = true;
+            text = "";
+            if (addSurfaceIdData)
+            {
+                text += string.Format("Surface id: {0} on {1}", surfaceId + 1, part.Name);
+            }
+            if (addSurfaceLengthData)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Surface area: {0} {1}", area.ToString(numberFormat), areaUnit);
+            }
+            if (addSurfaceMaxData)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Max: {0} {1}", max.ToString(numberFormat), fieldUnit);
+            }
+            if (addSurfaceMinData)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Min: {0} {1}", min.ToString(numberFormat), fieldUnit);
+            }
+            if (addSurfaceAvgData)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Avg: {0} {1}", avg.ToString(numberFormat), fieldUnit);
             }
         }
         private string GetLengthUnit()
@@ -7323,17 +7431,40 @@ namespace PrePoMax
             //
             return unit;
         }
+        private string GetAreaUnit()
+        {
+            string unit;
+            //
+            if (_currentView == ViewGeometryModelResults.Geometry || _currentView == ViewGeometryModelResults.Model)
+                unit = _model.UnitSystem.AreaUnitAbbreviation;
+            else if (_currentView == ViewGeometryModelResults.Results)
+                unit = _results.UnitSystem.AreaUnitAbbreviation;
+            else throw new NotSupportedException();
+            //
+            return unit;
+        }
         public void AddWidget(WidgetBase widget)
         {
             _widgets[_currentView].Add(widget.Name, widget);
             //
             DrawWidgets();
+            //DrawWidgets();
         }
-        public void RemoveAllArrowWidgets()
+        public void RemoveCurrentViewArrowWidgets()
         {
             _form.RemoveArrowWidgets(_widgets[_currentView].Keys.ToArray());
             _widgets[_currentView].Clear();
         }
+        public void RemoveAllArrowWidgets()
+        {
+            _form.RemoveArrowWidgets(_widgets[ViewGeometryModelResults.Geometry].Keys.ToArray());
+            _widgets[ViewGeometryModelResults.Geometry].Clear();
+            _form.RemoveArrowWidgets(_widgets[ViewGeometryModelResults.Model].Keys.ToArray());
+            _widgets[ViewGeometryModelResults.Model].Clear();
+            _form.RemoveArrowWidgets(_widgets[ViewGeometryModelResults.Results].Keys.ToArray());
+            _widgets[ViewGeometryModelResults.Results].Clear();
+        }
+
         #endregion   ###############################################################################################################
 
         #region Analysis menu   ####################################################################################################
@@ -9155,7 +9286,7 @@ namespace PrePoMax
                     DisplayedMesh.GetNodesAndCellsForEdges(edgeCells.ToArray(), out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
                                                            out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
                     // Name for the probe widget
-                    data.Name = faceId.ToString();
+                    data.Name = (faceId * 100000 + (int)GeometryType.SolidSurface * 10000 + part.PartId).ToString();
                     //
                     return data;
                 }
@@ -9656,62 +9787,7 @@ namespace PrePoMax
             //
             return data;
         }
-        // Symbols
-        public void DrawSymbols()
-        {            
-            if (_drawSymbolsForStep != null && _drawSymbolsForStep != "None")
-            {
-                DrawAllReferencePoints();
-                DrawAllConstraints();
-                DrawAllContactPairs();
-                if (_drawSymbolsForStep != "Model")
-                {
-                    DrawAllBoundaryConditions(_drawSymbolsForStep);
-                    DrawAllLoads(_drawSymbolsForStep);
-                }
-            }
-            // Update color legend
-            AnnotateWithColorLegend();
-            //
-            _form.AdjustCameraDistanceAndClipping();
-        }
-        public void RedrawSymbols(bool updateHighlights = true)
-        {
-            try
-            {
-                if (_model != null)
-                {
-                    if (_currentView == ViewGeometryModelResults.Model &&
-                        _model.Mesh != null && _model.Mesh.Parts.Count > 0)
-                    {
-                        // Clear
-                        _form.ClearButKeepParts(_model.Mesh.Parts.Keys.ToArray());                        
-                        //
-                        try 
-                        {
-                            // Must be inside to continue screen update
-                            if (_currentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
-                            DrawSymbols();
-                            //
-                            Octree.Plane plane = _sectionViewPlanes[_currentView];
-                            if (plane != null)
-                            {
-                                RemoveSectionView();
-                                ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
-                            }
-                        }
-                        catch { }
-                        //
-                        if(updateHighlights) UpdateHighlight();
-                        _form.AdjustCameraDistanceAndClipping();
-                    }
-                }
-            }
-            catch
-            {
-                // do not throw an error - it might cancel a procedure
-            }
-        }
+        
         //
         private void GetPartColor(BasePart part, ref Color color, ref Color backfaceColor)
         {
@@ -9984,6 +10060,8 @@ namespace PrePoMax
                         GetElementWidgetData(elw.ElementId, numberFormat, out text, out arrowCoor);
                     else if (entry.Value is EdgeWidget edw)
                         GetEdgeWidgetData(edw.GeometryId, numberFormat, out text, out arrowCoor);
+                    else if (entry.Value is SurfaceWidget sw)
+                        GetSurfaceWidgetData(sw.GeometryId, numberFormat, out text, out arrowCoor);
                     else throw new NotSupportedException();
                     //
                     _form.AddArrowWidget(entry.Value.Name, text, arrowCoor, drawBackground, drawBorder);
@@ -9999,10 +10077,64 @@ namespace PrePoMax
                 foreach (var name in unvalidWidgetNames) _widgets[_currentView].Remove(name);
                 _form.RemoveArrowWidgets(unvalidWidgetNames.ToArray());
             }
-            
         }
-        
-        
+        // Symbols
+        public void DrawSymbols()
+        {
+            if (_drawSymbolsForStep != null && _drawSymbolsForStep != "None")
+            {
+                DrawAllReferencePoints();
+                DrawAllConstraints();
+                DrawAllContactPairs();
+                if (_drawSymbolsForStep != "Model")
+                {
+                    DrawAllBoundaryConditions(_drawSymbolsForStep);
+                    DrawAllLoads(_drawSymbolsForStep);
+                }
+            }
+            // Update color legend
+            AnnotateWithColorLegend();
+            //
+            _form.AdjustCameraDistanceAndClipping();
+        }
+        public void RedrawSymbols(bool updateHighlights = true)
+        {
+            try
+            {
+                if (_model != null)
+                {
+                    if (_currentView == ViewGeometryModelResults.Model &&
+                        _model.Mesh != null && _model.Mesh.Parts.Count > 0)
+                    {
+                        // Clear
+                        _form.ClearButKeepParts(_model.Mesh.Parts.Keys.ToArray());
+                        //
+                        try
+                        {
+                            // Must be inside to continue screen update
+                            if (_currentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
+                            DrawSymbols();
+                            //
+                            Octree.Plane plane = _sectionViewPlanes[_currentView];
+                            if (plane != null)
+                            {
+                                RemoveSectionView();
+                                ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
+                            }
+                        }
+                        catch { }
+                        //
+                        if (updateHighlights) UpdateHighlight();
+                        _form.AdjustCameraDistanceAndClipping();
+                    }
+                }
+            }
+            catch
+            {
+                // do not throw an error - it might cancel a procedure
+            }
+        }
+
         // Reference points
         public void DrawAllReferencePoints()
         {
@@ -11620,6 +11752,13 @@ namespace PrePoMax
             if (n < 1E-2) nxyz[2] = 1;      // tiny
             else if (n < 2) nxyz[2] = 2;    // small
             else nxyz[2] = (int)n;          // normal
+            //
+            if (maxN == 1)
+            {
+                nxyz[0] = 1;
+                nxyz[1] = 1;
+                nxyz[2] = 1;
+            }
             //
             return GetSpatiallyEquallyDistributedCoor(coor, box, nxyz);
         }

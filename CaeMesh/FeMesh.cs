@@ -7081,7 +7081,6 @@ namespace CaeMesh
             }
             else throw new NotSupportedException();
         }
-        
         public int[] GetVisibleElementIds()
         {
             HashSet<int> ids = new HashSet<int>();
@@ -7492,6 +7491,7 @@ namespace CaeMesh
                 int cellId;
                 int faceId = itemTypePartIds[0];
                 HashSet<int> allNodeIds = new HashSet<int>();
+                List<double[]> nodeCoor = new List<double[]>();
                 //
                 for (int i = 0; i < vis.CellIdsByFace[faceId].Length; i++)
                 {
@@ -7502,6 +7502,65 @@ namespace CaeMesh
                 nodeIds = allNodeIds.ToArray();
             }
             else throw new NotSupportedException();
+        }
+        public void GetFaceNodeLumpedWeights(VisualizationData visualization, int faceId,
+            Dictionary<int, FeNode> nodes, out Dictionary<int, double> weights, out double area)
+        {
+            int[] cell;
+            int faceCellId;
+            double faceArea;
+            double[] faceWeights;
+            double a = 1.0 / 3.0;
+            double b = 1.0 / 4.0;
+            double c = 1.0 / 12.0;
+            double d = 3.0 / 12.0;
+            double e = 1.0 / 16.0;
+            double f = 3.0 / 16.0;
+            area = 0;
+            weights = new Dictionary<int, double>();
+            // For each face cell
+            for (int i = 0; i < visualization.CellIdsByFace[faceId].Length; i++)
+            {
+                faceArea = 0;
+                faceCellId = visualization.CellIdsByFace[faceId][i];
+                cell = visualization.Cells[faceCellId];
+                //
+                if (cell.Length == 3)
+                {
+                    faceArea = GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]]);
+                    faceWeights = new double[] { faceArea * a, faceArea * a, faceArea * a };
+                }
+                else if (cell.Length == 4)
+                {
+                    faceArea += GeometryTools.RectangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
+                                                            nodes[cell[3]]);
+                    faceWeights = new double[] { faceArea * b, faceArea * b, faceArea * b, faceArea * b };
+                }
+                else if (cell.Length == 6)
+                {
+                    faceArea += GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
+                                                           nodes[cell[3]], nodes[cell[4]], nodes[cell[5]]);
+                    faceWeights = new double[] { faceArea * c, faceArea * c, faceArea * c,
+                        faceArea * d, faceArea * d, faceArea * d };
+                }
+                else if (cell.Length == 8)
+                {
+                    faceArea += GeometryTools.RectangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
+                                                            nodes[cell[3]], nodes[cell[4]], nodes[cell[5]],
+                                                            nodes[cell[6]], nodes[cell[7]]);
+                    faceWeights = new double[] { faceArea * e, faceArea * e, faceArea * e, faceArea * e,
+                        faceArea * f, faceArea * f, faceArea * f, faceArea * f  };
+                }
+                else throw new NotSupportedException();
+                //
+                for (int j = 0; j < cell.Length; j++)
+                {
+                    if (weights.ContainsKey(cell[j])) weights[cell[j]] += faceWeights[j];
+                    else weights.Add(cell[j], faceWeights[j]);
+                }
+                //
+                area += faceArea;
+            }
         }
 
         // Analyze

@@ -73,49 +73,49 @@ namespace PrePoMax.Settings
             set { _widgetSettings.ShowCoordinates = value; }
         }
         //
-        [CategoryAttribute("Edge widget")]
-        [OrderedDisplayName(0, 10, "Show edge id")]
-        [DescriptionAttribute("Show edge id in the widget.")]
-        public bool ShowEdgeId
+        [CategoryAttribute("Edge/surface widget")]
+        [OrderedDisplayName(0, 10, "Show edge/surface id")]
+        [DescriptionAttribute("Show edge/surface id in the widget.")]
+        public bool ShowEdgeSurId
         {
-            get { return _widgetSettings.ShowEdgeId; }
-            set { _widgetSettings.ShowEdgeId = value; }
+            get { return _widgetSettings.ShowEdgeSurId; }
+            set { _widgetSettings.ShowEdgeSurId = value; }
         }
         //
-        [CategoryAttribute("Edge widget")]
-        [OrderedDisplayName(1, 10, "Show edge length")]
-        [DescriptionAttribute("Show edge length in the widget.")]
+        [CategoryAttribute("Edge/surface widget")]
+        [OrderedDisplayName(1, 10, "Show edge/surface size")]
+        [DescriptionAttribute("Show edge/surface size in the widget.")]
         public bool ShowEdgeLength
         {
-            get { return _widgetSettings.ShowEdgeLength; }
-            set { _widgetSettings.ShowEdgeLength = value; }
+            get { return _widgetSettings.ShowEdgeSurSize; }
+            set { _widgetSettings.ShowEdgeSurSize = value; }
         }
         //
-        [CategoryAttribute("Edge widget")]
+        [CategoryAttribute("Edge/surface widget")]
         [OrderedDisplayName(2, 10, "Show maximum value")]
         [DescriptionAttribute("Show maximum value in the widget.")]
         public bool ShowEdgeMax
         {
-            get { return _widgetSettings.ShowEdgeMax; }
-            set { _widgetSettings.ShowEdgeMax = value; }
+            get { return _widgetSettings.ShowEdgeSurMax; }
+            set { _widgetSettings.ShowEdgeSurMax = value; }
         }
         //
-        [CategoryAttribute("Edge widget")]
+        [CategoryAttribute("Edge/surface widget")]
         [OrderedDisplayName(3, 10, "Show minumum value")]
         [DescriptionAttribute("Show minumum value in the widget.")]
         public bool ShowEdgeMin
         {
-            get { return _widgetSettings.ShowEdgeMin; }
-            set { _widgetSettings.ShowEdgeMin = value; }
+            get { return _widgetSettings.ShowEdgeSurMin; }
+            set { _widgetSettings.ShowEdgeSurMin = value; }
         }
         //
-        [CategoryAttribute("Edge widget")]
+        [CategoryAttribute("Edge/surface widget")]
         [OrderedDisplayName(4, 10, "Show average value")]
         [DescriptionAttribute("Show average value in the widget.")]
         public bool ShowEdgeAvg
         {
-            get { return _widgetSettings.ShowEdgeAvg; }
-            set { _widgetSettings.ShowEdgeAvg = value; }
+            get { return _widgetSettings.ShowEdgeSurAvg; }
+            set { _widgetSettings.ShowEdgeSurAvg = value; }
         }
 
 
@@ -131,7 +131,7 @@ namespace PrePoMax.Settings
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowNodeId));
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowCoordinates));
             //
-            _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeId));
+            _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeSurId));
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeLength));
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeMax));
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeMin));

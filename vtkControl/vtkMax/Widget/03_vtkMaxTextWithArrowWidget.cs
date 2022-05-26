@@ -245,9 +245,11 @@ namespace vtkControl
             if (_visibility == false)
             {
                 SetWorldPositionFromPosition();
-                base.VisibilityOn();
+                // Arrow first
                 if (_leaderActor2D != null) _renderer.AddActor(_leaderActor2D);
                 if (_headActor2D != null) _renderer.AddActor(_headActor2D);
+                // Box last
+                base.VisibilityOn();
             }
         }
         public override void VisibilityOff()
@@ -272,7 +274,7 @@ namespace vtkControl
             // Arrow first
             renderer.AddActor(_leaderActor2D);
             renderer.AddActor(_headActor2D);
-            //
+            // Box last
             base.SetInteractor(renderer, renderWindowInteractor);
         }
         public override void RemoveInteractor()
@@ -371,6 +373,9 @@ namespace vtkControl
             _position[1] += y;
             //
             SetWorldPositionFromPosition();
+            //
+            SetPositionFromWorldPosition(); // must be here
+            RecomputeLeader();              // must be here
         }
         
         

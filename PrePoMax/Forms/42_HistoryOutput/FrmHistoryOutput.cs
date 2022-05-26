@@ -185,7 +185,7 @@ namespace PrePoMax.Forms
             string[] contactPairNames = _controller.GetContactPairNames();
             //
             if (_historyOutputNames == null)
-                throw new CaeGlobals.CaeException("The history output names must be defined first.");
+                throw new CaeException("The history output names must be defined first.");
             // Populate list view
             PopulateListOfHistoryOutputs(nodeSetNames, elementSetNames, surfaceNames, referencePointNames, contactPairNames);
             // Create new history output

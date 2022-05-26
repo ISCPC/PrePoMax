@@ -23,11 +23,11 @@ namespace PrePoMax
         private bool _showNodeId;
         private bool _showCoordinates;
         //
-        private bool _showEdgeId;
-        private bool _showEdgeLength;
-        private bool _showEdgeMax;
-        private bool _showEdgeMin;
-        private bool _showEdgeAvg;
+        private bool _showEdgeSurId;
+        private bool _showEdgeSurSize;
+        private bool _showEdgeSurMax;
+        private bool _showEdgeSurMin;
+        private bool _showEdgeSurAvg;
 
 
         // Properties                                                                                                               
@@ -59,11 +59,11 @@ namespace PrePoMax
         public bool ShowNodeId { get { return _showNodeId; } set { _showNodeId = value; } }
         public bool ShowCoordinates { get { return _showCoordinates; } set { _showCoordinates = value; } }
         //
-        public bool ShowEdgeId { get { return _showEdgeId; } set { _showEdgeId = value; } }
-        public bool ShowEdgeLength { get { return _showEdgeLength; } set { _showEdgeLength = value; } }
-        public bool ShowEdgeMax { get { return _showEdgeMax; } set { _showEdgeMax = value; } }
-        public bool ShowEdgeMin { get { return _showEdgeMin; } set { _showEdgeMin = value; } }
-        public bool ShowEdgeAvg { get { return _showEdgeAvg; } set { _showEdgeAvg = value; } }
+        public bool ShowEdgeSurId { get { return _showEdgeSurId; } set { _showEdgeSurId = value; } }
+        public bool ShowEdgeSurSize { get { return _showEdgeSurSize; } set { _showEdgeSurSize = value; } }
+        public bool ShowEdgeSurMax { get { return _showEdgeSurMax; } set { _showEdgeSurMax = value; } }
+        public bool ShowEdgeSurMin { get { return _showEdgeSurMin; } set { _showEdgeSurMin = value; } }
+        public bool ShowEdgeSurAvg { get { return _showEdgeSurAvg; } set { _showEdgeSurAvg = value; } }
 
 
         // Constructors                                                                                                             
@@ -88,11 +88,11 @@ namespace PrePoMax
             _showNodeId = true;
             _showCoordinates = true;
             //
-            _showEdgeId = true;
-            _showEdgeLength = true;
-            _showEdgeMax = true;
-            _showEdgeMin = true;
-            _showEdgeAvg = true;
+            _showEdgeSurId = true;
+            _showEdgeSurSize = true;
+            _showEdgeSurMax = true;
+            _showEdgeSurMin = true;
+            _showEdgeSurAvg = true;
         }
         public string GetNumberFormat()
         {

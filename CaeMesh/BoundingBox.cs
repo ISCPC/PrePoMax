@@ -84,7 +84,7 @@ namespace CaeMesh
             if (fixedBoxes != null && fixedBoxes.Length > 0)
             {
                 nonIntersectingBBs.AddRange(fixedBoxes);
-                globalBox.IncludeBox(fixedBoxes[0]);
+                foreach (var fixedBox in fixedBoxes) globalBox.IncludeBox(fixedBox);
             }
             else
             {
