@@ -103,6 +103,8 @@ namespace PrePoMax.Forms
                     default:
                         break;
                 }
+                // Clear
+                ClearMeasureWidgets();
                 _controller.ClearSelectionHistoryAndCallSelectionChanged();
             }
         }
@@ -137,7 +139,9 @@ namespace PrePoMax.Forms
             else
             {
                 _controller.SelectBy = vtkSelectBy.Default;
-                _controller.ClearSelectionHistory();
+                // Clear
+                ClearMeasureWidgets();
+                _controller.ClearSelectionHistoryAndCallSelectionChanged();
             }                
         }
 
@@ -156,6 +160,9 @@ namespace PrePoMax.Forms
         {
             try
             {
+                // Clear widgets
+                ClearMeasureWidgets();
+                //
                 if (ids == null || ids.Length == 0) return;
                 //
                 if (_controller.SelectBy == vtkSelectBy.QueryElement && ids.Length == 1) OneElementPicked(ids[0]);
@@ -182,6 +189,7 @@ namespace PrePoMax.Forms
                     else if (ids.Length == 3) ThreeNodesPicked(ids[0], ids[1], ids[2]);
                     //
                     _controller.ClearSelectionHistoryAndCallSelectionChanged();
+                    //
                     HighlightNodes();
                 }
             }
@@ -194,7 +202,7 @@ namespace PrePoMax.Forms
             if (Form_WriteDataToOutput != null)
             {
                 string data;
-                string lenUnit = GetLengthUnit();
+                string lenUnit = _controller.GetLengthUnit();
                 _coorNodesToDraw = new double[_numOfNodesToSelect][];
                 //
                 Vec3D baseV = new Vec3D(_controller.GetNode(nodeId).Coor);
@@ -260,7 +268,7 @@ namespace PrePoMax.Forms
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
             BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePartIds[2]);
             double length1 = _controller.DisplayedMesh.GetEdgeLength(geometryId);
-            string lenUnit = GetLengthUnit();
+            string lenUnit = _controller.GetLengthUnit();
             //
             Form_WriteDataToOutput("");
             string data = string.Format("Edge on part: {0}", part.Name);            
@@ -339,20 +347,17 @@ namespace PrePoMax.Forms
             //
             _controller.AddWidget(new SurfaceWidget(_controller.GetFreeWidgetName(), geometryId));
         }
-        public void OnePartPicked(int id)
+        public void OnePartPicked(int partId)
         {
-            CaeMesh.FeMesh mesh = _controller.DisplayedMesh;
+            FeMesh mesh = _controller.DisplayedMesh;
             //
-            CaeMesh.BasePart part = null;
-            foreach (var entry in mesh.Parts)
-            {
-                if (entry.Value.PartId == id) part = entry.Value;
-            }
-            //
+            BasePart part = mesh.GetPartById(partId);
             if (part == null) throw new NotSupportedException();
             //
             Form_WriteDataToOutput("");
             string data = string.Format("Part name: {0}", part.Name);
+            Form_WriteDataToOutput(data);
+            data = string.Format("Part id: {0}", part.PartId);
             Form_WriteDataToOutput(data);
             data = string.Format("Part type: {0}", part.PartType);
             Form_WriteDataToOutput(data);
@@ -367,6 +372,8 @@ namespace PrePoMax.Forms
             _controller.ClearSelectionHistoryAndCallSelectionChanged();
             //
             _controller.Highlight3DObjects(new object[] { part });
+            //
+            _controller.AddWidget(new PartWidget(_controller.GetFreeWidgetName(), part.Name));
         }
         private void OutputAssemblyData()
         {
@@ -390,7 +397,7 @@ namespace PrePoMax.Forms
         {
             double[] bb = _controller.GetBoundingBox();
             double[] size = new double[] { bb[1] - bb[0], bb[3] - bb[2], bb[5] - bb[4] };
-            string lenUnit = GetLengthUnit();
+            string lenUnit = _controller.GetLengthUnit();
             //
             Form_WriteDataToOutput("");
             string data = string.Format("Bounding box");
@@ -415,10 +422,11 @@ namespace PrePoMax.Forms
                 string data;
                 _coorNodesToDraw = new double[_numOfNodesToSelect][];
                 //
+                Vec3D trueScaledD = null;
                 Vec3D baseV1 = new Vec3D(_controller.GetNode(nodeId1).Coor);
                 Vec3D baseV2 = new Vec3D(_controller.GetNode(nodeId2).Coor);
                 Vec3D baseD = baseV2 - baseV1;
-                string lenUnit = GetLengthUnit();
+                string lenUnit = _controller.GetLengthUnit();
                 //
                 Form_WriteDataToOutput("");
                 data = string.Format(
@@ -432,7 +440,7 @@ namespace PrePoMax.Forms
                 {
                     Vec3D trueScaledV1 = new Vec3D(_controller.GetScaledNode(1, nodeId1).Coor);
                     Vec3D trueScaledV2 = new Vec3D(_controller.GetScaledNode(1, nodeId2).Coor);
-                    Vec3D trueScaledD = trueScaledV2 - trueScaledV1;
+                    trueScaledD = trueScaledV2 - trueScaledV1;
                     Vec3D delta = trueScaledD - baseD;
                     //
                     data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}, {6,16:E}",
@@ -453,6 +461,19 @@ namespace PrePoMax.Forms
                 _coorNodesToDraw[0] = baseV1.Coor;
                 _coorNodesToDraw[1] = baseV2.Coor;
                 _coorLinesToDraw = _coorNodesToDraw;
+                // Widget
+                string text;
+                string numberFormat = _controller.Settings.Widgets.GetNumberFormat();
+                //
+                if (trueScaledD != null) baseD = trueScaledD;
+                //
+                text = string.Format("Distance: {0} {1}{2}", baseD.Len.ToString(numberFormat), lenUnit, Environment.NewLine);
+                text += string.Format("dx: {0} {1}{2}", baseD.X.ToString(numberFormat), lenUnit, Environment.NewLine);
+                text += string.Format("dy: {0} {1}{2}", baseD.Y.ToString(numberFormat), lenUnit, Environment.NewLine);
+                text += string.Format("dz: {0} {1}", baseD.Z.ToString(numberFormat), lenUnit);
+                //
+                Vec3D anchor = (baseV1 + baseV2) * 0.5;
+                _controller.AddWidget(new DistanceWidget(Globals.DistanceWidgetName, text, anchor.Coor));
             }
         }
         public void ThreeNodesPicked(int nodeId1, int nodeId2, int nodeId3)
@@ -529,7 +550,7 @@ namespace PrePoMax.Forms
             Vec3D baseV3 = new Vec3D(_controller.GetNode(nodeId3).Coor);
             //
             Vec3D.GetCircle(baseV1, baseV2, baseV3, out r, out center, out axis);
-            string lenUnit = GetLengthUnit();
+            string lenUnit = _controller.GetLengthUnit();
             //
             Form_WriteDataToOutput("");
             data = string.Format("{0,16}{1,8}{2,16}{3,16}, {4,16}, {5,16}",
@@ -623,6 +644,10 @@ namespace PrePoMax.Forms
             return coorLines;
         }
         //
+        private void ClearMeasureWidgets()
+        {
+            _controller.RemoveCurrentViewArrowWidget(Globals.DistanceWidgetName);
+        }
         private void HighlightNodes()
         {
             Color color = Color.Red;
@@ -641,20 +666,7 @@ namespace PrePoMax.Forms
                 }
             }
         }
-        //
-        private string GetLengthUnit()
-        {
-            string unit;
-            //
-            if (_controller.CurrentView == ViewGeometryModelResults.Geometry ||
-                _controller.CurrentView == ViewGeometryModelResults.Model)
-                unit = _controller.Model.UnitSystem.LengthUnitAbbreviation;
-            else if (_controller.CurrentView == ViewGeometryModelResults.Results)
-                unit = _controller.Results.UnitSystem.LengthUnitAbbreviation;
-            else throw new NotSupportedException();
-            //
-            return "[" + unit + "]";
-        }
+        //       
         private string GetAreaUnit()
         {
             string unit;
@@ -672,23 +684,3 @@ namespace PrePoMax.Forms
         
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

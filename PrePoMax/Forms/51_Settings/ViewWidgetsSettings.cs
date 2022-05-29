@@ -117,7 +117,51 @@ namespace PrePoMax.Settings
             get { return _widgetSettings.ShowEdgeSurAvg; }
             set { _widgetSettings.ShowEdgeSurAvg = value; }
         }
-
+        //
+        [CategoryAttribute("Part widget")]
+        [OrderedDisplayName(0, 10, "Show part name")]
+        [DescriptionAttribute("Show part name in the widget.")]
+        public bool ShowPartName
+        {
+            get { return _widgetSettings.ShowPartName; }
+            set { _widgetSettings.ShowPartName = value; }
+        }
+        //
+        [CategoryAttribute("Part widget")]
+        [OrderedDisplayName(1, 10, "Show part id")]
+        [DescriptionAttribute("Show part id in the widget.")]
+        public bool ShowPartId
+        {
+            get { return _widgetSettings.ShowPartId; }
+            set { _widgetSettings.ShowPartId = value; }
+        }
+        //
+        [CategoryAttribute("Part widget")]
+        [OrderedDisplayName(2, 10, "Show part type")]
+        [DescriptionAttribute("Show part type in the widget.")]
+        public bool ShowPartType
+        {
+            get { return _widgetSettings.ShowPartType; }
+            set { _widgetSettings.ShowPartType = value; }
+        }
+        //
+        [CategoryAttribute("Part widget")]
+        [OrderedDisplayName(3, 10, "Show number of elements")]
+        [DescriptionAttribute("Show part number of elements in the widget.")]
+        public bool ShowPartNumberOfElements
+        {
+            get { return _widgetSettings.ShowPartNumberOfElements; }
+            set { _widgetSettings.ShowPartNumberOfElements = value; }
+        }
+        //
+        [CategoryAttribute("Part widget")]
+        [OrderedDisplayName(4, 10, "Show number of nodes")]
+        [DescriptionAttribute("Show part number of nodes in the widget.")]
+        public bool ShowPartNumberOfNodes
+        {
+            get { return _widgetSettings.ShowPartNumberOfNodes; }
+            set { _widgetSettings.ShowPartNumberOfNodes = value; }
+        }
 
 
         // Constructors                                                                               
@@ -136,6 +180,12 @@ namespace PrePoMax.Settings
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeMax));
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeMin));
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeAvg));
+            //
+            _dctd.RenameBooleanPropertyToYesNo(nameof(ShowPartName));
+            _dctd.RenameBooleanPropertyToYesNo(nameof(ShowPartId));
+            _dctd.RenameBooleanPropertyToYesNo(nameof(ShowPartType));
+            _dctd.RenameBooleanPropertyToYesNo(nameof(ShowPartNumberOfElements));
+            _dctd.RenameBooleanPropertyToYesNo(nameof(ShowPartNumberOfNodes));
         }
 
 

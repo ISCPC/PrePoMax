@@ -28,6 +28,12 @@ namespace PrePoMax
         private bool _showEdgeSurMax;
         private bool _showEdgeSurMin;
         private bool _showEdgeSurAvg;
+        //
+        private bool _showPartName;
+        private bool _showPartId;
+        private bool _showPartType;
+        private bool _showPartNumberOfElements;
+        private bool _showPartNumberOfNodes;
 
 
         // Properties                                                                                                               
@@ -64,6 +70,16 @@ namespace PrePoMax
         public bool ShowEdgeSurMax { get { return _showEdgeSurMax; } set { _showEdgeSurMax = value; } }
         public bool ShowEdgeSurMin { get { return _showEdgeSurMin; } set { _showEdgeSurMin = value; } }
         public bool ShowEdgeSurAvg { get { return _showEdgeSurAvg; } set { _showEdgeSurAvg = value; } }
+        //
+        public bool ShowPartName { get { return _showPartName; } set { _showPartName = value; } }
+        public bool ShowPartId { get { return _showPartId; } set { _showPartId = value; } }
+        public bool ShowPartType { get { return _showPartType; } set { _showPartType = value; } }
+        public bool ShowPartNumberOfElements
+        {
+            get { return _showPartNumberOfElements; }
+            set { _showPartNumberOfElements = value; }
+        }
+        public bool ShowPartNumberOfNodes { get { return _showPartNumberOfNodes; } set { _showPartNumberOfNodes = value; } }
 
 
         // Constructors                                                                                                             
@@ -93,6 +109,12 @@ namespace PrePoMax
             _showEdgeSurMax = true;
             _showEdgeSurMin = true;
             _showEdgeSurAvg = true;
+            //
+            _showPartName = true;
+            _showPartId = true;
+            _showPartType = true;
+            _showPartNumberOfElements = true;
+            _showPartNumberOfNodes = true;
         }
         public string GetNumberFormat()
         {

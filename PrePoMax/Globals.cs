@@ -60,5 +60,7 @@ namespace PrePoMax
         public static string MissingSectionName = "Missing_section";
         // Graphics
         public static int BeamNodeSize = 5;
+        // Widgets
+        public static string DistanceWidgetName = "Distance_widget";
     }
 }

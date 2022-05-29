@@ -7132,10 +7132,14 @@ namespace PrePoMax
             //
             return _widgets[_currentView].GetNextNumberedKey(prefix + "Widget");
         }
-        public string GetWidgetText(int itemId)
+        public string GetWidgetText(string data)
         {
+            int itemId;
             string text = "";
             string numberFormat = Settings.Widgets.GetNumberFormat();
+            //
+            int.TryParse(data, out itemId);
+            //
             if (_selectBy == vtkSelectBy.QueryNode)
             {
                 GetNodeWidgetData(itemId, numberFormat, out text, out double[] coor);
@@ -7151,6 +7155,10 @@ namespace PrePoMax
             else if (_selectBy == vtkSelectBy.QuerySurface)
             {
                 GetSurfaceWidgetData(itemId, numberFormat, out text, out double[] coor);
+            }
+            else if (_selectBy == vtkSelectBy.QueryPart)
+            {
+                GetPartWidgetData(data, numberFormat, out text, out double[] coor);
             }
             else throw new NotSupportedException();
             //
@@ -7384,42 +7392,96 @@ namespace PrePoMax
             }
             else throw new NotSupportedException();
             // Coor
-            int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(nodeCoor, 1);
-            coor = nodeCoor[distributedElementIds[0]];
+            int[] distributedNodeIds = GetSpatiallyEquallyDistributedCoor(nodeCoor, 1);
+            coor = nodeCoor[distributedNodeIds[0]];
             //
-            bool addSurfaceIdData = Settings.Widgets.ShowEdgeSurId;
-            bool addSurfaceLengthData = Settings.Widgets.ShowEdgeSurSize;
-            bool addSurfaceMaxData = Settings.Widgets.ShowEdgeSurMax && results;
-            bool addSurfaceMinData = Settings.Widgets.ShowEdgeSurMin && results;
-            bool addSurfaceAvgData = Settings.Widgets.ShowEdgeSurAvg && results;
-            if (!addSurfaceLengthData && !addSurfaceMaxData && !addSurfaceMinData && !addSurfaceAvgData) addSurfaceIdData = true;
+            bool showSurfaceId = Settings.Widgets.ShowEdgeSurId;
+            bool showSurfaceLength = Settings.Widgets.ShowEdgeSurSize;
+            bool showSurfaceMax = Settings.Widgets.ShowEdgeSurMax && results;
+            bool showSurfaceMin = Settings.Widgets.ShowEdgeSurMin && results;
+            bool showSurfaceAvg = Settings.Widgets.ShowEdgeSurAvg && results;
+            if (!showSurfaceLength && !showSurfaceMax && !showSurfaceMin && !showSurfaceAvg) showSurfaceId = true;
             text = "";
-            if (addSurfaceIdData)
+            if (showSurfaceId)
             {
                 text += string.Format("Surface id: {0} on {1}", surfaceId + 1, part.Name);
             }
-            if (addSurfaceLengthData)
+            if (showSurfaceLength)
             {
                 if (text.Length > 0) text += Environment.NewLine;
                 text += string.Format("Surface area: {0} {1}", area.ToString(numberFormat), areaUnit);
             }
-            if (addSurfaceMaxData)
+            if (showSurfaceMax)
             {
                 if (text.Length > 0) text += Environment.NewLine;
                 text += string.Format("Max: {0} {1}", max.ToString(numberFormat), fieldUnit);
             }
-            if (addSurfaceMinData)
+            if (showSurfaceMin)
             {
                 if (text.Length > 0) text += Environment.NewLine;
                 text += string.Format("Min: {0} {1}", min.ToString(numberFormat), fieldUnit);
             }
-            if (addSurfaceAvgData)
+            if (showSurfaceAvg)
             {
                 if (text.Length > 0) text += Environment.NewLine;
                 text += string.Format("Avg: {0} {1}", avg.ToString(numberFormat), fieldUnit);
             }
         }
-        private string GetLengthUnit()
+        public void GetPartWidgetData(string partName, string numberFormat, out string text, out double[] coor)
+        {
+            FeMesh mesh = DisplayedMesh;
+            BasePart part = mesh.Parts[partName];
+            if (part == null) throw new NotSupportedException();
+            //
+            double[][] nodeCoor = new double[part.NodeLabels.Length][];
+            if (_currentView == ViewGeometryModelResults.Geometry || _currentView == ViewGeometryModelResults.Model)
+            {
+                for (int i = 0; i < part.NodeLabels.Length; i++) nodeCoor[i] = mesh.Nodes[part.NodeLabels[i]].Coor;
+            }
+            else if (_currentView == ViewGeometryModelResults.Results)
+            {
+                FeNode[] nodes = GetScaledNodes(GetScale(), part.NodeLabels);
+                for (int i = 0; i < nodes.Length; i++) nodeCoor[i] = nodes[i].Coor;
+            }
+            else throw new NotSupportedException();
+            // Coor
+            int[] distributedNodeIds = GetSpatiallyEquallyDistributedCoor(nodeCoor, 1);
+            coor = nodeCoor[distributedNodeIds[0]];
+            //
+            bool showPartName = Settings.Widgets.ShowPartName;
+            bool showPartId = Settings.Widgets.ShowPartId;
+            bool showPartType = Settings.Widgets.ShowPartType;
+            bool showPartNumberOfElements = Settings.Widgets.ShowPartNumberOfElements;
+            bool showPartNumberOfNodes = Settings.Widgets.ShowPartNumberOfNodes;
+            if (!showPartId && !showPartType && !showPartNumberOfElements && !showPartNumberOfNodes) showPartName = true;
+            text = "";
+            //
+            if (showPartName)
+            {
+                text += string.Format("Part name: {0}", part.Name);
+            }
+            if (showPartId)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Part id: {0}", part.PartId);
+            }
+            if (showPartType)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Part type: {0}", part.PartType);
+            }
+            if (showPartNumberOfElements)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Number of elements: {0}", part.Labels.Length);
+            }
+            if (showPartNumberOfNodes)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Number of nodes: {0}", part.NodeLabels.Length);
+            }
+        }
+        public string GetLengthUnit()
         {
             string unit;
             //
@@ -7449,6 +7511,11 @@ namespace PrePoMax
             //
             DrawWidgets();
             //DrawWidgets();
+        }
+        public void RemoveCurrentViewArrowWidget(string widgetName)
+        {
+            _form.RemoveArrowWidgets(new string[] { widgetName });
+            _widgets[_currentView].Remove(widgetName);
         }
         public void RemoveCurrentViewArrowWidgets()
         {
@@ -10062,6 +10129,13 @@ namespace PrePoMax
                         GetEdgeWidgetData(edw.GeometryId, numberFormat, out text, out arrowCoor);
                     else if (entry.Value is SurfaceWidget sw)
                         GetSurfaceWidgetData(sw.GeometryId, numberFormat, out text, out arrowCoor);
+                    else if (entry.Value is PartWidget pw)
+                        GetPartWidgetData(pw.PartName, numberFormat, out text, out arrowCoor);
+                    else if (entry.Value is DistanceWidget dw)
+                    {
+                        text = dw.Text;
+                        arrowCoor = dw.AnchorPoint;
+                    }
                     else throw new NotSupportedException();
                     //
                     _form.AddArrowWidget(entry.Value.Name, text, arrowCoor, drawBackground, drawBorder);
