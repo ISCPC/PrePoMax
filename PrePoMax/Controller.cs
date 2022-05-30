@@ -10131,10 +10131,10 @@ namespace PrePoMax
                         GetSurfaceWidgetData(sw.GeometryId, numberFormat, out text, out arrowCoor);
                     else if (entry.Value is PartWidget pw)
                         GetPartWidgetData(pw.PartName, numberFormat, out text, out arrowCoor);
-                    else if (entry.Value is DistanceWidget dw)
+                    else if (entry.Value is TextWidget tw)
                     {
-                        text = dw.Text;
-                        arrowCoor = dw.AnchorPoint;
+                        text = tw.Text;
+                        arrowCoor = tw.AnchorPoint;
                     }
                     else throw new NotSupportedException();
                     //

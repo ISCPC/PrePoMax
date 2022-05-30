@@ -203,6 +203,7 @@ namespace PrePoMax.Forms
             {
                 string data;
                 string lenUnit = _controller.GetLengthUnit();
+                string lenUnitInBrackets = string.Format("[{0}]", lenUnit);
                 _coorNodesToDraw = new double[_numOfNodesToSelect][];
                 //
                 Vec3D baseV = new Vec3D(_controller.GetNode(nodeId).Coor);
@@ -211,7 +212,7 @@ namespace PrePoMax.Forms
                 data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Node".PadRight(16), "[/]", "id:", nodeId);
                 Form_WriteDataToOutput(data);
                 data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}",
-                                     "Base".PadRight(16), lenUnit, "x, y, z:", baseV.X, baseV.Y, baseV.Z);
+                                     "Base".PadRight(16), lenUnitInBrackets, "x, y, z:", baseV.X, baseV.Y, baseV.Z);
                 Form_WriteDataToOutput(data);
                 //
                 if (_controller.CurrentView == ViewGeometryModelResults.Results)
@@ -223,10 +224,11 @@ namespace PrePoMax.Forms
                     Vec3D disp = trueScaledV - baseV;
                     //
                     data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}",
-                                         "Deformed".PadRight(16), lenUnit, "x, y, z:", trueScaledV.X, trueScaledV.Y, trueScaledV.Z);
+                                         "Deformed".PadRight(16), lenUnitInBrackets, "x, y, z:",
+                                         trueScaledV.X, trueScaledV.Y, trueScaledV.Z);
                     Form_WriteDataToOutput(data);
                     data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}",
-                                         "Displacement".PadRight(16), lenUnit, "x, y, z:", disp.X, disp.Y, disp.Z);
+                                         "Displacement".PadRight(16), lenUnitInBrackets, "x, y, z:", disp.X, disp.Y, disp.Z);
                     Form_WriteDataToOutput(data);
                     data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Field value".PadRight(16), fieldUnit, ":", fieldValue);
                     Form_WriteDataToOutput(data);
@@ -269,13 +271,14 @@ namespace PrePoMax.Forms
             BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePartIds[2]);
             double length1 = _controller.DisplayedMesh.GetEdgeLength(geometryId);
             string lenUnit = _controller.GetLengthUnit();
+            string lenUnitInBrackets = string.Format("[{0}]", lenUnit);
             //
             Form_WriteDataToOutput("");
             string data = string.Format("Edge on part: {0}", part.Name);            
             Form_WriteDataToOutput(data);
             data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Edge".PadRight(16), "[/]", "id:", itemTypePartIds[0] + 1);
             Form_WriteDataToOutput(data);
-            data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Base".PadRight(16), lenUnit, "L:", length1);
+            data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Base".PadRight(16), lenUnitInBrackets, "L:", length1);
             Form_WriteDataToOutput(data);
             //
             if (_controller.CurrentView == ViewGeometryModelResults.Results)
@@ -292,9 +295,9 @@ namespace PrePoMax.Forms
                     n2 = new Vec3D(nodes[i + 1].Coor);
                     length2 += (n2 - n1).Len;
                 }
-                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Deformed".PadRight(16), lenUnit, "L:", length2);
+                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Deformed".PadRight(16), lenUnitInBrackets, "L:", length2);
                 Form_WriteDataToOutput(data);
-                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Delta".PadRight(16), lenUnit, "L:", length2 - length1);
+                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Delta".PadRight(16), lenUnitInBrackets, "L:", length2 - length1);
                 Form_WriteDataToOutput(data);
             }
             Form_WriteDataToOutput("");
@@ -398,6 +401,7 @@ namespace PrePoMax.Forms
             double[] bb = _controller.GetBoundingBox();
             double[] size = new double[] { bb[1] - bb[0], bb[3] - bb[2], bb[5] - bb[4] };
             string lenUnit = _controller.GetLengthUnit();
+            string lenUnitInBrackets = string.Format("[{0}]", lenUnit);
             //
             Form_WriteDataToOutput("");
             string data = string.Format("Bounding box");
@@ -408,11 +412,14 @@ namespace PrePoMax.Forms
                 data = string.Format("{0,17}{1,7}{2,16}{3,16:E}", "Def. scale factor".PadRight(17), "[/]", "sf:", scale);
                 Form_WriteDataToOutput(data);
             }
-            data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Min".PadRight(16), lenUnit, "x, y, z:", bb[0], bb[2], bb[4]);
+            data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Min".PadRight(16), lenUnitInBrackets,
+                                 "x, y, z:", bb[0], bb[2], bb[4]);
             Form_WriteDataToOutput(data);
-            data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Max".PadRight(16), lenUnit, "x, y, z:", bb[1], bb[3], bb[5]);
+            data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Max".PadRight(16), lenUnitInBrackets,
+                                 "x, y, z:", bb[1], bb[3], bb[5]);
             Form_WriteDataToOutput(data);
-            data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Size".PadRight(16), lenUnit, "x, y, z:", size[0], size[1], size[2]);
+            data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Size".PadRight(16), lenUnitInBrackets,
+                                 "x, y, z:", size[0], size[1], size[2]);
             Form_WriteDataToOutput(data);
         }
         public void TwoNodesPicked(int nodeId1, int nodeId2)
@@ -427,13 +434,14 @@ namespace PrePoMax.Forms
                 Vec3D baseV2 = new Vec3D(_controller.GetNode(nodeId2).Coor);
                 Vec3D baseD = baseV2 - baseV1;
                 string lenUnit = _controller.GetLengthUnit();
+                string lenUnitInBrackets = string.Format("[{0}]", lenUnit);
                 //
                 Form_WriteDataToOutput("");
                 data = string.Format(
                     "{0,16}{1,8}{2,16}{3,16}, {4,16}", "Distance".PadRight(16), "[/]", "id1, id2:", nodeId1, nodeId2);
                 Form_WriteDataToOutput(data);
                 data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}, {6,16:E}",
-                                     "Base".PadRight(16), lenUnit, "dx, dy, dz, D:", baseD.X, baseD.Y, baseD.Z, baseD.Len);
+                                     "Base".PadRight(16), lenUnitInBrackets, "dx, dy, dz, D:", baseD.X, baseD.Y, baseD.Z, baseD.Len);
                 Form_WriteDataToOutput(data);
                 //
                 if (_controller.CurrentView == ViewGeometryModelResults.Results)
@@ -444,11 +452,11 @@ namespace PrePoMax.Forms
                     Vec3D delta = trueScaledD - baseD;
                     //
                     data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}, {6,16:E}",
-                                         "Deformed".PadRight(16), lenUnit, "dx, dy, dz, D:",
+                                         "Deformed".PadRight(16), lenUnitInBrackets, "dx, dy, dz, D:",
                                          trueScaledD.X, trueScaledD.Y, trueScaledD.Z, trueScaledD.Len);
                     Form_WriteDataToOutput(data);
                     data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}, {6,16:E}",
-                                         "Delta".PadRight(16), lenUnit, "dx, dy, dz, D:",
+                                         "Delta".PadRight(16), lenUnitInBrackets, "dx, dy, dz, D:",
                                          delta.X, delta.Y, delta.Z, trueScaledD.Len - baseD.Len);
                     Form_WriteDataToOutput(data);
                     //
@@ -473,7 +481,7 @@ namespace PrePoMax.Forms
                 text += string.Format("dz: {0} {1}", baseD.Z.ToString(numberFormat), lenUnit);
                 //
                 Vec3D anchor = (baseV1 + baseV2) * 0.5;
-                _controller.AddWidget(new DistanceWidget(Globals.DistanceWidgetName, text, anchor.Coor));
+                _controller.AddWidget(new TextWidget(Globals.DistanceWidgetName, text, anchor.Coor));
             }
         }
         public void ThreeNodesPicked(int nodeId1, int nodeId2, int nodeId3)
@@ -490,6 +498,7 @@ namespace PrePoMax.Forms
             System.Diagnostics.Debug.Write(nodeId1 + " " + nodeId2 + " " + nodeId3);
             string data;
             double angle;
+            double angle2draw;
             Vec3D p;
             Vec3D axis;
             Vec3D baseV1 = new Vec3D(_controller.GetNode(nodeId1).Coor);
@@ -497,12 +506,14 @@ namespace PrePoMax.Forms
             Vec3D baseV3 = new Vec3D(_controller.GetNode(nodeId3).Coor);
             //
             angle = ComputeAngle(baseV1, baseV2, baseV3, out p, out axis);
-            string angleUnit = "[°]";
+            angle2draw = angle;
+            string angleUnit = "°";
+            string angleUnitInBrackets = "[°]";
             //
             data = string.Format("{0,16}{1,8}{2,16}{3,16}, {4,16}, {5,16}",
                                  "Angle".PadRight(16), "[/]", "id1, id2, id3:", nodeId1, nodeId2, nodeId3);
             Form_WriteDataToOutput(data);
-            data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Base".PadRight(16), angleUnit, "ϕ:", angle);
+            data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Base".PadRight(16), angleUnitInBrackets, "ϕ:", angle);
             Form_WriteDataToOutput(data);
             //
             if (_controller.CurrentView == ViewGeometryModelResults.Results)
@@ -514,9 +525,9 @@ namespace PrePoMax.Forms
                 double angle2 = ComputeAngle(baseV1, baseV2, baseV3, out p, out axis);
                 double delta = angle2 - angle;
                 //
-                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Deformed".PadRight(16), angleUnit, "ϕ:", angle2);
+                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Deformed".PadRight(16), angleUnitInBrackets, "ϕ:", angle2);
                 Form_WriteDataToOutput(data);
-                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Delta".PadRight(16), angleUnit, "ϕ:", delta);
+                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Delta".PadRight(16), angleUnitInBrackets, "ϕ:", delta);
                 Form_WriteDataToOutput(data);
                 //
                 float scale = _controller.GetScale();
@@ -524,7 +535,8 @@ namespace PrePoMax.Forms
                 baseV2 = new Vec3D(_controller.GetScaledNode(scale, nodeId2).Coor);    // for the _coorNodesToDraw
                 baseV3 = new Vec3D(_controller.GetScaledNode(scale, nodeId3).Coor);    // for the _coorNodesToDraw
                 //
-                angle = ComputeAngle(baseV1, baseV2, baseV3, out p, out axis);
+                angle = angle2;                                                 // for the widget
+                angle2draw = ComputeAngle(baseV1, baseV2, baseV3, out p, out axis); // for drawing
             }
             Form_WriteDataToOutput("");
             //
@@ -534,9 +546,16 @@ namespace PrePoMax.Forms
             _coorNodesToDraw[2] = baseV3.Coor;
             //
             List<double[]> coorLines = new List<double[]>() { baseV1.Coor, baseV2.Coor, baseV3.Coor, baseV2.Coor };
-            coorLines.AddRange(ComputeCirclePoints(baseV2, axis, p, angle * Math.PI / 180));
+            coorLines.AddRange(ComputeCirclePoints(baseV2, axis, p, angle2draw * Math.PI / 180));
             _coorLinesToDraw = coorLines.ToArray();
-           
+            // Widget
+            string text;
+            string numberFormat = _controller.Settings.Widgets.GetNumberFormat();
+            //
+            text = string.Format("Angle: {0}{1}", angle.ToString(numberFormat), angleUnit);
+            //
+            double[] anchor = _coorLinesToDraw[_coorLinesToDraw.Length / 2];
+            _controller.AddWidget(new TextWidget(Globals.AngleWidgetName, text, anchor));
         }
         private void ComputeCircle(int nodeId1, int nodeId2, int nodeId3)
         {
@@ -551,16 +570,17 @@ namespace PrePoMax.Forms
             //
             Vec3D.GetCircle(baseV1, baseV2, baseV3, out r, out center, out axis);
             string lenUnit = _controller.GetLengthUnit();
+            string lenUnitInBrackets = string.Format("[{0}]", lenUnit);
             //
             Form_WriteDataToOutput("");
             data = string.Format("{0,16}{1,8}{2,16}{3,16}, {4,16}, {5,16}",
                                  "Circle".PadRight(16), "[/]", "id1, id2, id3:", nodeId1, nodeId2, nodeId3);
             Form_WriteDataToOutput(data);
             data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}, {6,16:E}",
-                                 "Base".PadRight(16), lenUnit, "x, y, z, R:", center.X, center.Y, center.Z, r);
+                                 "Base".PadRight(16), lenUnitInBrackets, "x, y, z, R:", center.X, center.Y, center.Z, r);
             Form_WriteDataToOutput(data);
             data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}",
-                                 "Base axis".PadRight(16), lenUnit, "x, y, z:", axis.X, axis.Y, axis.Z);
+                                 "Base axis".PadRight(16), lenUnitInBrackets, "x, y, z:", axis.X, axis.Y, axis.Z);
             Form_WriteDataToOutput(data);
             //
             if (_controller.CurrentView == ViewGeometryModelResults.Results)
@@ -572,10 +592,10 @@ namespace PrePoMax.Forms
                 Vec3D.GetCircle(baseV1, baseV2, baseV3, out r, out center, out axis);
                 //
                 data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}, {6,16:E}",
-                                     "Deformed".PadRight(16), lenUnit, "x, y, z, R:", center.X, center.Y, center.Z, r);
+                                     "Deformed".PadRight(16), lenUnitInBrackets, "x, y, z, R:", center.X, center.Y, center.Z, r);
                 Form_WriteDataToOutput(data);
                 data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}",
-                                     "Deformed axis".PadRight(16), lenUnit, "x, y, z:", axis.X, axis.Y, axis.Z);
+                                     "Deformed axis".PadRight(16), lenUnitInBrackets, "x, y, z:", axis.X, axis.Y, axis.Z);
                 Form_WriteDataToOutput(data);
                 //
                 float scale = _controller.GetScale();
@@ -647,6 +667,7 @@ namespace PrePoMax.Forms
         private void ClearMeasureWidgets()
         {
             _controller.RemoveCurrentViewArrowWidget(Globals.DistanceWidgetName);
+            _controller.RemoveCurrentViewArrowWidget(Globals.AngleWidgetName);
         }
         private void HighlightNodes()
         {

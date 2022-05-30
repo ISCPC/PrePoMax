@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PrePoMax
 {
-    public class DistanceWidget : WidgetBase
+    public class TextWidget : WidgetBase
     {
         // Variables                                                                                                                
         private string _text;
@@ -19,7 +19,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public DistanceWidget(string name, string text, double[] anchorPoint)
+        public TextWidget(string name, string text, double[] anchorPoint)
             : base(name)
         {
             _text = text;

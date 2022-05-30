@@ -382,7 +382,7 @@
     <Compile Include="Forms\51_Settings\ViewUnitSystemlSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewStatusBlockSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewLegendSettings.cs" />
-    <Compile Include="Forms\52_Query\Widgets\DistanceWidget.cs" />
+    <Compile Include="Forms\52_Query\Widgets\TextWidget.cs" />
     <Compile Include="Forms\52_Query\Widgets\PartWidget.cs" />
     <Compile Include="Forms\52_Query\Widgets\SurfaceWidget.cs" />
     <Compile Include="Forms\52_Query\Widgets\EdgeWidget.cs" />

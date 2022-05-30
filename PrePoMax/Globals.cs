@@ -62,5 +62,6 @@ namespace PrePoMax
         public static int BeamNodeSize = 5;
         // Widgets
         public static string DistanceWidgetName = "Distance_widget";
+        public static string AngleWidgetName = "Angle_widget";
     }
 }
