@@ -10,7 +10,7 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         private string _text;
-        private double[] _anchorPoint;
+        protected double[] _anchorPoint;
 
 
         // Properties                                                                                                               
@@ -19,12 +19,19 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public TextWidget(string name, string text, double[] anchorPoint)
-            : base(name)
+        public TextWidget(string name, string text, double[] anchorPoint, Controller controller)
+            : base(name, controller)
         {
             _text = text;
             _anchorPoint = anchorPoint;
         }
 
+
+        // Methods
+        public override void GetWidgetData(out string text, out double[] coor)
+        {
+            text = _text.ToString();
+            coor = _anchorPoint.ToArray();
+        }
     }
 }

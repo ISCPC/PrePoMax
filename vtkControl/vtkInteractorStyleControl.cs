@@ -194,21 +194,14 @@ namespace vtkControl
             _leftMouseButtonPressed = true;
             _rubberBandSelection = false;
             _selectionCanceled = false;
+            // Area selection
+            vtkPoints backgroundPoints = _selectionBackgroundMapper.GetInput().GetPoints();
+            backgroundPoints.SetPoint(0, _clickPos[0], _clickPos[1], 0.0);
+            backgroundPoints.SetPoint(1, _clickPos[0], _clickPos[1], 0.0);
+            backgroundPoints.SetPoint(2, _clickPos[0], _clickPos[1], 0.0);
+            backgroundPoints.SetPoint(3, _clickPos[0], _clickPos[1], 0.0);
+            backgroundPoints.Modified();
             //
-            //if (_selection)
-            {                
-                vtkPoints backgroundPoints = _selectionBackgroundMapper.GetInput().GetPoints();
-                //
-                backgroundPoints.SetPoint(0, _clickPos[0], _clickPos[1], 0.0);
-                backgroundPoints.SetPoint(1, _clickPos[0], _clickPos[1], 0.0);
-                backgroundPoints.SetPoint(2, _clickPos[0], _clickPos[1], 0.0);
-                backgroundPoints.SetPoint(3, _clickPos[0], _clickPos[1], 0.0);
-                backgroundPoints.Modified();
-                //
-                //_selectionBackgroundActor.VisibilityOn();
-                //_selectionBorderActor.VisibilityOn();
-            }
-            //else 
             LeftButtonPressEvent?.Invoke(_clickPos[0], _clickPos[1]);
         }
         void vtkInteractorStyleControl_LeftButtonReleaseEvt(vtkObject sender, vtkObjectEventArgs e)

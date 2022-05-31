@@ -10,18 +10,22 @@ namespace PrePoMax
     public abstract class WidgetBase : NamedClass
     {
         // Variables                                                                                                                
-        private double[] _anchorPoint;
-
+        protected Controller _controller;        
+        
 
         // Properties                                                                                                               
 
 
         // Constructors                                                                                                             
-        public WidgetBase(string name)
+        public WidgetBase(string name, Controller controller)
             :base(name)
         {
-
+            _controller = controller;
         }
+
+
+        // Methods
+        public abstract void GetWidgetData(out string text, out double[] coor);
 
     }
 }

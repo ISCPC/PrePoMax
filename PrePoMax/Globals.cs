@@ -63,5 +63,6 @@ namespace PrePoMax
         // Widgets
         public static string DistanceWidgetName = "Distance_widget";
         public static string AngleWidgetName = "Angle_widget";
+        public static string CircleWidgetName = "Circle_widget";
     }
 }

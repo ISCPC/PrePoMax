@@ -241,16 +241,16 @@
             this.tsmiDeleteContactPair = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerInteraction1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiSearchContactPairs = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiCreateInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiEditInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDividerInitialCondition1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiDeleteInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiAmplitude = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateAmplitude = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditAmplitude = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerAmplitude1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDeleteAmplitude = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCreateInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiEditInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerInitialCondition1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiDeleteInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiStepMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiStep = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateStep = new System.Windows.Forms.ToolStripMenuItem();
@@ -397,7 +397,9 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
+            this.rtbEditWidget = new System.Windows.Forms.RichTextBox();
             this.menuStripMain.SuspendLayout();
+            this.panelControl.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
@@ -2092,43 +2094,6 @@
             this.tsmiSearchContactPairs.Text = "Search Contact Pairs";
             this.tsmiSearchContactPairs.Click += new System.EventHandler(this.tsmiSearchContactPairs_Click);
             // 
-            // tsmiInitialCondition
-            // 
-            this.tsmiInitialCondition.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiCreateInitialCondition,
-            this.tsmiEditInitialCondition,
-            this.tsmiDividerInitialCondition1,
-            this.tsmiDeleteInitialCondition});
-            this.tsmiInitialCondition.Name = "tsmiInitialCondition";
-            this.tsmiInitialCondition.Size = new System.Drawing.Size(102, 20);
-            this.tsmiInitialCondition.Text = "Initial condition";
-            // 
-            // tsmiCreateInitialCondition
-            // 
-            this.tsmiCreateInitialCondition.Name = "tsmiCreateInitialCondition";
-            this.tsmiCreateInitialCondition.Size = new System.Drawing.Size(180, 22);
-            this.tsmiCreateInitialCondition.Text = "Create";
-            this.tsmiCreateInitialCondition.Click += new System.EventHandler(this.tsmiCreateInitialCondition_Click);
-            // 
-            // tsmiEditInitialCondition
-            // 
-            this.tsmiEditInitialCondition.Name = "tsmiEditInitialCondition";
-            this.tsmiEditInitialCondition.Size = new System.Drawing.Size(180, 22);
-            this.tsmiEditInitialCondition.Text = "Edit";
-            this.tsmiEditInitialCondition.Click += new System.EventHandler(this.tsmiEditInitialCondition_Click);
-            // 
-            // tsmiDividerInitialCondition1
-            // 
-            this.tsmiDividerInitialCondition1.Name = "tsmiDividerInitialCondition1";
-            this.tsmiDividerInitialCondition1.Size = new System.Drawing.Size(177, 6);
-            // 
-            // tsmiDeleteInitialCondition
-            // 
-            this.tsmiDeleteInitialCondition.Name = "tsmiDeleteInitialCondition";
-            this.tsmiDeleteInitialCondition.Size = new System.Drawing.Size(180, 22);
-            this.tsmiDeleteInitialCondition.Text = "Delete";
-            this.tsmiDeleteInitialCondition.Click += new System.EventHandler(this.tsmiDeleteInitialCondition_Click);
-            // 
             // tsmiAmplitude
             // 
             this.tsmiAmplitude.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -2143,28 +2108,65 @@
             // tsmiCreateAmplitude
             // 
             this.tsmiCreateAmplitude.Name = "tsmiCreateAmplitude";
-            this.tsmiCreateAmplitude.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateAmplitude.Size = new System.Drawing.Size(108, 22);
             this.tsmiCreateAmplitude.Text = "Create";
             this.tsmiCreateAmplitude.Click += new System.EventHandler(this.tsmiCreateAmplitude_Click);
             // 
             // tsmiEditAmplitude
             // 
             this.tsmiEditAmplitude.Name = "tsmiEditAmplitude";
-            this.tsmiEditAmplitude.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditAmplitude.Size = new System.Drawing.Size(108, 22);
             this.tsmiEditAmplitude.Text = "Edit";
             this.tsmiEditAmplitude.Click += new System.EventHandler(this.tsmiEditAmplitude_Click);
             // 
             // tsmiDividerAmplitude1
             // 
             this.tsmiDividerAmplitude1.Name = "tsmiDividerAmplitude1";
-            this.tsmiDividerAmplitude1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerAmplitude1.Size = new System.Drawing.Size(105, 6);
             // 
             // tsmiDeleteAmplitude
             // 
             this.tsmiDeleteAmplitude.Name = "tsmiDeleteAmplitude";
-            this.tsmiDeleteAmplitude.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteAmplitude.Size = new System.Drawing.Size(108, 22);
             this.tsmiDeleteAmplitude.Text = "Delete";
             this.tsmiDeleteAmplitude.Click += new System.EventHandler(this.tsmiDeleteAmplitude_Click);
+            // 
+            // tsmiInitialCondition
+            // 
+            this.tsmiInitialCondition.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiCreateInitialCondition,
+            this.tsmiEditInitialCondition,
+            this.tsmiDividerInitialCondition1,
+            this.tsmiDeleteInitialCondition});
+            this.tsmiInitialCondition.Name = "tsmiInitialCondition";
+            this.tsmiInitialCondition.Size = new System.Drawing.Size(102, 20);
+            this.tsmiInitialCondition.Text = "Initial condition";
+            // 
+            // tsmiCreateInitialCondition
+            // 
+            this.tsmiCreateInitialCondition.Name = "tsmiCreateInitialCondition";
+            this.tsmiCreateInitialCondition.Size = new System.Drawing.Size(108, 22);
+            this.tsmiCreateInitialCondition.Text = "Create";
+            this.tsmiCreateInitialCondition.Click += new System.EventHandler(this.tsmiCreateInitialCondition_Click);
+            // 
+            // tsmiEditInitialCondition
+            // 
+            this.tsmiEditInitialCondition.Name = "tsmiEditInitialCondition";
+            this.tsmiEditInitialCondition.Size = new System.Drawing.Size(108, 22);
+            this.tsmiEditInitialCondition.Text = "Edit";
+            this.tsmiEditInitialCondition.Click += new System.EventHandler(this.tsmiEditInitialCondition_Click);
+            // 
+            // tsmiDividerInitialCondition1
+            // 
+            this.tsmiDividerInitialCondition1.Name = "tsmiDividerInitialCondition1";
+            this.tsmiDividerInitialCondition1.Size = new System.Drawing.Size(105, 6);
+            // 
+            // tsmiDeleteInitialCondition
+            // 
+            this.tsmiDeleteInitialCondition.Name = "tsmiDeleteInitialCondition";
+            this.tsmiDeleteInitialCondition.Size = new System.Drawing.Size(108, 22);
+            this.tsmiDeleteInitialCondition.Text = "Delete";
+            this.tsmiDeleteInitialCondition.Click += new System.EventHandler(this.tsmiDeleteInitialCondition_Click);
             // 
             // tsmiStepMenu
             // 
@@ -2824,6 +2826,7 @@
             // panelControl
             // 
             this.panelControl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelControl.Controls.Add(this.rtbEditWidget);
             this.panelControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControl.Location = new System.Drawing.Point(0, 0);
             this.panelControl.Name = "panelControl";
@@ -3440,6 +3443,17 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
+            // rtbEditWidget
+            // 
+            this.rtbEditWidget.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.rtbEditWidget.Location = new System.Drawing.Point(15, 16);
+            this.rtbEditWidget.Name = "rtbEditWidget";
+            this.rtbEditWidget.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
+            this.rtbEditWidget.Size = new System.Drawing.Size(165, 86);
+            this.rtbEditWidget.TabIndex = 5;
+            this.rtbEditWidget.Text = "";
+            this.rtbEditWidget.Visible = false;
+            // 
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -3461,6 +3475,7 @@
             this.Resize += new System.EventHandler(this.FrmMain_Resize);
             this.menuStripMain.ResumeLayout(false);
             this.menuStripMain.PerformLayout();
+            this.panelControl.ResumeLayout(false);
             this.statusStripMain.ResumeLayout(false);
             this.statusStripMain.PerformLayout();
             this.tsResults.ResumeLayout(false);
@@ -3861,6 +3876,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEditAmplitude;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerAmplitude1;
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteAmplitude;
+        private System.Windows.Forms.RichTextBox rtbEditWidget;
     }
 }
 

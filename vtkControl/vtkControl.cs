@@ -253,9 +253,10 @@ namespace vtkControl
         public Func<double[], int, int[], int[], vtkMaxActorData> Controller_GetGeometryVertexActorData;
         //
         public Action<MouseEventArgs, Keys, string[]> Controller_ActorsPicked;
-        public Action Controller_ShowColorBarSettings;
-        public Action Controller_ShowLegendSettings;
-        public Action Controller_ShowStatusBlockSettings;
+        public Action Form_ShowColorBarSettings;
+        public Action Form_ShowLegendSettings;
+        public Action Form_ShowStatusBlockSettings;
+        public Action<string, Rectangle> Form_EditArrowWidget;
 
 
         // Events                                                                                                                   
@@ -363,11 +364,22 @@ namespace vtkControl
             _renderWindow.SetCurrentCursor(0);  // Default
         }
         //
-        private void widget_ShowSettings(object sender)
+        private void EditArrowWidget(vtkMaxTextWithArrowWidget widget)
         {
-            if (sender is vtkMaxColorBarWidget) Controller_ShowColorBarSettings?.Invoke();
-            else if (sender is vtkMaxScalarBarWidget) Controller_ShowLegendSettings?.Invoke();
-            else if (sender is vtkMaxStatusBlockWidget) Controller_ShowStatusBlockSettings?.Invoke();
+            double[] tmp = widget.GetPosition();
+            Point location = new Point((int)tmp[0], (int)tmp[1]);
+            //
+            Size size = new Size(widget.GetWidth(), widget.GetHeight());
+            Rectangle rectangle = new Rectangle(location, size);
+            //
+            Form_EditArrowWidget?.Invoke(widget.GetName(), rectangle);
+        }
+        private void widget_DoubleClicked(object sender)
+        {
+            if (sender is vtkMaxColorBarWidget) Form_ShowColorBarSettings?.Invoke();
+            else if (sender is vtkMaxScalarBarWidget) Form_ShowLegendSettings?.Invoke();
+            else if (sender is vtkMaxStatusBlockWidget) Form_ShowStatusBlockSettings?.Invoke();
+            else if (sender is vtkMaxTextWithArrowWidget aw) EditArrowWidget(aw);
         }
 
         // Mouse Events - Style                                                                                                     
@@ -1762,7 +1774,7 @@ namespace vtkControl
             _colorBarWidget.BackgroundVisibilityOn();
             _colorBarWidget.BorderVisibilityOn();
             _colorBarWidget.SetBackgroundColor(1, 1, 1);
-            _colorBarWidget.MouseDoubleClick += widget_ShowSettings;
+            _colorBarWidget.MouseDoubleClick += widget_DoubleClicked;
 
 
             // Status block
@@ -1774,11 +1786,11 @@ namespace vtkControl
             _statusBlockWidget.GetBackgroundProperty().SetColor(1, 1, 1);
             _statusBlockWidget.BackgroundVisibilityOff();
             _statusBlockWidget.VisibilityOff();
-            _statusBlockWidget.MouseDoubleClick += widget_ShowSettings;
+            _statusBlockWidget.MouseDoubleClick += widget_DoubleClicked;
 
 
             // Max widget
-            _maxValueWidget = new vtkMaxTextWithArrowWidget();
+            _maxValueWidget = new vtkMaxTextWithArrowWidget("Max");
             _maxValueWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
             _maxValueWidget.SetBorderColor(0, 0, 0);
             _maxValueWidget.SetTextProperty(CreateNewTextProperty());
@@ -1789,7 +1801,7 @@ namespace vtkControl
 
 
             // Min widget
-            _minValueWidget = new vtkMaxTextWithArrowWidget();
+            _minValueWidget = new vtkMaxTextWithArrowWidget("Min");
             _minValueWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
             _minValueWidget.SetBorderColor(0, 0, 0);
             _minValueWidget.SetTextProperty(CreateNewTextProperty());
@@ -1840,7 +1852,7 @@ namespace vtkControl
             _scalarBarWidget.BorderVisibilityOn();
             _scalarBarWidget.SetBackgroundColor(1, 1, 1);
             //
-            _scalarBarWidget.MouseDoubleClick += widget_ShowSettings;
+            _scalarBarWidget.MouseDoubleClick += widget_DoubleClicked;
         }
         private void Timer_Tick(object sender, EventArgs e)
         {
@@ -5947,7 +5959,7 @@ namespace vtkControl
             vtkMaxTextWithArrowWidget arrowWidget;
             if (!_arrowWidgets.TryGetValue(name, out arrowWidget))
             {
-                arrowWidget = new vtkMaxTextWithArrowWidget();
+                arrowWidget = new vtkMaxTextWithArrowWidget(name);
                 arrowWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
                 arrowWidget.SetBorderColor(0, 0, 0);
                 arrowWidget.SetTextProperty(CreateNewTextProperty());
@@ -5956,6 +5968,8 @@ namespace vtkControl
                 arrowWidget.SetText(text);
                 arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
                 arrowWidget.VisibilityOn();
+                //
+                arrowWidget.MouseDoubleClick += widget_DoubleClicked;
                 //
                 _arrowWidgets.Add(name, arrowWidget);
                 //

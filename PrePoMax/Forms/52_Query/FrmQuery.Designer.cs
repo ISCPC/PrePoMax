@@ -50,7 +50,7 @@
             // 
             this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnClose.Location = new System.Drawing.Point(107, 276);
+            this.btnClose.Location = new System.Drawing.Point(107, 261);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 9;
@@ -66,7 +66,7 @@
             this.gbQueries.Controls.Add(this.lvQueries);
             this.gbQueries.Location = new System.Drawing.Point(12, 12);
             this.gbQueries.Name = "gbQueries";
-            this.gbQueries.Size = new System.Drawing.Size(170, 258);
+            this.gbQueries.Size = new System.Drawing.Size(170, 243);
             this.gbQueries.TabIndex = 10;
             this.gbQueries.TabStop = false;
             this.gbQueries.Text = "Queries";
@@ -107,7 +107,7 @@
             this.lvQueries.MultiSelect = false;
             this.lvQueries.Name = "lvQueries";
             this.lvQueries.ShowGroups = false;
-            this.lvQueries.Size = new System.Drawing.Size(158, 230);
+            this.lvQueries.Size = new System.Drawing.Size(158, 215);
             this.lvQueries.TabIndex = 11;
             this.lvQueries.UseCompatibleStateImageBehavior = false;
             this.lvQueries.View = System.Windows.Forms.View.Details;
@@ -123,7 +123,7 @@
             // 
             this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnClear.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnClear.Location = new System.Drawing.Point(26, 276);
+            this.btnClear.Location = new System.Drawing.Point(26, 261);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(75, 23);
             this.btnClear.TabIndex = 11;
@@ -136,13 +136,14 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnClose;
-            this.ClientSize = new System.Drawing.Size(194, 311);
+            this.ClientSize = new System.Drawing.Size(194, 296);
             this.Controls.Add(this.btnClear);
             this.Controls.Add(this.gbQueries);
             this.Controls.Add(this.btnClose);
             this.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(210, 335);
             this.Name = "FrmQuery";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;

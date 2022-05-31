@@ -11,6 +11,7 @@ namespace vtkControl
     class vtkMaxTextWithArrowWidget : vtkMaxTextWidget
     {
         // Variables                                                                                                                
+        string _name;
         private bool _anchorAlreadySet;
         vtkCoordinate _worldAnchorPoint;
         vtkCoordinate _worldPositionPoint;
@@ -25,8 +26,10 @@ namespace vtkControl
 
 
         // Constructors                                                                                                             
-        public vtkMaxTextWithArrowWidget()
+        public vtkMaxTextWithArrowWidget(string name)
         {
+            _name = name;
+            //
             _anchorAlreadySet = false;
             _scaleBySectors = true;
             
@@ -380,6 +383,10 @@ namespace vtkControl
         
         
         // Public getters                                                                                                           
+        public string GetName()
+        {
+            return _name;
+        }
         public CaeMesh.BoundingBox GetAnchorPointBox()
         {
             vtkPoints pts = _leaderPolyData.GetPoints();
