@@ -133,6 +133,9 @@
     <Compile Include="TextBoxes\AutoScrollTextBox.Designer.cs">
       <DependentUpon>AutoScrollTextBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="TextBoxes\LineSpacingRichTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="TextBoxes\ResizableTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -371,6 +374,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License-LGPL.txt" />
+    <None Include="Resources\NoResult.ico" />
+    <None Include="Resources\OK1.ico" />
     <None Include="Resources\Part.png" />
     <None Include="Resources\Remove.ico" />
     <None Include="Resources\Search1.png" />

@@ -31,12 +31,8 @@ namespace vtkControl
     [ComVisible(true), ClassInterface(ClassInterfaceType.AutoDual)]
     public partial class vtkControl : UserControl
     {
-
-        
-
         int countError;
-
-        // Variables                                                                                                                
+        // Variables                                                                                                                        
         private bool _renderingOn;
         private vtkRenderer _renderer;
         private vtkRenderer _selectionRenderer;
@@ -100,7 +96,7 @@ namespace vtkControl
 
 
         // Properties                                                                                                               
-        public bool RenderingOn 
+        public bool RenderingOn
         { 
             get { return _renderingOn; }
             set 
@@ -210,7 +206,18 @@ namespace vtkControl
             }
         }
         public vtkSelectItem SelectItem { get { return _selectItem; } set { if (_selectItem != value) { _selectItem = value; } } }
-        
+        public bool DisableInteractor
+        {
+            get
+            {
+                return ((vtkInteractorStyleControl)_renderWindowInteractor.GetInteractorStyle()).DisableInteractor;
+            }
+            set
+            {
+                ((vtkInteractorStyleControl)_renderWindowInteractor.GetInteractorStyle()).DisableInteractor = value;
+            }
+        }
+
 
         // Setters                                                                                                                  
         public void SetSelectBy(vtkSelectBy selectBy)
@@ -256,7 +263,8 @@ namespace vtkControl
         public Action Form_ShowColorBarSettings;
         public Action Form_ShowLegendSettings;
         public Action Form_ShowStatusBlockSettings;
-        public Action<string, Rectangle> Form_EditArrowWidget;
+        public Action<string, Rectangle> Form_StartEditArrowWidget;
+        public Action Form_EndEditArrowWidget;
 
 
         // Events                                                                                                                   
@@ -348,7 +356,8 @@ namespace vtkControl
         //
         void _renderWindowInteractor_ModifiedEvt(vtkObject sender, vtkObjectEventArgs e)
         {
-            if (_style.GetState() == vtkInteractorStyleControl.VTKIS_ROTATE && _probeWidget != null && _probeWidget.GetVisibility() == 1)
+            if (_style.GetState() == vtkInteractorStyleControl.VTKIS_ROTATE && _probeWidget != null &&
+                _probeWidget.GetVisibility() == 1)
             {
                 _probeWidget.VisibilityOff();
             }
@@ -372,7 +381,7 @@ namespace vtkControl
             Size size = new Size(widget.GetWidth(), widget.GetHeight());
             Rectangle rectangle = new Rectangle(location, size);
             //
-            Form_EditArrowWidget?.Invoke(widget.GetName(), rectangle);
+            Form_StartEditArrowWidget?.Invoke(widget.GetName(), rectangle);
         }
         private void widget_DoubleClicked(object sender)
         {
@@ -556,6 +565,8 @@ namespace vtkControl
         }
         private void _style_LeftButtonPressEvent(int x, int y)
         {
+            Form_EndEditArrowWidget?.Invoke();
+            //
             //if (_selectBy == vtkSelectBy.Off)
             //{
             //    vtkActor pickedActor = null;
@@ -1868,6 +1879,7 @@ namespace vtkControl
             vtkTextProperty textProperty = vtkTextProperty.New();
             textProperty.SetColor(0, 0, 0);
             textProperty.SetFontFamilyToArial();
+            //textProperty.SetFontFamilyAsString("Arial Nova");
             textProperty.SetFontSize(16);
             textProperty.SetLineOffset(-Math.Round(textProperty.GetFontSize() / 7.0));
             textProperty.SetLineSpacing(1.5);

@@ -91,6 +91,7 @@ namespace vtkControl
         public const int VTKIS_ANIM_OFF = 0;
         public const int VTKIS_ANIM_ON = 1;
         //
+        private bool _disableInteractor;
         private double _motionFactor;
         private double[] _rotationCenterWorld;
         private double[] _rotationCenterDisplay;
@@ -122,6 +123,7 @@ namespace vtkControl
         public bool Selection { get { return _selection; } set { _selection = value; } }
         public bool RubberBandEnabled { get { return _rubberBandEnabled; } set { _rubberBandEnabled = value; } }        
         public bool Animating { get { return _animating; } set { _animating = value; } }
+        public bool DisableInteractor { get { return _disableInteractor; } set { _disableInteractor = value; } }
 
 
         // Getters
@@ -179,33 +181,39 @@ namespace vtkControl
             //
             int x = rwi.GetEventPosition()[0];
             int y = rwi.GetEventPosition()[1];
-            this.FindPokedRenderer(x, y);
             //
-            vtkRenderer renderer = this.GetCurrentRenderer();
-            if (renderer == null) return;
-            // Widgets - left pressed
-            foreach (vtkMaxBorderWidget widget in _reversedWidgets)
+            if (!_disableInteractor)
             {
-                if (widget.LeftButtonPress(x, y)) return;
+                this.FindPokedRenderer(x, y);
+                //
+                vtkRenderer renderer = this.GetCurrentRenderer();
+                if (renderer == null) return;
+                // Widgets - left pressed
+                foreach (vtkMaxBorderWidget widget in _reversedWidgets)
+                {
+                    if (widget.LeftButtonPress(x, y)) return;
+                }
+                // Set global variable
+                _clickPos = new int[] { x, y };
+                //
+                _leftMouseButtonPressed = true;
+                _rubberBandSelection = false;
+                _selectionCanceled = false;
+                // Area selection
+                vtkPoints backgroundPoints = _selectionBackgroundMapper.GetInput().GetPoints();
+                backgroundPoints.SetPoint(0, _clickPos[0], _clickPos[1], 0.0);
+                backgroundPoints.SetPoint(1, _clickPos[0], _clickPos[1], 0.0);
+                backgroundPoints.SetPoint(2, _clickPos[0], _clickPos[1], 0.0);
+                backgroundPoints.SetPoint(3, _clickPos[0], _clickPos[1], 0.0);
+                backgroundPoints.Modified();
             }
-            // Set global variable
-            _clickPos = rwi.GetEventPosition();
             //
-            _leftMouseButtonPressed = true;
-            _rubberBandSelection = false;
-            _selectionCanceled = false;
-            // Area selection
-            vtkPoints backgroundPoints = _selectionBackgroundMapper.GetInput().GetPoints();
-            backgroundPoints.SetPoint(0, _clickPos[0], _clickPos[1], 0.0);
-            backgroundPoints.SetPoint(1, _clickPos[0], _clickPos[1], 0.0);
-            backgroundPoints.SetPoint(2, _clickPos[0], _clickPos[1], 0.0);
-            backgroundPoints.SetPoint(3, _clickPos[0], _clickPos[1], 0.0);
-            backgroundPoints.Modified();
-            //
-            LeftButtonPressEvent?.Invoke(_clickPos[0], _clickPos[1]);
+            LeftButtonPressEvent?.Invoke(x, y);
         }
         void vtkInteractorStyleControl_LeftButtonReleaseEvt(vtkObject sender, vtkObjectEventArgs e)
         {
+            if (_disableInteractor) return;
+            //
             vtkRenderWindowInteractor rwi = this.GetInteractor();
             //
             int x = rwi.GetEventPosition()[0];
@@ -241,33 +249,36 @@ namespace vtkControl
         //
         void vtkInteractorStyleControl_MiddleButtonPressEvt(vtkObject sender, vtkObjectEventArgs e)
         {
+            if (_disableInteractor) return;
+            //
             base.OnLeftButtonDown();
-
+            //
             vtkRenderWindowInteractor rwi = this.GetInteractor();
-
+            //
             int x = rwi.GetEventPosition()[0];
             int y = rwi.GetEventPosition()[1];
             this.FindPokedRenderer(x, y);
-
+            //
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
-
+            //
             _clickPos = rwi.GetEventPosition();     // set global variable
-
+            //
             UpdateRotationCenterDisplay();
-
+            //
             AddAnnotationForCenter3D(rwi, renderer);
-
             // Widgets - middle pressed
             foreach (vtkMaxBorderWidget widget in _widgets)
             {
                 widget.MiddleButtonPress(x, y);
             }
-
+            //
             rwi.Render();
         }
         void vtkInteractorStyleControl_MiddleButtonReleaseEvt(vtkObject sender, vtkObjectEventArgs e)
         {
+            if (_disableInteractor) return;
+            //
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
             // Remove first in order not to affect the bounds of the model
@@ -326,6 +337,8 @@ namespace vtkControl
         //
         void vtkInteractorStyleControl_RightButtonPressEvt(vtkObject sender, vtkObjectEventArgs e)
         {
+            if (_disableInteractor) return;
+            //
             vtkRenderWindowInteractor rwi = this.GetInteractor();
             int x = rwi.GetEventPosition()[0];
             int y = rwi.GetEventPosition()[1];
@@ -345,10 +358,13 @@ namespace vtkControl
         }
         void vtkInteractorStyleControl_RightButtonReleaseEvt(vtkObject sender, vtkObjectEventArgs e)
         {
+            if (_disableInteractor) return;
         }
         //
         void vtkInteractorStyleControl_MouseMoveEvt(vtkObject sender, vtkObjectEventArgs e)
         {
+            if (_disableInteractor) return;
+            //
             _x = this.GetInteractor().GetEventPosition()[0];
             _y = this.GetInteractor().GetEventPosition()[1];
             // Widgets - Move
@@ -395,6 +411,8 @@ namespace vtkControl
         //
         void vtkInteractorStyleControl_MouseWheelForwardEvt(vtkObject sender, vtkObjectEventArgs e)
         {
+            if (_disableInteractor) return;
+            //
             if (this.GetState() == VTKIS_NONE)
             {
                 int[] clickPos = this.GetInteractor().GetEventPosition();
@@ -424,6 +442,8 @@ namespace vtkControl
         }
         void vtkInteractorStyleControl_MouseWheelBackwardEvt(vtkObject sender, vtkObjectEventArgs e)
         {
+            if (_disableInteractor) return;
+            //
             if (this.GetState() == VTKIS_NONE)
             {
                 int[] clickPos = this.GetInteractor().GetEventPosition();
@@ -454,6 +474,8 @@ namespace vtkControl
         //
         private void VtkInteractorStyleControl_KeyPressEvt(vtkObject sender, vtkObjectEventArgs e)
         {
+            if (_disableInteractor) return;
+            //
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
             //

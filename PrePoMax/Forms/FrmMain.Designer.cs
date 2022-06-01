@@ -337,6 +337,7 @@
             this.tsmiAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiTest = new System.Windows.Forms.ToolStripMenuItem();
             this.panelControl = new System.Windows.Forms.Panel();
+            this.rtbEditWidget = new UserControls.LineSpacingRichTextBox();
             this.statusStripMain = new System.Windows.Forms.StatusStrip();
             this.tspbProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.tsslState = new System.Windows.Forms.ToolStripStatusLabel();
@@ -397,7 +398,6 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.rtbEditWidget = new System.Windows.Forms.RichTextBox();
             this.menuStripMain.SuspendLayout();
             this.panelControl.SuspendLayout();
             this.statusStripMain.SuspendLayout();
@@ -2833,6 +2833,22 @@
             this.panelControl.Size = new System.Drawing.Size(1229, 662);
             this.panelControl.TabIndex = 1;
             // 
+            // rtbEditWidget
+            // 
+            this.rtbEditWidget.Beep = false;
+            this.rtbEditWidget.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.rtbEditWidget.DetectUrls = false;
+            this.rtbEditWidget.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.rtbEditWidget.Location = new System.Drawing.Point(15, 16);
+            this.rtbEditWidget.Name = "rtbEditWidget";
+            this.rtbEditWidget.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
+            this.rtbEditWidget.ShortcutsEnabled = false;
+            this.rtbEditWidget.Size = new System.Drawing.Size(165, 86);
+            this.rtbEditWidget.TabIndex = 5;
+            this.rtbEditWidget.Text = "Edit widgets";
+            this.rtbEditWidget.Visible = false;
+            this.rtbEditWidget.WordWrap = false;
+            // 
             // statusStripMain
             // 
             this.statusStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -3443,17 +3459,6 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
-            // rtbEditWidget
-            // 
-            this.rtbEditWidget.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.rtbEditWidget.Location = new System.Drawing.Point(15, 16);
-            this.rtbEditWidget.Name = "rtbEditWidget";
-            this.rtbEditWidget.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
-            this.rtbEditWidget.Size = new System.Drawing.Size(165, 86);
-            this.rtbEditWidget.TabIndex = 5;
-            this.rtbEditWidget.Text = "";
-            this.rtbEditWidget.Visible = false;
-            // 
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -3876,7 +3881,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEditAmplitude;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerAmplitude1;
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteAmplitude;
-        private System.Windows.Forms.RichTextBox rtbEditWidget;
+        private UserControls.LineSpacingRichTextBox rtbEditWidget;
     }
 }
 

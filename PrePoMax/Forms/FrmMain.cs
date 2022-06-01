@@ -31,66 +31,9 @@ namespace PrePoMax
         Edit
     }
 
-    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public struct PARAFORMAT
-    {
-        public int cbSize;
-        public uint dwMask;
-        public short wNumbering;
-        public short wReserved;
-        public int dxStartIndent;
-        public int dxRightIndent;
-        public int dxOffset;
-        public short wAlignment;
-        public short cTabCount;
-        [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.ByValArray, SizeConst = 32)]
-        public int[] rgxTabs;
-        // PARAFORMAT2 from here onwards
-        public int dySpaceBefore;
-        public int dySpaceAfter;
-        public int dyLineSpacing;
-        public short sStyle;
-        public byte bLineSpacingRule;
-        public byte bOutlineLevel;
-        public short wShadingWeight;
-        public short wShadingStyle;
-        public short wNumberingStart;
-        public short wNumberingStyle;
-        public short wNumberingTab;
-        public short wBorderSpace;
-        public short wBorderWidth;
-        public short wBorders;
-    }
-    //private void setLineFormat(byte rule, int space)
-    //{
-    //    PARAFORMAT fmt = new PARAFORMAT();
-    //    fmt.cbSize = System.Runtime.InteropServices.Marshal.SizeOf(fmt);
-    //    fmt.dwMask = PFM_LINESPACING;
-    //    fmt.dyLineSpacing = space;
-    //    fmt.bLineSpacingRule = rule;
-    //    richTextBox1.SelectAll();
-    //    SendMessage(new System.Runtime.InteropServices.HandleRef(richTextBox1, richTextBox1.Handle),
-    //                 EM_SETPARAFORMAT,
-    //                 SCF_SELECTION,
-    //                 ref fmt
-    //               );
-    //    //
-    //    Size rectangle = richTextBox1.GetPreferredSize(richTextBox1.Size);
-    //    richTextBox1.Size = rectangle;
-    //}
 
     public partial class FrmMain : MainMouseWheelManagedForm
     {
-        [System.Runtime.InteropServices.DllImport("user32", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
-        private static extern IntPtr SendMessage(System.Runtime.InteropServices.HandleRef hWnd, int msg, int wParam, ref PARAFORMAT lParam);
-        const int PFM_SPACEBEFORE = 0x00000040;
-        const int PFM_SPACEAFTER = 0x00000080;
-        const int PFM_LINESPACING = 0x00000100;
-        const int SCF_SELECTION = 1;
-        const int EM_SETPARAFORMAT = 1095;
-
-
-
         // Variables                                                                                                                
         #region Variables ##########################################################################################################
 
@@ -340,7 +283,8 @@ namespace PrePoMax
                 _vtk.Form_ShowColorBarSettings = ShowColorBarSettings;
                 _vtk.Form_ShowLegendSettings = ShowLegendSettings;
                 _vtk.Form_ShowStatusBlockSettings = ShowStatusBlockSettings;
-                _vtk.Form_EditArrowWidget = EditArrowWidget;
+                _vtk.Form_StartEditArrowWidget = StartEditArrowWidget;
+                _vtk.Form_EndEditArrowWidget = EndEditArrowWidget;
                 // Forms
                 _formLocation = new Point(100, 100);
                 _allForms = new List<Form>();
@@ -5398,21 +5342,44 @@ namespace PrePoMax
             tsmiSettings_Click(null, null);
         }
         // Widgets
-        private void EditArrowWidget(string name, Rectangle rectangle)
+        private void StartEditArrowWidget(string name, Rectangle rectangle)
         {
-            string text;
-            double[] coor;
-            _controller.GetWidget(name).GetWidgetData(out text, out coor);
+            WidgetBase widget = _controller.GetWidget(name);
+            string text = widget.GetWidgetText();
+            rectangle.Inflate(-3, -2);
             //
             Point vtkLocation = this.PointToClient(_vtk.Parent.PointToScreen(_vtk.Location));
             Point location = new Point(vtkLocation.X + rectangle.X, vtkLocation.Y + (_vtk.Height - rectangle.Y - rectangle.Height));
             //
-
             rtbEditWidget.Location = location;
             rtbEditWidget.Size = rectangle.Size;
             rtbEditWidget.Text = text;
             rtbEditWidget.BringToFront();
-            //rtbEditWidget.Visible = true;
+            rtbEditWidget.Visible = true;
+            rtbEditWidget.Tag = widget;
+            //
+            _vtk.DisableInteractor = true;
+        }
+        private void EndEditArrowWidget()
+        {
+            if (rtbEditWidget.Visible)
+            {
+                WidgetBase widget = (WidgetBase)rtbEditWidget.Tag;
+                string nonOverridenText = widget.GetNotOverridenWidgetText();
+                //
+                nonOverridenText = nonOverridenText.Replace("\r\n", "\n");
+                string newText = rtbEditWidget.Text.Replace("\r\n", "\n");
+                //
+                if (newText.Length > 0 && newText != nonOverridenText)
+                    widget.OverridenText = rtbEditWidget.Text;
+                else
+                    widget.OverridenText = null;
+                //
+                rtbEditWidget.Visible = false;
+                _vtk.DisableInteractor = false;
+                //
+                _controller.DrawWidgets();  // redraw in both cases
+            }
         }
         //
         private void UpdateSettings(Dictionary<string, ISettings> items)

@@ -32,6 +32,8 @@ namespace PrePoMax
         {
             text = _text.ToString();
             coor = _anchorPoint.ToArray();
+            //
+            //if (IsTextOverriden) text = OverridenText;
         }
     }
 }

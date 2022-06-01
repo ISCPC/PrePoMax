@@ -81,6 +81,8 @@ namespace PrePoMax
                 if (text.Length > 0) text += Environment.NewLine;
                 text += string.Format("Number of nodes: {0}", part.NodeLabels.Length);
             }
+            //
+            if (IsTextOverriden) text = OverridenText;
         }
     }
 }
