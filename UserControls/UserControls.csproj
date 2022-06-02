@@ -133,7 +133,7 @@
     <Compile Include="TextBoxes\AutoScrollTextBox.Designer.cs">
       <DependentUpon>AutoScrollTextBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="TextBoxes\LineSpacingRichTextBox.cs">
+    <Compile Include="TextBoxes\WidgetEditorRichTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="TextBoxes\ResizableTextBox.cs">
@@ -206,6 +206,12 @@
     <Compile Include="AdvisorControl\AdvisorControl.Designer.cs">
       <DependentUpon>AdvisorControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="WidgetEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WidgetEditor.Designer.cs">
+      <DependentUpon>WidgetEditor.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DataGridView\DataGridViewCopyPaste.resx">
@@ -260,6 +266,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AdvisorControl\AdvisorControl.resx">
       <DependentUpon>AdvisorControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WidgetEditor.resx">
+      <DependentUpon>WidgetEditor.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

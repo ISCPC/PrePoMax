@@ -140,9 +140,6 @@ namespace PrePoMax.Commands
             //
             foreach (Command command in _commands)
             {
-                if (count > 40)
-                    break;
-
                 if (count++ <= _currPositionIndex)
                 {
                     // Write to form

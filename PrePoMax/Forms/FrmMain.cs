@@ -206,8 +206,8 @@ namespace PrePoMax
             try
             {
                 // Edit widget text box
-                panelControl.Controls.Remove(rtbEditWidget);
-                this.Controls.Add(rtbEditWidget);
+                panelControl.Controls.Remove(weWidgetText);
+                this.Controls.Add(weWidgetText);
                 // Vtk
                 _vtk = new vtkControl.vtkControl();
                 panelControl.Parent.Controls.Add(_vtk);
@@ -5346,36 +5346,39 @@ namespace PrePoMax
         {
             WidgetBase widget = _controller.GetWidget(name);
             string text = widget.GetWidgetText();
-            rectangle.Inflate(-3, -2);
+            rectangle.Inflate(2, 2);
             //
             Point vtkLocation = this.PointToClient(_vtk.Parent.PointToScreen(_vtk.Location));
             Point location = new Point(vtkLocation.X + rectangle.X, vtkLocation.Y + (_vtk.Height - rectangle.Y - rectangle.Height));
+            Rectangle vtkArea = new Rectangle(vtkLocation, _vtk.Size);
             //
-            rtbEditWidget.Location = location;
-            rtbEditWidget.Size = rectangle.Size;
-            rtbEditWidget.Text = text;
-            rtbEditWidget.BringToFront();
-            rtbEditWidget.Visible = true;
-            rtbEditWidget.Tag = widget;
+            weWidgetText.Location = location;
+            weWidgetText.Size = rectangle.Size;
+            weWidgetText.MinSize = rectangle.Size;
+            weWidgetText.ParentRectangle = vtkArea;
+            weWidgetText.Text = text;
+            weWidgetText.BringToFront();
+            weWidgetText.Visible = true;
+            weWidgetText.Tag = widget;
             //
             _vtk.DisableInteractor = true;
         }
         private void EndEditArrowWidget()
         {
-            if (rtbEditWidget.Visible)
+            if (weWidgetText.Visible)
             {
-                WidgetBase widget = (WidgetBase)rtbEditWidget.Tag;
+                WidgetBase widget = (WidgetBase)weWidgetText.Tag;
                 string nonOverridenText = widget.GetNotOverridenWidgetText();
                 //
                 nonOverridenText = nonOverridenText.Replace("\r\n", "\n");
-                string newText = rtbEditWidget.Text.Replace("\r\n", "\n");
+                string newText = weWidgetText.Text.Replace("\r\n", "\n");
                 //
                 if (newText.Length > 0 && newText != nonOverridenText)
-                    widget.OverridenText = rtbEditWidget.Text;
+                    widget.OverridenText = weWidgetText.Text;
                 else
                     widget.OverridenText = null;
                 //
-                rtbEditWidget.Visible = false;
+                weWidgetText.Visible = false;
                 _vtk.DisableInteractor = false;
                 //
                 _controller.DrawWidgets();  // redraw in both cases

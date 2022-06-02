@@ -337,7 +337,7 @@
             this.tsmiAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiTest = new System.Windows.Forms.ToolStripMenuItem();
             this.panelControl = new System.Windows.Forms.Panel();
-            this.rtbEditWidget = new UserControls.LineSpacingRichTextBox();
+            this.weWidgetText = new UserControls.WidgetEditor();
             this.statusStripMain = new System.Windows.Forms.StatusStrip();
             this.tspbProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.tsslState = new System.Windows.Forms.ToolStripStatusLabel();
@@ -2826,28 +2826,24 @@
             // panelControl
             // 
             this.panelControl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelControl.Controls.Add(this.rtbEditWidget);
+            this.panelControl.Controls.Add(this.weWidgetText);
             this.panelControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControl.Location = new System.Drawing.Point(0, 0);
             this.panelControl.Name = "panelControl";
             this.panelControl.Size = new System.Drawing.Size(1229, 662);
             this.panelControl.TabIndex = 1;
             // 
-            // rtbEditWidget
+            // weWidgetText
             // 
-            this.rtbEditWidget.Beep = false;
-            this.rtbEditWidget.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.rtbEditWidget.DetectUrls = false;
-            this.rtbEditWidget.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.rtbEditWidget.Location = new System.Drawing.Point(15, 16);
-            this.rtbEditWidget.Name = "rtbEditWidget";
-            this.rtbEditWidget.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
-            this.rtbEditWidget.ShortcutsEnabled = false;
-            this.rtbEditWidget.Size = new System.Drawing.Size(165, 86);
-            this.rtbEditWidget.TabIndex = 5;
-            this.rtbEditWidget.Text = "Edit widgets";
-            this.rtbEditWidget.Visible = false;
-            this.rtbEditWidget.WordWrap = false;
+            this.weWidgetText.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.weWidgetText.Location = new System.Drawing.Point(4, 3);
+            this.weWidgetText.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.weWidgetText.MinSize = new System.Drawing.Size(0, 0);
+            this.weWidgetText.Name = "weWidgetText";
+            this.weWidgetText.ParentRectangle = new System.Drawing.Rectangle(0, 0, 0, 0);
+            this.weWidgetText.Size = new System.Drawing.Size(165, 90);
+            this.weWidgetText.TabIndex = 6;
+            this.weWidgetText.Visible = false;
             // 
             // statusStripMain
             // 
@@ -3881,7 +3877,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEditAmplitude;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerAmplitude1;
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteAmplitude;
-        private UserControls.LineSpacingRichTextBox rtbEditWidget;
+        private UserControls.WidgetEditor weWidgetText;
     }
 }
 
