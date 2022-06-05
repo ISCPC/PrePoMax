@@ -76,7 +76,7 @@ namespace PrePoMax
                     closestEdges = _controller.GetClosestUnConnectedEdgesDistance(_partNamesToAnalyze);
                     smallestFace = _controller.GetSmallestFace(_partNamesToAnalyze);
                 }
-                catch {}
+                catch { }
                 //
                 float widthBefore = GetMaxLabelWidth();
                 //

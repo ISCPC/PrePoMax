@@ -624,7 +624,7 @@ namespace PrePoMax.Forms
             string text;
             string numberFormat = _controller.Settings.Widgets.GetNumberFormat();
             //
-            text = string.Format("Radius: {0}{1}{2}", r.ToString(numberFormat), lenUnit, Environment.NewLine);
+            text = string.Format("Radius: {0} {1}{2}", r.ToString(numberFormat), lenUnit, Environment.NewLine);
             text += string.Format("X: {0} {1}{2}", center.X.ToString(numberFormat), lenUnit, Environment.NewLine);
             text += string.Format("Y: {0} {1}{2}", center.Y.ToString(numberFormat), lenUnit, Environment.NewLine);
             text += string.Format("Z: {0} {1}", center.Z.ToString(numberFormat), lenUnit);

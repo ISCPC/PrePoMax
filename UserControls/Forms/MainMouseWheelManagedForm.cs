@@ -16,8 +16,8 @@ namespace UserControls
         /* **********************************/
 
         //WM_MOUSEFIRST = 0x200
-        private const int WM_MOUSEMOVE = 0x200;
-        //WM_LBUTTONDOWN = 0x201
+        //private const int WM_MOUSEMOVE = 0x200;
+        //private const int WM_LBUTTONDOWN = 0x201;
         //WM_LBUTTONUP = 0x202
         //WM_LBUTTONDBLCLK = 0x203
         //WM_RBUTTONDOWN = 0x204
@@ -28,7 +28,7 @@ namespace UserControls
         //WM_MBUTTONDBLCLK = 0x209
         //WM_MOUSEWHEEL = 0x20A
         //WM_MOUSEHWHEEL = 0x20E
-        private const int WM_MOUSEWHEEL = 0x20a;
+        //private const int WM_MOUSEWHEEL = 0x20a;
         private const int WM_KEYDOWN = 0x100;
         private const int WM_KEYUP = 0x101;
 
@@ -58,7 +58,7 @@ namespace UserControls
             // Add this form to message filter - in order for PreFilterMessage to work
             if (start) ManagedMouseWheelStart();
         }
-
+        //
         protected override void Dispose(bool disposing)
         {
             // Remove this form to message filter - in order for PreFilterMessage to work
@@ -66,6 +66,7 @@ namespace UserControls
 
             base.Dispose(disposing);
         }
+
 
         // Mehods                                                                                                                   
 
@@ -91,13 +92,13 @@ namespace UserControls
         private bool IsChildControlOnTheSameForm(Control ctrl)
         {
             Control loopCtrl = ctrl;
-
+            //
             while (loopCtrl != null && loopCtrl != this && !(loopCtrl is Form))
             {
                 if (loopCtrl.Parent == null && loopCtrl is Form) loopCtrl = ((Form)loopCtrl).Owner;
                 else loopCtrl = loopCtrl.Parent;
             }
-
+            //
             return (loopCtrl == this);
         }
         public bool PreFilterMessage(ref Message m) // Return true if the message was handeled
@@ -106,6 +107,13 @@ namespace UserControls
 
             if (DisableAllMouseEvents && m.Msg >= 512 && m.Msg <= 527) return true;  // Disable all mouse events
 
+            if (m.Msg == 513)
+            {
+                if (IsChildControlOnTheSameForm(FromHandle(m.HWnd)))
+                {
+                    LeftMousePressedOnForm(FromHandle(m.HWnd));
+                }
+            }
             //if (m.Msg == WM_MOUSEWHEEL)
             //{
             //    // Ensure the message was sent to a child of the current form
@@ -167,6 +175,8 @@ namespace UserControls
 
             return false;
         }
+        public virtual void LeftMousePressedOnForm(Control sender)
+        { }
 
        
 

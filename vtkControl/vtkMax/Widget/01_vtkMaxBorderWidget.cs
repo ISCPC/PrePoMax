@@ -170,7 +170,7 @@ namespace vtkControl
                 if (_borderActor != null) _renderer.RemoveActor(_borderActor);
             }
         }
-        public void BackgroundVisibilityOn()
+        public virtual void BackgroundVisibilityOn()
         {
             if (_backgroundVisibility == false)
             {
@@ -180,7 +180,7 @@ namespace vtkControl
                 if (_borderVisibility == true) _renderer.AddActor(_borderActor); // add border back
             }
         }
-        public void BackgroundVisibilityOff()
+        public virtual void BackgroundVisibilityOff()
         {
             if (_backgroundVisibility == true)
             {
@@ -297,7 +297,7 @@ namespace vtkControl
             {
                 //System.Diagnostics.Debug.WriteLine(DateTime.Now.Millisecond);
                 // Double click
-                if ((DateTime.Now - _lastClickTime).TotalMilliseconds < 300 && 
+                if ((DateTime.Now - _lastClickTime).TotalMilliseconds < 300 &&
                     Math.Abs(x - _lastClickPos[0]) < 5 && Math.Abs(y - _lastClickPos[1]) < 5)
                 {
                     MouseDoubleClick?.Invoke(this);
@@ -309,11 +309,19 @@ namespace vtkControl
                     _clickPos = new int[] { x, y };
                     _lastClickPos = _clickPos.ToArray();
                     _lastClickTime = DateTime.Now;
+                    //
+                    //_borderActor.GetProperty().SetColor(1, 0, 0);
+                    //
                     return true;
                 }
             }
             // Outside click
-            else return false;   
+            else
+            {
+                //_borderActor.GetProperty().SetColor(0, 0, 0);
+                //
+                return false;
+            }
         }
         public bool LeftButtonRelease(int x, int y)
         {
@@ -520,10 +528,6 @@ namespace vtkControl
             else return 0;
         }
         //
-        public double[] GetPosition()
-        {
-            return _position.ToArray();
-        }
         public CaeMesh.BoundingBox GetBoundingBox()
         {
             CaeMesh.BoundingBox box = new CaeMesh.BoundingBox();
@@ -542,6 +546,12 @@ namespace vtkControl
         public int GetHeight()
         {
             return (int)Math.Round(_size[1]);
+        }
+        public Rectangle GetRectangle()
+        {
+            Point location = new Point((int)Math.Round(_position[0]), (int)Math.Round(_position[1]));
+            Size size = new Size((int)Math.Round(_size[0]), (int)Math.Round(_size[1]));
+            return new Rectangle(location, size);
         }
 
         public vtkProperty2D GetBorderProperty()

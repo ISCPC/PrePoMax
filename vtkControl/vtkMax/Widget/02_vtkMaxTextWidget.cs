@@ -56,6 +56,15 @@ namespace vtkControl
                 if (_textActor != null) _renderer.RemoveActor(_textActor);
             }
         }
+        public override void BackgroundVisibilityOn()
+        {
+            if (_backgroundVisibility == false)
+            {
+                _renderer.RemoveActor(_textActor); // remove text
+                base.BackgroundVisibilityOn();
+                _renderer.AddActor(_textActor); // add text back
+            }
+        }
         public override void OnSizeChanged()
         {
             int[] textSize = vtkMaxWidgetTools.GetTextSize(_textMapper, _renderer);

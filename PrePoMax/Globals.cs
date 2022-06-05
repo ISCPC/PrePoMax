@@ -26,7 +26,7 @@ namespace PrePoMax
         public static string RegeneratingText = "Regenerating history...";
         public static string FlippingNormalsText = "Flipping normals...";
         public static string SplittingFacesText = "Splitting faces...";
-        public static string ExplodeParts = "Explode parts...";
+        public static string ExplodePartsText = "Explode parts...";
         //
         public static string SettingsFileName = "settings.bin";
         public static string MaterialLibraryFileName = "materials.lib";

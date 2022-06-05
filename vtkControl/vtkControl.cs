@@ -260,10 +260,10 @@ namespace vtkControl
         public Func<double[], int, int[], int[], vtkMaxActorData> Controller_GetGeometryVertexActorData;
         //
         public Action<MouseEventArgs, Keys, string[]> Controller_ActorsPicked;
+        public Action<MouseEventArgs, Keys, string, Rectangle> Form_WidgetPicked;
         public Action Form_ShowColorBarSettings;
         public Action Form_ShowLegendSettings;
         public Action Form_ShowStatusBlockSettings;
-        public Action<string, Rectangle> Form_StartEditArrowWidget;
         public Action Form_EndEditArrowWidget;
 
 
@@ -375,13 +375,8 @@ namespace vtkControl
         //
         private void EditArrowWidget(vtkMaxTextWithArrowWidget widget)
         {
-            double[] tmp = widget.GetPosition();
-            Point location = new Point((int)tmp[0], (int)tmp[1]);
-            //
-            Size size = new Size(widget.GetWidth(), widget.GetHeight());
-            Rectangle rectangle = new Rectangle(location, size);
-            //
-            Form_StartEditArrowWidget?.Invoke(widget.GetName(), rectangle);
+            MouseEventArgs mouseEventArgs = new MouseEventArgs(MouseButtons.Left, 2, 0, 0, 1);
+            Form_WidgetPicked(mouseEventArgs, Keys.None, widget.GetName(), widget.GetRectangle());
         }
         private void widget_DoubleClicked(object sender)
         {
@@ -565,28 +560,33 @@ namespace vtkControl
         }
         private void _style_LeftButtonPressEvent(int x, int y)
         {
+            // A background point was picked
             Form_EndEditArrowWidget?.Invoke();
-            //
-            //if (_selectBy == vtkSelectBy.Off)
-            //{
-            //    vtkActor pickedActor = null;
-            //    GetPickPoint(out pickedActor, x, y);
-            //    MouseEventArgs e = new MouseEventArgs(MouseButtons.Left, 1, x, y, 0);
-            //    //
-            //    Controller_ActorPicked?.Invoke(e, ModifierKeys, GetActorName(pickedActor));
-            //}
         }
-        private void _style_RightButtonPressEvent(int x, int y)
+        private void _style_RightButtonPressEvent(int x, int y, string widgetName)
         {
             // Off
             if (_selectBy == vtkSelectBy.Off) return;
             //
-            vtkActor pickedActor;
-            GetPickPoint(out pickedActor, x, y);
-            if (pickedActor != null)
+            if (widgetName != null)
             {
-                MouseEventArgs e = new MouseEventArgs(MouseButtons.Right, 1, x, y, 0);
-                Controller_ActorsPicked?.Invoke(e, ModifierKeys, new string[] { GetActorName(pickedActor) });
+                vtkMaxTextWithArrowWidget widget;
+                if (_arrowWidgets.TryGetValue(widgetName, out widget))
+                {
+                    MouseEventArgs mouseEventArgs = new MouseEventArgs(MouseButtons.Right, 1, x, y, 1);
+                    Form_WidgetPicked(mouseEventArgs, Keys.None, widgetName, widget.GetRectangle());
+                }
+            }
+            else 
+            {
+                vtkActor pickedActor;
+                GetPickPoint(out pickedActor, x, y);
+                //
+                if (pickedActor != null)
+                {
+                    MouseEventArgs e = new MouseEventArgs(MouseButtons.Right, 1, x, y, 0);
+                    Controller_ActorsPicked?.Invoke(e, ModifierKeys, new string[] { GetActorName(pickedActor) });
+                }
             }
         }
 

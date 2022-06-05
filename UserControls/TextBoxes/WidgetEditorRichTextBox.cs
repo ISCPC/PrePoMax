@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace UserControls
 {
@@ -60,11 +61,32 @@ namespace UserControls
 
         // Variables                                                                                                                
         private bool _beep;
-        private System.Drawing.Size _minSize;
-        private System.Drawing.Size _maxSize;
+        private Size _minSize;
+        private Size _maxSize;
 
 
         // Properties                                                                                                               
+        public bool Beep { get { return _beep; } set { _beep = value; } }
+        public Size MinSize
+        {
+            get { return _minSize; }
+            set
+            {
+                _minSize = value;
+                if (Width < _minSize.Width) Size = new Size(_minSize.Width, Height);
+                if (Height < _minSize.Height) Size = new Size(Width, _minSize.Height);
+            }
+        }
+        public Size MaxSize
+        {
+            get { return _maxSize; }
+            set
+            {
+                _maxSize = value;
+                if (Width > _maxSize.Width) Size = new Size(_maxSize.Width, Height);
+                if (Height > _maxSize.Height) Size = new Size(Width, _maxSize.Height);
+            }
+        }
         public new string Text
         {
             get { return base.Text; }
@@ -72,27 +94,6 @@ namespace UserControls
             {
                 base.Text = value;
                 SetLineFormat(5, 23);
-            }
-        }
-        public bool Beep { get { return _beep; } set { _beep = value; } }
-        public System.Drawing.Size MinSize
-        {
-            get { return _minSize; }
-            set
-            {
-                _minSize = value;
-                if (Width < _minSize.Width) Size = new System.Drawing.Size(_minSize.Width, Height);
-                if (Height < _minSize.Height) Size = new System.Drawing.Size(Width, _minSize.Height);
-            }
-        }
-        public System.Drawing.Size MaxSize
-        {
-            get { return _maxSize; }
-            set
-            {
-                _maxSize = value;
-                if (Width > _maxSize.Width) Size = new System.Drawing.Size(_maxSize.Width, Height);
-                if (Height > _maxSize.Height) Size = new System.Drawing.Size(Width, _maxSize.Height);
             }
         }
 
@@ -136,6 +137,12 @@ namespace UserControls
         //
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            if (e.Control && e.KeyCode == Keys.V)
+            {
+                Paste(DataFormats.GetFormat("Text"));
+                e.Handled = true;
+            }
+            //
             if (!_beep)
             {
                 if (GetLineFromCharIndex(SelectionStart) == 0 && (e.KeyData == Keys.Up || e.KeyData == Keys.PageUp))
@@ -151,10 +158,17 @@ namespace UserControls
             //
             base.OnKeyDown(e);
         }
+        protected override void OnVScroll(EventArgs e)
+        {
+            // Prevents autoscroll
+            PostMessage(Handle, WM_VSCROLL, (IntPtr)SB_TOP, IntPtr.Zero);
+            //
+            base.OnVScroll(e);
+        }
         protected override void OnTextChanged(EventArgs e)
         {
-            System.Drawing.Size size = GetPreferredSize(System.Drawing.Size.Empty);
-            System.Drawing.Size newSize = new System.Drawing.Size((int)(size.Width * 1.0), (int)(size.Height * 1.15));
+            Size size = GetPreferredSize(Size.Empty);
+            Size newSize = new Size((int)(size.Width * 1.0), (int)(size.Height * 1.15));
             //
             if (newSize.Width < _minSize.Width) newSize.Width = _minSize.Width;
             if (newSize.Height < _minSize.Height) newSize.Height = _minSize.Height;
@@ -165,11 +179,6 @@ namespace UserControls
             //
             base.OnTextChanged(e);
         }
-        protected override void OnVScroll(EventArgs e)
-        {
-            PostMessage(Handle, WM_VSCROLL, (IntPtr)SB_TOP, IntPtr.Zero);
-            //
-            base.OnVScroll(e);
-        }
+        
     }
 }

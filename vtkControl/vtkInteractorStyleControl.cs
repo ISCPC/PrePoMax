@@ -139,7 +139,7 @@ namespace vtkControl
         public event Action<int, int, bool, int, int> PointPickedOnLeftUpEvt;
         public event Action ClearCurrentMouseSelection;
         public event Action<int, int> LeftButtonPressEvent;
-        public event Action<int, int> RightButtonPressEvent;
+        public event Action<int, int, string> RightButtonPressEvent;
 
 
         // Constructors                                                                                                             
@@ -188,7 +188,6 @@ namespace vtkControl
                 //
                 vtkRenderer renderer = this.GetCurrentRenderer();
                 if (renderer == null) return;
-                // Widgets - left pressed
                 foreach (vtkMaxBorderWidget widget in _reversedWidgets)
                 {
                     if (widget.LeftButtonPress(x, y)) return;
@@ -352,9 +351,13 @@ namespace vtkControl
             // Widgets - right pressed
             foreach (vtkMaxBorderWidget widget in _widgets)
             {
-                if (widget.RightButtonPress(x, y)) return;
+                if (widget.RightButtonPress(x, y))
+                {
+                    if (widget is vtkMaxTextWithArrowWidget twaw) RightButtonPressEvent?.Invoke(x, y, twaw.GetName());
+                    return;
+                }
             }
-            RightButtonPressEvent?.Invoke(clickPos[0], clickPos[1]);
+            RightButtonPressEvent?.Invoke(clickPos[0], clickPos[1], null);
         }
         void vtkInteractorStyleControl_RightButtonReleaseEvt(vtkObject sender, vtkObjectEventArgs e)
         {

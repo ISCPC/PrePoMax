@@ -35,7 +35,7 @@
             // 
             // pBorder
             // 
-            this.pBorder.BackColor = System.Drawing.SystemColors.Window;
+            this.pBorder.BackColor = System.Drawing.SystemColors.Highlight;
             this.pBorder.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pBorder.Controls.Add(this.wertbData);
             this.pBorder.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -50,10 +50,11 @@
             this.wertbData.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.wertbData.DetectUrls = false;
             this.wertbData.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.wertbData.Location = new System.Drawing.Point(2, 3);
+            this.wertbData.Location = new System.Drawing.Point(2, 2);
+            this.wertbData.MaxSize = new System.Drawing.Size(0, 0);
+            this.wertbData.MinSize = new System.Drawing.Size(0, 0);
             this.wertbData.Name = "wertbData";
             this.wertbData.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
-            this.wertbData.ShortcutsEnabled = false;
             this.wertbData.Size = new System.Drawing.Size(124, 43);
             this.wertbData.TabIndex = 6;
             this.wertbData.Text = "Edit widgets";

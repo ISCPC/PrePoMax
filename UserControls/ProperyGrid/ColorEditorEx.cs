@@ -169,7 +169,7 @@ namespace UserControls
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
-		public ColorEditorEx() {}
+		public ColorEditorEx() { }
 
 		#endregion
 

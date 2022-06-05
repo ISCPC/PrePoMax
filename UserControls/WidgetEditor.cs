@@ -14,12 +14,21 @@ namespace UserControls
     {
         // Variables                                                                                                                
         private int _pad = 6;
-        private Rectangle _parentRectangle;
+        private Rectangle _parentArea;
         private Point _initialLocation;
 
 
         // Properties                                                                                                               
-        public override string Text { get { return wertbData.Text; } set { wertbData.Text = value; } }
+        public Size MinSize { get { return wertbData.MinSize; } set { wertbData.MinSize = value; } }
+        public Rectangle ParentArea
+        {
+            get { return _parentArea; }
+            set
+            {
+                _parentArea = value;
+                wertbData.MaxSize = new Size(_parentArea.Size.Width - _pad, _parentArea.Size.Height - _pad);
+            }
+        }
         public new Point Location
         {
             get { return Location; }
@@ -29,14 +38,13 @@ namespace UserControls
                 _initialLocation = value;
             }
         }
-        public Size MinSize { get { return wertbData.MinSize; } set { wertbData.MinSize = value; } }
-        public Rectangle ParentRectangle
+        public override string Text
         {
-            get { return _parentRectangle; }
+            get { return wertbData.Text; }
             set
             {
-                _parentRectangle = value;
-                wertbData.MaxSize = new Size(_parentRectangle.Size.Width - _pad, _parentRectangle.Size.Height - _pad);
+                wertbData.Text = value;
+                wertbData_SizeChanged(null, null);
             }
         }
 
@@ -47,8 +55,8 @@ namespace UserControls
             Size = new Size(wertbData.Width + _pad, wertbData.Height + _pad);
             Point location = _initialLocation;
             //
-            if (_initialLocation.X + Width > _parentRectangle.Right) location.X = _parentRectangle.Right - Width;
-            if (_initialLocation.Y + Height > _parentRectangle.Bottom) location.Y = _parentRectangle.Bottom - Height;
+            if (_initialLocation.X + Width > _parentArea.Right) location.X = _parentArea.Right - Width;
+            if (_initialLocation.Y + Height > _parentArea.Bottom) location.Y = _parentArea.Bottom - Height;
             //
             base.Location = location;
         }
@@ -60,6 +68,18 @@ namespace UserControls
             InitializeComponent();
         }
 
-       
+        // Methods                                                                                                                  
+        public bool IsOrContainsControl(Control control)
+        {
+            if (this == control) return true;
+            else if (pBorder == control) return true;
+            else if (wertbData == control) return true;
+            else return false;
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

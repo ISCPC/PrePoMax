@@ -109,7 +109,7 @@ namespace PrePoMax.Forms
                 }
             }
             catch
-            {}
+            { }
             finally
             {
                 _pause = false;

@@ -314,7 +314,7 @@ namespace PrePoMax.Forms
                     throw new CaeException("Pre-tension magnitude must not be equal to 0.");
             }
             // Thermal
-            else if (FELoad is CFlux cf) {}
+            else if (FELoad is CFlux cf) { }
             else if (FELoad is DFlux df) { }
             else if (FELoad is BodyFlux bf) { }
             else if (FELoad is FilmHeatTransfer fht) { }

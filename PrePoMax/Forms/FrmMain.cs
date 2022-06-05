@@ -206,8 +206,8 @@ namespace PrePoMax
             try
             {
                 // Edit widget text box
-                panelControl.Controls.Remove(weWidgetText);
-                this.Controls.Add(weWidgetText);
+                panelControl.Controls.Remove(weWidgetTextEditor);
+                this.Controls.Add(weWidgetTextEditor);
                 // Vtk
                 _vtk = new vtkControl.vtkControl();
                 panelControl.Parent.Controls.Add(_vtk);
@@ -283,8 +283,8 @@ namespace PrePoMax
                 _vtk.Form_ShowColorBarSettings = ShowColorBarSettings;
                 _vtk.Form_ShowLegendSettings = ShowLegendSettings;
                 _vtk.Form_ShowStatusBlockSettings = ShowStatusBlockSettings;
-                _vtk.Form_StartEditArrowWidget = StartEditArrowWidget;
                 _vtk.Form_EndEditArrowWidget = EndEditArrowWidget;
+                _vtk.Form_WidgetPicked = WidgetPicked;
                 // Forms
                 _formLocation = new Point(100, 100);
                 _allForms = new List<Form>();
@@ -715,8 +715,12 @@ namespace PrePoMax
                     //else if (key == Keys.S) tsmiSave_Click(null, null);
                     //else if (key == Keys.X) tsmiExit_Click(null, null);
                 }
+                // Model tree
                 else if (_modelTree.ActiveControl == null || !_modelTree.ActiveControl.Focused)
-                    _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
+                {
+                    // Check for widget editor
+                    if (!weWidgetTextEditor.Visible) _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
+                }
             }
         }
         // Timer
@@ -2091,7 +2095,7 @@ namespace PrePoMax
         {
             try
             {
-                SetStateWorking(Globals.ExplodeParts);
+                SetStateWorking(Globals.ExplodePartsText);
                 _controller.TurnExplodedViewOnOff(animate);
             }
             catch (Exception ex)
@@ -2100,7 +2104,7 @@ namespace PrePoMax
             }
             finally
             {
-                SetStateReady(Globals.ExplodeParts);
+                SetStateReady(Globals.ExplodePartsText);
             }
         }
         
@@ -5331,6 +5335,11 @@ namespace PrePoMax
             _frmSettings.SetSettingsToShow(Globals.PreSettingsName);
             tsmiSettings_Click(null, null);
         }
+        private void ShowWidgetSettings()
+        {
+            _frmSettings.SetSettingsToShow(Globals.WidgetsSettingsName);
+            tsmiSettings_Click(null, null);
+        }
         private void ShowLegendSettings()
         {
             _frmSettings.SetSettingsToShow(Globals.LegendSettingsName);
@@ -5348,43 +5357,91 @@ namespace PrePoMax
             string text = widget.GetWidgetText();
             rectangle.Inflate(2, 2);
             //
-            Point vtkLocation = this.PointToClient(_vtk.Parent.PointToScreen(_vtk.Location));
+            Point vtkLocation = this.PointToClient(_vtk.PointToScreen(_vtk.Location));
             Point location = new Point(vtkLocation.X + rectangle.X, vtkLocation.Y + (_vtk.Height - rectangle.Y - rectangle.Height));
             Rectangle vtkArea = new Rectangle(vtkLocation, _vtk.Size);
             //
-            weWidgetText.Location = location;
-            weWidgetText.Size = rectangle.Size;
-            weWidgetText.MinSize = rectangle.Size;
-            weWidgetText.ParentRectangle = vtkArea;
-            weWidgetText.Text = text;
-            weWidgetText.BringToFront();
-            weWidgetText.Visible = true;
-            weWidgetText.Tag = widget;
+            weWidgetTextEditor.Location = location;
+            weWidgetTextEditor.Size = rectangle.Size;
+            weWidgetTextEditor.MinSize = rectangle.Size;
+            weWidgetTextEditor.ParentArea = vtkArea;
+            weWidgetTextEditor.Text = text;
+            weWidgetTextEditor.BringToFront();
+            weWidgetTextEditor.Visible = true;
+            weWidgetTextEditor.Tag = widget;
             //
             _vtk.DisableInteractor = true;
         }
         private void EndEditArrowWidget()
         {
-            if (weWidgetText.Visible)
+            if (weWidgetTextEditor.Visible)
             {
-                WidgetBase widget = (WidgetBase)weWidgetText.Tag;
+                WidgetBase widget = (WidgetBase)weWidgetTextEditor.Tag;
                 string nonOverridenText = widget.GetNotOverridenWidgetText();
                 //
                 nonOverridenText = nonOverridenText.Replace("\r\n", "\n");
-                string newText = weWidgetText.Text.Replace("\r\n", "\n");
+                string newText = weWidgetTextEditor.Text.Replace("\r\n", "\n");
                 //
                 if (newText.Length > 0 && newText != nonOverridenText)
-                    widget.OverridenText = weWidgetText.Text;
+                    widget.OverridenText = weWidgetTextEditor.Text;
                 else
                     widget.OverridenText = null;
                 //
-                weWidgetText.Visible = false;
+                weWidgetTextEditor.Visible = false;
+                //
                 _vtk.DisableInteractor = false;
                 //
                 _controller.DrawWidgets();  // redraw in both cases
             }
         }
-        //
+        public override void LeftMousePressedOnForm(Control sender)
+        {
+            if (weWidgetTextEditor.Visible && !weWidgetTextEditor.IsOrContainsControl(sender))
+                EndEditArrowWidget();
+        }
+        public void WidgetPicked(MouseEventArgs e, Keys modifierKeys, string widgetName, Rectangle widgetRectangle)
+        {
+            if (e.Button == MouseButtons.Left && e.Clicks == 2)
+            {
+                StartEditArrowWidget(widgetName, widgetRectangle);
+            }
+            else if (e.Button == MouseButtons.Right)
+            {
+                tsmiDeleteWidget.Tag = new object[] { widgetName, widgetRectangle };
+                cmsWidget.Show(_vtk, new Point(e.X, _vtk.Height-  e.Y));
+            }
+        }
+        private void tsmiEditWidget_Click(object sender, EventArgs e)
+        {
+            object[] tag = (object[])tsmiDeleteWidget.Tag;
+            if (tag[0] is string widgetName && tag[1] is Rectangle widgetRectangle)
+            {
+                StartEditArrowWidget(widgetName, widgetRectangle);
+            }
+        }
+        private void tsmiResetWidget_Click(object sender, EventArgs e)
+        {
+            object[] tag = (object[])tsmiDeleteWidget.Tag;
+            if (tag[0] is string widgetName)
+            {
+                WidgetBase widget = (WidgetBase)weWidgetTextEditor.Tag;
+                widget.OverridenText = null;
+                _controller.DrawWidgets();
+            }
+        }
+        private void tsmiWidgetSettings_Click(object sender, EventArgs e)
+        {
+            ShowWidgetSettings();
+        }
+        private void tsmiDeleteWidget_Click(object sender, EventArgs e)
+        {
+            object[] tag = (object[])tsmiDeleteWidget.Tag;
+            if (tag[0] is string widgetName)
+            {
+                _controller.RemoveCurrentViewArrowWidget(widgetName);
+            }
+        }
+        // Settings
         private void UpdateSettings(Dictionary<string, ISettings> items)
         {
             _controller.Settings = new SettingsContainer(items);
@@ -6565,10 +6622,11 @@ namespace PrePoMax
                 if (working) tspbProgress.Style = ProgressBarStyle.Marquee;
                 else tspbProgress.Style = ProgressBarStyle.Blocks;
                 // Rendering
-                if (text == Globals.ExplodeParts) _vtk.RenderingOn = true;
+                if (text == Globals.ExplodePartsText) _vtk.RenderingOn = true;
                 else _vtk.RenderingOn = !working;
                 //
                 _vtk.Enabled = !working;
+                //
                 _modelTree.DisableMouse = working;
                 menuStripMain.DisableMouseButtons = working;
                 tsFile.DisableMouseButtons = working;

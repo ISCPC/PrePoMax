@@ -36,7 +36,7 @@ namespace FileInOut.Output.Calculix
             string add = "";
             if (_flux.AddFlux) add = ", Add";
             //
-            sb.AppendFormat("*Cflux{}{}{}", amplitude, add, Environment.NewLine);
+            sb.AppendFormat("*Cflux{0}{1}{2}", amplitude, add, Environment.NewLine);
             //
             return sb.ToString();
         }
