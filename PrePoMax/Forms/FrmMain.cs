@@ -5353,12 +5353,16 @@ namespace PrePoMax
         // Widgets
         private void StartEditArrowWidget(string name, Rectangle rectangle)
         {
+            if (name == Globals.DistanceWidgetName || name == Globals.AngleWidgetName || name == Globals.CircleWidgetName)
+                return;
+            //
             WidgetBase widget = _controller.GetWidget(name);
             string text = widget.GetWidgetText();
             rectangle.Inflate(2, 2);
             //
             Point vtkLocation = this.PointToClient(_vtk.PointToScreen(_vtk.Location));
-            Point location = new Point(vtkLocation.X + rectangle.X, vtkLocation.Y + (_vtk.Height - rectangle.Y - rectangle.Height));
+            Point location = new Point(vtkLocation.X + rectangle.X,
+                                       vtkLocation.Y + (_vtk.Height - rectangle.Y - rectangle.Height));
             Rectangle vtkArea = new Rectangle(vtkLocation, _vtk.Size);
             //
             weWidgetTextEditor.Location = location;
@@ -5413,32 +5417,63 @@ namespace PrePoMax
         }
         private void tsmiEditWidget_Click(object sender, EventArgs e)
         {
-            object[] tag = (object[])tsmiDeleteWidget.Tag;
-            if (tag[0] is string widgetName && tag[1] is Rectangle widgetRectangle)
+            try
             {
-                StartEditArrowWidget(widgetName, widgetRectangle);
+                object[] tag = (object[])tsmiDeleteWidget.Tag;
+                if (tag[0] is string widgetName && tag[1] is Rectangle widgetRectangle)
+                {
+                    StartEditArrowWidget(widgetName, widgetRectangle);
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiResetWidget_Click(object sender, EventArgs e)
         {
-            object[] tag = (object[])tsmiDeleteWidget.Tag;
-            if (tag[0] is string widgetName)
+            try
             {
-                WidgetBase widget = (WidgetBase)weWidgetTextEditor.Tag;
-                widget.OverridenText = null;
-                _controller.DrawWidgets();
+                object[] tag = (object[])tsmiDeleteWidget.Tag;
+                if (tag[0] is string widgetName)
+                {
+                    WidgetBase widget = _controller.GetWidget(widgetName);
+                    widget.OverridenText = null;
+                    _controller.DrawWidgets();
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiWidgetSettings_Click(object sender, EventArgs e)
         {
-            ShowWidgetSettings();
+            try
+            {
+                ShowWidgetSettings();
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
         }
         private void tsmiDeleteWidget_Click(object sender, EventArgs e)
         {
-            object[] tag = (object[])tsmiDeleteWidget.Tag;
-            if (tag[0] is string widgetName)
+            try
             {
-                _controller.RemoveCurrentViewArrowWidget(widgetName);
+                object[] tag = (object[])tsmiDeleteWidget.Tag;
+                if (tag[0] is string widgetName)
+                {
+                    if (MessageBoxes.ShowWarningQuestion("OK to delete selected widget?") == DialogResult.OK)
+                    {
+                        _controller.RemoveCurrentViewArrowWidget(widgetName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
             }
         }
         // Settings
@@ -7311,9 +7346,10 @@ namespace PrePoMax
             InvokeIfRequired(_vtk.SaveAnimationAsImages, fileName, firstLastFrame, step, scalarRangeFromAllFrames, swing);
         }
         // Widgets
-        public void AddArrowWidget(string name, string text, double[] anchorPoint, bool drawBackground, bool drawBorder)
+        public void AddArrowWidget(string name, string text, double[] anchorPoint, bool drawBackground, bool drawBorder,
+                                   bool visible)
         {
-            InvokeIfRequired(_vtk.AddArrowWidget, name, text, anchorPoint, drawBackground, drawBorder);
+            InvokeIfRequired(_vtk.AddArrowWidget, name, text, anchorPoint, drawBackground, drawBorder, visible);
         }
         public void RemoveAllArrowWidgets()
         {

@@ -7887,13 +7887,23 @@ namespace CaeMesh
                 node.Z = scaleCenter[2] + (node.Z - scaleCenter[2]) * scaleFactors[2];
                 _nodes[nodeId] = node;
             }
+            // Update edge lengths and face areas
+            BasePart part;
+            foreach (var partName in scaledPartNames)
+            {
+                part = _parts[partName];
+                // Recompute the areas and lengths
+                ComputeEdgeLengths(part);
+                ComputeFaceAreas(part);
+            }
             // Update node sets
             foreach (var entry in _nodeSets) UpdateNodeSetCenterOfGravity(entry.Value);
             // Update reference points
             foreach (var entry in _referencePoints) UpdateReferencePoint(entry.Value);
             // Update bounding box
             ComputeBoundingBox();
-            //
+            
+            // Update visibility
             if (copy) return scaledPartNames;
             else return null;
         }

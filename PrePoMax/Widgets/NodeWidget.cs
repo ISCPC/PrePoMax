@@ -22,6 +22,16 @@ namespace PrePoMax
             : base(name, controller)
         {
             _nodeId = nodeId;
+            //
+            CaeMesh.FeMesh mesh = _controller.DisplayedMesh;
+            foreach (var entry in mesh.Parts)
+            {
+                if (entry.Value.NodeLabels.Contains(_nodeId))
+                {
+                    _partId = entry.Value.PartId;
+                    break;
+                }
+            }
         }
 
 

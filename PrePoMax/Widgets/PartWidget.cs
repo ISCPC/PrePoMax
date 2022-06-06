@@ -10,18 +10,16 @@ namespace PrePoMax
     public class PartWidget : WidgetBase
     {
         // Variables                                                                                                                
-        private string _partName;
 
 
         // Properties                                                                                                               
-        public string PartName { get { return _partName; } set { _partName = value; } }
 
 
         // Constructors                                                                                                             
         public PartWidget(string name, string partName, Controller controller)
             : base(name, controller)
         {
-            _partName = partName;
+            _partId = _controller.DisplayedMesh.Parts[partName].PartId;
         }
 
 
@@ -29,7 +27,7 @@ namespace PrePoMax
         public override void GetWidgetData(out string text, out double[] coor)
         {
             FeMesh mesh = _controller.DisplayedMesh;
-            BasePart part = mesh.Parts[_partName];
+            BasePart part = mesh.GetPartById(_partId);
             if (part == null) throw new NotSupportedException();
             //
             string numberFormat = _controller.Settings.Widgets.GetNumberFormat();

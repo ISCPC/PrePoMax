@@ -5966,7 +5966,7 @@ namespace vtkControl
 
         #region Widgets ############################################################################################################
         public void AddArrowWidget(string name, string text, double[] anchorPoint, bool drawBackground,
-                                   bool drawBorder)
+                                   bool drawBorder, bool visible)
         {
             vtkMaxTextWithArrowWidget arrowWidget;
             if (!_arrowWidgets.TryGetValue(name, out arrowWidget))
@@ -5979,20 +5979,21 @@ namespace vtkControl
                 arrowWidget.GetBackgroundProperty().SetColor(1, 1, 1);
                 arrowWidget.SetText(text);
                 arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
-                arrowWidget.VisibilityOn();
-                //
+                // Event
                 arrowWidget.MouseDoubleClick += widget_DoubleClicked;
-                //
+                // Add
                 _arrowWidgets.Add(name, arrowWidget);
-                //
+                // Arange
                 ArrangeVisibleArrowWidgets();
             }
             else
             {
                 arrowWidget.SetText(text);
                 arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
-                arrowWidget.VisibilityOn();
             }
+            //
+            if (visible) arrowWidget.VisibilityOn();
+            else arrowWidget.VisibilityOff();
             //
             if (drawBackground) arrowWidget.BackgroundVisibilityOn();
             else arrowWidget.BackgroundVisibilityOff();

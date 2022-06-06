@@ -61,8 +61,10 @@ namespace PrePoMax
         // Graphics
         public static int BeamNodeSize = 5;
         // Widgets
-        public static string DistanceWidgetName = "Distance_widget";
-        public static string AngleWidgetName = "Angle_widget";
-        public static string CircleWidgetName = "Circle_widget";
+        public static string DistanceWidgetName = "Distance_Widget";
+        public static string AngleWidgetName = "Angle_Widget";
+        public static string CircleWidgetName = "Circle_Widget";
+        public static string MinWidgetName = "Min_Widget";
+        public static string MaxWidgetName = "Max_Widget";
     }
 }

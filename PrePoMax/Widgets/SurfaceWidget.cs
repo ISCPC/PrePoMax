@@ -22,6 +22,7 @@ namespace PrePoMax
             : base(name, controller)
         {
             _geometryId = geometryId;
+            _partId = FeMesh.GetPartIdFromGeometryId(geometryId);
         }
 
 

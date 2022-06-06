@@ -1838,6 +1838,8 @@ namespace PrePoMax
             // Suppress symbols
             string drawSymbolsForStep = GetDrawSymbolsForStep();
             DrawSymbolsForStep("None", false);
+            // Suppress widgets
+            SuppressCurrentWidgets();
             // Deactivate exploded view
             if (IsExplodedViewActive())
             {
@@ -1861,12 +1863,12 @@ namespace PrePoMax
                     parameters.ScaleFactor = 0.5;
                     PreviewExplodedView(parameters, animate);
                     ApplyExplodedView(parameters);  // Highlight
-                    //
-                    //_form.SetExplodedViewStatus(true);
                 }
             }
             // Resume symbols
             DrawSymbolsForStep(drawSymbolsForStep, false);  // Clears highlight
+            // Resume widgets
+            ResumeCurrentWidgets();
             // Resume section view
             if (sectionViewPlane != null) ApplySectionView(sectionViewPlane.Point.Coor, sectionViewPlane.Normal.Coor);
             //
@@ -2287,6 +2289,8 @@ namespace PrePoMax
             _form.HideActors(partNamesToHide.ToArray(), false);
             // Update
             AnnotateWithColorLegend();
+            // Widgets
+            DrawWidgets();
         }
         public void ShowGeometryParts(string[] partNames)
         {
@@ -2327,6 +2331,8 @@ namespace PrePoMax
             _form.ShowActors(partNamesToShow.ToArray(), false);
             // Update
             AnnotateWithColorLegend();
+            // Widgets
+            DrawWidgets();
         }
         public void SetTransparencyForGeometryParts(string[] partNames, byte alpha)
         {
@@ -3896,6 +3902,8 @@ namespace PrePoMax
             AnnotateWithColorLegend();
             //
             FeModelUpdate(UpdateType.RedrawSymbols);
+            // Widgets
+            DrawWidgets();
         }
         public void ShowModelParts(string[] partNames)
         {
@@ -3913,6 +3921,8 @@ namespace PrePoMax
             AnnotateWithColorLegend();
             //
             FeModelUpdate(UpdateType.RedrawSymbols);
+            // Widgets
+            DrawWidgets();
         }
         public void SetTransparencyForModelParts(string[] partNames, byte alpha)
         {
@@ -4785,43 +4795,51 @@ namespace PrePoMax
             foreach (var entry in _model.Mesh.Surfaces)
             {
                 surface = entry.Value;
-                if (surface.CreationData == null) continue;
                 //
-                if (surface.CreationData.IsGeometryBased())
+                try
                 {
-                    // Only mouse and geometry ids
-                    geometryIds.Clear();
-                    foreach (var node in surface.CreationData.Nodes)
+                    if (surface.CreationData == null) continue;
+                    //
+                    if (surface.CreationData.IsGeometryBased())
                     {
-                        if (node is SelectionNodeMouse snm)
+                        // Only mouse and geometry ids
+                        geometryIds.Clear();
+                        foreach (var node in surface.CreationData.Nodes)
                         {
-                            _selection.SelectItem = surface.CreationData.SelectItem;
-                            geometryIds.AddRange(GetIdsFromSelectionNodeMouse(snm, true));
+                            if (node is SelectionNodeMouse snm)
+                            {
+                                _selection.SelectItem = surface.CreationData.SelectItem;
+                                geometryIds.AddRange(GetIdsFromSelectionNodeMouse(snm, true));
+                            }
+                            else if (node is SelectionNodeIds sni) geometryIds.AddRange(sni.ItemIds);
                         }
-                        else if (node is SelectionNodeIds sni) geometryIds.AddRange(sni.ItemIds);
+                        string[] surfacePartNames = _model.Mesh.GetPartNamesFromGeometryIds(geometryIds.ToArray());
+                        if (partNames.Intersect(surfacePartNames).Count() > 0)
+                        {
+                            selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, geometryIds.ToArray());
+                            selectionNodeIds.GeometryIds = true;
+                        }
+                        else continue;
                     }
-                    string[] surfacePartNames = _model.Mesh.GetPartNamesFromGeometryIds(geometryIds.ToArray());
-                    if (partNames.Intersect(surfacePartNames).Count() > 0)
+                    else
                     {
-                        selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, geometryIds.ToArray());
-                        selectionNodeIds.GeometryIds = true;
+                        nodeIds.Clear();
+                        for (int i = 0; i < parts.Length; i++) nodeIds.UnionWith(parts[i].Labels);
+                        if (nodeIds.Intersect(_model.Mesh.NodeSets[surface.NodeSetName].Labels).Count() > 0)
+                        {
+                            selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, surface.FaceIds);
+                            if (surface.CreationData == null) surface.CreationData = new Selection();
+                        }
+                        else continue;
                     }
-                    else continue;
+                    //
+                    surface.CreationData.Clear();
+                    surface.CreationData.Add(selectionNodeIds);
                 }
-                else
+                catch
                 {
-                    nodeIds.Clear();
-                    for (int i = 0; i < parts.Length; i++) nodeIds.UnionWith(parts[i].Labels);
-                    if (nodeIds.Intersect(_model.Mesh.NodeSets[surface.NodeSetName].Labels).Count() > 0)
-                    {
-                        selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, surface.FaceIds);
-                        if (surface.CreationData == null) surface.CreationData = new Selection();
-                    }
-                    else continue;
+                    surface.Valid = false;
                 }
-                //
-                surface.CreationData.Clear();
-                surface.CreationData.Add(selectionNodeIds);
             }
         }
         
@@ -7171,6 +7189,33 @@ namespace PrePoMax
             //
             return text;
         }
+        public void AddWidget(WidgetBase widget)
+        {
+            _widgets[_currentView].Add(widget.Name, widget);
+            //
+            DrawWidgets();
+        }
+        public void RemoveCurrentViewArrowWidget(string widgetName)
+        {
+            _form.RemoveArrowWidgets(new string[] { widgetName });
+            _widgets[_currentView].Remove(widgetName);
+        }
+        public void RemoveCurrentViewArrowWidgets()
+        {
+            _form.RemoveArrowWidgets(_widgets[_currentView].Keys.ToArray());
+            _widgets[_currentView].Clear();
+        }
+        public void RemoveAllArrowWidgets()
+        {
+            _form.RemoveArrowWidgets(_widgets[ViewGeometryModelResults.Geometry].Keys.ToArray());
+            _widgets[ViewGeometryModelResults.Geometry].Clear();
+            _form.RemoveArrowWidgets(_widgets[ViewGeometryModelResults.Model].Keys.ToArray());
+            _widgets[ViewGeometryModelResults.Model].Clear();
+            //
+            _form.RemoveArrowWidgets(_widgets[ViewGeometryModelResults.Results].Keys.ToArray());
+            _widgets[ViewGeometryModelResults.Results].Clear();
+        }
+        //
         public string GetLengthUnit()
         {
             string unit;
@@ -7194,32 +7239,6 @@ namespace PrePoMax
             else throw new NotSupportedException();
             //
             return unit;
-        }
-        public void AddWidget(WidgetBase widget)
-        {
-            _widgets[_currentView].Add(widget.Name, widget);
-            //
-            DrawWidgets();
-            //DrawWidgets();
-        }
-        public void RemoveCurrentViewArrowWidget(string widgetName)
-        {
-            _form.RemoveArrowWidgets(new string[] { widgetName });
-            _widgets[_currentView].Remove(widgetName);
-        }
-        public void RemoveCurrentViewArrowWidgets()
-        {
-            _form.RemoveArrowWidgets(_widgets[_currentView].Keys.ToArray());
-            _widgets[_currentView].Clear();
-        }
-        public void RemoveAllArrowWidgets()
-        {
-            _form.RemoveArrowWidgets(_widgets[ViewGeometryModelResults.Geometry].Keys.ToArray());
-            _widgets[ViewGeometryModelResults.Geometry].Clear();
-            _form.RemoveArrowWidgets(_widgets[ViewGeometryModelResults.Model].Keys.ToArray());
-            _widgets[ViewGeometryModelResults.Model].Clear();
-            _form.RemoveArrowWidgets(_widgets[ViewGeometryModelResults.Results].Keys.ToArray());
-            _widgets[ViewGeometryModelResults.Results].Clear();
         }
 
         #endregion   ###############################################################################################################
@@ -7586,6 +7605,8 @@ namespace PrePoMax
             _form.HideActors(partNames, true);
             //
             AnnotateWithColorLegend();
+            // Widgets
+            DrawWidgets();
         }
         public void ShowResultParts(string[] partNames)
         {
@@ -7597,6 +7618,8 @@ namespace PrePoMax
             _form.ShowActors(partNames, true);
             //
             AnnotateWithColorLegend();
+            // Widgets
+            DrawWidgets();
         }
         public void SetTransparencyForResultParts(string[] partNames, byte alpha)
         {
@@ -9276,10 +9299,11 @@ namespace PrePoMax
         }
         //
         #region Draw  ##############################################################################################################
-        // Update model stat
+        // Update model
         public void FeModelUpdate(UpdateType updateType)
         {
-            if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first check the validity to correctly draw the symbols
+            // First check the validity to correctly draw the symbols
+            if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity();
             if (updateType.HasFlag(UpdateType.DrawModel)) DrawModel(updateType.HasFlag(UpdateType.ResetCamera));
             if (updateType.HasFlag(UpdateType.RedrawSymbols)) RedrawSymbols();
         }
@@ -9310,8 +9334,8 @@ namespace PrePoMax
                             ApplyModelUnitSystem();
                             //
                             DrawGeomParts();
-                            DrawWidgets();
                             AnnotateWithColorLegend();
+                            DrawWidgets();
                             //
                             Octree.Plane plane = _sectionViewPlanes[_currentView];
                             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -9423,9 +9447,9 @@ namespace PrePoMax
                             try
                             {
                                 DrawAllModelParts();
+                                AnnotateWithColorLegend();
                                 DrawSymbols();
                                 DrawWidgets();
-                                AnnotateWithColorLegend();
                                 //
                                 Octree.Plane plane = _sectionViewPlanes[_currentView];
                                 if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -9797,6 +9821,20 @@ namespace PrePoMax
             //
         }
         // Widgets
+        public void SuppressCurrentWidgets()
+        {
+            // Supress widgets
+            foreach (var entry in _widgets[_currentView]) entry.Value.Valid = false;
+            //
+            DrawWidgets();
+        }
+        public void ResumeCurrentWidgets()
+        {
+            // Resume widgets
+            foreach (var entry in _widgets[_currentView]) entry.Value.Valid = true;
+            //
+            DrawWidgets();
+        }
         public void DrawWidgets()
         {
             string text;
@@ -9806,39 +9844,29 @@ namespace PrePoMax
             bool drawBackground = Settings.Widgets.BackgroundType == WidgetBackgroundType.White;
             bool drawBorder = Settings.Widgets.DrawBorder;
             //
-            List<string> unvalidWidgetNames = new List<string>(); 
+            WidgetBase widget;
+            List<string> invalidWidgetNames = new List<string>(); 
             foreach (var entry in _widgets[_currentView])
             {
                 try // some widgets might become unvalid
                 {
-                    entry.Value.GetWidgetData(out text, out arrowCoor);
-                    //if (entry.Value is NodeWidget nw) nw.GetWidgetData(out text, out arrowCoor);
-                    //else if (entry.Value is ElementWidget elw) elw.GetWidgetData(out text, out arrowCoor);
-                    //else if (entry.Value is EdgeWidget edw)
-                    //    GetEdgeWidgetData(edw.GeometryId, numberFormat, out text, out arrowCoor);
-                    //else if (entry.Value is SurfaceWidget sw)
-                    //    GetSurfaceWidgetData(sw.GeometryId, numberFormat, out text, out arrowCoor);
-                    //else if (entry.Value is PartWidget pw)
-                    //    GetPartWidgetData(pw.PartName, numberFormat, out text, out arrowCoor);
-                    //else if (entry.Value is TextWidget tw)
-                    //{
-                    //    text = tw.Text;
-                    //    arrowCoor = tw.AnchorPoint;
-                    //}
-                    //else throw new NotSupportedException();
-                    //
-                    _form.AddArrowWidget(entry.Value.Name, text, arrowCoor, drawBackground, drawBorder);
+                    widget = entry.Value;
+                    // First get the widget data to determine if the widget is valid
+                    widget.GetWidgetData(out text, out arrowCoor);
+                    _form.AddArrowWidget(entry.Value.Name, text, arrowCoor, drawBackground,
+                                         drawBorder, widget.IsWidgetVisible() && widget.Valid);
+
                 }
                 catch
                 {
-                    unvalidWidgetNames.Add(entry.Key);
+                    invalidWidgetNames.Add(entry.Key);
                 }
             }
-            // Remove unvalid widgets
-            if (unvalidWidgetNames.Count > 0)
+            // Remove invalid widgets
+            if (invalidWidgetNames.Count > 0)
             {
-                foreach (var name in unvalidWidgetNames) _widgets[_currentView].Remove(name);
-                _form.RemoveArrowWidgets(unvalidWidgetNames.ToArray());
+                foreach (var name in invalidWidgetNames) _widgets[_currentView].Remove(name);
+                _form.RemoveArrowWidgets(invalidWidgetNames.ToArray());
             }
         }
         // Symbols
@@ -12960,6 +12988,13 @@ namespace PrePoMax
             //
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, unit,
                                  deformationVariable, scale, fieldType, stepNumber, incrementNumber);
+        }
+        private void SetMinMaxWidgets()
+        {
+            if (Settings.Post.ShowMinValueLocation)
+            {
+
+            }
         }
         private vtkControl.DataFieldType ConvertStepType(FieldData fieldData)
         {

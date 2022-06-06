@@ -21,6 +21,7 @@ namespace PrePoMax
             : base(name, controller)
         {
             _elementId = elementId;
+            _partId = _controller.DisplayedMesh.Elements[_elementId].PartId;
         }
 
 
