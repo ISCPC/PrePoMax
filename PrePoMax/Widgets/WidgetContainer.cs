@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CaeGlobals;
+using CaeMesh;
 
 namespace PrePoMax
 {
@@ -29,9 +30,18 @@ namespace PrePoMax
         {
             WidgetBase.Controller = controller;
             //
-            _geometryWidgets = widgetContainer._geometryWidgets;
-            _modelWidgets = widgetContainer._modelWidgets;
-            _resultsWidgets = widgetContainer._resultsWidgets;
+            if (widgetContainer == null)    // compatibility v1.3.1
+            {
+                _geometryWidgets = new Dictionary<string, WidgetBase>();
+                _modelWidgets = new Dictionary<string, WidgetBase>();
+                _resultsWidgets = new Dictionary<string, WidgetBase>();
+            }
+            else
+            {
+                _geometryWidgets = widgetContainer._geometryWidgets;
+                _modelWidgets = widgetContainer._modelWidgets;
+                _resultsWidgets = widgetContainer._resultsWidgets;
+            }
         }
 
 
@@ -70,14 +80,14 @@ namespace PrePoMax
         }
         public Dictionary<string, WidgetBase> GetCurrentWidgets()
         {
-            if (WidgetBase.Controller.CurrentView == ViewGeometryModelResults.Geometry)
-                return _geometryWidgets;
-            else if (WidgetBase.Controller.CurrentView == ViewGeometryModelResults.Model)
-                return _modelWidgets;
-            else if (WidgetBase.Controller.CurrentView == ViewGeometryModelResults.Results)
-                return _resultsWidgets;
-            else
-                throw new NotSupportedException();
+            return GetWidgets(WidgetBase.Controller.CurrentView);
+        }
+        public Dictionary<string, WidgetBase> GetWidgets(ViewGeometryModelResults view)
+        {
+            if (view == ViewGeometryModelResults.Geometry) return _geometryWidgets;
+            else if (view == ViewGeometryModelResults.Model) return _modelWidgets;
+            else if (view == ViewGeometryModelResults.Results) return _resultsWidgets;
+            else throw new NotSupportedException();
         }
         //
         public string GetWidgetText(string data)
@@ -124,15 +134,56 @@ namespace PrePoMax
             foreach (var entry in GetCurrentWidgets()) entry.Value.Valid = true;
         }
         //
-        public void RemoveCurrentViewArrowWidget(string widgetName)
+        public void RemoveCurrentArrowWidget(string widgetName)
         {
             GetCurrentWidgets().Remove(widgetName);
         }
-        public void RemoveCurrentViewArrowWidgets(string[] widgetNames)
+        public void RemoveCurrentArrowWidgets(string[] widgetNames)
         {
             foreach (var widgetName in widgetNames) GetCurrentWidgets().Remove(widgetName);
         }
-        public void RemoveCurrentViewArrowWidgets()
+        public void RemoveCurrentArrowWidgetsByParts(BasePart[] parts, ViewGeometryModelResults view)
+        {
+            FeMesh mesh;
+            if (view == ViewGeometryModelResults.Geometry) mesh = WidgetBase.Controller.Model.Geometry;
+            else if (view == ViewGeometryModelResults.Model) mesh = WidgetBase.Controller.Model.Mesh;
+            else if (view == ViewGeometryModelResults.Results) mesh = WidgetBase.Controller.Results.Mesh;
+            else throw new NotSupportedException();
+            //
+            Dictionary<string, WidgetBase> widgets;
+            HashSet<int> partIds = new HashSet<int>();
+            if (mesh != null)
+            {
+                foreach (var part in parts) partIds.Add(part.PartId);
+                //
+                widgets = GetWidgets(view);
+                List<WidgetBase> widgetsToRemove = new List<WidgetBase>();
+                foreach (var entry in widgets)
+                {
+                    if (partIds.Contains(entry.Value.PartId)) widgetsToRemove.Add(entry.Value);
+                }
+                // Remove
+                foreach (var widget in widgetsToRemove) widgets.Remove(widget.Name);
+            }
+        }
+        public void RemoveCurrentArrowWidgetsByParts(string[] partNames, ViewGeometryModelResults view)
+        {
+            FeMesh mesh;
+            if (view == ViewGeometryModelResults.Geometry) mesh = WidgetBase.Controller.Model.Geometry;
+            else if (view == ViewGeometryModelResults.Model) mesh = WidgetBase.Controller.Model.Mesh;
+            else if (view == ViewGeometryModelResults.Results) mesh = WidgetBase.Controller.Results.Mesh;
+            else throw new NotSupportedException();
+            //
+            BasePart part;
+            List<BasePart> parts = new List<BasePart>();
+            foreach (var name in partNames)
+            {
+                if (mesh.Parts.TryGetValue(name, out part)) parts.Add(part);
+            }
+            //
+            RemoveCurrentArrowWidgetsByParts(parts.ToArray(), view);
+        }
+        public void RemoveCurrentArrowWidgets()
         {
             GetCurrentWidgets().Clear();
         }

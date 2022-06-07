@@ -2373,10 +2373,13 @@ namespace PrePoMax
             List<string> orderedPartsToRemove = new List<string>(partNamesToRemove);
             orderedPartsToRemove.AddRange(compoundPartNamesToRemove);
             //
+            ViewGeometryModelResults view = ViewGeometryModelResults.Geometry;
+            // Remove widgets
+            _widgets.RemoveCurrentArrowWidgetsByParts(partNamesToRemove.ToArray(), view);
+            //
             string[] removedParts;
             _model.Geometry.RemoveParts(orderedPartsToRemove.ToArray(), out removedParts, false);
             //
-            ViewGeometryModelResults view = ViewGeometryModelResults.Geometry;
             foreach (var name in removedParts) _form.RemoveTreeNode<GeometryPart>(view, name, null);
             //
             DrawGeometry(false);
@@ -4055,6 +4058,9 @@ namespace PrePoMax
             //
             ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
             RemoveExplodedView(false);
+            // Remove widgets
+            _widgets.RemoveCurrentArrowWidgetsByParts(partNames, ViewGeometryModelResults.Model);
+            //
             _model.Mesh.MergeMeshParts(partNames, out newMeshPart, out mergedParts);
             ApplyExplodedView(parameters, null, false);
             //
@@ -4077,10 +4083,13 @@ namespace PrePoMax
             int[] removedPartIds = null;
             if (_model.Mesh != null)
             {
+                ViewGeometryModelResults view = ViewGeometryModelResults.Model;
+                // Remove widgets
+                _widgets.RemoveCurrentArrowWidgetsByParts(partNames, view);
+                //
                 string[] removedParts;
                 removedPartIds = _model.Mesh.RemoveParts(partNames, out removedParts, removeForRemeshing);
                 //
-                ViewGeometryModelResults view = ViewGeometryModelResults.Model;
                 foreach (var name in removedParts) _form.RemoveTreeNode<MeshPart>(view, name, null);
             }
             //
@@ -4448,6 +4457,8 @@ namespace PrePoMax
             RemoveExplodedView(false);
             _model.Mesh.CreatePartsFromElementSets(elementSetNames, out modifiedParts, out newParts);
             ApplyExplodedView(parameters, null, false);
+            // Remove widgets
+            _widgets.RemoveCurrentArrowWidgetsByParts(modifiedParts, ViewGeometryModelResults.Model);
             //
             foreach (var part in modifiedParts)
             {
@@ -7158,12 +7169,12 @@ namespace PrePoMax
         public void RemoveCurrentViewArrowWidget(string widgetName)
         {
             _form.RemoveArrowWidgets(new string[] { widgetName });
-            _widgets.RemoveCurrentViewArrowWidget(widgetName);
+            _widgets.RemoveCurrentArrowWidget(widgetName);
         }
         public void RemoveCurrentViewArrowWidgets()
         {
             _form.RemoveArrowWidgets(_widgets.GetCurrentWidgetNames());
-            _widgets.RemoveCurrentViewArrowWidgets();
+            _widgets.RemoveCurrentArrowWidgets();
         }
         public void RemoveAllArrowWidgets()
         {
@@ -7609,9 +7620,12 @@ namespace PrePoMax
         }
         public void RemoveResultParts(string[] partNames)
         {
+            ViewGeometryModelResults view = ViewGeometryModelResults.Results;
+            // Remove widgets
+            _widgets.RemoveCurrentArrowWidgetsByParts(partNames, view);
+            //
             string[] removedPartNames = _results.RemoveParts(partNames);
             //
-            ViewGeometryModelResults view = ViewGeometryModelResults.Results;
             foreach (var name in removedPartNames) _form.RemoveTreeNode<BasePart>(view, name, null);
             //
             DrawResults(false);
@@ -7623,20 +7637,23 @@ namespace PrePoMax
         }
         public void MergeResultParts(string[] partNames)
         {
-            ResultPart newResultPart;
             string[] mergedParts;
+            ResultPart newResultPart;
+            ViewGeometryModelResults view = ViewGeometryModelResults.Results;
             //
             ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
             RemoveExplodedView(false);
+            // Remove widgets
+            _widgets.RemoveCurrentArrowWidgetsByParts(partNames, view);
+            //
             _results.Mesh.MergeResultParts(partNames, out newResultPart, out mergedParts);
             ApplyExplodedView(parameters, null, false);
             //
             if (newResultPart != null && mergedParts != null)
             {
-                foreach (var partName in mergedParts)
-                    _form.RemoveTreeNode<ResultPart>(ViewGeometryModelResults.Results, partName, null);
+                foreach (var partName in mergedParts) _form.RemoveTreeNode<ResultPart>(view, partName, null);
                 //
-                _form.AddTreeNode(ViewGeometryModelResults.Results, newResultPart, null);
+                _form.AddTreeNode(view, newResultPart, null);
                 //
                 DrawResults(false);
             }
@@ -9819,7 +9836,7 @@ namespace PrePoMax
             // Remove invalid widgets
             if (invalidWidgetNames.Count > 0)
             {
-                _widgets.RemoveCurrentViewArrowWidgets(invalidWidgetNames.ToArray());
+                _widgets.RemoveCurrentArrowWidgets(invalidWidgetNames.ToArray());
                 _form.RemoveArrowWidgets(invalidWidgetNames.ToArray());
             }
         }
