@@ -5356,7 +5356,7 @@ namespace PrePoMax
             if (name == Globals.DistanceWidgetName || name == Globals.AngleWidgetName || name == Globals.CircleWidgetName)
                 return;
             //
-            WidgetBase widget = _controller.GetWidget(name);
+            WidgetBase widget = _controller.GetCurrentWidget(name);
             string text = widget.GetWidgetText();
             rectangle.Inflate(2, 2);
             //
@@ -5437,7 +5437,7 @@ namespace PrePoMax
                 object[] tag = (object[])tsmiDeleteWidget.Tag;
                 if (tag[0] is string widgetName)
                 {
-                    WidgetBase widget = _controller.GetWidget(widgetName);
+                    WidgetBase widget = _controller.GetCurrentWidget(widgetName);
                     widget.OverridenText = null;
                     _controller.DrawWidgets();
                 }

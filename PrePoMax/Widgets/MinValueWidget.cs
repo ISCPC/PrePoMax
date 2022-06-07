@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace PrePoMax
 {
+    [Serializable]
     public class MinValueWidget : WidgetBase
     {
         // Variables                                                                                                                
@@ -16,8 +17,8 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public MinValueWidget(Controller controller)
-            : base(Globals.MinWidgetName, controller)
+        public MinValueWidget()
+            : base(Globals.MinWidgetName)
         {
         }
 

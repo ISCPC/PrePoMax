@@ -40,7 +40,7 @@ namespace PrePoMax
         [NonSerialized] protected double _selectAngle;
         [NonSerialized] protected Selection _selection;
         // Widgets
-        [NonSerialized] protected Dictionary<ViewGeometryModelResults, Dictionary<string, WidgetBase>> _widgets;
+        protected WidgetContainer _widgets;
         // Results
         [NonSerialized] protected ViewResultsType _viewResultsType;
         [NonSerialized] protected FieldData _currentFieldData;
@@ -187,7 +187,7 @@ namespace PrePoMax
         public double SelectAngle { get { return _selectAngle; } set { _selectAngle = value; } }
         public Selection Selection { get { return _selection; } set { _selection = value; } }
         // Widgets
-        public Dictionary<ViewGeometryModelResults, Dictionary<string, WidgetBase>> Widgets { get { return _widgets; } }
+        public WidgetContainer Widgets { get { return _widgets; } }
         // Results
         public FeResults Results { get { return _results; } }        
         public ViewResultsType ViewResultsType
@@ -330,12 +330,7 @@ namespace PrePoMax
             _explodedViewParameters.Add(ViewGeometryModelResults.Model, new ExplodedViewParameters());
             _explodedViewParameters.Add(ViewGeometryModelResults.Results, new ExplodedViewParameters());
             // Selection
-            _selection = new Selection();
-            // Widgets
-            _widgets = new Dictionary<ViewGeometryModelResults, Dictionary<string, WidgetBase>>();
-            _widgets.Add(ViewGeometryModelResults.Geometry, new Dictionary<string, WidgetBase>());
-            _widgets.Add(ViewGeometryModelResults.Model, new Dictionary<string, WidgetBase>());
-            _widgets.Add(ViewGeometryModelResults.Results, new Dictionary<string, WidgetBase>());
+            _selection = new Selection();           
             // Results
             ViewResultsType = ViewResultsType.ColorContours;
             // Errors - must be here before Clear
@@ -443,11 +438,9 @@ namespace PrePoMax
             //
             ClearModel();
             ClearResults();
-            RemoveAllArrowWidgets();
+            //RemoveAllArrowWidgets();
             //
             SetSelectByToDefault();
-            //
-
             //
             _modelChanged = false;  // must be here since ClearResults can set it to true
         }
@@ -530,6 +523,8 @@ namespace PrePoMax
             // Add and execute the clear command
             _commands.Clear();      // also calls _modelChanged = false;
             ClearCommand();         // also calls _modelChanged = false; calls SetNewModelProperties()
+            // Widgets
+            _widgets = new WidgetContainer(this);
             //
             _form.UpdateRecentFilesThreadSafe(_settings.General.GetRecentFiles());
         }
@@ -579,6 +574,8 @@ namespace PrePoMax
             _commands.ModelChanged_ResetJobStatus = ResetAllJobStatus;
             _commands.EnableDisableUndoRedo += _commands_CommandExecuted;
             _commands.OnEnableDisableUndoRedo();
+            // Widgets
+            _widgets = new WidgetContainer(tmp._widgets, this);
             // Jobs
             _jobs = (OrderedDictionary<string, AnalysisJob>)data[1];
             // Settings
@@ -7142,78 +7139,36 @@ namespace PrePoMax
         #region Query menu   #######################################################################################################
         public string GetFreeWidgetName()
         {
-            string prefix = "";
-            if (_currentView == ViewGeometryModelResults.Geometry) prefix = "G_";
-            else if (_currentView == ViewGeometryModelResults.Model) prefix = "M_";
-            else if (_currentView == ViewGeometryModelResults.Results) prefix = "R_";
-            else throw new NotSupportedException();
-            //
-            return _widgets[_currentView].GetNextNumberedKey(prefix + "Widget");
+            return _widgets.GetFreeWidgetName();
         }
-        public WidgetBase GetWidget(string name)
+        public WidgetBase GetCurrentWidget(string name)
         {
-            return _widgets[_currentView][name];
+            return _widgets.GetCurrentWidget(name);
         }
         public string GetWidgetText(string data)
         {
-            int itemId;
-            string text = "";
-            WidgetBase widget;
-            string numberFormat = Settings.Widgets.GetNumberFormat();
-            //
-            int.TryParse(data, out itemId);
-            //
-            if (_selectBy == vtkSelectBy.QueryNode)
-            {
-                widget = new NodeWidget("tmp", itemId, this);
-            }
-            else if (_selectBy == vtkSelectBy.QueryElement)
-            {
-                widget = new ElementWidget("tmp", itemId, this);
-            }
-            else if (_selectBy == vtkSelectBy.QueryEdge)
-            {
-                widget = new EdgeWidget("tmp", itemId, this);
-            }
-            else if (_selectBy == vtkSelectBy.QuerySurface)
-            {
-                widget = new SurfaceWidget("tmp", itemId, this);
-            }
-            else if (_selectBy == vtkSelectBy.QueryPart)
-            {
-                widget = new PartWidget("tmp", data, this);
-            }
-            else throw new NotSupportedException();
-            //
-            widget.GetWidgetData(out text, out double[] coor);
-            //
-            return text;
+            return _widgets.GetWidgetText(data);
         }
         public void AddWidget(WidgetBase widget)
         {
-            _widgets[_currentView].Add(widget.Name, widget);
+            _widgets.AddWidget(widget);
             //
             DrawWidgets();
         }
         public void RemoveCurrentViewArrowWidget(string widgetName)
         {
             _form.RemoveArrowWidgets(new string[] { widgetName });
-            _widgets[_currentView].Remove(widgetName);
+            _widgets.RemoveCurrentViewArrowWidget(widgetName);
         }
         public void RemoveCurrentViewArrowWidgets()
         {
-            _form.RemoveArrowWidgets(_widgets[_currentView].Keys.ToArray());
-            _widgets[_currentView].Clear();
+            _form.RemoveArrowWidgets(_widgets.GetCurrentWidgetNames());
+            _widgets.RemoveCurrentViewArrowWidgets();
         }
         public void RemoveAllArrowWidgets()
         {
-            _form.RemoveArrowWidgets(_widgets[ViewGeometryModelResults.Geometry].Keys.ToArray());
-            _widgets[ViewGeometryModelResults.Geometry].Clear();
-            _form.RemoveArrowWidgets(_widgets[ViewGeometryModelResults.Model].Keys.ToArray());
-            _widgets[ViewGeometryModelResults.Model].Clear();
-            //
-            _form.RemoveArrowWidgets(_widgets[ViewGeometryModelResults.Results].Keys.ToArray());
-            _widgets[ViewGeometryModelResults.Results].Clear();
+            _form.RemoveArrowWidgets(_widgets.GetAllWidgetNames());
+            _widgets.RemoveAllArrowWidgets();
         }
         //
         public string GetLengthUnit()
@@ -9824,14 +9779,14 @@ namespace PrePoMax
         public void SuppressCurrentWidgets()
         {
             // Supress widgets
-            foreach (var entry in _widgets[_currentView]) entry.Value.Valid = false;
+            _widgets.SuppressCurrentWidgets();
             //
             DrawWidgets();
         }
         public void ResumeCurrentWidgets()
         {
             // Resume widgets
-            foreach (var entry in _widgets[_currentView]) entry.Value.Valid = true;
+            _widgets.ResumeCurrentWidgets();
             //
             DrawWidgets();
         }
@@ -9839,14 +9794,13 @@ namespace PrePoMax
         {
             string text;
             double[] arrowCoor;
-            //
-            string numberFormat = Settings.Widgets.GetNumberFormat();
+            //            
             bool drawBackground = Settings.Widgets.BackgroundType == WidgetBackgroundType.White;
             bool drawBorder = Settings.Widgets.DrawBorder;
             //
             WidgetBase widget;
             List<string> invalidWidgetNames = new List<string>(); 
-            foreach (var entry in _widgets[_currentView])
+            foreach (var entry in _widgets.GetCurrentWidgets())
             {
                 try // some widgets might become unvalid
                 {
@@ -9865,7 +9819,7 @@ namespace PrePoMax
             // Remove invalid widgets
             if (invalidWidgetNames.Count > 0)
             {
-                foreach (var name in invalidWidgetNames) _widgets[_currentView].Remove(name);
+                _widgets.RemoveCurrentViewArrowWidgets(invalidWidgetNames.ToArray());
                 _form.RemoveArrowWidgets(invalidWidgetNames.ToArray());
             }
         }

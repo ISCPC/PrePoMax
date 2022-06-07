@@ -50,7 +50,7 @@ namespace PrePoMax
         }
 
 
-        // Methods                                                                                                                          
+        // Methods                                                                                                                  
         public void Initialize()
         {
             _colorSpectrums = new Dictionary<string, vtkControl.vtkMaxColorSpectrum>();

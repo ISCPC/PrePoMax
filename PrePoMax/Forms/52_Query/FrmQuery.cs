@@ -242,7 +242,7 @@ namespace PrePoMax.Forms
                 _coorNodesToDraw[0] = baseV.Coor;
                 _coorLinesToDraw = null;
                 //
-                _controller.AddWidget(new NodeWidget(_controller.GetFreeWidgetName(), nodeId, _controller));
+                _controller.AddWidget(new NodeWidget(_controller.GetFreeWidgetName(), nodeId));
             }
         }
         public void OneElementPicked(int elementId)
@@ -263,7 +263,7 @@ namespace PrePoMax.Forms
             //
             _controller.HighlightElement(elementId);
             //
-            _controller.AddWidget(new ElementWidget(_controller.GetFreeWidgetName(), elementId, _controller));
+            _controller.AddWidget(new ElementWidget(_controller.GetFreeWidgetName(), elementId));
         }
         public void OneEdgePicked(int geometryId)
         {
@@ -306,7 +306,7 @@ namespace PrePoMax.Forms
             //
             _controller.HighlightItemsByGeometryEdgeIds(new int[] { geometryId }, false);
             //
-            _controller.AddWidget(new EdgeWidget(_controller.GetFreeWidgetName(), geometryId, _controller));
+            _controller.AddWidget(new EdgeWidget(_controller.GetFreeWidgetName(), geometryId));
         }
         public void OneSurfacePicked(int geometryId)
         {
@@ -348,7 +348,7 @@ namespace PrePoMax.Forms
             //
             _controller.HighlightItemsBySurfaceIds(new int[] { geometryId }, false);
             //
-            _controller.AddWidget(new SurfaceWidget(_controller.GetFreeWidgetName(), geometryId, _controller));
+            _controller.AddWidget(new SurfaceWidget(_controller.GetFreeWidgetName(), geometryId));
         }
         public void OnePartPicked(int partId)
         {
@@ -376,7 +376,7 @@ namespace PrePoMax.Forms
             //
             _controller.Highlight3DObjects(new object[] { part });
             //
-            _controller.AddWidget(new PartWidget(_controller.GetFreeWidgetName(), part.Name, _controller));
+            _controller.AddWidget(new PartWidget(_controller.GetFreeWidgetName(), part.Name));
         }
         private void OutputAssemblyData()
         {
@@ -481,7 +481,7 @@ namespace PrePoMax.Forms
                 text += string.Format("dz: {0} {1}", baseD.Z.ToString(numberFormat), lenUnit);
                 //
                 Vec3D anchor = (baseV1 + baseV2) * 0.5;
-                _controller.AddWidget(new TextWidget(Globals.DistanceWidgetName, text, anchor.Coor, _controller));
+                _controller.AddWidget(new TextWidget(Globals.DistanceWidgetName, text, anchor.Coor));
             }
         }
         public void ThreeNodesPicked(int nodeId1, int nodeId2, int nodeId3)
@@ -555,7 +555,7 @@ namespace PrePoMax.Forms
             text = string.Format("Angle: {0}{1}", angle.ToString(numberFormat), angleUnit);
             //
             double[] anchor = _coorLinesToDraw[_coorLinesToDraw.Length / 2];
-            _controller.AddWidget(new TextWidget(Globals.AngleWidgetName, text, anchor, _controller));
+            _controller.AddWidget(new TextWidget(Globals.AngleWidgetName, text, anchor));
         }
         private void ComputeCircle(int nodeId1, int nodeId2, int nodeId3)
         {
@@ -630,7 +630,7 @@ namespace PrePoMax.Forms
             text += string.Format("Z: {0} {1}", center.Z.ToString(numberFormat), lenUnit);
             //
             double[] anchor = _coorLinesToDraw[2];
-            _controller.AddWidget(new TextWidget(Globals.CircleWidgetName, text, anchor, _controller));
+            _controller.AddWidget(new TextWidget(Globals.CircleWidgetName, text, anchor));
         }
         private double ComputeAngle(Vec3D baseV1, Vec3D baseV2, Vec3D baseV3, out Vec3D p, out Vec3D axis)
         {

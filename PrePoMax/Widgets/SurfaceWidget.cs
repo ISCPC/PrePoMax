@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace PrePoMax
 {
+    [Serializable]
     public class SurfaceWidget : WidgetBase
     {
         // Variables                                                                                                                
@@ -18,8 +19,8 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public SurfaceWidget(string name, int geometryId, Controller controller)
-            : base(name, controller)
+        public SurfaceWidget(string name, int geometryId)
+            : base(name)
         {
             _geometryId = geometryId;
             _partId = FeMesh.GetPartIdFromGeometryId(geometryId);
@@ -30,13 +31,13 @@ namespace PrePoMax
         public override void GetWidgetData(out string text, out double[] coor)
         {
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(_geometryId);
-            FeMesh mesh = _controller.DisplayedMesh;
+            FeMesh mesh = Controller.DisplayedMesh;
             int surfaceId = itemTypePartIds[0];
             BasePart part = mesh.GetPartById(itemTypePartIds[2]);
             double area;
-            string areaUnit = _controller.GetAreaUnit();
+            string areaUnit = Controller.GetAreaUnit();
             string fieldUnit = "";
-            string numberFormat = _controller.Settings.Widgets.GetNumberFormat();
+            string numberFormat = Controller.Settings.Widgets.GetNumberFormat();
             //
             bool results = false;
             float min = float.MaxValue;
@@ -48,51 +49,54 @@ namespace PrePoMax
             mesh.GetFaceNodes(_geometryId, out nodeIds);
             nodeCoor = new double[nodeIds.Length][];
             //
-            if (_controller.CurrentView == ViewGeometryModelResults.Geometry ||
-                _controller.CurrentView == ViewGeometryModelResults.Model)
+            if (Controller.CurrentView == ViewGeometryModelResults.Geometry ||
+                Controller.CurrentView == ViewGeometryModelResults.Model)
             {
                 // Area
                 area = mesh.GetSurfaceArea(_geometryId);
                 // Coor
                 for (int i = 0; i < nodeIds.Length; i++) nodeCoor[i] = mesh.Nodes[nodeIds[i]].Coor;
             }
-            else if (_controller.CurrentView == ViewGeometryModelResults.Results)
+            else if (Controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                results = true;
-                //
                 float value;
-                FeNode[] nodes = _controller.GetScaledNodes(1, nodeIds);
+                FeNode[] nodes = Controller.GetScaledNodes(1, nodeIds);
                 // Area
                 Dictionary<int, double> weights;
                 Dictionary<int, FeNode> nodesDic = new Dictionary<int, FeNode>();
                 for (int i = 0; i < nodes.Length; i++) nodesDic.Add(nodes[i].Id, nodes[i]);
                 mesh.GetFaceNodeLumpedWeights(part.Visualization, surfaceId, nodesDic, out weights, out area);
-                // Values
-                for (int i = 0; i < nodes.Length; i++)
-                {
-                    value = _controller.GetNodalValue(nodeIds[i]);
-                    if (value < min) min = value;
-                    if (value > max) max = value;
-                    avg += (float)(value * weights[nodeIds[i]]);
-                }
-                avg /= (float)area;
                 // Coor
-                nodes = _controller.GetScaledNodes(_controller.GetScale(), nodeIds);
-                // Area
+                nodes = Controller.GetScaledNodes(Controller.GetScale(), nodeIds);
                 for (int i = 0; i < nodes.Length; i++) nodeCoor[i] = nodes[i].Coor;
-                // Units
-                fieldUnit = _controller.GetCurrentResultsUnitAbbreviation();
+                //
+                if (Controller.ViewResultsType == ViewResultsType.ColorContours)
+                {
+                    results = true;
+                    // Values
+                    for (int i = 0; i < nodes.Length; i++)
+                    {
+                        value = Controller.GetNodalValue(nodeIds[i]);
+                        if (value < min) min = value;
+                        if (value > max) max = value;
+                        avg += (float)(value * weights[nodeIds[i]]);
+                    }
+                    avg /= (float)area;
+                    // Units
+                    fieldUnit = Controller.GetCurrentResultsUnitAbbreviation();
+                    if (fieldUnit == "/") fieldUnit = "";
+                }
             }
             else throw new NotSupportedException();
             // Coor
-            int[] distributedNodeIds = _controller.GetSpatiallyEquallyDistributedCoor(nodeCoor, 1);
+            int[] distributedNodeIds = Controller.GetSpatiallyEquallyDistributedCoor(nodeCoor, 1);
             coor = nodeCoor[distributedNodeIds[0]];
             //
-            bool showSurfaceId = _controller.Settings.Widgets.ShowEdgeSurId;
-            bool showSurfaceLength = _controller.Settings.Widgets.ShowEdgeSurSize;
-            bool showSurfaceMax = _controller.Settings.Widgets.ShowEdgeSurMax && results;
-            bool showSurfaceMin = _controller.Settings.Widgets.ShowEdgeSurMin && results;
-            bool showSurfaceAvg = _controller.Settings.Widgets.ShowEdgeSurAvg && results;
+            bool showSurfaceId = Controller.Settings.Widgets.ShowEdgeSurId;
+            bool showSurfaceLength = Controller.Settings.Widgets.ShowEdgeSurSize;
+            bool showSurfaceMax = Controller.Settings.Widgets.ShowEdgeSurMax && results;
+            bool showSurfaceMin = Controller.Settings.Widgets.ShowEdgeSurMin && results;
+            bool showSurfaceAvg = Controller.Settings.Widgets.ShowEdgeSurAvg && results;
             if (!showSurfaceLength && !showSurfaceMax && !showSurfaceMin && !showSurfaceAvg) showSurfaceId = true;
             text = "";
             if (showSurfaceId)

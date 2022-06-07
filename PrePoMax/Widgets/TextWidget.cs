@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace PrePoMax
 {
+    [Serializable]
     public class TextWidget : WidgetBase
     {
         // Variables                                                                                                                
@@ -19,8 +20,8 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public TextWidget(string name, string text, double[] anchorPoint, Controller controller)
-            : base(name, controller)
+        public TextWidget(string name, string text, double[] anchorPoint)
+            : base(name)
         {
             _text = text;
             _anchorPoint = anchorPoint;

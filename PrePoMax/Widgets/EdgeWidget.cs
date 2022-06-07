@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace PrePoMax
 {
+    [Serializable]
     public class EdgeWidget : WidgetBase
     {
         // Variables                                                                                                                
@@ -19,8 +20,8 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public EdgeWidget(string name, int geometryId, Controller controller)
-            : base(name, controller)
+        public EdgeWidget(string name, int geometryId)
+            : base(name)
         {
             _geometryId = geometryId;
             _partId = FeMesh.GetPartIdFromGeometryId(geometryId);
@@ -31,13 +32,13 @@ namespace PrePoMax
         public override void GetWidgetData(out string text, out double[] coor)
         {
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(_geometryId);
-            FeMesh mesh = _controller.DisplayedMesh;
+            FeMesh mesh = Controller.DisplayedMesh;
             int edgeId = itemTypePartIds[0];
             BasePart part = mesh.GetPartById(itemTypePartIds[2]);
             double length;
-            string lenUnit = _controller.GetLengthUnit();
+            string lenUnit = Controller.GetLengthUnit();
             string fieldUnit = "";
-            string numberFormat = _controller.Settings.Widgets.GetNumberFormat();
+            string numberFormat = Controller.Settings.Widgets.GetNumberFormat();
             //
             FeNode n1;
             FeNode n2;
@@ -51,9 +52,10 @@ namespace PrePoMax
             mesh.GetEdgeNodeCoor(_geometryId, out nodeIds, out double[][] nodeCoor);
             nodeWeights = new double[nodeIds.Length];
             //
-            if (_controller.CurrentView == ViewGeometryModelResults.Geometry ||
-                _controller.CurrentView == ViewGeometryModelResults.Model)
+            if (Controller.CurrentView == ViewGeometryModelResults.Geometry ||
+                Controller.CurrentView == ViewGeometryModelResults.Model)
             {
+                // Coor
                 n2 = mesh.Nodes[nodeIds[nodeIds.Length / 2]];
                 if (nodeIds.Length == 2)
                 {
@@ -61,17 +63,16 @@ namespace PrePoMax
                     coor = FeMesh.GetMidNodeCoor(n1, n2);
                 }
                 else coor = n2.Coor;
-                //
+                // Length
                 length = mesh.GetEdgeLength(_geometryId);
             }
-            else if (_controller.CurrentView == ViewGeometryModelResults.Results)
+            else if (Controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                results = true;
-                //
-                n2 = _controller.GetScaledNode(_controller.GetScale(), nodeIds[nodeIds.Length / 2]);
+                // Coor
+                n2 = Controller.GetScaledNode(Controller.GetScale(), nodeIds[nodeIds.Length / 2]);
                 if (nodeIds.Length == 2)
                 {
-                    n1 = _controller.GetScaledNode(_controller.GetScale(), nodeIds[0]);
+                    n1 = Controller.GetScaledNode(Controller.GetScale(), nodeIds[0]);
                     coor = FeMesh.GetMidNodeCoor(n1, n2);
                 }
                 else coor = n2.Coor;
@@ -81,7 +82,7 @@ namespace PrePoMax
                 float value;
                 double segLen;
                 length = 0;
-                FeNode[] nodes = _controller.GetScaledNodes(1, nodeIds);
+                FeNode[] nodes = Controller.GetScaledNodes(1, nodeIds);
                 // Length
                 for (int i = 0; i < nodes.Length - 1; i++)
                 {
@@ -92,25 +93,31 @@ namespace PrePoMax
                     nodeWeights[i + 1] += segLen * 0.5;
                     length += segLen;
                 }
-                // Values
-                for (int i = 0; i < nodes.Length; i++)
+                //
+                if (Controller.ViewResultsType == ViewResultsType.ColorContours)
                 {
-                    value = _controller.GetNodalValue(nodeIds[i]);
-                    if (value < min) min = value;
-                    if (value > max) max = value;
-                    avg += (float)(value * nodeWeights[i]);
+                    results = true;
+                    // Values
+                    for (int i = 0; i < nodes.Length; i++)
+                    {
+                        value = Controller.GetNodalValue(nodeIds[i]);
+                        if (value < min) min = value;
+                        if (value > max) max = value;
+                        avg += (float)(value * nodeWeights[i]);
+                    }
+                    avg /= (float)length;
+                    // Units
+                    fieldUnit = Controller.GetCurrentResultsUnitAbbreviation();
+                    if (fieldUnit == "/") fieldUnit = "";
                 }
-                avg /= (float)length;
-                // Units
-                fieldUnit = _controller.GetCurrentResultsUnitAbbreviation();
             }
             else throw new NotSupportedException();
             //
-            bool addEdgeIdData = _controller.Settings.Widgets.ShowEdgeSurId;
-            bool addEdgeLengthData = _controller.Settings.Widgets.ShowEdgeSurSize;
-            bool addEdgeMaxData = _controller.Settings.Widgets.ShowEdgeSurMax && results;
-            bool addEdgeMinData = _controller.Settings.Widgets.ShowEdgeSurMin && results;
-            bool addEdgeAvgData = _controller.Settings.Widgets.ShowEdgeSurAvg && results;
+            bool addEdgeIdData = Controller.Settings.Widgets.ShowEdgeSurId;
+            bool addEdgeLengthData = Controller.Settings.Widgets.ShowEdgeSurSize;
+            bool addEdgeMaxData = Controller.Settings.Widgets.ShowEdgeSurMax && results;
+            bool addEdgeMinData = Controller.Settings.Widgets.ShowEdgeSurMin && results;
+            bool addEdgeAvgData = Controller.Settings.Widgets.ShowEdgeSurAvg && results;
             if (!addEdgeLengthData && !addEdgeMaxData && !addEdgeMinData && !addEdgeAvgData) addEdgeIdData = true;
             text = "";
             if (addEdgeIdData)

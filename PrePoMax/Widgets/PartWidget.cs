@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace PrePoMax
 {
+    [Serializable]
     public class PartWidget : WidgetBase
     {
         // Variables                                                                                                                
@@ -16,42 +17,42 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public PartWidget(string name, string partName, Controller controller)
-            : base(name, controller)
+        public PartWidget(string name, string partName)
+            : base(name)
         {
-            _partId = _controller.DisplayedMesh.Parts[partName].PartId;
+            _partId = Controller.DisplayedMesh.Parts[partName].PartId;
         }
 
 
         // Methods
         public override void GetWidgetData(out string text, out double[] coor)
         {
-            FeMesh mesh = _controller.DisplayedMesh;
+            FeMesh mesh = Controller.DisplayedMesh;
             BasePart part = mesh.GetPartById(_partId);
             if (part == null) throw new NotSupportedException();
             //
-            string numberFormat = _controller.Settings.Widgets.GetNumberFormat();
+            string numberFormat = Controller.Settings.Widgets.GetNumberFormat();
             double[][] nodeCoor = new double[part.NodeLabels.Length][];
-            if (_controller.CurrentView == ViewGeometryModelResults.Geometry ||
-                _controller.CurrentView == ViewGeometryModelResults.Model)
+            if (Controller.CurrentView == ViewGeometryModelResults.Geometry ||
+                Controller.CurrentView == ViewGeometryModelResults.Model)
             {
                 for (int i = 0; i < part.NodeLabels.Length; i++) nodeCoor[i] = mesh.Nodes[part.NodeLabels[i]].Coor;
             }
-            else if (_controller.CurrentView == ViewGeometryModelResults.Results)
+            else if (Controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                FeNode[] nodes = _controller.GetScaledNodes(_controller.GetScale(), part.NodeLabels);
+                FeNode[] nodes = Controller.GetScaledNodes(Controller.GetScale(), part.NodeLabels);
                 for (int i = 0; i < nodes.Length; i++) nodeCoor[i] = nodes[i].Coor;
             }
             else throw new NotSupportedException();
             // Coor
-            int[] distributedNodeIds = _controller.GetSpatiallyEquallyDistributedCoor(nodeCoor, 1);
+            int[] distributedNodeIds = Controller.GetSpatiallyEquallyDistributedCoor(nodeCoor, 1);
             coor = nodeCoor[distributedNodeIds[0]];
             //
-            bool showPartName = _controller.Settings.Widgets.ShowPartName;
-            bool showPartId = _controller.Settings.Widgets.ShowPartId;
-            bool showPartType = _controller.Settings.Widgets.ShowPartType;
-            bool showPartNumberOfElements = _controller.Settings.Widgets.ShowPartNumberOfElements;
-            bool showPartNumberOfNodes = _controller.Settings.Widgets.ShowPartNumberOfNodes;
+            bool showPartName = Controller.Settings.Widgets.ShowPartName;
+            bool showPartId = Controller.Settings.Widgets.ShowPartId;
+            bool showPartType = Controller.Settings.Widgets.ShowPartType;
+            bool showPartNumberOfElements = Controller.Settings.Widgets.ShowPartNumberOfElements;
+            bool showPartNumberOfNodes = Controller.Settings.Widgets.ShowPartNumberOfNodes;
             if (!showPartId && !showPartType && !showPartNumberOfElements && !showPartNumberOfNodes) showPartName = true;
             text = "";
             //

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace PrePoMax
 {
+    [Serializable]
     public class ElementWidget : WidgetBase
     {
         // Variables                                                                                                                
@@ -17,11 +18,11 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public ElementWidget(string name, int elementId, Controller controller)
-            : base(name, controller)
+        public ElementWidget(string name, int elementId)
+            : base(name)
         {
             _elementId = elementId;
-            _partId = _controller.DisplayedMesh.Elements[_elementId].PartId;
+            _partId = Controller.DisplayedMesh.Elements[_elementId].PartId;
         }
 
 
@@ -30,12 +31,12 @@ namespace PrePoMax
         {
             text = string.Format("Element id: {0}", _elementId);
             //
-            string elementType = _controller.GetElementType(_elementId);
+            string elementType = Controller.GetElementType(_elementId);
             if (elementType != null)
             {
                 text += string.Format("{0}Element type: {1}", Environment.NewLine, elementType);
             }
-            coor = _controller.GetElement(_elementId).GetCG(_controller.DisplayedMesh.Nodes);
+            coor = Controller.GetElement(_elementId).GetCG(Controller.DisplayedMesh.Nodes);
             //
             if (IsTextOverriden) text = OverridenText;
         }

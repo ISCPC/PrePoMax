@@ -605,6 +605,7 @@
     <Compile Include="Settings\CalculixSettings.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="Enums\UpdateModelType.cs" />
+    <Compile Include="Widgets\WidgetContainer.cs" />
     <EmbeddedResource Include="Forms\00_Common\FrmSelectGeometry.resx">
       <DependentUpon>FrmSelectGeometry.cs</DependentUpon>
     </EmbeddedResource>

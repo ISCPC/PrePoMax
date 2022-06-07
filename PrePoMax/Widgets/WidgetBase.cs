@@ -7,12 +7,14 @@ using CaeGlobals;
 
 namespace PrePoMax
 {
+    [Serializable]
     public abstract class WidgetBase : NamedClass
     {
         // Variables                                                                                                                
         protected int _partId;
-        protected Controller _controller;
         protected string _overridenText;
+        //
+        [NonSerialized] public static Controller Controller;
 
 
         // Properties                                                                                                               
@@ -22,16 +24,15 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public WidgetBase(string name, Controller controller)
+        public WidgetBase(string name)
             : base(name)
         {
             _partId = -1;   // always visible
-            _controller = controller;
             _overridenText = null;
         }
 
 
-        // Methods
+        // Methods                                                                                                                  
         public abstract void GetWidgetData(out string text, out double[] coor);
         public string GetWidgetText()
         {
@@ -53,7 +54,7 @@ namespace PrePoMax
         {
             if (_partId == -1) return true;
             //
-            CaeMesh.FeMesh mesh = _controller.DisplayedMesh;
+            CaeMesh.FeMesh mesh = Controller.DisplayedMesh;
             if (mesh != null)
             {
                 CaeMesh.BasePart part = mesh.GetPartById(_partId);

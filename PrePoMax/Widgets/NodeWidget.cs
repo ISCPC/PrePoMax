@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace PrePoMax
 {
+    [Serializable]
     public class NodeWidget : WidgetBase
     {
         // Variables                                                                                                                
@@ -18,12 +19,12 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public NodeWidget(string name, int nodeId, Controller controller)
-            : base(name, controller)
+        public NodeWidget(string name, int nodeId)
+            : base(name)
         {
             _nodeId = nodeId;
             //
-            CaeMesh.FeMesh mesh = _controller.DisplayedMesh;
+            CaeMesh.FeMesh mesh = Controller.DisplayedMesh;
             foreach (var entry in mesh.Parts)
             {
                 if (entry.Value.NodeLabels.Contains(_nodeId))
@@ -42,32 +43,37 @@ namespace PrePoMax
             Vec3D arrowVec;
             string fieldData = "";
             text = "";
-            string numberFormat = _controller.Settings.Widgets.GetNumberFormat();
+            string numberFormat = Controller.Settings.Widgets.GetNumberFormat();
             //
-            if (_controller.CurrentView == ViewGeometryModelResults.Geometry ||
-                _controller.CurrentView == ViewGeometryModelResults.Model)
+            if (Controller.CurrentView == ViewGeometryModelResults.Geometry ||
+                Controller.CurrentView == ViewGeometryModelResults.Model)
             {
-                nodeVec = new Vec3D(_controller.GetNode(_nodeId).Coor);
+                nodeVec = new Vec3D(Controller.GetNode(_nodeId).Coor);
                 arrowVec = nodeVec;
             }
-            else if (_controller.CurrentView == ViewGeometryModelResults.Results)
+            else if (Controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                nodeVec = new Vec3D(_controller.GetScaledNode(1, _nodeId).Coor);
-                //
-                float fieldValue = _controller.GetNodalValue(_nodeId);
-                string fieldUnit = _controller.GetCurrentResultsUnitAbbreviation();
+                nodeVec = new Vec3D(Controller.GetScaledNode(1, _nodeId).Coor);
                 // Arrow
-                float scale = _controller.GetScale();
-                arrowVec = new Vec3D(_controller.GetScaledNode(scale, _nodeId).Coor); // for the arrow
-                // Data
-                fieldData = string.Format("Value: {1} {2}", Environment.NewLine, fieldValue.ToString(numberFormat), fieldUnit);
+                float scale = Controller.GetScale();
+                arrowVec = new Vec3D(Controller.GetScaledNode(scale, _nodeId).Coor); // for the arrow
+                //
+                if (Controller.ViewResultsType == ViewResultsType.ColorContours)
+                {
+                    float fieldValue = Controller.GetNodalValue(_nodeId);
+                    string fieldUnit = Controller.GetCurrentResultsUnitAbbreviation();
+                    if (fieldUnit == "/") fieldUnit = "";
+                    //
+                    fieldData = string.Format("Value: {1} {2}", Environment.NewLine,
+                                              fieldValue.ToString(numberFormat), fieldUnit);
+                }
             }
             else throw new NotSupportedException();
             //
-            string lengthUnit = _controller.GetLengthUnit();
+            string lengthUnit = Controller.GetLengthUnit();
             //
-            bool addNodeIdData = _controller.Settings.Widgets.ShowNodeId;
-            bool addCoorData = _controller.Settings.Widgets.ShowCoordinates;
+            bool addNodeIdData = Controller.Settings.Widgets.ShowNodeId;
+            bool addCoorData = Controller.Settings.Widgets.ShowCoordinates;
             bool addFieldData = fieldData.Length > 0;
             if (!addCoorData && !addFieldData) addNodeIdData = true;
             // Node data
