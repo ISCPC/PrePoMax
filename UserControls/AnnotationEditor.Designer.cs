@@ -1,6 +1,6 @@
 ﻿namespace UserControls
 {
-    partial class WidgetEditor
+    partial class AnnotationEditor
     {
         /// <summary> 
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.pBorder = new System.Windows.Forms.Panel();
-            this.wertbData = new UserControls.WidgetEditorRichTextBox();
+            this.wertbData = new UserControls.AnnotationEditorRichTextBox();
             this.pBorder.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -78,6 +78,6 @@
         #endregion
 
         private System.Windows.Forms.Panel pBorder;
-        private WidgetEditorRichTextBox wertbData;
+        private AnnotationEditorRichTextBox wertbData;
     }
 }

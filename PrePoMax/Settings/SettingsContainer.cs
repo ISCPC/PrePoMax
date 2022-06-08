@@ -16,7 +16,7 @@ namespace PrePoMax
         private GeneralSettings _general;
         private GraphicsSettings _graphics;
         private ColorSettings _color;
-        private WidgetsSettings _widgets;
+        private AnnotationSettings _annotations;
         private MeshingSettings _meshing;
         private PreSettings _pre;
         private CalculixSettings _calculix;
@@ -29,7 +29,7 @@ namespace PrePoMax
         public GeneralSettings General { get { return _general; } set { _general = value; } }
         public GraphicsSettings Graphics { get { return _graphics; } set { _graphics = value; } }
         public ColorSettings Color { get { return _color; } set { _color = value; } }
-        public WidgetsSettings Widgets { get { return _widgets; } set { _widgets = value; } }
+        public AnnotationSettings Annotations { get { return _annotations; } set { _annotations = value; } }
         public MeshingSettings Meshing { get { return _meshing; } set { _meshing = value; } }
         public PreSettings Pre { get { return _pre; } set { _pre = value; } }
         public CalculixSettings Calculix { get { return _calculix; } set { _calculix = value; } }
@@ -58,7 +58,7 @@ namespace PrePoMax
             _general = new GeneralSettings();
             _graphics = new GraphicsSettings();
             _color = new ColorSettings();
-            _widgets = new WidgetsSettings();
+            _annotations = new AnnotationSettings();
             _meshing = new MeshingSettings();
             _pre = new PreSettings();
             _calculix = new CalculixSettings();
@@ -71,7 +71,7 @@ namespace PrePoMax
             _general.Reset();
             _graphics.Reset();
             _color.Reset();
-            _widgets.Reset();
+            _annotations.Reset();
             _meshing.Reset();
             _pre.Reset();
             _calculix.Reset();
@@ -130,7 +130,7 @@ namespace PrePoMax
             _general = clone._general;
             _graphics = clone._graphics;
             _color = clone._color;
-            _widgets = clone._widgets;
+            _annotations = clone._annotations;
             _meshing = clone._meshing;
             _pre = clone._pre;
             _calculix = clone._calculix;
@@ -144,7 +144,7 @@ namespace PrePoMax
             items.Add(Globals.GeneralSettingsName, _general);
             items.Add(Globals.GraphicsSettingsName, _graphics);
             items.Add(Globals.ColorSettingsName, _color);
-            items.Add(Globals.WidgetsSettingsName, _widgets);
+            items.Add(Globals.AnnotationSettingsName, _annotations);
             items.Add(Globals.MeshingSettingsName, _meshing);
             items.Add(Globals.PreSettingsName, _pre);
             items.Add(Globals.CalculixSettingsName, _calculix);
@@ -160,7 +160,7 @@ namespace PrePoMax
                 _general = (GeneralSettings)items[Globals.GeneralSettingsName];
                 _graphics = (GraphicsSettings)items[Globals.GraphicsSettingsName];
                 _color = (ColorSettings)items[Globals.ColorSettingsName];
-                _widgets = (WidgetsSettings)items[Globals.WidgetsSettingsName];
+                _annotations = (AnnotationSettings)items[Globals.AnnotationSettingsName];
                 _meshing = (MeshingSettings)items[Globals.MeshingSettingsName];
                 _pre = (PreSettings)items[Globals.PreSettingsName];
                 _calculix = (CalculixSettings)items[Globals.CalculixSettingsName];

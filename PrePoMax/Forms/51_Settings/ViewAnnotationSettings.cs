@@ -11,10 +11,10 @@ using System.Drawing.Design;
 namespace PrePoMax.Settings
 {
     [Serializable]
-    public class ViewWidgetsSettings : IViewSettings, IReset
+    public class ViewAnnotationSettings : IViewSettings, IReset
     {
         // Variables                                                                                                                
-        private WidgetsSettings _widgetSettings;
+        private AnnotationSettings _annotationSettings;
         private DynamicCustomTypeDescriptor _dctd = null;
 
 
@@ -22,10 +22,10 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Design")]
         [OrderedDisplayName(0, 10, "Background type")]
         [DescriptionAttribute("Select the background type.")]
-        public WidgetBackgroundType BackgroundType
+        public AnnotationBackgroundType BackgroundType
         {
-            get { return _widgetSettings.BackgroundType; }
-            set { _widgetSettings.BackgroundType = value; }
+            get { return _annotationSettings.BackgroundType; }
+            set { _annotationSettings.BackgroundType = value; }
         }
         //
         [CategoryAttribute("Design")]
@@ -33,17 +33,17 @@ namespace PrePoMax.Settings
         [DescriptionAttribute("Draw a border rectangle around the legend.")]
         public bool DrawBorder
         {
-            get { return _widgetSettings.DrawBorder; }
-            set { _widgetSettings.DrawBorder = value; }
+            get { return _annotationSettings.DrawBorder; }
+            set { _annotationSettings.DrawBorder = value; }
         }
         //
         [CategoryAttribute("Design")]
         [OrderedDisplayName(2, 10, "Number format")]
         [DescriptionAttribute("Select the number format.")]
-        public WidgetNumberFormat LegendNumberFormat
+        public AnnotationNumberFormat LegendNumberFormat
         {
-            get { return _widgetSettings.NumberFormat; }
-            set { _widgetSettings.NumberFormat = value; }
+            get { return _annotationSettings.NumberFormat; }
+            set { _annotationSettings.NumberFormat = value; }
         }
         //
         [CategoryAttribute("Design")]
@@ -51,123 +51,123 @@ namespace PrePoMax.Settings
         [DescriptionAttribute("Set the number of significant digits (2 ... 8).")]
         public int NumberOfSignificantDigits
         {
-            get { return _widgetSettings.NumberOfSignificantDigits; }
-            set { _widgetSettings.NumberOfSignificantDigits = value; }
+            get { return _annotationSettings.NumberOfSignificantDigits; }
+            set { _annotationSettings.NumberOfSignificantDigits = value; }
         }
         //
-        [CategoryAttribute("Node widget")]
+        [CategoryAttribute("Node annotation")]
         [OrderedDisplayName(0, 10, "Show node id")]
-        [DescriptionAttribute("Show node id in the widget.")]
+        [DescriptionAttribute("Show node id in the annotation.")]
         public bool ShowNodeId
         {
-            get { return _widgetSettings.ShowNodeId; }
-            set { _widgetSettings.ShowNodeId = value; }
+            get { return _annotationSettings.ShowNodeId; }
+            set { _annotationSettings.ShowNodeId = value; }
         }
         //
-        [CategoryAttribute("Node widget")]
+        [CategoryAttribute("Node annotation")]
         [OrderedDisplayName(1, 10, "Show coordinates")]
-        [DescriptionAttribute("Show coordintates in the widget.")]
+        [DescriptionAttribute("Show coordintates in the annotation.")]
         public bool ShowCoordinates
         {
-            get { return _widgetSettings.ShowCoordinates; }
-            set { _widgetSettings.ShowCoordinates = value; }
+            get { return _annotationSettings.ShowCoordinates; }
+            set { _annotationSettings.ShowCoordinates = value; }
         }
         //
-        [CategoryAttribute("Edge/Surface widget")]
+        [CategoryAttribute("Edge/Surface annotation")]
         [OrderedDisplayName(0, 10, "Show edge/surface id")]
-        [DescriptionAttribute("Show edge/surface id in the widget.")]
+        [DescriptionAttribute("Show edge/surface id in the annotation.")]
         public bool ShowEdgeSurId
         {
-            get { return _widgetSettings.ShowEdgeSurId; }
-            set { _widgetSettings.ShowEdgeSurId = value; }
+            get { return _annotationSettings.ShowEdgeSurId; }
+            set { _annotationSettings.ShowEdgeSurId = value; }
         }
         //
-        [CategoryAttribute("Edge/Surface widget")]
+        [CategoryAttribute("Edge/Surface annotation")]
         [OrderedDisplayName(1, 10, "Show edge/surface size")]
-        [DescriptionAttribute("Show edge/surface size in the widget.")]
+        [DescriptionAttribute("Show edge/surface size in the annotation.")]
         public bool ShowEdgeLength
         {
-            get { return _widgetSettings.ShowEdgeSurSize; }
-            set { _widgetSettings.ShowEdgeSurSize = value; }
+            get { return _annotationSettings.ShowEdgeSurSize; }
+            set { _annotationSettings.ShowEdgeSurSize = value; }
         }
         //
-        [CategoryAttribute("Edge/Surface widget")]
+        [CategoryAttribute("Edge/Surface annotation")]
         [OrderedDisplayName(2, 10, "Show maximum value")]
-        [DescriptionAttribute("Show maximum value in the widget.")]
+        [DescriptionAttribute("Show maximum value in the annotation.")]
         public bool ShowEdgeMax
         {
-            get { return _widgetSettings.ShowEdgeSurMax; }
-            set { _widgetSettings.ShowEdgeSurMax = value; }
+            get { return _annotationSettings.ShowEdgeSurMax; }
+            set { _annotationSettings.ShowEdgeSurMax = value; }
         }
         //
-        [CategoryAttribute("Edge/Surface widget")]
+        [CategoryAttribute("Edge/Surface annotation")]
         [OrderedDisplayName(3, 10, "Show minumum value")]
-        [DescriptionAttribute("Show minumum value in the widget.")]
+        [DescriptionAttribute("Show minumum value in the annotation.")]
         public bool ShowEdgeMin
         {
-            get { return _widgetSettings.ShowEdgeSurMin; }
-            set { _widgetSettings.ShowEdgeSurMin = value; }
+            get { return _annotationSettings.ShowEdgeSurMin; }
+            set { _annotationSettings.ShowEdgeSurMin = value; }
         }
         //
-        [CategoryAttribute("Edge/Surface widget")]
+        [CategoryAttribute("Edge/Surface annotation")]
         [OrderedDisplayName(4, 10, "Show average value")]
-        [DescriptionAttribute("Show average value in the widget.")]
+        [DescriptionAttribute("Show average value in the annotation.")]
         public bool ShowEdgeAvg
         {
-            get { return _widgetSettings.ShowEdgeSurAvg; }
-            set { _widgetSettings.ShowEdgeSurAvg = value; }
+            get { return _annotationSettings.ShowEdgeSurAvg; }
+            set { _annotationSettings.ShowEdgeSurAvg = value; }
         }
         //
-        [CategoryAttribute("Part widget")]
+        [CategoryAttribute("Part annotation")]
         [OrderedDisplayName(0, 10, "Show part name")]
-        [DescriptionAttribute("Show part name in the widget.")]
+        [DescriptionAttribute("Show part name in the annotation.")]
         public bool ShowPartName
         {
-            get { return _widgetSettings.ShowPartName; }
-            set { _widgetSettings.ShowPartName = value; }
+            get { return _annotationSettings.ShowPartName; }
+            set { _annotationSettings.ShowPartName = value; }
         }
         //
-        [CategoryAttribute("Part widget")]
+        [CategoryAttribute("Part annotation")]
         [OrderedDisplayName(1, 10, "Show part id")]
-        [DescriptionAttribute("Show part id in the widget.")]
+        [DescriptionAttribute("Show part id in the annotation.")]
         public bool ShowPartId
         {
-            get { return _widgetSettings.ShowPartId; }
-            set { _widgetSettings.ShowPartId = value; }
+            get { return _annotationSettings.ShowPartId; }
+            set { _annotationSettings.ShowPartId = value; }
         }
         //
-        [CategoryAttribute("Part widget")]
+        [CategoryAttribute("Part annotation")]
         [OrderedDisplayName(2, 10, "Show part type")]
-        [DescriptionAttribute("Show part type in the widget.")]
+        [DescriptionAttribute("Show part type in the annotation.")]
         public bool ShowPartType
         {
-            get { return _widgetSettings.ShowPartType; }
-            set { _widgetSettings.ShowPartType = value; }
+            get { return _annotationSettings.ShowPartType; }
+            set { _annotationSettings.ShowPartType = value; }
         }
         //
-        [CategoryAttribute("Part widget")]
+        [CategoryAttribute("Part annotation")]
         [OrderedDisplayName(3, 10, "Show number of elements")]
-        [DescriptionAttribute("Show part number of elements in the widget.")]
+        [DescriptionAttribute("Show part number of elements in the annotation.")]
         public bool ShowPartNumberOfElements
         {
-            get { return _widgetSettings.ShowPartNumberOfElements; }
-            set { _widgetSettings.ShowPartNumberOfElements = value; }
+            get { return _annotationSettings.ShowPartNumberOfElements; }
+            set { _annotationSettings.ShowPartNumberOfElements = value; }
         }
         //
-        [CategoryAttribute("Part widget")]
+        [CategoryAttribute("Part annotation")]
         [OrderedDisplayName(4, 10, "Show number of nodes")]
-        [DescriptionAttribute("Show part number of nodes in the widget.")]
+        [DescriptionAttribute("Show part number of nodes in the annotation.")]
         public bool ShowPartNumberOfNodes
         {
-            get { return _widgetSettings.ShowPartNumberOfNodes; }
-            set { _widgetSettings.ShowPartNumberOfNodes = value; }
+            get { return _annotationSettings.ShowPartNumberOfNodes; }
+            set { _annotationSettings.ShowPartNumberOfNodes = value; }
         }
 
 
         // Constructors                                                                               
-        public ViewWidgetsSettings(WidgetsSettings widgetsSettings)
+        public ViewAnnotationSettings(AnnotationSettings annotationSettings)
         {
-            _widgetSettings = widgetsSettings;
+            _annotationSettings = annotationSettings;
             _dctd = ProviderInstaller.Install(this);
             //
             _dctd.RenameBooleanPropertyToYesNo(nameof(DrawBorder));
@@ -192,11 +192,11 @@ namespace PrePoMax.Settings
         // Methods                                                                               
         public ISettings GetBase()
         {
-            return _widgetSettings;
+            return _annotationSettings;
         }
         public void Reset()
         {
-            _widgetSettings.Reset();
+            _annotationSettings.Reset();
         }
     }
 

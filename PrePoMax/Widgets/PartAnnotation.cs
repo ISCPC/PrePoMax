@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace PrePoMax
 {
     [Serializable]
-    public class PartWidget : WidgetBase
+    public class PartAnnotation : AnnotationBase
     {
         // Variables                                                                                                                
 
@@ -17,7 +17,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public PartWidget(string name, string partName)
+        public PartAnnotation(string name, string partName)
             : base(name)
         {
             _partId = Controller.DisplayedMesh.Parts[partName].PartId;
@@ -25,13 +25,13 @@ namespace PrePoMax
 
 
         // Methods
-        public override void GetWidgetData(out string text, out double[] coor)
+        public override void GetAnnotationData(out string text, out double[] coor)
         {
             FeMesh mesh = Controller.DisplayedMesh;
             BasePart part = mesh.GetPartById(_partId);
             if (part == null) throw new NotSupportedException();
             //
-            string numberFormat = Controller.Settings.Widgets.GetNumberFormat();
+            string numberFormat = Controller.Settings.Annotations.GetNumberFormat();
             double[][] nodeCoor = new double[part.NodeLabels.Length][];
             if (Controller.CurrentView == ViewGeometryModelResults.Geometry ||
                 Controller.CurrentView == ViewGeometryModelResults.Model)
@@ -48,11 +48,11 @@ namespace PrePoMax
             int[] distributedNodeIds = Controller.GetSpatiallyEquallyDistributedCoor(nodeCoor, 1);
             coor = nodeCoor[distributedNodeIds[0]];
             //
-            bool showPartName = Controller.Settings.Widgets.ShowPartName;
-            bool showPartId = Controller.Settings.Widgets.ShowPartId;
-            bool showPartType = Controller.Settings.Widgets.ShowPartType;
-            bool showPartNumberOfElements = Controller.Settings.Widgets.ShowPartNumberOfElements;
-            bool showPartNumberOfNodes = Controller.Settings.Widgets.ShowPartNumberOfNodes;
+            bool showPartName = Controller.Settings.Annotations.ShowPartName;
+            bool showPartId = Controller.Settings.Annotations.ShowPartId;
+            bool showPartType = Controller.Settings.Annotations.ShowPartType;
+            bool showPartNumberOfElements = Controller.Settings.Annotations.ShowPartNumberOfElements;
+            bool showPartNumberOfNodes = Controller.Settings.Annotations.ShowPartNumberOfNodes;
             if (!showPartId && !showPartType && !showPartNumberOfElements && !showPartNumberOfNodes) showPartName = true;
             text = "";
             //

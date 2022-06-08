@@ -12,14 +12,14 @@ using System.Runtime.InteropServices;
 namespace PrePoMax
 {
     [Serializable]
-    public enum WidgetNumberFormat
+    public enum AnnotationNumberFormat
     {
         Scientific,
         General
     }
 
     [Serializable]
-    public enum WidgetBackgroundType
+    public enum AnnotationBackgroundType
     {
         None,
         White
@@ -30,15 +30,15 @@ namespace PrePoMax
     public class LegendSettings : ISettings
     {
         // Variables                                                                                                                
-        private WidgetNumberFormat _numberFormat;
+        private AnnotationNumberFormat _numberFormat;
         private int _numberOfSignificantDigits;
         private vtkControl.vtkMaxColorSpectrum _colorSpectrum;
-        private WidgetBackgroundType _backgroundType;
+        private AnnotationBackgroundType _backgroundType;
         private bool _drawBorder;
 
 
         // Properties                                                                                                               
-        public WidgetNumberFormat NumberFormat { get { return _numberFormat; } set { _numberFormat = value; } }
+        public AnnotationNumberFormat NumberFormat { get { return _numberFormat; } set { _numberFormat = value; } }
         public int NumberOfSignificantDigits
         {
             get { return _numberOfSignificantDigits; }
@@ -50,7 +50,7 @@ namespace PrePoMax
             }
         }
         public vtkControl.vtkMaxColorSpectrum ColorSpectrum { get { return _colorSpectrum; } set { _colorSpectrum = value; } }
-        public WidgetBackgroundType BackgroundType
+        public AnnotationBackgroundType BackgroundType
         {
             get { return _backgroundType; }
             set
@@ -58,7 +58,7 @@ namespace PrePoMax
                 if (value != _backgroundType)
                 {
                     _backgroundType = value;
-                    if (_backgroundType == WidgetBackgroundType.White) _drawBorder = true;
+                    if (_backgroundType == AnnotationBackgroundType.White) _drawBorder = true;
                 }
             }
         }
@@ -78,19 +78,19 @@ namespace PrePoMax
         }
         public void Reset()
         {
-            _numberFormat = WidgetNumberFormat.General;
+            _numberFormat = AnnotationNumberFormat.General;
             _numberOfSignificantDigits = 4;
             //
             _colorSpectrum = new vtkControl.vtkMaxColorSpectrum();
             //
-            _backgroundType = WidgetBackgroundType.None;
+            _backgroundType = AnnotationBackgroundType.None;
             _drawBorder = false;
         }
         //
         public string GetColorChartNumberFormat()
         {
             string numberformat;
-            if (_numberFormat == WidgetNumberFormat.General)
+            if (_numberFormat == AnnotationNumberFormat.General)
             {
                 numberformat = "G" + _numberOfSignificantDigits.ToString();
             }

@@ -36,7 +36,7 @@ namespace PrePoMax
         public static string GeneralSettingsName = "General";
         public static string GraphicsSettingsName = "Graphics";
         public static string ColorSettingsName = "Default Colors";
-        public static string WidgetsSettingsName = "Widgets";
+        public static string AnnotationSettingsName = "Annotations";
         public static string MeshingSettingsName = "Meshing";
         public static string PreSettingsName = "Pre-processing";
         public static string CalculixSettingsName = "Calculix";
@@ -60,11 +60,5 @@ namespace PrePoMax
         public static string MissingSectionName = "Missing_section";
         // Graphics
         public static int BeamNodeSize = 5;
-        // Widgets
-        public static string DistanceWidgetName = "Distance_Widget";
-        public static string AngleWidgetName = "Angle_Widget";
-        public static string CircleWidgetName = "Circle_Widget";
-        public static string MinWidgetName = "Min_Widget";
-        public static string MaxWidgetName = "Max_Widget";
     }
 }

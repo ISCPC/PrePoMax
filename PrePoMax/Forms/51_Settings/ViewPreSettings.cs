@@ -105,7 +105,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Color bar")]
         [OrderedDisplayName(0, 10, "Background type")]
         [DescriptionAttribute("Select the background type.")]
-        public WidgetBackgroundType ColorBarBackgroundType
+        public AnnotationBackgroundType ColorBarBackgroundType
         {
             get { return _preSettings.ColorBarBackgroundType; }
             set { _preSettings.ColorBarBackgroundType = value; }

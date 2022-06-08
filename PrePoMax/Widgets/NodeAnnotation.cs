@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace PrePoMax
 {
     [Serializable]
-    public class NodeWidget : WidgetBase
+    public class NodeAnnotation : AnnotationBase
     {
         // Variables                                                                                                                
         private int _nodeId;
@@ -19,7 +19,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public NodeWidget(string name, int nodeId)
+        public NodeAnnotation(string name, int nodeId)
             : base(name)
         {
             _nodeId = nodeId;
@@ -37,13 +37,13 @@ namespace PrePoMax
 
 
         // Methods
-        public override void GetWidgetData(out string text, out double[] coor)
+        public override void GetAnnotationData(out string text, out double[] coor)
         {
             Vec3D nodeVec;
             Vec3D arrowVec;
             string fieldData = "";
             text = "";
-            string numberFormat = Controller.Settings.Widgets.GetNumberFormat();
+            string numberFormat = Controller.Settings.Annotations.GetNumberFormat();
             //
             if (Controller.CurrentView == ViewGeometryModelResults.Geometry ||
                 Controller.CurrentView == ViewGeometryModelResults.Model)
@@ -72,8 +72,8 @@ namespace PrePoMax
             //
             string lengthUnit = Controller.GetLengthUnit();
             //
-            bool addNodeIdData = Controller.Settings.Widgets.ShowNodeId;
-            bool addCoorData = Controller.Settings.Widgets.ShowCoordinates;
+            bool addNodeIdData = Controller.Settings.Annotations.ShowNodeId;
+            bool addCoorData = Controller.Settings.Annotations.ShowCoordinates;
             bool addFieldData = fieldData.Length > 0;
             if (!addCoorData && !addFieldData) addNodeIdData = true;
             // Node data

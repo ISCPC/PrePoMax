@@ -39,8 +39,8 @@ namespace PrePoMax
         [NonSerialized] protected vtkSelectBy _selectBy;
         [NonSerialized] protected double _selectAngle;
         [NonSerialized] protected Selection _selection;
-        // Widgets
-        protected WidgetContainer _widgets;
+        // Annotations
+        protected AnnotationContainer _annotations;
         // Results
         [NonSerialized] protected ViewResultsType _viewResultsType;
         [NonSerialized] protected FieldData _currentFieldData;
@@ -58,6 +58,7 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
+        public FrmMain Form { get { return _form; } }
         public SettingsContainer Settings
         {
             get
@@ -186,8 +187,8 @@ namespace PrePoMax
         }
         public double SelectAngle { get { return _selectAngle; } set { _selectAngle = value; } }
         public Selection Selection { get { return _selection; } set { _selection = value; } }
-        // Widgets
-        public WidgetContainer Widgets { get { return _widgets; } }
+        // Annotations
+        public AnnotationContainer Annotations { get { return _annotations; } }
         // Results
         public FeResults Results { get { return _results; } }        
         public ViewResultsType ViewResultsType
@@ -349,6 +350,7 @@ namespace PrePoMax
             ApplySettings();
         }
 
+
         // Static methods                                                                                                           
         public static void PrepareForSavig(Controller controller)
         {
@@ -395,7 +397,6 @@ namespace PrePoMax
         //}
 
         #region Commands   #########################################################################################################
-
         private void _commands_CommandExecuted(string undo, string redo)
         {
             _form.EnableDisableUndoRedo(undo, redo);
@@ -438,7 +439,6 @@ namespace PrePoMax
             //
             ClearModel();
             ClearResults();
-            //RemoveAllArrowWidgets();
             //
             SetSelectByToDefault();
             //
@@ -523,8 +523,8 @@ namespace PrePoMax
             // Add and execute the clear command
             _commands.Clear();      // also calls _modelChanged = false;
             ClearCommand();         // also calls _modelChanged = false; calls SetNewModelProperties()
-            // Widgets
-            _widgets = new WidgetContainer(this);
+            // Annotations
+            _annotations = new AnnotationContainer(this);
             //
             _form.UpdateRecentFilesThreadSafe(_settings.General.GetRecentFiles());
         }
@@ -574,8 +574,8 @@ namespace PrePoMax
             _commands.ModelChanged_ResetJobStatus = ResetAllJobStatus;
             _commands.EnableDisableUndoRedo += _commands_CommandExecuted;
             _commands.OnEnableDisableUndoRedo();
-            // Widgets
-            _widgets = new WidgetContainer(tmp._widgets, this);
+            // Annotations
+            _annotations = new AnnotationContainer(tmp._annotations, this);
             // Jobs
             _jobs = (OrderedDictionary<string, AnalysisJob>)data[1];
             // Settings
@@ -1835,8 +1835,8 @@ namespace PrePoMax
             // Suppress symbols
             string drawSymbolsForStep = GetDrawSymbolsForStep();
             DrawSymbolsForStep("None", false);
-            // Suppress widgets
-            SuppressCurrentWidgets();
+            // Suppress annotations
+            _annotations.SuppressCurrentAnnotations();
             // Deactivate exploded view
             if (IsExplodedViewActive())
             {
@@ -1864,8 +1864,8 @@ namespace PrePoMax
             }
             // Resume symbols
             DrawSymbolsForStep(drawSymbolsForStep, false);  // Clears highlight
-            // Resume widgets
-            ResumeCurrentWidgets();
+            // Resume annotations
+            _annotations.ResumeCurrentAnnotations();
             // Resume section view
             if (sectionViewPlane != null) ApplySectionView(sectionViewPlane.Point.Coor, sectionViewPlane.Normal.Coor);
             //
@@ -2286,8 +2286,8 @@ namespace PrePoMax
             _form.HideActors(partNamesToHide.ToArray(), false);
             // Update
             AnnotateWithColorLegend();
-            // Widgets
-            DrawWidgets();
+            // Annotations
+            _annotations.DrawAnnotations();
         }
         public void ShowGeometryParts(string[] partNames)
         {
@@ -2328,8 +2328,8 @@ namespace PrePoMax
             _form.ShowActors(partNamesToShow.ToArray(), false);
             // Update
             AnnotateWithColorLegend();
-            // Widgets
-            DrawWidgets();
+            // Annotations
+            _annotations.DrawAnnotations();
         }
         public void SetTransparencyForGeometryParts(string[] partNames, byte alpha)
         {
@@ -2374,8 +2374,8 @@ namespace PrePoMax
             orderedPartsToRemove.AddRange(compoundPartNamesToRemove);
             //
             ViewGeometryModelResults view = ViewGeometryModelResults.Geometry;
-            // Remove widgets
-            _widgets.RemoveCurrentArrowWidgetsByParts(partNamesToRemove.ToArray(), view);
+            // Remove annotations
+            _annotations.RemoveCurrentArrowAnnotationsByParts(partNamesToRemove.ToArray(), view);
             //
             string[] removedParts;
             _model.Geometry.RemoveParts(orderedPartsToRemove.ToArray(), out removedParts, false);
@@ -3902,8 +3902,8 @@ namespace PrePoMax
             AnnotateWithColorLegend();
             //
             FeModelUpdate(UpdateType.RedrawSymbols);
-            // Widgets
-            DrawWidgets();
+            // Annotations
+            _annotations.DrawAnnotations();
         }
         public void ShowModelParts(string[] partNames)
         {
@@ -3921,8 +3921,8 @@ namespace PrePoMax
             AnnotateWithColorLegend();
             //
             FeModelUpdate(UpdateType.RedrawSymbols);
-            // Widgets
-            DrawWidgets();
+            // Annotations
+            _annotations.DrawAnnotations();
         }
         public void SetTransparencyForModelParts(string[] partNames, byte alpha)
         {
@@ -4058,8 +4058,8 @@ namespace PrePoMax
             //
             ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
             RemoveExplodedView(false);
-            // Remove widgets
-            _widgets.RemoveCurrentArrowWidgetsByParts(partNames, ViewGeometryModelResults.Model);
+            // Remove annotations
+            _annotations.RemoveCurrentArrowAnnotationsByParts(partNames, ViewGeometryModelResults.Model);
             //
             _model.Mesh.MergeMeshParts(partNames, out newMeshPart, out mergedParts);
             ApplyExplodedView(parameters, null, false);
@@ -4084,8 +4084,8 @@ namespace PrePoMax
             if (_model.Mesh != null)
             {
                 ViewGeometryModelResults view = ViewGeometryModelResults.Model;
-                // Remove widgets
-                _widgets.RemoveCurrentArrowWidgetsByParts(partNames, view);
+                // Remove annotations
+                _annotations.RemoveCurrentArrowAnnotationsByParts(partNames, view);
                 //
                 string[] removedParts;
                 removedPartIds = _model.Mesh.RemoveParts(partNames, out removedParts, removeForRemeshing);
@@ -4457,8 +4457,8 @@ namespace PrePoMax
             RemoveExplodedView(false);
             _model.Mesh.CreatePartsFromElementSets(elementSetNames, out modifiedParts, out newParts);
             ApplyExplodedView(parameters, null, false);
-            // Remove widgets
-            _widgets.RemoveCurrentArrowWidgetsByParts(modifiedParts, ViewGeometryModelResults.Model);
+            // Remove annotations
+            _annotations.RemoveCurrentArrowAnnotationsByParts(modifiedParts, ViewGeometryModelResults.Model);
             //
             foreach (var part in modifiedParts)
             {
@@ -7112,6 +7112,8 @@ namespace PrePoMax
         //
         public void ApplySettings()
         {
+            // Called on property Settings Set when the user changes the setting values
+
             // General settings
             CaeMesh.Globals.EdgeAngle = _settings.General.EdgeAngle;
             // Graphics settings
@@ -7129,7 +7131,7 @@ namespace PrePoMax
             _form.SetMouseHighlightColor(ps.MouseHighlightColor);
             _form.SetDrawSymbolEdges(ps.DrawSymbolEdges);
             //
-            _form.DrawColorBarBackground(ps.ColorBarBackgroundType == WidgetBackgroundType.White);
+            _form.DrawColorBarBackground(ps.ColorBarBackgroundType == AnnotationBackgroundType.White);
             _form.DrawColorBarBorder(ps.ColorBarDrawBorder);
             // Job settings
             if (_jobs != null)
@@ -7148,40 +7150,11 @@ namespace PrePoMax
         #endregion #################################################################################################################
 
         #region Query menu   #######################################################################################################
-        public string GetFreeWidgetName()
+        public string GetAnnotationText(string data)
         {
-            return _widgets.GetFreeWidgetName();
+            // This must be in Controller - the _annotation object changes
+            return _annotations.GetAnnotationText(data);
         }
-        public WidgetBase GetCurrentWidget(string name)
-        {
-            return _widgets.GetCurrentWidget(name);
-        }
-        public string GetWidgetText(string data)
-        {
-            return _widgets.GetWidgetText(data);
-        }
-        public void AddWidget(WidgetBase widget)
-        {
-            _widgets.AddWidget(widget);
-            //
-            DrawWidgets();
-        }
-        public void RemoveCurrentViewArrowWidget(string widgetName)
-        {
-            _form.RemoveArrowWidgets(new string[] { widgetName });
-            _widgets.RemoveCurrentArrowWidget(widgetName);
-        }
-        public void RemoveCurrentViewArrowWidgets()
-        {
-            _form.RemoveArrowWidgets(_widgets.GetCurrentWidgetNames());
-            _widgets.RemoveCurrentArrowWidgets();
-        }
-        public void RemoveAllArrowWidgets()
-        {
-            _form.RemoveArrowWidgets(_widgets.GetAllWidgetNames());
-            _widgets.RemoveAllArrowWidgets();
-        }
-        //
         public string GetLengthUnit()
         {
             string unit;
@@ -7571,8 +7544,8 @@ namespace PrePoMax
             _form.HideActors(partNames, true);
             //
             AnnotateWithColorLegend();
-            // Widgets
-            DrawWidgets();
+            // Annotations
+            _annotations.DrawAnnotations();
         }
         public void ShowResultParts(string[] partNames)
         {
@@ -7584,8 +7557,8 @@ namespace PrePoMax
             _form.ShowActors(partNames, true);
             //
             AnnotateWithColorLegend();
-            // Widgets
-            DrawWidgets();
+            // Annotations
+            _annotations.DrawAnnotations();
         }
         public void SetTransparencyForResultParts(string[] partNames, byte alpha)
         {
@@ -7621,8 +7594,8 @@ namespace PrePoMax
         public void RemoveResultParts(string[] partNames)
         {
             ViewGeometryModelResults view = ViewGeometryModelResults.Results;
-            // Remove widgets
-            _widgets.RemoveCurrentArrowWidgetsByParts(partNames, view);
+            // Remove annotations
+            _annotations.RemoveCurrentArrowAnnotationsByParts(partNames, view);
             //
             string[] removedPartNames = _results.RemoveParts(partNames);
             //
@@ -7643,8 +7616,8 @@ namespace PrePoMax
             //
             ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
             RemoveExplodedView(false);
-            // Remove widgets
-            _widgets.RemoveCurrentArrowWidgetsByParts(partNames, view);
+            // Remove annotations
+            _annotations.RemoveCurrentArrowAnnotationsByParts(partNames, view);
             //
             _results.Mesh.MergeResultParts(partNames, out newResultPart, out mergedParts);
             ApplyExplodedView(parameters, null, false);
@@ -9307,7 +9280,7 @@ namespace PrePoMax
                             //
                             DrawGeomParts();
                             AnnotateWithColorLegend();
-                            DrawWidgets();
+                            _annotations.DrawAnnotations();
                             //
                             Octree.Plane plane = _sectionViewPlanes[_currentView];
                             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -9421,7 +9394,7 @@ namespace PrePoMax
                                 DrawAllModelParts();
                                 AnnotateWithColorLegend();
                                 DrawSymbols();
-                                DrawWidgets();
+                                _annotations.DrawAnnotations();
                                 //
                                 Octree.Plane plane = _sectionViewPlanes[_currentView];
                                 if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -9788,57 +9761,9 @@ namespace PrePoMax
             }
             // Pre-processing settings
             PreSettings ps = _settings.Pre;
-            _form.DrawColorBarBackground(ps.ColorBarBackgroundType == WidgetBackgroundType.White);
+            _form.DrawColorBarBackground(ps.ColorBarBackgroundType == AnnotationBackgroundType.White);
             _form.DrawColorBarBorder(ps.ColorBarDrawBorder);
             //
-        }
-        // Widgets
-        public void SuppressCurrentWidgets()
-        {
-            // Supress widgets
-            _widgets.SuppressCurrentWidgets();
-            //
-            DrawWidgets();
-        }
-        public void ResumeCurrentWidgets()
-        {
-            // Resume widgets
-            _widgets.ResumeCurrentWidgets();
-            //
-            DrawWidgets();
-        }
-        public void DrawWidgets()
-        {
-            string text;
-            double[] arrowCoor;
-            //            
-            bool drawBackground = Settings.Widgets.BackgroundType == WidgetBackgroundType.White;
-            bool drawBorder = Settings.Widgets.DrawBorder;
-            //
-            WidgetBase widget;
-            List<string> invalidWidgetNames = new List<string>(); 
-            foreach (var entry in _widgets.GetCurrentWidgets())
-            {
-                try // some widgets might become unvalid
-                {
-                    widget = entry.Value;
-                    // First get the widget data to determine if the widget is valid
-                    widget.GetWidgetData(out text, out arrowCoor);
-                    _form.AddArrowWidget(entry.Value.Name, text, arrowCoor, drawBackground,
-                                         drawBorder, widget.IsWidgetVisible() && widget.Valid);
-
-                }
-                catch
-                {
-                    invalidWidgetNames.Add(entry.Key);
-                }
-            }
-            // Remove invalid widgets
-            if (invalidWidgetNames.Count > 0)
-            {
-                _widgets.RemoveCurrentArrowWidgets(invalidWidgetNames.ToArray());
-                _form.RemoveArrowWidgets(invalidWidgetNames.ToArray());
-            }
         }
         // Symbols
         public void DrawSymbols()
@@ -12609,8 +12534,8 @@ namespace PrePoMax
                     DrawAllResultParts(_currentFieldData, _settings.Post.UndeformedModelType, _settings.Post.UndeformedModelColor);
                     // Transformation
                     ApplyTransformation();
-                    // Widgets
-                    DrawWidgets();
+                    // Annotations
+                    _annotations.DrawAnnotations();
                     // Section view
                     Octree.Plane plane = _sectionViewPlanes[_currentView];
                     if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -12928,10 +12853,10 @@ namespace PrePoMax
                                        legendSettings.ColorSpectrum.MinMaxType.ToString());
                 //
                 _form.SetScalarBarNumberFormat(legendSettings.GetColorChartNumberFormat());
-                _form.DrawLegendBackground(legendSettings.BackgroundType == WidgetBackgroundType.White);
+                _form.DrawLegendBackground(legendSettings.BackgroundType == AnnotationBackgroundType.White);
                 _form.DrawLegendBorder(legendSettings.DrawBorder);
                 // Status block
-                _form.DrawStatusBlockBackground(statusBlockSettings.BackgroundType == WidgetBackgroundType.White);
+                _form.DrawStatusBlockBackground(statusBlockSettings.BackgroundType == AnnotationBackgroundType.White);
                 _form.DrawStatusBlockBorder(statusBlockSettings.DrawBorder);
                 // Limits
                 _form.SetShowMinValueLocation(postSettings.ShowMinValueLocation);
@@ -12959,13 +12884,6 @@ namespace PrePoMax
             //
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, unit,
                                  deformationVariable, scale, fieldType, stepNumber, incrementNumber);
-        }
-        private void SetMinMaxWidgets()
-        {
-            if (Settings.Post.ShowMinValueLocation)
-            {
-
-            }
         }
         private vtkControl.DataFieldType ConvertStepType(FieldData fieldData)
         {
@@ -13003,8 +12921,8 @@ namespace PrePoMax
                                                         locatorResultData.Nodes.Values, false);
                 }
             }
-            // Widgets
-            DrawWidgets();
+            // Annotations
+            _annotations.DrawAnnotations();
             //
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
             //

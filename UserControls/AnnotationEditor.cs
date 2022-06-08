@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace UserControls
 {
-    public partial class WidgetEditor : UserControl
+    public partial class AnnotationEditor : UserControl
     {
         // Variables                                                                                                                
         private int _pad = 6;
@@ -63,7 +63,7 @@ namespace UserControls
 
 
         // Constructors                                                                                                             
-        public WidgetEditor()
+        public AnnotationEditor()
         {
             InitializeComponent();
         }

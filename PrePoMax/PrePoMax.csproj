@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PrePoMax</RootNamespace>
     <AssemblyName>PrePoMax</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
@@ -377,19 +377,20 @@
     <Compile Include="Forms\46_DefinedField\ViewDefinedTemperature.cs" />
     <Compile Include="Forms\51_Settings\ViewCalculixSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewColorSettings.cs" />
-    <Compile Include="Forms\51_Settings\ViewWidgetsSettings.cs" />
+    <Compile Include="Forms\51_Settings\ViewAnnotationSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewMeshingSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewUnitSystemlSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewStatusBlockSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewLegendSettings.cs" />
-    <Compile Include="Widgets\MinValueWidget.cs" />
-    <Compile Include="Widgets\TextWidget.cs" />
-    <Compile Include="Widgets\PartWidget.cs" />
-    <Compile Include="Widgets\SurfaceWidget.cs" />
-    <Compile Include="Widgets\EdgeWidget.cs" />
-    <Compile Include="Widgets\ElementWidget.cs" />
-    <Compile Include="Widgets\NodeWidget.cs" />
-    <Compile Include="Widgets\WidgetBase.cs" />
+    <Compile Include="Widgets\MaxValueAnnotation.cs" />
+    <Compile Include="Widgets\MinValueAnnotation.cs" />
+    <Compile Include="Widgets\TextAnnotation.cs" />
+    <Compile Include="Widgets\PartAnnotation.cs" />
+    <Compile Include="Widgets\SurfaceAnnotation.cs" />
+    <Compile Include="Widgets\EdgeAnnotation.cs" />
+    <Compile Include="Widgets\ElementAnnotation.cs" />
+    <Compile Include="Widgets\NodeAnnotation.cs" />
+    <Compile Include="Widgets\AnnotationBase.cs" />
     <Compile Include="Forms\72_ResultHistoryOutput\FrmResultHistoryOutput.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -590,7 +591,7 @@
     <Compile Include="Selection\ItemSet\ItemSetDataEditor.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Settings\ColorSettings.cs" />
-    <Compile Include="Settings\WidgetsSettings.cs" />
+    <Compile Include="Settings\AnnotationSettings.cs" />
     <Compile Include="Settings\MeshingSettings.cs" />
     <Compile Include="Settings\UnitSystemSettings.cs" />
     <Compile Include="Settings\GeneralSettings.cs" />
@@ -605,7 +606,7 @@
     <Compile Include="Settings\CalculixSettings.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="Enums\UpdateModelType.cs" />
-    <Compile Include="Widgets\WidgetContainer.cs" />
+    <Compile Include="Widgets\AnnotationContainer.cs" />
     <EmbeddedResource Include="Forms\00_Common\FrmSelectGeometry.resx">
       <DependentUpon>FrmSelectGeometry.cs</DependentUpon>
     </EmbeddedResource>

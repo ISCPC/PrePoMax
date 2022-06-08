@@ -25,7 +25,7 @@ namespace PrePoMax
         private int _nodeSymbolSize;
         private bool _drawSymbolEdges;
         //
-        private WidgetBackgroundType _colorBarBackgroundType;
+        private AnnotationBackgroundType _colorBarBackgroundType;
         private bool _colorBarDrawBorder;
 
 
@@ -84,7 +84,7 @@ namespace PrePoMax
             set { _drawSymbolEdges = value; }
         }
         //
-        public WidgetBackgroundType ColorBarBackgroundType
+        public AnnotationBackgroundType ColorBarBackgroundType
         {
             get { return _colorBarBackgroundType; }
             set
@@ -92,7 +92,7 @@ namespace PrePoMax
                 if (value != _colorBarBackgroundType)
                 {
                     _colorBarBackgroundType = value;
-                    if (_colorBarBackgroundType == WidgetBackgroundType.White) _colorBarDrawBorder = true;
+                    if (_colorBarBackgroundType == AnnotationBackgroundType.White) _colorBarDrawBorder = true;
                 }
             }
         }
@@ -122,7 +122,7 @@ namespace PrePoMax
             _nodeSymbolSize = 3;
             _drawSymbolEdges = true;
             //
-            _colorBarBackgroundType = WidgetBackgroundType.None;
+            _colorBarBackgroundType = AnnotationBackgroundType.None;
             _colorBarDrawBorder = true;
         }
       

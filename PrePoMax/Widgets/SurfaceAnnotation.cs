@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace PrePoMax
 {
     [Serializable]
-    public class SurfaceWidget : WidgetBase
+    public class SurfaceAnnotation : AnnotationBase
     {
         // Variables                                                                                                                
         private int _geometryId;
@@ -19,7 +19,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public SurfaceWidget(string name, int geometryId)
+        public SurfaceAnnotation(string name, int geometryId)
             : base(name)
         {
             _geometryId = geometryId;
@@ -28,7 +28,7 @@ namespace PrePoMax
 
 
         // Methods
-        public override void GetWidgetData(out string text, out double[] coor)
+        public override void GetAnnotationData(out string text, out double[] coor)
         {
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(_geometryId);
             FeMesh mesh = Controller.DisplayedMesh;
@@ -37,7 +37,7 @@ namespace PrePoMax
             double area;
             string areaUnit = Controller.GetAreaUnit();
             string fieldUnit = "";
-            string numberFormat = Controller.Settings.Widgets.GetNumberFormat();
+            string numberFormat = Controller.Settings.Annotations.GetNumberFormat();
             //
             bool results = false;
             float min = float.MaxValue;
@@ -92,11 +92,11 @@ namespace PrePoMax
             int[] distributedNodeIds = Controller.GetSpatiallyEquallyDistributedCoor(nodeCoor, 1);
             coor = nodeCoor[distributedNodeIds[0]];
             //
-            bool showSurfaceId = Controller.Settings.Widgets.ShowEdgeSurId;
-            bool showSurfaceLength = Controller.Settings.Widgets.ShowEdgeSurSize;
-            bool showSurfaceMax = Controller.Settings.Widgets.ShowEdgeSurMax && results;
-            bool showSurfaceMin = Controller.Settings.Widgets.ShowEdgeSurMin && results;
-            bool showSurfaceAvg = Controller.Settings.Widgets.ShowEdgeSurAvg && results;
+            bool showSurfaceId = Controller.Settings.Annotations.ShowEdgeSurId;
+            bool showSurfaceLength = Controller.Settings.Annotations.ShowEdgeSurSize;
+            bool showSurfaceMax = Controller.Settings.Annotations.ShowEdgeSurMax && results;
+            bool showSurfaceMin = Controller.Settings.Annotations.ShowEdgeSurMin && results;
+            bool showSurfaceAvg = Controller.Settings.Annotations.ShowEdgeSurAvg && results;
             if (!showSurfaceLength && !showSurfaceMax && !showSurfaceMin && !showSurfaceAvg) showSurfaceId = true;
             text = "";
             if (showSurfaceId)

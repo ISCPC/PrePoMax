@@ -12,12 +12,12 @@ using System.Runtime.InteropServices;
 namespace PrePoMax
 {
     [Serializable]
-    public class WidgetsSettings : ISettings
+    public class AnnotationSettings : ISettings
     {
         // Variables                                                                                                                
-        private WidgetNumberFormat _numberFormat;
+        private AnnotationNumberFormat _numberFormat;
         private int _numberOfSignificantDigits;
-        private WidgetBackgroundType _backgroundType;
+        private AnnotationBackgroundType _backgroundType;
         private bool _drawBorder;
         //
         private bool _showNodeId;
@@ -37,7 +37,7 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
-        public WidgetNumberFormat NumberFormat { get { return _numberFormat; } set { _numberFormat = value; } }
+        public AnnotationNumberFormat NumberFormat { get { return _numberFormat; } set { _numberFormat = value; } }
         public int NumberOfSignificantDigits
         {
             get { return _numberOfSignificantDigits; }
@@ -48,7 +48,7 @@ namespace PrePoMax
                 if (_numberOfSignificantDigits > 8) _numberOfSignificantDigits = 8;
             }
         }
-        public WidgetBackgroundType BackgroundType
+        public AnnotationBackgroundType BackgroundType
         {
             get { return _backgroundType; }
             set
@@ -56,7 +56,7 @@ namespace PrePoMax
                 if (value != _backgroundType)
                 {
                     _backgroundType = value;
-                    if (_backgroundType == WidgetBackgroundType.White) _drawBorder = true;
+                    if (_backgroundType == AnnotationBackgroundType.White) _drawBorder = true;
                 }
             }
         }
@@ -83,7 +83,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public WidgetsSettings()
+        public AnnotationSettings()
         {
             Reset();
         }
@@ -95,10 +95,10 @@ namespace PrePoMax
         }
         public void Reset()
         {
-            _numberFormat = WidgetNumberFormat.General;
+            _numberFormat = AnnotationNumberFormat.General;
             _numberOfSignificantDigits = 4;
             //
-            _backgroundType = WidgetBackgroundType.White;
+            _backgroundType = AnnotationBackgroundType.White;
             _drawBorder = true;
             //
             _showNodeId = true;
@@ -119,7 +119,7 @@ namespace PrePoMax
         public string GetNumberFormat()
         {
             string numberformat;
-            if (_numberFormat == WidgetNumberFormat.General)
+            if (_numberFormat == AnnotationNumberFormat.General)
             {
                 numberformat = "G" + _numberOfSignificantDigits.ToString();
             }

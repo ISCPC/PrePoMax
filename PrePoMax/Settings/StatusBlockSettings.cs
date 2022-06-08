@@ -15,12 +15,12 @@ namespace PrePoMax
     public class StatusBlockSettings : ISettings
     {
         // Variables                                                                                                                
-        private WidgetBackgroundType _backgroundType;
+        private AnnotationBackgroundType _backgroundType;
         private bool _drawBorder;
 
 
         // Properties                                                                                                               
-        public WidgetBackgroundType BackgroundType
+        public AnnotationBackgroundType BackgroundType
         {
             get { return _backgroundType; }
             set
@@ -28,7 +28,7 @@ namespace PrePoMax
                 if (value != _backgroundType)
                 {
                     _backgroundType = value;
-                    if (_backgroundType == WidgetBackgroundType.White) _drawBorder = true;
+                    if (_backgroundType == AnnotationBackgroundType.White) _drawBorder = true;
                 }
             }
         }
@@ -48,7 +48,7 @@ namespace PrePoMax
         }
         public void Reset()
         {
-            _backgroundType = WidgetBackgroundType.None;
+            _backgroundType = AnnotationBackgroundType.None;
             _drawBorder = true;
         }
     }

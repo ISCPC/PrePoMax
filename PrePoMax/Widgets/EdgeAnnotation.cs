@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace PrePoMax
 {
     [Serializable]
-    public class EdgeWidget : WidgetBase
+    public class EdgeAnnotation : AnnotationBase
     {
         // Variables                                                                                                                
         private int _geometryId;
@@ -20,7 +20,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public EdgeWidget(string name, int geometryId)
+        public EdgeAnnotation(string name, int geometryId)
             : base(name)
         {
             _geometryId = geometryId;
@@ -29,7 +29,7 @@ namespace PrePoMax
 
 
         // Methods
-        public override void GetWidgetData(out string text, out double[] coor)
+        public override void GetAnnotationData(out string text, out double[] coor)
         {
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(_geometryId);
             FeMesh mesh = Controller.DisplayedMesh;
@@ -38,7 +38,7 @@ namespace PrePoMax
             double length;
             string lenUnit = Controller.GetLengthUnit();
             string fieldUnit = "";
-            string numberFormat = Controller.Settings.Widgets.GetNumberFormat();
+            string numberFormat = Controller.Settings.Annotations.GetNumberFormat();
             //
             FeNode n1;
             FeNode n2;
@@ -113,11 +113,11 @@ namespace PrePoMax
             }
             else throw new NotSupportedException();
             //
-            bool addEdgeIdData = Controller.Settings.Widgets.ShowEdgeSurId;
-            bool addEdgeLengthData = Controller.Settings.Widgets.ShowEdgeSurSize;
-            bool addEdgeMaxData = Controller.Settings.Widgets.ShowEdgeSurMax && results;
-            bool addEdgeMinData = Controller.Settings.Widgets.ShowEdgeSurMin && results;
-            bool addEdgeAvgData = Controller.Settings.Widgets.ShowEdgeSurAvg && results;
+            bool addEdgeIdData = Controller.Settings.Annotations.ShowEdgeSurId;
+            bool addEdgeLengthData = Controller.Settings.Annotations.ShowEdgeSurSize;
+            bool addEdgeMaxData = Controller.Settings.Annotations.ShowEdgeSurMax && results;
+            bool addEdgeMinData = Controller.Settings.Annotations.ShowEdgeSurMin && results;
+            bool addEdgeAvgData = Controller.Settings.Annotations.ShowEdgeSurAvg && results;
             if (!addEdgeLengthData && !addEdgeMaxData && !addEdgeMinData && !addEdgeAvgData) addEdgeIdData = true;
             text = "";
             if (addEdgeIdData)

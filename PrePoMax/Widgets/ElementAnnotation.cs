@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace PrePoMax
 {
     [Serializable]
-    public class ElementWidget : WidgetBase
+    public class ElementAnnotation : AnnotationBase
     {
         // Variables                                                                                                                
         private int _elementId;
@@ -18,7 +18,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public ElementWidget(string name, int elementId)
+        public ElementAnnotation(string name, int elementId)
             : base(name)
         {
             _elementId = elementId;
@@ -27,7 +27,7 @@ namespace PrePoMax
 
 
         //
-        public override void GetWidgetData(out string text, out double[] coor)
+        public override void GetAnnotationData(out string text, out double[] coor)
         {
             text = string.Format("Element id: {0}", _elementId);
             //

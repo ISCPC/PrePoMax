@@ -8,7 +8,7 @@ using CaeGlobals;
 namespace PrePoMax
 {
     [Serializable]
-    public abstract class WidgetBase : NamedClass
+    public abstract class AnnotationBase : NamedClass
     {
         // Variables                                                                                                                
         protected int _partId;
@@ -24,7 +24,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public WidgetBase(string name)
+        public AnnotationBase(string name)
             : base(name)
         {
             _partId = -1;   // always visible
@@ -33,32 +33,35 @@ namespace PrePoMax
 
 
         // Methods                                                                                                                  
-        public abstract void GetWidgetData(out string text, out double[] coor);
-        public string GetWidgetText()
+        public abstract void GetAnnotationData(out string text, out double[] coor);
+        public string GetAnnotationText()
         {
-            GetWidgetData(out string text, out double[] coor);
+            GetAnnotationData(out string text, out double[] coor);
             return text;
         }
-        public string GetNotOverridenWidgetText()
+        public string GetNotOverridenAnnotationText()
         {
             string tmp = _overridenText;
             _overridenText = null;
             //
-            GetWidgetData(out string text, out double[] coor);
+            GetAnnotationData(out string text, out double[] coor);
             //
             _overridenText = tmp;
             //
             return text;
         }
-        public bool IsWidgetVisible()
+        public bool IsAnnotationVisible()
         {
-            if (_partId == -1) return true;
-            //
-            CaeMesh.FeMesh mesh = Controller.DisplayedMesh;
-            if (mesh != null)
+            if (this.Visible)
             {
-                CaeMesh.BasePart part = mesh.GetPartById(_partId);
-                if (part != null && part.Visible) return true;
+                if (_partId == -1) return true;
+                //
+                CaeMesh.FeMesh mesh = Controller.DisplayedMesh;
+                if (mesh != null)
+                {
+                    CaeMesh.BasePart part = mesh.GetPartById(_partId);
+                    if (part != null && part.Visible) return true;
+                }
             }
             //
             return false;

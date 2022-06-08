@@ -248,7 +248,7 @@ namespace vtkControl
 
 
         // Callbacks                                                                                                                
-        public Func<string, string> Controller_GetWidgetText;
+        public Func<string, string> Controller_GetAnnotationText;
         public Func<int[], vtkMaxActorData> Controller_GetNodeActorData;
         public Func<int[], int[], vtkMaxActorData> Controller_GetCellActorData;
         public Func<int, int[], vtkMaxActorData> Controller_GetCellFaceActorData;
@@ -620,7 +620,7 @@ namespace vtkControl
                 double h = y + 10d;
                 //
                 _probeWidget.SetPosition(w, h);
-                _probeWidget.SetText(Controller_GetWidgetText(globalPointId.ToString()));
+                _probeWidget.SetText(Controller_GetAnnotationText(globalPointId.ToString()));
                 //
                 if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
             }
@@ -663,7 +663,7 @@ namespace vtkControl
                 double h = y + 10;
                 //
                 _probeWidget.SetPosition(w, h);
-                _probeWidget.SetText(Controller_GetWidgetText(globalCellId.ToString()));
+                _probeWidget.SetText(Controller_GetAnnotationText(globalCellId.ToString()));
                 //
                 if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
             }
@@ -711,7 +711,7 @@ namespace vtkControl
                     double h = y + 10d;
                     //
                     _probeWidget.SetPosition(w, h);
-                    _probeWidget.SetText(Controller_GetWidgetText(actorData.Name));
+                    _probeWidget.SetText(Controller_GetAnnotationText(actorData.Name));
                     //
                     if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
                 }
@@ -952,7 +952,7 @@ namespace vtkControl
                 double h = y + 10d;
                 //
                 _probeWidget.SetPosition(w, h);
-                _probeWidget.SetText(Controller_GetWidgetText(actorData.Name));
+                _probeWidget.SetText(Controller_GetAnnotationText(actorData.Name));
                 //
                 if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
             }
@@ -1024,7 +1024,7 @@ namespace vtkControl
                     double h = y + 10d;
                     //
                     _probeWidget.SetPosition(w, h);
-                    _probeWidget.SetText(Controller_GetWidgetText(actorName));
+                    _probeWidget.SetText(Controller_GetAnnotationText(actorName));
                     //
                     if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
                 }

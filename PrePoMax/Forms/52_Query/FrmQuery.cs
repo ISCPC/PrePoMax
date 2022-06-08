@@ -104,14 +104,14 @@ namespace PrePoMax.Forms
                         break;
                 }
                 // Clear
-                ClearMeasureWidgets();
+                RemoveMeasureAnnotation();
                 _controller.ClearSelectionHistoryAndCallSelectionChanged();
             }
         }
         private void btnClear_Click(object sender, EventArgs e)
         {
-            // Widgets
-            _controller.RemoveCurrentViewArrowWidgets();
+            // Annotations
+            _controller.Annotations.RemoveCurrentArrowAnnotations();
             // Selection
             _controller.ClearSelectionHistoryAndCallSelectionChanged();
         }
@@ -140,7 +140,7 @@ namespace PrePoMax.Forms
             {
                 _controller.SelectBy = vtkSelectBy.Default;
                 // Clear
-                ClearMeasureWidgets();
+                RemoveMeasureAnnotation();
                 _controller.ClearSelectionHistoryAndCallSelectionChanged();
             }                
         }
@@ -160,8 +160,8 @@ namespace PrePoMax.Forms
         {
             try
             {
-                // Clear widgets
-                ClearMeasureWidgets();
+                // Clear annotations
+                RemoveMeasureAnnotation();
                 //
                 if (ids == null || ids.Length == 0) return;
                 //
@@ -242,7 +242,7 @@ namespace PrePoMax.Forms
                 _coorNodesToDraw[0] = baseV.Coor;
                 _coorLinesToDraw = null;
                 //
-                _controller.AddWidget(new NodeWidget(_controller.GetFreeWidgetName(), nodeId));
+                _controller.Annotations.AddNodeAnnotation(nodeId);
             }
         }
         public void OneElementPicked(int elementId)
@@ -263,7 +263,7 @@ namespace PrePoMax.Forms
             //
             _controller.HighlightElement(elementId);
             //
-            _controller.AddWidget(new ElementWidget(_controller.GetFreeWidgetName(), elementId));
+            _controller.Annotations.AddElementAnnotation(elementId);
         }
         public void OneEdgePicked(int geometryId)
         {
@@ -306,7 +306,7 @@ namespace PrePoMax.Forms
             //
             _controller.HighlightItemsByGeometryEdgeIds(new int[] { geometryId }, false);
             //
-            _controller.AddWidget(new EdgeWidget(_controller.GetFreeWidgetName(), geometryId));
+            _controller.Annotations.AddEdgeAnnotation(geometryId);
         }
         public void OneSurfacePicked(int geometryId)
         {
@@ -314,7 +314,7 @@ namespace PrePoMax.Forms
             BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePartIds[2]);
             int surfaceId = itemTypePartIds[0];
             double area1 = _controller.DisplayedMesh.GetSurfaceArea(geometryId);
-            string areaUnit = GetAreaUnit();
+            string areaUnit = "[" + _controller.GetAreaUnit() + "]";
             //
             Form_WriteDataToOutput("");
             string data = string.Format("Surface on part: {0}", part.Name);
@@ -348,7 +348,7 @@ namespace PrePoMax.Forms
             //
             _controller.HighlightItemsBySurfaceIds(new int[] { geometryId }, false);
             //
-            _controller.AddWidget(new SurfaceWidget(_controller.GetFreeWidgetName(), geometryId));
+            _controller.Annotations.AddSurfaceAnnotation(geometryId);
         }
         public void OnePartPicked(int partId)
         {
@@ -376,7 +376,7 @@ namespace PrePoMax.Forms
             //
             _controller.Highlight3DObjects(new object[] { part });
             //
-            _controller.AddWidget(new PartWidget(_controller.GetFreeWidgetName(), part.Name));
+            _controller.Annotations.AddPartAnnotation(part.Name);
         }
         private void OutputAssemblyData()
         {
@@ -469,9 +469,9 @@ namespace PrePoMax.Forms
                 _coorNodesToDraw[0] = baseV1.Coor;
                 _coorNodesToDraw[1] = baseV2.Coor;
                 _coorLinesToDraw = _coorNodesToDraw;
-                // Widget
+                // Annotation
                 string text;
-                string numberFormat = _controller.Settings.Widgets.GetNumberFormat();
+                string numberFormat = _controller.Settings.Annotations.GetNumberFormat();
                 //
                 if (trueScaledD != null) baseD = trueScaledD;
                 //
@@ -481,7 +481,7 @@ namespace PrePoMax.Forms
                 text += string.Format("dz: {0} {1}", baseD.Z.ToString(numberFormat), lenUnit);
                 //
                 Vec3D anchor = (baseV1 + baseV2) * 0.5;
-                _controller.AddWidget(new TextWidget(Globals.DistanceWidgetName, text, anchor.Coor));
+                _controller.Annotations.AddMeasureAnnotation(text, anchor.Coor);
             }
         }
         public void ThreeNodesPicked(int nodeId1, int nodeId2, int nodeId3)
@@ -535,7 +535,7 @@ namespace PrePoMax.Forms
                 baseV2 = new Vec3D(_controller.GetScaledNode(scale, nodeId2).Coor);    // for the _coorNodesToDraw
                 baseV3 = new Vec3D(_controller.GetScaledNode(scale, nodeId3).Coor);    // for the _coorNodesToDraw
                 //
-                angle = angle2;                                                 // for the widget
+                angle = angle2;                                                 // for the annotation
                 angle2draw = ComputeAngle(baseV1, baseV2, baseV3, out p, out axis); // for drawing
             }
             Form_WriteDataToOutput("");
@@ -548,14 +548,14 @@ namespace PrePoMax.Forms
             List<double[]> coorLines = new List<double[]>() { baseV1.Coor, baseV2.Coor, baseV3.Coor, baseV2.Coor };
             coorLines.AddRange(ComputeCirclePoints(baseV2, axis, p, angle2draw * Math.PI / 180));
             _coorLinesToDraw = coorLines.ToArray();
-            // Widget
+            // Annotation
             string text;
-            string numberFormat = _controller.Settings.Widgets.GetNumberFormat();
+            string numberFormat = _controller.Settings.Annotations.GetNumberFormat();
             //
             text = string.Format("Angle: {0}{1}", angle.ToString(numberFormat), angleUnit);
             //
             double[] anchor = _coorLinesToDraw[_coorLinesToDraw.Length / 2];
-            _controller.AddWidget(new TextWidget(Globals.AngleWidgetName, text, anchor));
+            _controller.Annotations.AddMeasureAnnotation(text, anchor);
         }
         private void ComputeCircle(int nodeId1, int nodeId2, int nodeId3)
         {
@@ -620,9 +620,9 @@ namespace PrePoMax.Forms
             _coorNodesToDraw[3] = centerDraw.Coor;
             //
             _coorLinesToDraw = ComputeCirclePoints(centerDraw, axisDraw, baseV1, 2 * Math.PI);
-            // Widget
+            // Annotation
             string text;
-            string numberFormat = _controller.Settings.Widgets.GetNumberFormat();
+            string numberFormat = _controller.Settings.Annotations.GetNumberFormat();
             //
             text = string.Format("Radius: {0} {1}{2}", r.ToString(numberFormat), lenUnit, Environment.NewLine);
             text += string.Format("X: {0} {1}{2}", center.X.ToString(numberFormat), lenUnit, Environment.NewLine);
@@ -630,7 +630,7 @@ namespace PrePoMax.Forms
             text += string.Format("Z: {0} {1}", center.Z.ToString(numberFormat), lenUnit);
             //
             double[] anchor = _coorLinesToDraw[2];
-            _controller.AddWidget(new TextWidget(Globals.CircleWidgetName, text, anchor));
+            _controller.Annotations.AddMeasureAnnotation(text, anchor);
         }
         private double ComputeAngle(Vec3D baseV1, Vec3D baseV2, Vec3D baseV3, out Vec3D p, out Vec3D axis)
         {
@@ -681,11 +681,9 @@ namespace PrePoMax.Forms
             return coorLines;
         }
         //
-        private void ClearMeasureWidgets()
+        private void RemoveMeasureAnnotation()
         {
-            _controller.RemoveCurrentViewArrowWidget(Globals.DistanceWidgetName);
-            _controller.RemoveCurrentViewArrowWidget(Globals.AngleWidgetName);
-            _controller.RemoveCurrentViewArrowWidget(Globals.CircleWidgetName);
+            _controller.Annotations.RemoveCurrentMeasureAnnotation();
         }
         private void HighlightNodes()
         {
@@ -705,21 +703,5 @@ namespace PrePoMax.Forms
                 }
             }
         }
-        //       
-        private string GetAreaUnit()
-        {
-            string unit;
-            //
-            if (_controller.CurrentView == ViewGeometryModelResults.Geometry ||
-                _controller.CurrentView == ViewGeometryModelResults.Model)
-                unit = _controller.Model.UnitSystem.AreaUnitAbbreviation;
-            else if (_controller.CurrentView == ViewGeometryModelResults.Results)
-                unit = _controller.Results.UnitSystem.AreaUnitAbbreviation;
-            else throw new NotSupportedException();
-            //
-            return "[" + unit + "]";
-        }
-
-        
     }
 }

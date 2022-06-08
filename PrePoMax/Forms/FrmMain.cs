@@ -205,9 +205,9 @@ namespace PrePoMax
             //
             try
             {
-                // Edit widget text box
-                panelControl.Controls.Remove(weWidgetTextEditor);
-                this.Controls.Add(weWidgetTextEditor);
+                // Edit annotation text box
+                panelControl.Controls.Remove(aeAnnotationTextEditor);
+                this.Controls.Add(aeAnnotationTextEditor);
                 // Vtk
                 _vtk = new vtkControl.vtkControl();
                 panelControl.Parent.Controls.Add(_vtk);
@@ -268,7 +268,7 @@ namespace PrePoMax
                 _controller = new Controller(this);
                 // Vtk
                 _vtk.OnMouseLeftButtonUpSelection += SelectPointOrArea;
-                _vtk.Controller_GetWidgetText += _controller.GetWidgetText;
+                _vtk.Controller_GetAnnotationText += _controller.GetAnnotationText;
                 _vtk.Controller_GetNodeActorData = _controller.GetNodeActorData;
                 _vtk.Controller_GetCellActorData = _controller.GetCellActorData;
                 _vtk.Controller_GetCellFaceActorData = _controller.GetCellFaceActorData;
@@ -283,8 +283,8 @@ namespace PrePoMax
                 _vtk.Form_ShowColorBarSettings = ShowColorBarSettings;
                 _vtk.Form_ShowLegendSettings = ShowLegendSettings;
                 _vtk.Form_ShowStatusBlockSettings = ShowStatusBlockSettings;
-                _vtk.Form_EndEditArrowWidget = EndEditArrowWidget;
-                _vtk.Form_WidgetPicked = WidgetPicked;
+                _vtk.Form_EndEditArrowWidget = EndEditArrowAnnotation;
+                _vtk.Form_WidgetPicked = AnnotationPicked;
                 // Forms
                 _formLocation = new Point(100, 100);
                 _allForms = new List<Form>();
@@ -718,8 +718,8 @@ namespace PrePoMax
                 // Model tree
                 else if (_modelTree.ActiveControl == null || !_modelTree.ActiveControl.Focused)
                 {
-                    // Check for widget editor
-                    if (!weWidgetTextEditor.Visible) _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
+                    // Check for annotation editor
+                    if (!aeAnnotationTextEditor.Visible) _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
                 }
             }
         }
@@ -5335,9 +5335,9 @@ namespace PrePoMax
             _frmSettings.SetSettingsToShow(Globals.PreSettingsName);
             tsmiSettings_Click(null, null);
         }
-        private void ShowWidgetSettings()
+        private void ShowAnnotationSettings()
         {
-            _frmSettings.SetSettingsToShow(Globals.WidgetsSettingsName);
+            _frmSettings.SetSettingsToShow(Globals.AnnotationSettingsName);
             tsmiSettings_Click(null, null);
         }
         private void ShowLegendSettings()
@@ -5350,14 +5350,13 @@ namespace PrePoMax
             _frmSettings.SetSettingsToShow(Globals.StatusBlockSettingsName);
             tsmiSettings_Click(null, null);
         }
-        // Widgets
-        private void StartEditArrowWidget(string name, Rectangle rectangle)
+        // Annotations
+        private void StartEditArrowAnnotation(string name, Rectangle rectangle)
         {
-            if (name == Globals.DistanceWidgetName || name == Globals.AngleWidgetName || name == Globals.CircleWidgetName)
-                return;
+            if (AnnotationContainer.MeasureAnnotationName == name) return;
             //
-            WidgetBase widget = _controller.GetCurrentWidget(name);
-            string text = widget.GetWidgetText();
+            AnnotationBase annotation = _controller.Annotations.GetCurrentAnnotation(name);
+            string text = annotation.GetAnnotationText();
             rectangle.Inflate(2, 2);
             //
             Point vtkLocation = this.PointToClient(_vtk.PointToScreen(_vtk.Location));
@@ -5365,64 +5364,64 @@ namespace PrePoMax
                                        vtkLocation.Y + (_vtk.Height - rectangle.Y - rectangle.Height));
             Rectangle vtkArea = new Rectangle(vtkLocation, _vtk.Size);
             //
-            weWidgetTextEditor.Location = location;
-            weWidgetTextEditor.Size = rectangle.Size;
-            weWidgetTextEditor.MinSize = rectangle.Size;
-            weWidgetTextEditor.ParentArea = vtkArea;
-            weWidgetTextEditor.Text = text;
-            weWidgetTextEditor.BringToFront();
-            weWidgetTextEditor.Visible = true;
-            weWidgetTextEditor.Tag = widget;
+            aeAnnotationTextEditor.Location = location;
+            aeAnnotationTextEditor.Size = rectangle.Size;
+            aeAnnotationTextEditor.MinSize = rectangle.Size;
+            aeAnnotationTextEditor.ParentArea = vtkArea;
+            aeAnnotationTextEditor.Text = text;
+            aeAnnotationTextEditor.BringToFront();
+            aeAnnotationTextEditor.Visible = true;
+            aeAnnotationTextEditor.Tag = annotation;
             //
             _vtk.DisableInteractor = true;
         }
-        private void EndEditArrowWidget()
+        private void EndEditArrowAnnotation()
         {
-            if (weWidgetTextEditor.Visible)
+            if (aeAnnotationTextEditor.Visible)
             {
-                WidgetBase widget = (WidgetBase)weWidgetTextEditor.Tag;
-                string nonOverridenText = widget.GetNotOverridenWidgetText();
+                AnnotationBase annotation = (AnnotationBase)aeAnnotationTextEditor.Tag;
+                string nonOverridenText = annotation.GetNotOverridenAnnotationText();
                 //
                 nonOverridenText = nonOverridenText.Replace("\r\n", "\n");
-                string newText = weWidgetTextEditor.Text.Replace("\r\n", "\n");
+                string newText = aeAnnotationTextEditor.Text.Replace("\r\n", "\n");
                 //
                 if (newText.Length > 0 && newText != nonOverridenText)
-                    widget.OverridenText = weWidgetTextEditor.Text;
+                    annotation.OverridenText = aeAnnotationTextEditor.Text;
                 else
-                    widget.OverridenText = null;
+                    annotation.OverridenText = null;
                 //
-                weWidgetTextEditor.Visible = false;
+                aeAnnotationTextEditor.Visible = false;
                 //
                 _vtk.DisableInteractor = false;
                 //
-                _controller.DrawWidgets();  // redraw in both cases
+                _controller.Annotations.DrawAnnotations();  // redraw in both cases
             }
         }
         public override void LeftMousePressedOnForm(Control sender)
         {
-            if (weWidgetTextEditor.Visible && !weWidgetTextEditor.IsOrContainsControl(sender))
-                EndEditArrowWidget();
+            if (aeAnnotationTextEditor.Visible && !aeAnnotationTextEditor.IsOrContainsControl(sender))
+                EndEditArrowAnnotation();
         }
-        public void WidgetPicked(MouseEventArgs e, Keys modifierKeys, string widgetName, Rectangle widgetRectangle)
+        public void AnnotationPicked(MouseEventArgs e, Keys modifierKeys, string annotationName, Rectangle annotationRectangle)
         {
             if (e.Button == MouseButtons.Left && e.Clicks == 2)
             {
-                StartEditArrowWidget(widgetName, widgetRectangle);
+                StartEditArrowAnnotation(annotationName, annotationRectangle);
             }
             else if (e.Button == MouseButtons.Right)
             {
-                tsmiDeleteWidget.Tag = new object[] { widgetName, widgetRectangle };
-                cmsWidget.Show(_vtk, new Point(e.X, _vtk.Height-  e.Y));
+                tsmiDeleteAnnotation.Tag = new object[] { annotationName, annotationRectangle };
+                cmsAnnotation.Show(_vtk, new Point(e.X, _vtk.Height-  e.Y));
             }
         }
-        private void tsmiEditWidget_Click(object sender, EventArgs e)
+        private void tsmiEditAnnotation_Click(object sender, EventArgs e)
         {
             try
             {
-                object[] tag = (object[])tsmiDeleteWidget.Tag;
-                if (tag[0] is string widgetName && tag[1] is Rectangle widgetRectangle)
+                object[] tag = (object[])tsmiDeleteAnnotation.Tag;
+                if (tag[0] is string annotationName && tag[1] is Rectangle annotationRectangle)
                 {
-                    StartEditArrowWidget(widgetName, widgetRectangle);
+                    StartEditArrowAnnotation(annotationName, annotationRectangle);
                 }
             }
             catch (Exception ex)
@@ -5430,44 +5429,39 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiResetWidget_Click(object sender, EventArgs e)
+        private void tsmiResetAnnotation_Click(object sender, EventArgs e)
         {
             try
             {
-                object[] tag = (object[])tsmiDeleteWidget.Tag;
-                if (tag[0] is string widgetName)
-                {
-                    WidgetBase widget = _controller.GetCurrentWidget(widgetName);
-                    widget.OverridenText = null;
-                    _controller.DrawWidgets();
-                }
+                object[] tag = (object[])tsmiDeleteAnnotation.Tag;
+                if (tag[0] is string annotationName) _controller.Annotations.ResetAnnotation(annotationName);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiWidgetSettings_Click(object sender, EventArgs e)
+        private void tsmiAnnotationSettings_Click(object sender, EventArgs e)
         {
             try
             {
-                ShowWidgetSettings();
+                ShowAnnotationSettings();
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiDeleteWidget_Click(object sender, EventArgs e)
+        private void tsmiDeleteAnnotation_Click(object sender, EventArgs e)
         {
             try
             {
-                object[] tag = (object[])tsmiDeleteWidget.Tag;
-                if (tag[0] is string widgetName)
+                object[] tag = (object[])tsmiDeleteAnnotation.Tag;
+                if (tag[0] is string annotationName)
                 {
-                    if (MessageBoxes.ShowWarningQuestion("OK to delete selected widget?") == DialogResult.OK)
+                    if (MessageBoxes.ShowWarningQuestion("OK to delete selected annotation?") == DialogResult.OK)
                     {
-                        _controller.RemoveCurrentViewArrowWidget(widgetName);
+                        _controller.Annotations.RemoveCurrentArrowAnnotation(annotationName);
                     }
                 }
             }

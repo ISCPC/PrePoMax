@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>UserControls</RootNamespace>
     <AssemblyName>UserControls</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -133,7 +133,7 @@
     <Compile Include="TextBoxes\AutoScrollTextBox.Designer.cs">
       <DependentUpon>AutoScrollTextBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="TextBoxes\WidgetEditorRichTextBox.cs">
+    <Compile Include="TextBoxes\AnnotationEditorRichTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="TextBoxes\ResizableTextBox.cs">
@@ -206,11 +206,11 @@
     <Compile Include="AdvisorControl\AdvisorControl.Designer.cs">
       <DependentUpon>AdvisorControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="WidgetEditor.cs">
+    <Compile Include="AnnotationEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="WidgetEditor.Designer.cs">
-      <DependentUpon>WidgetEditor.cs</DependentUpon>
+    <Compile Include="AnnotationEditor.Designer.cs">
+      <DependentUpon>AnnotationEditor.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -267,8 +267,8 @@
     <EmbeddedResource Include="AdvisorControl\AdvisorControl.resx">
       <DependentUpon>AdvisorControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WidgetEditor.resx">
-      <DependentUpon>WidgetEditor.cs</DependentUpon>
+    <EmbeddedResource Include="AnnotationEditor.resx">
+      <DependentUpon>AnnotationEditor.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

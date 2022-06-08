@@ -337,10 +337,14 @@
             this.tsmiAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiTest = new System.Windows.Forms.ToolStripMenuItem();
             this.panelControl = new System.Windows.Forms.Panel();
-            this.weWidgetTextEditor = new UserControls.WidgetEditor();
-            this.cmsWidget = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.tsmiWidgetSettings = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDeleteWidget = new System.Windows.Forms.ToolStripMenuItem();
+            this.aeAnnotationTextEditor = new UserControls.AnnotationEditor();
+            this.cmsAnnotation = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.tsmiEditAnnotation = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiResetAnnotation = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerAnnotation1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiAnnotationSettings = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerAnnotation2 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiDeleteAnnotation = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStripMain = new System.Windows.Forms.StatusStrip();
             this.tspbProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.tsslState = new System.Windows.Forms.ToolStripStatusLabel();
@@ -401,13 +405,9 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsmiDividerWidget1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiEditWidget = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiResetWidget = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDividerWidget2 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStripMain.SuspendLayout();
             this.panelControl.SuspendLayout();
-            this.cmsWidget.SuspendLayout();
+            this.cmsAnnotation.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
@@ -1754,58 +1754,58 @@
             this.tsmiDeleteMaterial});
             this.tsmiMaterial.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMaterial.Image")));
             this.tsmiMaterial.Name = "tsmiMaterial";
-            this.tsmiMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiMaterial.Size = new System.Drawing.Size(156, 22);
             this.tsmiMaterial.Text = "Material";
             // 
             // tsmiCreateMaterial
             // 
             this.tsmiCreateMaterial.Name = "tsmiCreateMaterial";
-            this.tsmiCreateMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateMaterial.Size = new System.Drawing.Size(162, 22);
             this.tsmiCreateMaterial.Text = "Create";
             this.tsmiCreateMaterial.Click += new System.EventHandler(this.tsmiCreateMaterial_Click);
             // 
             // tsmiEditMaterial
             // 
             this.tsmiEditMaterial.Name = "tsmiEditMaterial";
-            this.tsmiEditMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditMaterial.Size = new System.Drawing.Size(162, 22);
             this.tsmiEditMaterial.Text = "Edit";
             this.tsmiEditMaterial.Click += new System.EventHandler(this.tsmiEditMaterial_Click);
             // 
             // tsmiDuplicateMaterial
             // 
             this.tsmiDuplicateMaterial.Name = "tsmiDuplicateMaterial";
-            this.tsmiDuplicateMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDuplicateMaterial.Size = new System.Drawing.Size(162, 22);
             this.tsmiDuplicateMaterial.Text = "Duplicate";
             this.tsmiDuplicateMaterial.Click += new System.EventHandler(this.tsmiDuplicateMaterial_Click);
             // 
             // tsmiDividerMaterial1
             // 
             this.tsmiDividerMaterial1.Name = "tsmiDividerMaterial1";
-            this.tsmiDividerMaterial1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerMaterial1.Size = new System.Drawing.Size(159, 6);
             // 
             // tsmiImportMaterial
             // 
             this.tsmiImportMaterial.Name = "tsmiImportMaterial";
-            this.tsmiImportMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiImportMaterial.Size = new System.Drawing.Size(162, 22);
             this.tsmiImportMaterial.Text = "Import from .inp";
             this.tsmiImportMaterial.Click += new System.EventHandler(this.tsmiImportMaterial_Click);
             // 
             // tsmiExportMaterial
             // 
             this.tsmiExportMaterial.Name = "tsmiExportMaterial";
-            this.tsmiExportMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiExportMaterial.Size = new System.Drawing.Size(162, 22);
             this.tsmiExportMaterial.Text = "Export to .inp";
             this.tsmiExportMaterial.Click += new System.EventHandler(this.tsmiExportMaterial_Click);
             // 
             // tsmiDividerMaterial2
             // 
             this.tsmiDividerMaterial2.Name = "tsmiDividerMaterial2";
-            this.tsmiDividerMaterial2.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerMaterial2.Size = new System.Drawing.Size(159, 6);
             // 
             // tsmiDeleteMaterial
             // 
             this.tsmiDeleteMaterial.Name = "tsmiDeleteMaterial";
-            this.tsmiDeleteMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteMaterial.Size = new System.Drawing.Size(162, 22);
             this.tsmiDeleteMaterial.Text = "Delete";
             this.tsmiDeleteMaterial.Click += new System.EventHandler(this.tsmiDeleteMaterial_Click);
             // 
@@ -1813,7 +1813,7 @@
             // 
             this.tsmiMaterialLibrary.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMaterialLibrary.Image")));
             this.tsmiMaterialLibrary.Name = "tsmiMaterialLibrary";
-            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(180, 22);
+            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(156, 22);
             this.tsmiMaterialLibrary.Text = "Material Library";
             this.tsmiMaterialLibrary.Click += new System.EventHandler(this.tsmiMaterialLibrary_Click);
             // 
@@ -1826,7 +1826,7 @@
             this.tsmiDelete});
             this.tsmiSection.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSection.Image")));
             this.tsmiSection.Name = "tsmiSection";
-            this.tsmiSection.Size = new System.Drawing.Size(180, 22);
+            this.tsmiSection.Size = new System.Drawing.Size(156, 22);
             this.tsmiSection.Text = "Section";
             // 
             // tsmiCreateSection
@@ -2834,50 +2834,74 @@
             // panelControl
             // 
             this.panelControl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelControl.Controls.Add(this.weWidgetTextEditor);
+            this.panelControl.Controls.Add(this.aeAnnotationTextEditor);
             this.panelControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControl.Location = new System.Drawing.Point(0, 0);
             this.panelControl.Name = "panelControl";
             this.panelControl.Size = new System.Drawing.Size(1229, 662);
             this.panelControl.TabIndex = 1;
             // 
-            // weWidgetTextEditor
+            // aeAnnotationTextEditor
             // 
-            this.weWidgetTextEditor.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.weWidgetTextEditor.Location = new System.Drawing.Point(4, 3);
-            this.weWidgetTextEditor.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.weWidgetTextEditor.MinSize = new System.Drawing.Size(0, 0);
-            this.weWidgetTextEditor.Name = "weWidgetTextEditor";
-            this.weWidgetTextEditor.ParentArea = new System.Drawing.Rectangle(0, 0, 0, 0);
-            this.weWidgetTextEditor.Size = new System.Drawing.Size(150, 75);
-            this.weWidgetTextEditor.TabIndex = 6;
-            this.weWidgetTextEditor.Visible = false;
+            this.aeAnnotationTextEditor.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.aeAnnotationTextEditor.Location = new System.Drawing.Point(4, 3);
+            this.aeAnnotationTextEditor.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.aeAnnotationTextEditor.MinSize = new System.Drawing.Size(0, 0);
+            this.aeAnnotationTextEditor.Name = "aeAnnotationTextEditor";
+            this.aeAnnotationTextEditor.ParentArea = new System.Drawing.Rectangle(0, 0, 0, 0);
+            this.aeAnnotationTextEditor.Size = new System.Drawing.Size(150, 75);
+            this.aeAnnotationTextEditor.TabIndex = 6;
+            this.aeAnnotationTextEditor.Visible = false;
             // 
-            // cmsWidget
+            // cmsAnnotation
             // 
-            this.cmsWidget.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiEditWidget,
-            this.tsmiResetWidget,
-            this.tsmiDividerWidget1,
-            this.tsmiWidgetSettings,
-            this.tsmiDividerWidget2,
-            this.tsmiDeleteWidget});
-            this.cmsWidget.Name = "cmsWidget";
-            this.cmsWidget.Size = new System.Drawing.Size(181, 126);
+            this.cmsAnnotation.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiEditAnnotation,
+            this.tsmiResetAnnotation,
+            this.tsmiDividerAnnotation1,
+            this.tsmiAnnotationSettings,
+            this.tsmiDividerAnnotation2,
+            this.tsmiDeleteAnnotation});
+            this.cmsAnnotation.Name = "cmsWidget";
+            this.cmsAnnotation.Size = new System.Drawing.Size(117, 104);
             // 
-            // tsmiWidgetSettings
+            // tsmiEditAnnotation
             // 
-            this.tsmiWidgetSettings.Name = "tsmiWidgetSettings";
-            this.tsmiWidgetSettings.Size = new System.Drawing.Size(180, 22);
-            this.tsmiWidgetSettings.Text = "Settings";
-            this.tsmiWidgetSettings.Click += new System.EventHandler(this.tsmiWidgetSettings_Click);
+            this.tsmiEditAnnotation.Name = "tsmiEditAnnotation";
+            this.tsmiEditAnnotation.Size = new System.Drawing.Size(116, 22);
+            this.tsmiEditAnnotation.Text = "Edit";
+            this.tsmiEditAnnotation.Click += new System.EventHandler(this.tsmiEditAnnotation_Click);
             // 
-            // tsmiDeleteWidget
+            // tsmiResetAnnotation
             // 
-            this.tsmiDeleteWidget.Name = "tsmiDeleteWidget";
-            this.tsmiDeleteWidget.Size = new System.Drawing.Size(180, 22);
-            this.tsmiDeleteWidget.Text = "Delete";
-            this.tsmiDeleteWidget.Click += new System.EventHandler(this.tsmiDeleteWidget_Click);
+            this.tsmiResetAnnotation.Name = "tsmiResetAnnotation";
+            this.tsmiResetAnnotation.Size = new System.Drawing.Size(116, 22);
+            this.tsmiResetAnnotation.Text = "Reset";
+            this.tsmiResetAnnotation.Click += new System.EventHandler(this.tsmiResetAnnotation_Click);
+            // 
+            // tsmiDividerAnnotation1
+            // 
+            this.tsmiDividerAnnotation1.Name = "tsmiDividerAnnotation1";
+            this.tsmiDividerAnnotation1.Size = new System.Drawing.Size(113, 6);
+            // 
+            // tsmiAnnotationSettings
+            // 
+            this.tsmiAnnotationSettings.Name = "tsmiAnnotationSettings";
+            this.tsmiAnnotationSettings.Size = new System.Drawing.Size(116, 22);
+            this.tsmiAnnotationSettings.Text = "Settings";
+            this.tsmiAnnotationSettings.Click += new System.EventHandler(this.tsmiAnnotationSettings_Click);
+            // 
+            // tsmiDividerAnnotation2
+            // 
+            this.tsmiDividerAnnotation2.Name = "tsmiDividerAnnotation2";
+            this.tsmiDividerAnnotation2.Size = new System.Drawing.Size(113, 6);
+            // 
+            // tsmiDeleteAnnotation
+            // 
+            this.tsmiDeleteAnnotation.Name = "tsmiDeleteAnnotation";
+            this.tsmiDeleteAnnotation.Size = new System.Drawing.Size(116, 22);
+            this.tsmiDeleteAnnotation.Text = "Delete";
+            this.tsmiDeleteAnnotation.Click += new System.EventHandler(this.tsmiDeleteAnnotation_Click);
             // 
             // statusStripMain
             // 
@@ -3489,30 +3513,6 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
-            // tsmiDividerWidget1
-            // 
-            this.tsmiDividerWidget1.Name = "tsmiDividerWidget1";
-            this.tsmiDividerWidget1.Size = new System.Drawing.Size(177, 6);
-            // 
-            // tsmiEditWidget
-            // 
-            this.tsmiEditWidget.Name = "tsmiEditWidget";
-            this.tsmiEditWidget.Size = new System.Drawing.Size(180, 22);
-            this.tsmiEditWidget.Text = "Edit";
-            this.tsmiEditWidget.Click += new System.EventHandler(this.tsmiEditWidget_Click);
-            // 
-            // tsmiResetWidget
-            // 
-            this.tsmiResetWidget.Name = "tsmiResetWidget";
-            this.tsmiResetWidget.Size = new System.Drawing.Size(180, 22);
-            this.tsmiResetWidget.Text = "Reset";
-            this.tsmiResetWidget.Click += new System.EventHandler(this.tsmiResetWidget_Click);
-            // 
-            // tsmiDividerWidget2
-            // 
-            this.tsmiDividerWidget2.Name = "tsmiDividerWidget2";
-            this.tsmiDividerWidget2.Size = new System.Drawing.Size(177, 6);
-            // 
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -3535,7 +3535,7 @@
             this.menuStripMain.ResumeLayout(false);
             this.menuStripMain.PerformLayout();
             this.panelControl.ResumeLayout(false);
-            this.cmsWidget.ResumeLayout(false);
+            this.cmsAnnotation.ResumeLayout(false);
             this.statusStripMain.ResumeLayout(false);
             this.statusStripMain.PerformLayout();
             this.tsResults.ResumeLayout(false);
@@ -3936,14 +3936,14 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEditAmplitude;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerAmplitude1;
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteAmplitude;
-        private UserControls.WidgetEditor weWidgetTextEditor;
-        private System.Windows.Forms.ContextMenuStrip cmsWidget;
-        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteWidget;
-        private System.Windows.Forms.ToolStripMenuItem tsmiWidgetSettings;
-        private System.Windows.Forms.ToolStripSeparator tsmiDividerWidget1;
-        private System.Windows.Forms.ToolStripMenuItem tsmiEditWidget;
-        private System.Windows.Forms.ToolStripMenuItem tsmiResetWidget;
-        private System.Windows.Forms.ToolStripSeparator tsmiDividerWidget2;
+        private UserControls.AnnotationEditor aeAnnotationTextEditor;
+        private System.Windows.Forms.ContextMenuStrip cmsAnnotation;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteAnnotation;
+        private System.Windows.Forms.ToolStripMenuItem tsmiAnnotationSettings;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerAnnotation1;
+        private System.Windows.Forms.ToolStripMenuItem tsmiEditAnnotation;
+        private System.Windows.Forms.ToolStripMenuItem tsmiResetAnnotation;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerAnnotation2;
     }
 }
 

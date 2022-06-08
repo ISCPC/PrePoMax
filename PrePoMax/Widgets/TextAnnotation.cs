@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace PrePoMax
 {
     [Serializable]
-    public class TextWidget : WidgetBase
+    public class TextAnnotation : AnnotationBase
     {
         // Variables                                                                                                                
         private string _text;
@@ -20,7 +20,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public TextWidget(string name, string text, double[] anchorPoint)
+        public TextAnnotation(string name, string text, double[] anchorPoint)
             : base(name)
         {
             _text = text;
@@ -29,7 +29,7 @@ namespace PrePoMax
 
 
         // Methods
-        public override void GetWidgetData(out string text, out double[] coor)
+        public override void GetAnnotationData(out string text, out double[] coor)
         {
             text = _text.ToString();
             coor = _anchorPoint.ToArray();

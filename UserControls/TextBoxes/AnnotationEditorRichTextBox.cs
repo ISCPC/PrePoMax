@@ -39,7 +39,7 @@ namespace UserControls
         public short wBorderWidth;
         public short wBorders;
     }
-    public class WidgetEditorRichTextBox : RichTextBox
+    public class AnnotationEditorRichTextBox : RichTextBox
     {
         // DllImports                                                                                                                
         const int PFM_SPACEBEFORE = 0x00000040;
@@ -99,7 +99,7 @@ namespace UserControls
 
 
         // Constructors                                                                                                             
-        public WidgetEditorRichTextBox()
+        public AnnotationEditorRichTextBox()
         {
             _beep = false;
         }

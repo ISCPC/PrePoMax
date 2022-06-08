@@ -22,7 +22,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Design")]
         [OrderedDisplayName(0, 10, "Background type")]
         [DescriptionAttribute("Select the background type.")]
-        public WidgetBackgroundType BackgroundType
+        public AnnotationBackgroundType BackgroundType
         {
             get { return _statusBlockSettings.BackgroundType; }
             set { _statusBlockSettings.BackgroundType = value; }

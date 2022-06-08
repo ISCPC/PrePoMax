@@ -125,7 +125,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Color spectrum values")]
         [OrderedDisplayName(0, 10, "Number format")]
         [DescriptionAttribute("Select the number format.")]
-        public WidgetNumberFormat LegendNumberFormat { get { return _legendSettings.NumberFormat; } set { _legendSettings.NumberFormat = value; } }
+        public AnnotationNumberFormat LegendNumberFormat { get { return _legendSettings.NumberFormat; } set { _legendSettings.NumberFormat = value; } }
         //
         [CategoryAttribute("Color spectrum values")]
         [OrderedDisplayName(1, 10, "Number of significant digits")]
@@ -197,7 +197,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Design")]
         [OrderedDisplayName(0, 10, "Background type")]
         [DescriptionAttribute("Select the background type.")]
-        public WidgetBackgroundType BackgroundType
+        public AnnotationBackgroundType BackgroundType
         {
             get { return _legendSettings.BackgroundType; }
             set { _legendSettings.BackgroundType = value; }
