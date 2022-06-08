@@ -13,6 +13,7 @@ namespace vtkControl
         protected vtkActor2D _textActor;
         protected vtkTextMapper _textMapper;
         protected int _padding;
+        protected string _numberFormat;
 
 
         // Constructors                                                                                                             
@@ -111,12 +112,20 @@ namespace vtkControl
                 }
             }
         }
+        public void SetNumberFormat(string numberFormat)
+        {
+            _numberFormat = numberFormat;
+        }
 
 
         // Public getters                                                                                                           
         public string GetText()
         {
             return _textMapper.GetInput();
+        }
+        public string GetNumberFormat()
+        {
+            return _numberFormat;
         }
     }
 }

@@ -19,8 +19,6 @@ namespace PrePoMax
         private Dictionary<string, AnnotationBase> _geometryAnnotations;
         private Dictionary<string, AnnotationBase> _modelAnnotations;
         private Dictionary<string, AnnotationBase> _resultsAnnotations;
-        private MinValueAnnotation _minAnnotation;
-        private MinValueAnnotation _maxAnnotation;
 
 
         // Constructors                                                                                                             
@@ -52,6 +50,11 @@ namespace PrePoMax
 
 
         // Methods                                                                                                                  
+        public static bool IsAnnotationNameReserved(string name)
+        {
+            if (name == MeasureAnnotationName || name == MinAnnotationName || name == MaxAnnotationName) return true;
+            else return false;
+        }
         public string GetFreeAnnotationName()
         {
             string prefix = "";
@@ -190,6 +193,7 @@ namespace PrePoMax
             //
             bool drawBackground = AnnotationBase.Controller.Settings.Annotations.BackgroundType == AnnotationBackgroundType.White;
             bool drawBorder = AnnotationBase.Controller.Settings.Annotations.DrawBorder;
+            string numberFormat = AnnotationBase.Controller.Settings.Annotations.GetNumberFormat();
             //
             AnnotationBase annotation;
             List<string> invalidAnnotationNames = new List<string>();
@@ -200,8 +204,8 @@ namespace PrePoMax
                     annotation = entry.Value;
                     // First get the annotation data to determine if the annotation is valid
                     annotation.GetAnnotationData(out text, out arrowCoor);
-                    AnnotationBase.Controller.Form.AddArrowWidget(entry.Value.Name, text, arrowCoor, drawBackground,
-                                                              drawBorder, annotation.IsAnnotationVisible());
+                    AnnotationBase.Controller.Form.AddArrowWidget(entry.Value.Name, text, numberFormat, arrowCoor, drawBackground,
+                                                                  drawBorder, annotation.IsAnnotationVisible());
 
                 }
                 catch
@@ -214,6 +218,25 @@ namespace PrePoMax
             {
                 RemoveCurrentArrowAnnotations(invalidAnnotationNames.ToArray());
                 AnnotationBase.Controller.Form.RemoveArrowWidgets(invalidAnnotationNames.ToArray());
+            }
+            // Min/Max annotations
+            if (AnnotationBase.Controller.CurrentView == ViewGeometryModelResults.Results)
+            {
+                text = "0123456789\r\n0123456789";      // for initial size determination
+                AnnotationBase.Controller.Form.AddArrowWidget(MinAnnotationName,
+                                                                text,
+                                                                numberFormat,
+                                                                new double[3],
+                                                                drawBackground,
+                                                                drawBorder,
+                                                                AnnotationBase.Controller.Settings.Post.ShowMinValueLocation);
+                AnnotationBase.Controller.Form.AddArrowWidget(MaxAnnotationName,
+                                                                text,
+                                                                numberFormat,
+                                                                new double[3],
+                                                                drawBackground,
+                                                                drawBorder,
+                                                                AnnotationBase.Controller.Settings.Post.ShowMaxValueLocation);
             }
         }
         // Remove

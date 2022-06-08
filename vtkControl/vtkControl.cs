@@ -55,8 +55,6 @@ namespace vtkControl
         //
         private vtkMaxColorSpectrum _colorSpectrum;
         //
-        private vtkMaxTextWithArrowWidget _minValueWidget;
-        private vtkMaxTextWithArrowWidget _maxValueWidget;
         private Dictionary<string, vtkMaxTextWithArrowWidget> _arrowWidgets;
         private vtkMaxTextWidget _probeWidget;
         //
@@ -121,32 +119,6 @@ namespace vtkControl
                 {
                     _edgesVisibility = value;
                     ApplyEdgesVisibilityAndBackfaceCulling();
-                }
-            }
-        }
-        public bool ShowMinValueLocation
-        { 
-            get { return _minValueWidget.GetVisibility() == 1; } 
-            set
-            {
-                if (value) _minValueWidget.VisibilityOn();
-                else
-                {
-                    _minValueWidget.VisibilityOff();
-                    _minValueWidget.ResetInitialPosition();
-                }
-            } 
-        }
-        public bool ShowMaxValueLocation 
-        {
-            get { return _maxValueWidget.GetVisibility() == 1; }
-            set
-            {
-                if (value) _maxValueWidget.VisibilityOn();
-                else
-                {
-                    _maxValueWidget.VisibilityOff();
-                    _maxValueWidget.ResetInitialPosition();
                 }
             }
         }
@@ -1697,8 +1669,7 @@ namespace vtkControl
             _light3.SetLightTypeToCameraLight();
             _light3.SwitchOff();
             _renderer.AddLight(_light3);
-
-            // coorSystem
+            // Coordinate system
             vtkAxesActor axes = vtkAxesActor.New();
             axes.GetXAxisTipProperty().SetColor(0.706, 0.016, 0.150);
             axes.GetXAxisShaftProperty().SetColor(0.706, 0.016, 0.150);
@@ -1706,13 +1677,13 @@ namespace vtkControl
             axes.GetYAxisShaftProperty().SetColor(0.130, 0.806, 0.150);
             axes.GetZAxisTipProperty().SetColor(0.230, 0.299, 0.754);
             axes.GetZAxisShaftProperty().SetColor(0.230, 0.299, 0.754);
-
+            //
             vtkTextProperty tp = CreateNewTextProperty();
             axes.GetXAxisCaptionActor2D().SetCaptionTextProperty(tp);
             axes.GetYAxisCaptionActor2D().SetCaptionTextProperty(tp);
             axes.GetZAxisCaptionActor2D().SetCaptionTextProperty(tp);
             axes.SetShaftTypeToLine();
-
+            //
             _coorSys = vtkOrientationMarkerWidget.New();
             _coorSys.SetOutlineColor(0.9300, 0.5700, 0.1300);
             _coorSys.SetOrientationMarker(axes);
@@ -1720,9 +1691,7 @@ namespace vtkControl
             _coorSys.KeyPressActivationOff();   // char i or I turns off the widget otherwise
             SetCoorSysVisibility(_drawCoorSys);
             _coorSys.InteractiveOff();  // must be after enabled ???
-
-
-            // interactor style
+            // Interactor style
             _style = vtkInteractorStyleControl.New();
             _style.AutoAdjustCameraClippingRangeOn();
             _style.SetDefaultRenderer(_renderer);
@@ -1742,23 +1711,15 @@ namespace vtkControl
             _renderWindowInteractor.SetInteractorStyle(_style);
             _style.Reset();
             _renderWindowInteractor.ModifiedEvt += _renderWindowInteractor_ModifiedEvt;
-
-
-            // background
+            // Background
             _renderer.SetBackground(0.4, 0.4, 0.4);     // bottm
             _renderer.SetBackground2(0.8, 0.8, 0.8);    // top
             _renderer.SetGradientBackground(true);
-
-
-            // camera
+            // Camera
             vtkCamera camera = _renderer.GetActiveCamera();
             camera.SetParallelProjection(1);
-         
-
-            // offset lines from polygons
+            // Offset lines from polygons
             vtkPolyDataMapper.SetResolveCoincidentTopologyToPolygonOffset();
-
-
             // Scale bar
             _scaleWidget = new vtkMaxScaleWidget();
             _scaleWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
@@ -1771,11 +1732,8 @@ namespace vtkControl
             _scaleWidget.VisibilityOn();
             _scaleWidget.BackgroundVisibilityOff();
             _scaleWidget.BorderVisibilityOff();
-
-
             // Scalar bar
             InitializeScalarBar();
-
             // Color bar
             _colorBarWidget = new vtkMaxColorBarWidget();
             _colorBarWidget.SetInteractor(_renderer, _renderWindowInteractor);
@@ -1786,8 +1744,6 @@ namespace vtkControl
             _colorBarWidget.BorderVisibilityOn();
             _colorBarWidget.SetBackgroundColor(1, 1, 1);
             _colorBarWidget.MouseDoubleClick += widget_DoubleClicked;
-
-
             // Status block
             _statusBlockWidget = new vtkMaxStatusBlockWidget();
             //_statusBlock.SetRenderer(_selectionRenderer);
@@ -1798,30 +1754,6 @@ namespace vtkControl
             _statusBlockWidget.BackgroundVisibilityOff();
             _statusBlockWidget.VisibilityOff();
             _statusBlockWidget.MouseDoubleClick += widget_DoubleClicked;
-
-
-            // Max widget
-            _maxValueWidget = new vtkMaxTextWithArrowWidget("Max");
-            _maxValueWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
-            _maxValueWidget.SetBorderColor(0, 0, 0);
-            _maxValueWidget.SetTextProperty(CreateNewTextProperty());
-            _maxValueWidget.SetPadding(5);
-            _maxValueWidget.GetBackgroundProperty().SetColor(1, 1, 1);
-            _maxValueWidget.SetText("Test");
-            _maxValueWidget.VisibilityOff();
-
-
-            // Min widget
-            _minValueWidget = new vtkMaxTextWithArrowWidget("Min");
-            _minValueWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
-            _minValueWidget.SetBorderColor(0, 0, 0);
-            _minValueWidget.SetTextProperty(CreateNewTextProperty());
-            _minValueWidget.SetPadding(5);
-            _minValueWidget.GetBackgroundProperty().SetColor(1, 1, 1);
-            _minValueWidget.SetText("Test");
-            _minValueWidget.VisibilityOff();            
-
-
             // Probe widget
             _probeWidget = new vtkMaxTextWidget();
             _probeWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
@@ -1830,8 +1762,7 @@ namespace vtkControl
             _probeWidget.SetPadding(5);
             _probeWidget.GetBackgroundProperty().SetColor(1, 1, 1);
             _probeWidget.VisibilityOff();
-
-            // Arroewidgets
+            // Arrow widgets
             _arrowWidgets = new Dictionary<string, vtkMaxTextWithArrowWidget>();
 
             // Add the actors to the scene
@@ -5283,10 +5214,16 @@ namespace vtkControl
             // Legend
             _scalarBarWidget.VisibilityOff();
             //
-            bool minVisible = _minValueWidget.GetVisibility() == 1;
-            bool maxVisible = _maxValueWidget.GetVisibility() == 1;
-            _minValueWidget.VisibilityOff();
-            _maxValueWidget.VisibilityOff();
+            vtkMaxTextWithArrowWidget minValueWidget;
+            vtkMaxTextWithArrowWidget maxValueWidget;
+            _arrowWidgets.TryGetValue("Min_Annotation", out minValueWidget);
+            _arrowWidgets.TryGetValue("Max_Annotation", out maxValueWidget);
+            //
+            if (minValueWidget != null && minValueWidget.GetVisibility() == 0) minValueWidget = null;
+            if (maxValueWidget != null && maxValueWidget.GetVisibility() == 0) maxValueWidget = null;
+            //
+            if (minValueWidget != null) minValueWidget.VisibilityOff();
+            if (maxValueWidget != null) maxValueWidget.VisibilityOff();
             //
             vtkMaxExtreemeNode minNode = null;
             vtkMaxExtreemeNode maxNode = null;
@@ -5370,33 +5307,38 @@ namespace vtkControl
             // Scalar bar
             _scalarBarWidget.VisibilityOn();
             // Min Max widgets
-            string format = _scalarBarWidget.GetLabelFormat();
+            string format;
             //
             double[] coor;
+            bool minVisible = minValueWidget != null;
+            bool maxVisible = maxValueWidget != null;
+            //
             if (minVisible)
             {
+                format = minValueWidget.GetNumberFormat();
                 coor = minNode.Coor;
                 if (coor != null)
                 {
-                    _minValueWidget.VisibilityOn();
-                    _minValueWidget.SetText("Min: " + minNode.Value.ToString(format) + GetUnitAbbreviation() + Environment.NewLine +
+                    minValueWidget.VisibilityOn();
+                    minValueWidget.SetText("Min: " + minNode.Value.ToString(format) + GetUnitAbbreviation() + Environment.NewLine +
                                             "Node id: " + minNode.Id);
-                    _minValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
+                    minValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
                 }
-                else _minValueWidget.VisibilityOff();
+                else minValueWidget.VisibilityOff();
             }
             //
             if (maxVisible)
-            {                
+            {
+                format = maxValueWidget.GetNumberFormat();
                 coor = maxNode.Coor;
                 if (coor != null)
                 {
-                    _maxValueWidget.VisibilityOn();
-                    _maxValueWidget.SetText("Max: " + maxNode.Value.ToString(format) + GetUnitAbbreviation() + Environment.NewLine +
+                    maxValueWidget.VisibilityOn();
+                    maxValueWidget.SetText("Max: " + maxNode.Value.ToString(format) + GetUnitAbbreviation() + Environment.NewLine +
                                             "Node id: " + maxNode.Id);
-                    _maxValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
+                    maxValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
                 }
-                else _maxValueWidget.VisibilityOff();
+                else maxValueWidget.VisibilityOff();
             }
         }
         public void UpdateActorScalarField(string actorName, float[] values, NodesExchangeData extremeNodes,
@@ -5501,11 +5443,6 @@ namespace vtkControl
                     vtkMaxActor actor;
                     //vtkMapper mapper;
                     vtkPointData pointData;
-
-                    bool minVisible = _minValueWidget.GetVisibility() == 1;
-                    bool maxVisible = _maxValueWidget.GetVisibility() == 1;
-                    _minValueWidget.VisibilityOff();
-                    _maxValueWidget.VisibilityOff();
 
                     vtkMaxExtreemeNode minNode = null;
                     vtkMaxExtreemeNode maxNode = null;
@@ -5864,8 +5801,6 @@ namespace vtkControl
             if (_scalarBarWidget != null) _scalarBarWidget.VisibilityOff();
             if (_colorBarWidget != null) HideColorBar();
             if (_statusBlockWidget != null) _statusBlockWidget.VisibilityOff();
-            if (_minValueWidget != null) _minValueWidget.VisibilityOff();
-            if (_maxValueWidget != null) _maxValueWidget.VisibilityOff();
             if (_style != null) _style.Reset();
             // Widgets
             HideAllArrowWidgets();
@@ -5965,8 +5900,8 @@ namespace vtkControl
         #endregion #################################################################################################################
 
         #region Widgets ############################################################################################################
-        public void AddArrowWidget(string name, string text, double[] anchorPoint, bool drawBackground,
-                                   bool drawBorder, bool visible)
+        public void AddArrowWidget(string name, string text, string numberFormat, double[] anchorPoint,
+                                   bool drawBackground, bool drawBorder, bool visible)
         {
             vtkMaxTextWithArrowWidget arrowWidget;
             if (!_arrowWidgets.TryGetValue(name, out arrowWidget))
@@ -5977,7 +5912,9 @@ namespace vtkControl
                 arrowWidget.SetTextProperty(CreateNewTextProperty());
                 arrowWidget.SetPadding(5);
                 arrowWidget.GetBackgroundProperty().SetColor(1, 1, 1);
+                // Set text, number format and anchor befofre arrange
                 arrowWidget.SetText(text);
+                arrowWidget.SetNumberFormat(numberFormat);
                 arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
                 // Event
                 arrowWidget.MouseDoubleClick += widget_DoubleClicked;
@@ -5989,6 +5926,7 @@ namespace vtkControl
             else
             {
                 arrowWidget.SetText(text);
+                arrowWidget.SetNumberFormat(numberFormat);
                 arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
             }
             //

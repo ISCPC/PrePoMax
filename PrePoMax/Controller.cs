@@ -12859,8 +12859,8 @@ namespace PrePoMax
                 _form.DrawStatusBlockBackground(statusBlockSettings.BackgroundType == AnnotationBackgroundType.White);
                 _form.DrawStatusBlockBorder(statusBlockSettings.DrawBorder);
                 // Limits
-                _form.SetShowMinValueLocation(postSettings.ShowMinValueLocation);
-                _form.SetShowMaxValueLocation(postSettings.ShowMaxValueLocation);
+                //_form.SetShowMinValueLocation(postSettings.ShowMinValueLocation);
+                //_form.SetShowMaxValueLocation(postSettings.ShowMaxValueLocation);
             }
         }
         private void SetStatusBlock(float scale)

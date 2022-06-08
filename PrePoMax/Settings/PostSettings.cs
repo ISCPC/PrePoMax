@@ -126,7 +126,7 @@ namespace PrePoMax
         }
         public void Reset()
         {
-            _deformationFieldOutputName = CaeResults.FOFieldNames.Disp;
+            _deformationFieldOutputName = CaeResults.FeResults.GetPossibleDeformationFieldOutputNames()[0];
             _dsfType = DeformationScaleFactorTypeEnum.Automatic;
             _deformationScaleFactorValue = -1;
             _undeformedModelType = UndeformedModelTypeEnum.WireframeBody;

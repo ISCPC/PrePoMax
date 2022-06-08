@@ -93,23 +93,23 @@ namespace PrePoMax.Settings
         }
         // Limit values                                                         
         [CategoryAttribute("Limit values")]
-        [OrderedDisplayName(0, 10, "Show max value location")]
-        [DescriptionAttribute("Show max value location.")]
+        [OrderedDisplayName(0, 10, "Show min value and location")]
+        [DescriptionAttribute("Show min value and location.")]
         [Id(1, 2)]
-        public bool ShowMaxValueLocation
-        {
-            get { return _postSettings.ShowMaxValueLocation; }
-            set { _postSettings.ShowMaxValueLocation = value; }
-        }
-        //
-        [CategoryAttribute("Limit values")]
-        [OrderedDisplayName(1, 10, "Show min value location")]
-        [DescriptionAttribute("Show min value location.")]
-        [Id(2, 2)]
         public bool ShowMinValueLocation
         {
             get { return _postSettings.ShowMinValueLocation; }
             set { _postSettings.ShowMinValueLocation = value; }
+        }
+        //
+        [CategoryAttribute("Limit values")]
+        [OrderedDisplayName(1, 10, "Show max value and location")]
+        [DescriptionAttribute("Show max value and location.")]
+        [Id(2, 2)]
+        public bool ShowMaxValueLocation
+        {
+            get { return _postSettings.ShowMaxValueLocation; }
+            set { _postSettings.ShowMaxValueLocation = value; }
         }
         // History output
         [CategoryAttribute("History output")]

@@ -5353,7 +5353,7 @@ namespace PrePoMax
         // Annotations
         private void StartEditArrowAnnotation(string name, Rectangle rectangle)
         {
-            if (AnnotationContainer.MeasureAnnotationName == name) return;
+            if (AnnotationContainer.IsAnnotationNameReserved(name)) return;
             //
             AnnotationBase annotation = _controller.Annotations.GetCurrentAnnotation(name);
             string text = annotation.GetAnnotationText();
@@ -5411,6 +5411,11 @@ namespace PrePoMax
             else if (e.Button == MouseButtons.Right)
             {
                 tsmiDeleteAnnotation.Tag = new object[] { annotationName, annotationRectangle };
+                //
+                bool reserved = AnnotationContainer.IsAnnotationNameReserved(annotationName);
+                tsmiEditAnnotation.Enabled = !reserved;
+                tsmiResetAnnotation.Enabled = !reserved;
+                tsmiDeleteAnnotation.Enabled = !reserved;
                 cmsAnnotation.Show(_vtk, new Point(e.X, _vtk.Height-  e.Y));
             }
         }
@@ -5434,7 +5439,12 @@ namespace PrePoMax
             try
             {
                 object[] tag = (object[])tsmiDeleteAnnotation.Tag;
-                if (tag[0] is string annotationName) _controller.Annotations.ResetAnnotation(annotationName);
+                if (tag[0] is string annotationName)
+                {
+                    if (AnnotationContainer.IsAnnotationNameReserved(annotationName)) return;
+                    //
+                    _controller.Annotations.ResetAnnotation(annotationName);
+                }
             }
             catch (Exception ex)
             {
@@ -5459,6 +5469,8 @@ namespace PrePoMax
                 object[] tag = (object[])tsmiDeleteAnnotation.Tag;
                 if (tag[0] is string annotationName)
                 {
+                    if (AnnotationContainer.IsAnnotationNameReserved(annotationName)) return;
+                    //
                     if (MessageBoxes.ShowWarningQuestion("OK to delete selected annotation?") == DialogResult.OK)
                     {
                         _controller.Annotations.RemoveCurrentArrowAnnotation(annotationName);
@@ -7153,15 +7165,6 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetDrawSymbolEdges, drawSilhouettes);
         }
-        // Min / Max
-        public void SetShowMinValueLocation(bool show)
-        {
-            InvokeIfRequired(() => _vtk.ShowMinValueLocation = show);
-        }
-        public void SetShowMaxValueLocation(bool show)
-        {
-            InvokeIfRequired(() => _vtk.ShowMaxValueLocation = show);
-        }
         //
         public void CropPartWithCylinder(string partName, double r, string fileName)
         {
@@ -7340,10 +7343,10 @@ namespace PrePoMax
             InvokeIfRequired(_vtk.SaveAnimationAsImages, fileName, firstLastFrame, step, scalarRangeFromAllFrames, swing);
         }
         // Widgets
-        public void AddArrowWidget(string name, string text, double[] anchorPoint, bool drawBackground, bool drawBorder,
-                                   bool visible)
+        public void AddArrowWidget(string name, string text, string numberFormat, double[] anchorPoint,
+                                   bool drawBackground, bool drawBorder, bool visible)
         {
-            InvokeIfRequired(_vtk.AddArrowWidget, name, text, anchorPoint, drawBackground, drawBorder, visible);
+            InvokeIfRequired(_vtk.AddArrowWidget, name, text, numberFormat, anchorPoint, drawBackground, drawBorder, visible);
         }
         public void RemoveAllArrowWidgets()
         {

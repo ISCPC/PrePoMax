@@ -26,9 +26,8 @@ namespace PrePoMax
         // Methods
         public override void GetAnnotationData(out string text, out double[] coor)
         {
-            text = null;
-            coor = null;
-            
+            text = "MaxAnnotation";
+            coor = new double[3];
         }
 
     }
