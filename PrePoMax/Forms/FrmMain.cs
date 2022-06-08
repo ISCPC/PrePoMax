@@ -183,6 +183,8 @@ namespace PrePoMax
             _edgeVisibilities.Add(ViewGeometryModelResults.Geometry, tsmiShowModelEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Model, tsmiShowElementEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Results, tsmiShowElementEdges_Click);
+            //
+            MessageBoxes.ParentForm = this;
         }
 
 

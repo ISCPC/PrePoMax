@@ -42,6 +42,7 @@ namespace PrePoMax
             bool results = false;
             float min = float.MaxValue;
             float max = -float.MaxValue;
+            float sum = 0;
             float avg = 0;
             int[] nodeIds;
             double[][] nodeCoor;
@@ -79,6 +80,7 @@ namespace PrePoMax
                         value = Controller.GetNodalValue(nodeIds[i]);
                         if (value < min) min = value;
                         if (value > max) max = value;
+                        sum += value;
                         avg += (float)(value * weights[nodeIds[i]]);
                     }
                     avg /= (float)area;
@@ -96,8 +98,8 @@ namespace PrePoMax
             bool showSurfaceLength = Controller.Settings.Annotations.ShowEdgeSurSize;
             bool showSurfaceMax = Controller.Settings.Annotations.ShowEdgeSurMax && results;
             bool showSurfaceMin = Controller.Settings.Annotations.ShowEdgeSurMin && results;
-            bool showSurfaceAvg = Controller.Settings.Annotations.ShowEdgeSurAvg && results;
-            if (!showSurfaceLength && !showSurfaceMax && !showSurfaceMin && !showSurfaceAvg) showSurfaceId = true;
+            bool showSurfaceSum = Controller.Settings.Annotations.ShowEdgeSurSum && results;
+            if (!showSurfaceLength && !showSurfaceMax && !showSurfaceMin && !showSurfaceSum) showSurfaceId = true;
             text = "";
             if (showSurfaceId)
             {
@@ -118,10 +120,12 @@ namespace PrePoMax
                 if (text.Length > 0) text += Environment.NewLine;
                 text += string.Format("Min: {0} {1}", min.ToString(numberFormat), fieldUnit);
             }
-            if (showSurfaceAvg)
+            if (showSurfaceSum)
             {
                 if (text.Length > 0) text += Environment.NewLine;
-                text += string.Format("Avg: {0} {1}", avg.ToString(numberFormat), fieldUnit);
+                text += string.Format("Nodal sum: {0} {1}", sum.ToString(numberFormat), fieldUnit);
+                //if (text.Length > 0) text += Environment.NewLine;
+                //text += string.Format("Avg: {0} {1}", avg.ToString(numberFormat), fieldUnit);
             }
             //
             if (IsTextOverriden) text = OverridenText;

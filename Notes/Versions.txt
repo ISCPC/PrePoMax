@@ -217,6 +217,13 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
+Version 1.3.2
+Added support for annotation editing
+Added support for multiple annotations at the same time
+Added support for node, element, edge, surface and part annotation
+Added annotations for measurments: distance, angle, circle
+Other bug fixes
+
 Version 1.3.1
 Fixed a bug where a compound result part could not be opened
 Fixed a bug where element field output PEEQ could not be displayed

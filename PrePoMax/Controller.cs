@@ -12687,6 +12687,8 @@ namespace PrePoMax
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
             // Transformation
             ApplyTransformation();
+            // Annotations
+            _annotations.DrawAnnotations(true);
             // Section view
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -12762,6 +12764,8 @@ namespace PrePoMax
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
             // Transformation
             ApplyTransformation();
+            // Annotations
+            _annotations.DrawAnnotations(true);
             // Section view
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);

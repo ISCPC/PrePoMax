@@ -17,6 +17,9 @@ namespace vtkControl
         public static string SectionViewSuffix = "sectionView";
         public static string TransformationSuffix = "transformed";
         //
+        public static string MinAnnotationName = "Min_Annotation";      // this is a copy from AnnotationContainer
+        public static string MaxAnnotationName = "Max_Annotation";      // this is a copy from AnnotationContainer
+        //
         public static Color CurrentMouseHighlightColor = Color.FromArgb(255, 175, 0);
         private static vtkProperty _currentMouseSelectionProperty;
         

@@ -186,7 +186,7 @@ namespace PrePoMax
             DrawAnnotations();
         }
         // Draw
-        public void DrawAnnotations()
+        public void DrawAnnotations(bool minMaxOnly = false)
         {
             string text;
             double[] arrowCoor;
@@ -195,48 +195,43 @@ namespace PrePoMax
             bool drawBorder = AnnotationBase.Controller.Settings.Annotations.DrawBorder;
             string numberFormat = AnnotationBase.Controller.Settings.Annotations.GetNumberFormat();
             //
-            AnnotationBase annotation;
-            List<string> invalidAnnotationNames = new List<string>();
-            foreach (var entry in GetCurrentAnnotations())
+            if (!minMaxOnly)
             {
-                try // some annotation might become unvalid
+                AnnotationBase annotation;
+                List<string> invalidAnnotationNames = new List<string>();
+                foreach (var entry in GetCurrentAnnotations())
                 {
-                    annotation = entry.Value;
-                    // First get the annotation data to determine if the annotation is valid
-                    annotation.GetAnnotationData(out text, out arrowCoor);
-                    AnnotationBase.Controller.Form.AddArrowWidget(entry.Value.Name, text, numberFormat, arrowCoor, drawBackground,
-                                                                  drawBorder, annotation.IsAnnotationVisible());
+                    try // some annotation might become unvalid
+                    {
+                        annotation = entry.Value;
+                        // First get the annotation data to determine if the annotation is valid
+                        annotation.GetAnnotationData(out text, out arrowCoor);
+                        AnnotationBase.Controller.Form.AddArrowWidget(entry.Value.Name, text, numberFormat, arrowCoor, drawBackground,
+                                                                      drawBorder, annotation.IsAnnotationVisible());
 
+                    }
+                    catch
+                    {
+                        invalidAnnotationNames.Add(entry.Key);
+                    }
                 }
-                catch
+                // Remove invalid annotations
+                if (invalidAnnotationNames.Count > 0)
                 {
-                    invalidAnnotationNames.Add(entry.Key);
+                    RemoveCurrentArrowAnnotations(invalidAnnotationNames.ToArray());
+                    AnnotationBase.Controller.Form.RemoveArrowWidgets(invalidAnnotationNames.ToArray());
                 }
-            }
-            // Remove invalid annotations
-            if (invalidAnnotationNames.Count > 0)
-            {
-                RemoveCurrentArrowAnnotations(invalidAnnotationNames.ToArray());
-                AnnotationBase.Controller.Form.RemoveArrowWidgets(invalidAnnotationNames.ToArray());
             }
             // Min/Max annotations
             if (AnnotationBase.Controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                text = "0123456789\r\n0123456789";      // for initial size determination
-                AnnotationBase.Controller.Form.AddArrowWidget(MinAnnotationName,
-                                                                text,
-                                                                numberFormat,
-                                                                new double[3],
-                                                                drawBackground,
-                                                                drawBorder,
-                                                                AnnotationBase.Controller.Settings.Post.ShowMinValueLocation);
-                AnnotationBase.Controller.Form.AddArrowWidget(MaxAnnotationName,
-                                                                text,
-                                                                numberFormat,
-                                                                new double[3],
-                                                                drawBackground,
-                                                                drawBorder,
-                                                                AnnotationBase.Controller.Settings.Post.ShowMaxValueLocation);
+                bool showMin = AnnotationBase.Controller.Settings.Post.ShowMinValueLocation;
+                bool showMax = AnnotationBase.Controller.Settings.Post.ShowMaxValueLocation;
+                //
+                AnnotationBase.Controller.Form.AddArrowWidget(MinAnnotationName, "", numberFormat, new double[3],
+                                                                drawBackground, drawBorder, showMin);
+                AnnotationBase.Controller.Form.AddArrowWidget(MaxAnnotationName, "", numberFormat, new double[3],
+                                                                drawBackground, drawBorder, showMax);
             }
         }
         // Remove

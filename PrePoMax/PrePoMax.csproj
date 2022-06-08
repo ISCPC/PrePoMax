@@ -382,15 +382,15 @@
     <Compile Include="Forms\51_Settings\ViewUnitSystemlSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewStatusBlockSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewLegendSettings.cs" />
-    <Compile Include="Widgets\MaxValueAnnotation.cs" />
-    <Compile Include="Widgets\MinValueAnnotation.cs" />
-    <Compile Include="Widgets\TextAnnotation.cs" />
-    <Compile Include="Widgets\PartAnnotation.cs" />
-    <Compile Include="Widgets\SurfaceAnnotation.cs" />
-    <Compile Include="Widgets\EdgeAnnotation.cs" />
-    <Compile Include="Widgets\ElementAnnotation.cs" />
-    <Compile Include="Widgets\NodeAnnotation.cs" />
-    <Compile Include="Widgets\AnnotationBase.cs" />
+    <Compile Include="Annotations\MaxValueAnnotation.cs" />
+    <Compile Include="Annotations\MinValueAnnotation.cs" />
+    <Compile Include="Annotations\TextAnnotation.cs" />
+    <Compile Include="Annotations\PartAnnotation.cs" />
+    <Compile Include="Annotations\SurfaceAnnotation.cs" />
+    <Compile Include="Annotations\EdgeAnnotation.cs" />
+    <Compile Include="Annotations\ElementAnnotation.cs" />
+    <Compile Include="Annotations\NodeAnnotation.cs" />
+    <Compile Include="Annotations\AnnotationBase.cs" />
     <Compile Include="Forms\72_ResultHistoryOutput\FrmResultHistoryOutput.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -606,7 +606,7 @@
     <Compile Include="Settings\CalculixSettings.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="Enums\UpdateModelType.cs" />
-    <Compile Include="Widgets\AnnotationContainer.cs" />
+    <Compile Include="Annotations\AnnotationContainer.cs" />
     <EmbeddedResource Include="Forms\00_Common\FrmSelectGeometry.resx">
       <DependentUpon>FrmSelectGeometry.cs</DependentUpon>
     </EmbeddedResource>

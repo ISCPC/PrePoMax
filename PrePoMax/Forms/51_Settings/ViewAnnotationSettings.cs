@@ -110,12 +110,12 @@ namespace PrePoMax.Settings
         }
         //
         [CategoryAttribute("Edge/Surface annotation")]
-        [OrderedDisplayName(4, 10, "Show average value")]
-        [DescriptionAttribute("Show average value in the annotation.")]
-        public bool ShowEdgeAvg
+        [OrderedDisplayName(4, 10, "Show sum value")]
+        [DescriptionAttribute("Show summed value by nodes in the annotation.")]
+        public bool ShowEdgeSum
         {
-            get { return _annotationSettings.ShowEdgeSurAvg; }
-            set { _annotationSettings.ShowEdgeSurAvg = value; }
+            get { return _annotationSettings.ShowEdgeSurSum; }
+            set { _annotationSettings.ShowEdgeSurSum = value; }
         }
         //
         [CategoryAttribute("Part annotation")]
@@ -179,7 +179,7 @@ namespace PrePoMax.Settings
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeLength));
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeMax));
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeMin));
-            _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeAvg));
+            _dctd.RenameBooleanPropertyToYesNo(nameof(ShowEdgeSum));
             //
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowPartName));
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowPartId));

@@ -5216,8 +5216,8 @@ namespace vtkControl
             //
             vtkMaxTextWithArrowWidget minValueWidget;
             vtkMaxTextWithArrowWidget maxValueWidget;
-            _arrowWidgets.TryGetValue("Min_Annotation", out minValueWidget);
-            _arrowWidgets.TryGetValue("Max_Annotation", out maxValueWidget);
+            _arrowWidgets.TryGetValue(Globals.MinAnnotationName, out minValueWidget);
+            _arrowWidgets.TryGetValue(Globals.MaxAnnotationName, out maxValueWidget);
             //
             if (minValueWidget != null && minValueWidget.GetVisibility() == 0) minValueWidget = null;
             if (maxValueWidget != null && maxValueWidget.GetVisibility() == 0) maxValueWidget = null;
@@ -5321,7 +5321,7 @@ namespace vtkControl
                 {
                     minValueWidget.VisibilityOn();
                     minValueWidget.SetText("Min: " + minNode.Value.ToString(format) + GetUnitAbbreviation() + Environment.NewLine +
-                                            "Node id: " + minNode.Id);
+                                           "Node id: " + minNode.Id);
                     minValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
                 }
                 else minValueWidget.VisibilityOff();
@@ -5335,7 +5335,7 @@ namespace vtkControl
                 {
                     maxValueWidget.VisibilityOn();
                     maxValueWidget.SetText("Max: " + maxNode.Value.ToString(format) + GetUnitAbbreviation() + Environment.NewLine +
-                                            "Node id: " + maxNode.Id);
+                                           "Node id: " + maxNode.Id);
                     maxValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
                 }
                 else maxValueWidget.VisibilityOff();
@@ -5913,9 +5913,14 @@ namespace vtkControl
                 arrowWidget.SetPadding(5);
                 arrowWidget.GetBackgroundProperty().SetColor(1, 1, 1);
                 // Set text, number format and anchor befofre arrange
-                arrowWidget.SetText(text);
                 arrowWidget.SetNumberFormat(numberFormat);
-                arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
+                // Update the contents of the min/max annotations
+                if (visible && (name == Globals.MinAnnotationName || name == Globals.MaxAnnotationName)) UpdateScalarFormatting();
+                else
+                {
+                    arrowWidget.SetText(text);
+                    arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
+                }
                 // Event
                 arrowWidget.MouseDoubleClick += widget_DoubleClicked;
                 // Add
@@ -5925,9 +5930,14 @@ namespace vtkControl
             }
             else
             {
-                arrowWidget.SetText(text);
                 arrowWidget.SetNumberFormat(numberFormat);
-                arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
+                // Update the contents of the min/max annotations
+                if (visible && (name == Globals.MinAnnotationName || name == Globals.MaxAnnotationName)) UpdateScalarFormatting();
+                else
+                {
+                    arrowWidget.SetText(text);
+                    arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
+                }
             }
             //
             if (visible) arrowWidget.VisibilityOn();

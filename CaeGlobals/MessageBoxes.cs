@@ -16,26 +16,42 @@ namespace CaeGlobals
     [Serializable]
     public static class MessageBoxes
     {
+        public static Form ParentForm;
         // MessageBox
         public static void ShowError(string text)
         {
-            MessageBox.Show(text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            using (new CenterWinDialog(ParentForm))
+            {
+                MessageBox.Show(text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         public static void ShowWorkDirectoryError()
         {
-            MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            using (new CenterWinDialog(ParentForm))
+            {
+                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         public static void ShowWarning(string text)
         {
-            MessageBox.Show(text, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            using (new CenterWinDialog(ParentForm))
+            {
+                MessageBox.Show(text, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         public static DialogResult ShowWarningQuestion(string text)
         {
-            return MessageBox.Show(text, "Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+            using (new CenterWinDialog(ParentForm))
+            {
+                return MessageBox.Show(text, "Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+            }
         }
         public static DialogResult ShowQuestion(string caption, string text)
         {
-            return MessageBox.Show(text, caption, MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+            using (new CenterWinDialog(ParentForm))
+            {
+                return MessageBox.Show(text, caption, MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+            }
         }
     }
 }

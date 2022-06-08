@@ -27,7 +27,7 @@ namespace PrePoMax
         private bool _showEdgeSurSize;
         private bool _showEdgeSurMax;
         private bool _showEdgeSurMin;
-        private bool _showEdgeSurAvg;
+        private bool _showEdgeSurSum;
         //
         private bool _showPartName;
         private bool _showPartId;
@@ -69,7 +69,7 @@ namespace PrePoMax
         public bool ShowEdgeSurSize { get { return _showEdgeSurSize; } set { _showEdgeSurSize = value; } }
         public bool ShowEdgeSurMax { get { return _showEdgeSurMax; } set { _showEdgeSurMax = value; } }
         public bool ShowEdgeSurMin { get { return _showEdgeSurMin; } set { _showEdgeSurMin = value; } }
-        public bool ShowEdgeSurAvg { get { return _showEdgeSurAvg; } set { _showEdgeSurAvg = value; } }
+        public bool ShowEdgeSurSum { get { return _showEdgeSurSum; } set { _showEdgeSurSum = value; } }
         //
         public bool ShowPartName { get { return _showPartName; } set { _showPartName = value; } }
         public bool ShowPartId { get { return _showPartId; } set { _showPartId = value; } }
@@ -108,7 +108,7 @@ namespace PrePoMax
             _showEdgeSurSize = true;
             _showEdgeSurMax = true;
             _showEdgeSurMin = true;
-            _showEdgeSurAvg = true;
+            _showEdgeSurSum = true;
             //
             _showPartName = true;
             _showPartId = true;
