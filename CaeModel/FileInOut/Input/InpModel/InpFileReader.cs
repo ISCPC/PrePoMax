@@ -138,13 +138,16 @@ namespace FileInOut.Input
                     }
                 }
                 //
-                Dictionary<string, Constraint> constraints = new Dictionary<string, Constraint>();
-                Dictionary<string, FeReferencePoint> referencePoints = new Dictionary<string, FeReferencePoint>();
-                Dictionary<string, Material> materials = new Dictionary<string, Material>();
-                Dictionary<string, Section> sections = new Dictionary<string, Section>();
-                Dictionary<string, SurfaceInteraction> surfaceInteractions = new Dictionary<string, SurfaceInteraction>();
-                Dictionary<string, ContactPair> contactPairs = new Dictionary<string, ContactPair>();
-                Dictionary<string, Step> steps = new Dictionary<string, Step>();
+
+                OrderedDictionary<string, FeReferencePoint> referencePoints = new OrderedDictionary<string, FeReferencePoint>();
+                OrderedDictionary<string, Material> materials = new OrderedDictionary<string, Material>();
+                OrderedDictionary<string, Section> sections = new OrderedDictionary<string, Section>();
+                OrderedDictionary<string, Constraint> constraints = new OrderedDictionary<string, Constraint>();
+                OrderedDictionary<string, SurfaceInteraction> surfaceInteractions = 
+                    new OrderedDictionary<string, SurfaceInteraction>();
+                OrderedDictionary<string, ContactPair> contactPairs = new OrderedDictionary<string, ContactPair>();
+                OrderedDictionary<string, Amplitude> amplitudes = new OrderedDictionary<string, Amplitude>();
+                OrderedDictionary<string, Step> steps = new OrderedDictionary<string, Step>();
                 List<CalculixUserKeyword> userKeywords = new List<CalculixUserKeyword>();
                 //
                 for (int i = 0; i < dataSets.Length; i++)
@@ -152,65 +155,62 @@ namespace FileInOut.Input
                     dataSet = dataSets[i];
                     keyword = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
                     //
+                    WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
+                    //
                     if (keyword == "*NSET")
                     {
-                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         GetNodeOrElementSet("NSET", dataSet, mesh, out name, out ids);
                         if (NamedClass.CheckNameError(name) != null) AddError(NamedClass.CheckNameError(name));
                         else if (ids != null) mesh.AddNodeSet(new FeNodeSet(name, ids));
                     }
                     else if (keyword == "*ELSET")
                     {
-                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         GetNodeOrElementSet("ELSET", dataSet, mesh, out name, out ids);
                         if (NamedClass.CheckNameError(name) != null) AddError(NamedClass.CheckNameError(name));
                         else if (ids != null) mesh.AddElementSet(new FeElementSet(name, ids));
                     }
                     else if (keyword == "*SURFACE")
                     {
-                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         FeSurface surface = GetSurface(dataSet);
                         if (surface != null) mesh.AddSurface(surface);
                     }
                     else if (keyword == "*RIGID BODY")
                     {
-                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         Constraint constraint = GetRigidBody(dataSet, nodes, constraints, referencePoints);
                         if (constraint != null) constraints.Add(constraint.Name, constraint);
                     }
                     else if (keyword == "*MATERIAL")
                     {
-                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         Material material = GetMaterial(dataSets, ref i, userKeywords);
                         if (material != null) materials.Add(material.Name, material);
                     }
                     else if (keyword == "*SOLID SECTION")
                     {
-                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         SolidSection section = GetSolidSection(dataSet, sections);
                         if (section != null) sections.Add(section.Name, section);
                     }
                     else if (keyword == "*SHELL SECTION")
                     {
-                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         ShellSection section = GetShellSection(dataSet, sections);
                         if (section != null) sections.Add(section.Name, section);
                     }
+                    else if (keyword == "*AMPLITUDE")
+                    {
+                        Amplitude amplitude = GetAmplitudeTabular(dataSet);
+                        if (amplitude != null) amplitudes.Add(amplitude.Name, amplitude);
+                    }
                     else if (keyword == "*SURFACE INTERACTION")
                     {
-                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         SurfaceInteraction surfaceInteraction = GetSurfaceInteraction(dataSets, ref i, userKeywords);
                         if (surfaceInteraction != null) surfaceInteractions.Add(surfaceInteraction.Name, surfaceInteraction);
                     }
                     else if (keyword == "*STEP")
                     {
-                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         Step step = GetStep(dataSets, ref i, mesh, steps, contactPairs, userKeywords);
                         if (step != null) steps.Add(step.Name, step);
                     }
                     else if (!_knownKeywords.Contains(keyword))
                     {
-                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         // User keyword
                         CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length));
                         userKeyword.Parent = "Model";
@@ -227,12 +227,13 @@ namespace FileInOut.Input
                 //
                 model.ImportMesh(mesh, null, false, false);
                 // Add model items
-                foreach (var entry in constraints) model.Constraints.Add(entry.Key, entry.Value);
                 foreach (var entry in referencePoints) mesh.ReferencePoints.Add(entry.Key, entry.Value);
                 foreach (var entry in materials) model.Materials.Add(entry.Key, entry.Value);
+                foreach (var entry in sections) model.Sections.Add(entry.Key, entry.Value);
+                foreach (var entry in constraints) model.Constraints.Add(entry.Key, entry.Value);
                 foreach (var entry in surfaceInteractions) model.SurfaceInteractions.Add(entry.Key, entry.Value);
                 foreach (var entry in contactPairs) model.ContactPairs.Add(entry.Key, entry.Value);
-                foreach (var entry in sections) model.Sections.Add(entry.Key, entry.Value);
+                foreach (var entry in amplitudes) model.Amplitudes.Add(entry.Key, entry.Value);
                 foreach (var entry in steps) model.StepCollection.AddStep(entry.Value, false);
                 // Add indices of user keywords
                 int[] indices;
@@ -805,8 +806,8 @@ namespace FileInOut.Input
         }
         // Rigid body
         private static Constraint GetRigidBody(string[] lines, Dictionary<int, FeNode> nodes,
-                                               Dictionary<string, Constraint> constraints,
-                                               Dictionary<string, FeReferencePoint> referencePoints)
+                                               OrderedDictionary<string, Constraint> constraints,
+                                               OrderedDictionary<string, FeReferencePoint> referencePoints)
         {
             try
             {
@@ -1230,7 +1231,7 @@ namespace FileInOut.Input
             }
         }
         // Section
-        private static SolidSection GetSolidSection(string[] dataSet, Dictionary<string, Section> sections)
+        private static SolidSection GetSolidSection(string[] dataSet, OrderedDictionary<string, Section> sections)
         {
             // Solid section can exist in two (2) formats as shown below:
             // *Solid Section, ELSET=STEEL_A, MATERIAL=STEEL_A
@@ -1260,7 +1261,7 @@ namespace FileInOut.Input
                 return null;
             }
         }
-        private static ShellSection GetShellSection(string[] dataSet, Dictionary<string, Section> sections)
+        private static ShellSection GetShellSection(string[] dataSet, OrderedDictionary<string, Section> sections)
         {
             // *Shell section, Elset=S4R, Material=Material-1, Offset=0
             // 5
@@ -1364,9 +1365,68 @@ namespace FileInOut.Input
                 return null;
             }
         }
+        // Amplitude
+        private static AmplitudeTabular GetAmplitudeTabular(string[] dataSet)
+        {
+            //*Amplitude, name=Amp-1
+            string amplitudeName = null;
+            bool totalTime = false;
+            double shiftX = 0;
+            double shiftY = 0;
+            try
+            {
+                string[] record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                string[] record2;
+                //
+                foreach (var rec in record1)
+                {
+                    record2 = rec.Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2.Length != 2) continue;
+                    else if (record2[0].Trim().ToUpper() == "NAME") amplitudeName = record2[1].Trim();
+                    else if (record2[0].Trim().ToUpper() == "TIME") totalTime = true;
+                    else if (record2[0].Trim().ToUpper() == "SHIFTX") shiftX = double.Parse(record2[1].Trim());
+                    else if (record2[0].Trim().ToUpper() == "SHIFTY") shiftY = double.Parse(record2[1].Trim());
+                }
+                // Read amplitude points
+                List<double> values = new List<double>();
+                for (int i = 1; i < dataSet.Length; i++)
+                {
+                    record1 = dataSet[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var rec in record1) values.Add(double.Parse(rec));
+                }
+                if (values.Count % 2 != 0) throw new Exception("There is an odd number of values defined for the amplitude.");
+                //
+                int count = 0;
+                double[][] timeAmplitude = new double[values.Count / 2][];
+                foreach (var value in values)
+                {
+                    if (count % 2 == 0)
+                    {
+                        timeAmplitude[count / 2] = new double[] { value, 0 };
+                    }
+                    else
+                    {
+                        timeAmplitude[count / 2][1] = value;
+                    }
+                    count++;
+                }
+                //
+                AmplitudeTabular amplitude = new AmplitudeTabular(amplitudeName, timeAmplitude);
+                if (totalTime) amplitude.TimeSpan = AmplitudeTimeSpanEnum.TotalTime;
+                if (shiftX != 0) amplitude.ShiftX = shiftX;
+                if (shiftY != 0) amplitude.ShiftY = shiftY;
+                //
+                return amplitude;
+            }
+            catch
+            {
+                _errors.Add("Failed to import amplitude: " + dataSet.ToRows());
+                return null;
+            }
+        }
         // Step
-        private static Step GetStep(string[][] dataSets, ref int dataSetId, FeMesh mesh, Dictionary<string, Step> steps,
-                                    Dictionary<string, ContactPair> contactPairs, List<CalculixUserKeyword> userKeywords)
+        private static Step GetStep(string[][] dataSets, ref int dataSetId, FeMesh mesh, OrderedDictionary<string, Step> steps,
+                                    OrderedDictionary<string, ContactPair> contactPairs, List<CalculixUserKeyword> userKeywords)
         {
             // *STEP, NAME=STEP-1, NLGEOM=NO, PERTURBATION -- ABAQUS
             //
@@ -1594,7 +1654,7 @@ namespace FileInOut.Input
         //
         private static void AddStepBoundaryCondition(Step step, string[] lines, FeMesh mesh)
         {
-            // *Boundary
+            // *Boundary, Amplitude=Amp-1
             // Set_1, 2, 2
             // Set_1, 3, 3, 0.001
             // Set_1, 1, 3, 0
@@ -1608,6 +1668,8 @@ namespace FileInOut.Input
                 Dictionary<string, FeNodeSet> nodeSets = new Dictionary<string, FeNodeSet>();
                 Dictionary<string, BoundaryCondition> boundaryConditions = new Dictionary<string, BoundaryCondition>();
                 HashSet<string> allBCNames = new HashSet<string>(step.BoundaryConditions.Keys);
+                // Amplitude
+                string amplitudeName = GetAmplitudeName(lines[0]);
                 //
                 for (var i = 1; i < lines.Length; i++)
                 {
@@ -1635,6 +1697,9 @@ namespace FileInOut.Input
                     {
                         name = allBCNames.GetNextNumberedKey("Temperature");
                         TemperatureBC tempBC = new TemperatureBC(name, regionName, RegionTypeEnum. NodeSetName, dofValue, false);
+                        // Amplitude
+                        if (amplitudeName != null) tempBC.AmplitudeName = amplitudeName;
+                        // Add
                         boundaryConditions.Add(name, tempBC);
                     }
                     else
@@ -1642,6 +1707,8 @@ namespace FileInOut.Input
                         name = allBCNames.GetNextNumberedKey("Displacement_rotation");
                         DisplacementRotation dispRotBC = new DisplacementRotation(name, regionName, RegionTypeEnum.NodeSetName,
                                                                                   false);
+                        // Amplitude
+                        if (amplitudeName != null) dispRotBC.AmplitudeName = amplitudeName;
                         // Assign DOF prescribed displacement
                         for (var j = dofStart; j <= dofEnd; j++)
                         {
@@ -1667,12 +1734,13 @@ namespace FileInOut.Input
                                     break;
                             }
                         }
+                        // Add
                         boundaryConditions.Add(name, dispRotBC);
                     }
                     allBCNames.Add(name);
                 }
                 //
-                MergeStepBoudaryConditions(boundaryConditions, nodeSets, step, mesh);
+                //MergeStepBoudaryConditions(boundaryConditions, nodeSets, step, mesh);
                 //
                 foreach (var entry in boundaryConditions) step.AddBoundaryCondition(entry.Value);
                 foreach (var entry in nodeSets) mesh.AddNodeSet(entry.Value);
@@ -1726,32 +1794,30 @@ namespace FileInOut.Input
                 //
                 foreach (var keyBcEntry in keyBoundaryConditions)
                 {
-                    boundaryCondition = null;
+                    boundaryCondition = keyBcEntry.Value.First();
                     nodeIds.Clear();
                     //
-                    foreach (var bcEntry in keyBcEntry.Value)
+                    if (keyBcEntry.Value.Count > 1)
                     {
-                        // Get first boundary condition
-                        if (boundaryCondition == null) boundaryCondition = bcEntry;
-                        //
-                        if (nodeSets.TryGetValue(bcEntry.RegionName, out nodeSet)) nodeIds.UnionWith(nodeSet.Labels);
-                        else if (mesh.NodeSets.TryGetValue(bcEntry.RegionName, out nodeSet)) nodeIds.UnionWith(nodeSet.Labels);
-                        else throw new NotSupportedException();
-                    }
-                    // Node set
-                    mergedNodeSet = new FeNodeSet(boundaryCondition.RegionName, nodeIds.ToArray());
-                    mergedNodeSet.Internal = true;
-                    // Rename
-                    if (keyBcEntry.Value.Count > 1)
+                        foreach (var bcEntry in keyBcEntry.Value)
+                        {
+                            if (nodeSets.TryGetValue(bcEntry.RegionName, out nodeSet)) nodeIds.UnionWith(nodeSet.Labels);
+                            else if (mesh.NodeSets.TryGetValue(bcEntry.RegionName, out nodeSet)) nodeIds.UnionWith(nodeSet.Labels);
+                            else throw new NotSupportedException();
+                        }
+                        // Node set
+                        mergedNodeSet = new FeNodeSet(boundaryCondition.RegionName, nodeIds.ToArray());
+                        mergedNodeSet.Internal = true;
+                        // Rename
                         mergedNodeSet.Name = allNodeSetNames.GetNextNumberedKey(Globals.InternalName + "_merged");
-                    // Add
-                    allNodeSetNames.Add(mergedNodeSet.Name);
-                    mergedNodeSets.Add(mergedNodeSet.Name, mergedNodeSet);
-                    // Boundary condition
-                    boundaryCondition.RegionName = mergedNodeSet.Name;
-                    // Rename
-                    if (keyBcEntry.Value.Count > 1)
+                        // Add
+                        allNodeSetNames.Add(mergedNodeSet.Name);
+                        mergedNodeSets.Add(mergedNodeSet.Name, mergedNodeSet);
+                        // Boundary condition
+                        boundaryCondition.RegionName = mergedNodeSet.Name;
+                        // Rename
                         boundaryCondition.Name = allBCNames.GetNextNumberedKey("BC_merged");
+                    }
                     // Add
                     allBCNames.Add(boundaryCondition.Name);
                     boundaryConditions.Add(boundaryCondition.Name, boundaryCondition);
@@ -1767,7 +1833,7 @@ namespace FileInOut.Input
         }
         private static void AddStepCLoad(Step step, FeMesh mesh, string[] lines)
         {
-            // *CLoad
+            // *CLoad, Amplitude=Amp-1
             // LD_BRTIP, 2, 10000 - Concentrated Force (f1,f2,f3)
             // 6623, 1, 22.99137  - Concentrated Force (f1,f2,f3)
             // LD_BRTIP, 6, 10000 - Moment (m1,m2,m3)
@@ -1778,6 +1844,8 @@ namespace FileInOut.Input
                 string nameMom;
                 int nodeId;
                 FeNodeSet nodeSet;
+                // Amplitude
+                string amplitudeName = GetAmplitudeName(lines[0]);
                 //
                 for (var i = 1; i < lines.Length; i++)
                 {
@@ -1799,8 +1867,13 @@ namespace FileInOut.Input
                     int dof = int.Parse(recordCL[1]); ;
                     double dofValue = double.Parse(recordCL[2]);
                     CLoad cfLoad = new CLoad(nameCF, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0, false);
-                    MomentLoad momentLoad = new MomentLoad(nameMom, regionName, RegionTypeEnum.NodeSetName,
-                                                           0.0, 0.0, 0.0, false);
+                    MomentLoad momentLoad = new MomentLoad(nameMom, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0, false);
+                    // Amplitude
+                    if (amplitudeName != null)
+                    {
+                        cfLoad.AmplitudeName = amplitudeName;
+                        momentLoad.AmplitudeName = amplitudeName;
+                    }
                     //
                     switch (dof)
                     {
@@ -1841,7 +1914,7 @@ namespace FileInOut.Input
         }
         private static void AddStepDLoad(Step step, string[] lines)
         {
-            // *DLoad
+            // *DLoad, Amplitude=Amp-1
             // Eall, GRAV, 9.81, 0, 0, -1
             try
             {
@@ -1850,7 +1923,9 @@ namespace FileInOut.Input
                 string regionName;
                 string loadingType;
                 double gValue;
-                string nameGrav;
+                string name;
+                // Amplitude
+                string amplitudeName = GetAmplitudeName(lines[0]);
                 //
                 for (var i = 1; i < lines.Length; i++)
                 {
@@ -1863,9 +1938,9 @@ namespace FileInOut.Input
                     {
                         // Get Gravity value
                         gValue = double.Parse(recordDL[2]);
-                        nameGrav = step.Loads.GetNextNumberedKey("Grav");
+                        name = step.Loads.GetNextNumberedKey("Grav");
                         //
-                        GravityLoad gLoad = new GravityLoad(nameGrav, regionName, RegionTypeEnum.ElementSetName,
+                        GravityLoad gLoad = new GravityLoad(name, regionName, RegionTypeEnum.ElementSetName,
                                                             0.0, 0.0, 0.0, false);
                         //
                         gLoad.F1 = double.Parse(recordDL[3]) * gValue;
@@ -1881,6 +1956,22 @@ namespace FileInOut.Input
             {
                 _errors.Add("Failed to import gravity load: " + lines.ToRows());
             }
+        }
+        private static string GetAmplitudeName(string line)
+        {
+            //
+            string amplitudeName = null;
+            string[] record1 = line.Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+            string[] record2;
+            //
+            foreach (var rec in record1)
+            {
+                record2 = rec.Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                if (record2.Length != 2) continue;
+                else if (record2[0].Trim().ToUpper() == "AMPLITUDE") amplitudeName = record2[1].Trim();
+            }
+            //
+            return amplitudeName;
         }
         // Field output
         private static void AddStepNodalFieldOutput(Step step, string[] lines)
@@ -2122,7 +2213,7 @@ namespace FileInOut.Input
                 _errors.Add("Failed to import element history output: " + lines.ToRows());
             }
         }
-        private static void AddStepContactHistoryOutput(Step step, string[] lines, Dictionary<string, ContactPair> contactPairs)
+        private static void AddStepContactHistoryOutput(Step step, string[] lines, OrderedDictionary<string, ContactPair> contactPairs)
         {
             //*Contact print, Elset=Internal_Selection-7_Fz, Totals=Only, Totals=Yes
             // S, E, ME, PEEQ
