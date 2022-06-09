@@ -5121,6 +5121,10 @@ namespace PrePoMax
             // Data editor
             ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
             ItemSetDataEditor.ParentForm = _frmLoad;
+            //
+            SinglePointDataEditor.ParentForm = _frmLoad;
+            SinglePointDataEditor.Controller = _controller;
+            //
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmLoad, "Create Load", stepName, null);
         }
@@ -5129,6 +5133,10 @@ namespace PrePoMax
             // Data editor
             ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
             ItemSetDataEditor.ParentForm = _frmLoad;
+            //
+            SinglePointDataEditor.ParentForm = _frmLoad;
+            SinglePointDataEditor.Controller = _controller;
+            //
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmLoad, "Edit Load", stepName, loadName);
         }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
+using System.Drawing.Design;
 
 namespace PrePoMax
 {
@@ -14,6 +15,7 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         private CaeModel.CentrifLoad _cenLoad;
+        private ItemSetData _centerPointItemSetData;
 
 
         // Properties                                                                                                               
@@ -31,42 +33,57 @@ namespace PrePoMax
         [Id(4, 2)]
         public string ElementSetName { get { return _cenLoad.RegionName; } set { _cenLoad.RegionName = value; } }
         //
-        [CategoryAttribute("Center point")]
-        [OrderedDisplayName(0, 10, "X")]
-        [DescriptionAttribute("X coordinate of the axis point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [Category("Rotation center coordinates")]
+        [OrderedDisplayName(0, 10, "By selection")]
+        [DescriptionAttribute("Use selection for the defenition of the rotation center.")]
+        [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 3)]
-        public double X { get { return _cenLoad.X; } set { _cenLoad.X = value; } }
+        public ItemSetData CenterPointItemSet
+        {
+            get { return _centerPointItemSetData; }
+            set
+            {
+                if (value != _centerPointItemSetData)
+                    _centerPointItemSetData = value;
+            }
+        }
         //
-        [CategoryAttribute("Center point")]
-        [OrderedDisplayName(1, 10, "Y")]
+        [CategoryAttribute("Rotation center coordinates")]
+        [OrderedDisplayName(1, 10, "X")]
         [DescriptionAttribute("X coordinate of the axis point.")]
         [TypeConverter(typeof(StringLengthConverter))]
         [Id(2, 3)]
-        public double Y { get { return _cenLoad.Y; } set { _cenLoad.Y = value; } }
+        public double X { get { return _cenLoad.X; } set { _cenLoad.X = value; } }
         //
-        [CategoryAttribute("Center point")]
-        [OrderedDisplayName(2, 10, "Z")]
+        [CategoryAttribute("Rotation center coordinates")]
+        [OrderedDisplayName(2, 10, "Y")]
         [DescriptionAttribute("X coordinate of the axis point.")]
         [TypeConverter(typeof(StringLengthConverter))]
         [Id(3, 3)]
+        public double Y { get { return _cenLoad.Y; } set { _cenLoad.Y = value; } }
+        //
+        [CategoryAttribute("Rotation center coordinates")]
+        [OrderedDisplayName(3, 10, "Z")]
+        [DescriptionAttribute("X coordinate of the axis point.")]
+        [TypeConverter(typeof(StringLengthConverter))]
+        [Id(4, 3)]
         public double Z { get { return _cenLoad.Z; } set { _cenLoad.Z = value; } }
         //
-        [CategoryAttribute("Axis direction")]
+        [CategoryAttribute("Rotation axis components")]
         [OrderedDisplayName(0, 10, "N1")]
         [DescriptionAttribute("Axis component in the direction of the first axis.")]
         [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 4)]
         public double N1 { get { return _cenLoad.N1; } set { _cenLoad.N1 = value; } }
         //
-        [CategoryAttribute("Axis direction")]
+        [CategoryAttribute("Rotation axis components")]
         [OrderedDisplayName(1, 10, "N2")]
         [DescriptionAttribute("Axis component in the direction of the second axis.")]
         [TypeConverter(typeof(StringLengthConverter))]
         [Id(2, 4)]
         public double N2 { get { return _cenLoad.N2; } set { _cenLoad.N2 = value; } }
         //
-        [CategoryAttribute("Axis direction")]
+        [CategoryAttribute("Rotation axis components")]
         [OrderedDisplayName(2, 10, "N3")]
         [DescriptionAttribute("Axis component in the direction of the third axis.")]
         [TypeConverter(typeof(StringLengthConverter))]
@@ -97,6 +114,9 @@ namespace PrePoMax
             //
             SetBase(_cenLoad, regionTypePropertyNamePairs);
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            _centerPointItemSetData = new ItemSetData(); // needed to display ItemSetData.ToString()
+            _centerPointItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
             //
             DynamicCustomTypeDescriptor.GetProperty(nameof(Z)).SetIsBrowsable(!cLoad.TwoD);
             DynamicCustomTypeDescriptor.GetProperty(nameof(N1)).SetIsBrowsable(!cLoad.TwoD);

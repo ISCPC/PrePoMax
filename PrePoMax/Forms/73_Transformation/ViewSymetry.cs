@@ -29,8 +29,8 @@ namespace PrePoMax.Forms
         public SymmetryPlaneEnum SymmetryPlane { get { return _symmetry.SymmetryPlane; } set { _symmetry.SymmetryPlane = value; } }
         //
         [Category("Symmetry point coordinates")]
-        [OrderedDisplayName(0, 10, "Select the symmetry point")]
-        [DescriptionAttribute("Select the symmetry point.")]
+        [OrderedDisplayName(0, 10, "By selection")]
+        [DescriptionAttribute("Use selection for the defenition of the symmetry point.")]
         [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 2)]
         public ItemSetData SymmetryPointItemSet

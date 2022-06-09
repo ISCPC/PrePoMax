@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using CaeModel;
 using CaeGlobals;
+using CaeMesh;
 
 namespace PrePoMax.Forms
 {
@@ -16,6 +17,7 @@ namespace PrePoMax.Forms
         private string _loadToEditName;
         private ViewLoad _viewLoad;
         private Controller _controller;
+        private Selection _selectionCopy;
 
 
         // Properties                                                                                                               
@@ -98,6 +100,7 @@ namespace PrePoMax.Forms
             this.MinimumSize = new System.Drawing.Size(350, 550);
             this.Name = "FrmLoad";
             this.Text = "Edit Load";
+            this.EnabledChanged += new System.EventHandler(this.FrmLoad_EnabledChanged);
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -105,6 +108,13 @@ namespace PrePoMax.Forms
         }
 
 
+        // Event handlers
+        private void FrmLoad_EnabledChanged(object sender, EventArgs e)
+        {
+            if (!Enabled) _selectionCopy = _controller.Selection.DeepClone();
+            //
+            ShowHideSelectionForm();
+        }
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
         {
@@ -878,7 +888,7 @@ namespace PrePoMax.Forms
         }
         private void ShowHideSelectionForm()
         {
-            if (FELoad != null && FELoad.RegionType == RegionTypeEnum.Selection)
+            if (FELoad != null && FELoad.RegionType == RegionTypeEnum.Selection && Enabled)
                 ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             else
                 ItemSetDataEditor.SelectionForm.Hide();
@@ -921,30 +931,59 @@ namespace PrePoMax.Forms
         //
         public void SelectionChanged(int[] ids)
         {
-            if (FELoad != null && FELoad.RegionType == RegionTypeEnum.Selection)
+            if (Enabled)
             {
-                if (FELoad is CLoad ||
-                    FELoad is MomentLoad ||
-                    FELoad is DLoad ||
-                    FELoad is STLoad ||
-                    FELoad is ShellEdgeLoad ||
-                    FELoad is GravityLoad ||
-                    FELoad is CentrifLoad ||
-                    FELoad is PreTensionLoad ||
-                    FELoad is CFlux ||
-                    FELoad is DFlux ||
-                    FELoad is BodyFlux ||
-                    FELoad is FilmHeatTransfer ||
-                    FELoad is RadiationHeatTransfer)
+                if (FELoad != null && FELoad.RegionType == RegionTypeEnum.Selection)
                 {
-                    FELoad.CreationIds = ids;
-                    FELoad.CreationData = _controller.Selection.DeepClone();
-                    //
-                    propertyGrid.Refresh();
-                    //
-                    _propertyItemChanged = true;
+                    if (FELoad is CLoad ||
+                        FELoad is MomentLoad ||
+                        FELoad is DLoad ||
+                        FELoad is STLoad ||
+                        FELoad is ShellEdgeLoad ||
+                        FELoad is GravityLoad ||
+                        FELoad is CentrifLoad ||
+                        FELoad is PreTensionLoad ||
+                        FELoad is CFlux ||
+                        FELoad is DFlux ||
+                        FELoad is BodyFlux ||
+                        FELoad is FilmHeatTransfer ||
+                        FELoad is RadiationHeatTransfer)
+                    {
+                        FELoad.CreationIds = ids;
+                        FELoad.CreationData = _controller.Selection.DeepClone();
+                        //
+                        propertyGrid.Refresh();
+                        //
+                        _propertyItemChanged = true;
+                    }
+                    else throw new NotSupportedException();
                 }
-                else throw new NotSupportedException();
+            }
+            else
+            {
+                if (ids != null && ids.Length == 1)
+                {
+                    Enabled = true;
+                    //
+                    FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
+                    string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+                    //
+                    if (_viewLoad is ViewCentrifLoad vcl)
+                    {
+                        if (propertyName == nameof(vcl.CenterPointItemSet))
+                        {
+                            vcl.X = node.X;
+                            vcl.Y = node.Y;
+                            vcl.Z = node.Z;
+                        }
+                        propertyGrid.Refresh();
+                        //
+                        _propertyItemChanged = true;
+                        //
+                        _controller.Selection = _selectionCopy;
+                        Highlight();
+                    }
+                }
             }
         }
 
@@ -961,5 +1000,7 @@ namespace PrePoMax.Forms
             if (FELoad == null || FELoad.CreationData == null) return true;   // element set based section
             return FELoad.CreationData.IsGeometryBased();
         }
+
+        
     }
 }
