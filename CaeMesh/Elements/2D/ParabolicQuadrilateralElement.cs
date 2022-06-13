@@ -170,6 +170,15 @@ namespace CaeMesh
                 return new double[] { c, c, d };
             else throw new NotSupportedException();
         }
+        public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName, double[] nodalValues)
+        {
+            if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2)
+                return GetEquivalentForces(typeof(ParabolicQuadrilateralElement), nodalValues);
+            else if (faceName == FeFaceName.S3 || faceName == FeFaceName.S4 ||
+                     faceName == FeFaceName.S5 || faceName == FeFaceName.S6)
+                return GetEquivalentForces(typeof(ParabolicBeamElement), nodalValues);
+            else throw new NotSupportedException();
+        }
         public override double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes)
         {
             int[] cell = GetVtkCellFromFaceName(faceName);

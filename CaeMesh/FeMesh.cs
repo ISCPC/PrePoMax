@@ -1616,7 +1616,16 @@ namespace CaeMesh
             FeNode node2 = _nodes[cell[1]];
             FeNode node3 = _nodes[cell[2]];
             //
-            return ComputeNormalFromFaceCellNodes(node1, node2, node3);
+            if (cell.Length == 3 || cell.Length == 6)
+            {
+                return ComputeNormalFromFaceCellNodes(node1, node2, node3);
+            }
+            else if (cell.Length == 4 || cell.Length == 8)
+            {
+                FeNode node4 = _nodes[cell[3]];
+                return ComputeNormalFromFaceCellNodes(node1, node2, node3, node4);
+            }
+            else throw new NotSupportedException();
         }
         private FeNode ComputeNormalFromFaceCellNodes(FeNode n1, FeNode n2, FeNode n3)
         {
@@ -1636,6 +1645,16 @@ namespace CaeMesh
                 n.Z /= d;
             }
             return n;
+        }
+        private FeNode ComputeNormalFromFaceCellNodes(FeNode n1, FeNode n2, FeNode n3, FeNode n4)
+        {
+            FeNode v1 = ComputeNormalFromFaceCellNodes(n1, n2, n3);
+            FeNode v2 = ComputeNormalFromFaceCellNodes(n2, n3, n4);
+            FeNode v3 = ComputeNormalFromFaceCellNodes(n3, n4, n1);
+            FeNode v4 = ComputeNormalFromFaceCellNodes(n4, n1, n2);
+            return new FeNode(-1, (v1.X + v2.X + v3.X + v4.X) / 4,
+                                  (v1.Y + v2.Y + v3.Y + v4.Y) / 4,
+                                  (v1.Z + v2.Z + v3.Z + v4.Z) / 4);
         }
         public double ComputeAngleInRadFromEdgeCellIndices(int[] cell1, int[] cell2, int nodeIdAtAngle)
         {
@@ -6977,7 +6996,7 @@ namespace CaeMesh
                     faceCenter[1] /= nodes.Length;
                     faceCenter[2] /= nodes.Length;
                     //
-                    faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[1], nodes[2]).Coor;
+                    faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[1], nodes[2], nodes[3]).Coor;
                 }
                 // Shell edge face
                 else
@@ -6985,7 +7004,7 @@ namespace CaeMesh
                     nodeIds = element.GetNodeIdsFromFaceName(FeFaceName.S2); // the element normal
                     nodes = new FeNode[4];
                     for (int i = 0; i < nodes.Length; i++) nodes[i] = _nodes[nodeIds[i]];
-                    faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[1], nodes[2]).Coor;
+                    faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[1], nodes[2], nodes[3]).Coor;
                     //
                     nodeIds = element.GetNodeIdsFromFaceName(faceName);
                     nodes = new FeNode[2];
@@ -7054,7 +7073,10 @@ namespace CaeMesh
                 // Element normal to inside
                 if (faceName == FeFaceName.S1) faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[1], nodes[2]).Coor;
                 // Element normal to outside
-                else faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[2], nodes[1]).Coor;
+                else if (faceName == FeFaceName.S2) faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[2], nodes[1]).Coor;
+                // Element normal to outside
+                else faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[3], nodes[2], nodes[1]).Coor;
+
                 //
                 shellElement = false;
             }
@@ -7075,7 +7097,7 @@ namespace CaeMesh
                 faceCenter[1] /= nodes.Length;
                 faceCenter[2] /= nodes.Length;
                 // Element normal to inside
-                faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[1], nodes[2]).Coor;
+                faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[1], nodes[2], nodes[3]).Coor;
                 //
                 shellElement = false;
             }

@@ -136,6 +136,10 @@ namespace CaeMesh
         {
             return new double[] { a, a, a };
         }
+        public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName, double[] nodalValues)
+        {
+            return GetEquivalentForces(typeof(LinearTriangleElement), nodalValues);
+        }
         public override double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes)
         {
             int[] cell = GetVtkCellFromFaceName(faceName);

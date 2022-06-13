@@ -99,6 +99,66 @@ namespace CaeMesh
                                                                                        Dictionary<int, FeNode> nodes,
                                                                                        bool edgeFaces);
         abstract public double[] GetEquivalentForcesFromFaceName(FeFaceName faceName);
+        abstract public double[] GetEquivalentForcesFromFaceName(FeFaceName faceName, double[] nodalValues);
+        protected double[] GetEquivalentForces(Type elementType, double[] nodalValues)
+        {
+            double[] n = nodalValues;
+            if (elementType == typeof(LinearBeamElement))
+            {
+                double a = 1.0 / 6.0;
+                return new double[] { a * (2 * n[0] + n[1]),
+                                      a * (n[0] + 2 * n[1])};
+            }
+            else if (elementType == typeof(ParabolicBeamElement))
+            {
+                double a = 1.0 / 30.0;
+                double b = 1.0 / 15.0;
+                return new double[] { a * (4 * n[0] - n[1] + 2 * n[2]),
+                                      a * (-n[0] + 4 * n[1] + 2 * n[2]),
+                                      b * (n[0] + n[1] + 8 * n[2])};
+            }
+            else if (elementType == typeof(LinearTriangleElement))
+            {
+                double a = 1.0 / 12.0;
+                return new double[] { a * (2 * n[0] + n[1] + n[2]),
+                                      a * (n[0] + 2 * n[1] + n[2]),
+                                      a * (n[0] + n[1] + 2 * n[2])};
+            }
+            else if (elementType == typeof(ParabolicTriangleElement))
+            {
+                double a = 1.0 / 180;
+                double b = 1.0 / 45;
+                return new double[] { a * (6 * n[0] - n[1] - n[2] - 4 * n[4]),
+                                      a * (- n[0] + 6 * n[1] - n[2] - 4 * n[5]),
+                                      a * (- n[0] - n[1] + 6 * n[2] - 4 * n[3]),
+                                      b * (- n[2] + 8 * n[3] + 4 * n[4] + 4 * n[5]),
+                                      b * (- n[0] + 4 * n[3] + 8 * n[4] + 4 * n[5]),
+                                      b * (- n[1] + 4 * n[3] + 4 * n[4] + 8 * n[5])};
+            }
+            else if (elementType == typeof(LinearQuadrilateralElement))
+            {
+                double a = 1.0 / 36.0;
+                return new double[] { a * (4 * n[0] + 2 * n[1] + 1 * n[2] + 2 * n[3]),
+                                      a * (2 * n[0] + 4 * n[1] + 2 * n[2] + 1 * n[3]),
+                                      a * (1 * n[0] + 2 * n[1] + 4 * n[2] + 2 * n[3]),
+                                      a * (2 * n[0] + 1 * n[1] + 2 * n[2] + 4 * n[3])};
+            }
+            else if (elementType == typeof(ParabolicQuadrilateralElement))
+            {
+                double a = 1.0 / 180;
+                double b = 1.0 / 90;
+                return new double[] {
+                    a * (6 * n[0] + 2 * n[1] + 3 * n[2] + 2 * n[3] - 6 * n[4] - 8 * n[5] - 8 * n[6] - 6 * n[7]),
+                    a * (2 * n[0] + 6 * n[1] + 2 * n[2] + 3 * n[3] - 6 * n[4] - 6 * n[5] - 8 * n[6] - 8 * n[7]),
+                    a * (3 * n[0] + 2 * n[1] + 6 * n[2] + 2 * n[3] - 8 * n[4] - 6 * n[5] - 6 * n[6] - 8 * n[7]),
+                    a * (2 * n[0] + 3 * n[1] + 2 * n[2] + 6 * n[3] - 8 * n[4] - 8 * n[5] - 6 * n[6] - 6 * n[7]),
+                    b * (-3 * n[0] -3 * n[1] -4 * n[2] -4 * n[3] + 16 * n[4] + 10 * n[5] +  8 * n[6] + 10 * n[7]),
+                    b * (-4 * n[0] -3 * n[1] -3 * n[2] -4 * n[3] + 10 * n[4] + 16 * n[5] + 10 * n[6] +  8 * n[7]),
+                    b * (-4 * n[0] -4 * n[1] -3 * n[2] -3 * n[3] +  8 * n[4] + 10 * n[5] + 16 * n[6] + 10 * n[7]),
+                    b * (-3 * n[0] -4 * n[1] -4 * n[2] -3 * n[3] + 10 * n[4] +  8 * n[5] + 10 * n[6] + 16 * n[7])};
+            }
+            else throw new NotSupportedException();
+        }
         abstract public double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes);
         abstract public double[] GetFaceCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area);
         abstract public FeElement DeepCopy();

@@ -158,8 +158,17 @@ namespace CaeMesh
         {
             if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2) 
                 return new double[] { a, a, a };
-            else 
+            else if (faceName == FeFaceName.S3 || faceName == FeFaceName.S4 || faceName == FeFaceName.S5)
                 return new double[] { b, b, b, b };
+            else throw new NotSupportedException();
+        }
+        public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName, double[] nodalValues)
+        {
+            if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2)
+                return GetEquivalentForces(typeof(LinearTriangleElement), nodalValues);
+            else if (faceName == FeFaceName.S3 || faceName == FeFaceName.S4 || faceName == FeFaceName.S5)
+                return GetEquivalentForces(typeof(LinearQuadrilateralElement), nodalValues);
+            else throw new NotSupportedException();
         }
         public override double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes)
         {

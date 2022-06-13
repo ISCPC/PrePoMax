@@ -1187,6 +1187,109 @@ namespace CaeModel
                 }
             }
         }
+        public CLoad[] GetNodalLoadsFromHydrostaticPressure(HydrostaticPressure load)
+        {
+            Dictionary<int, int> elementIdSectionId;
+            Dictionary<int, double> sectionIdThickness = new Dictionary<int, double>();
+            // Get element thicknesses
+            GetSectionAssignments(out elementIdSectionId);
+            //
+            int sectionId = 0;
+            double thickness;
+            string surfaceName = load.SurfaceName;
+            foreach (var entry in _sections)
+            {
+                if (entry.Value is SolidSection solid) thickness = solid.Thickness;
+                else if (entry.Value is ShellSection shell) thickness = shell.Thickness;
+                else throw new NotSupportedException();
+                //
+                sectionIdThickness.Add(sectionId++, thickness);
+            }
+            // Surface
+            FeSurface surface = _mesh.Surfaces[surfaceName];
+            if (surface.ElementFaces == null) return null;
+            //
+            int nodeId;
+            int[] nodeIds;
+            double A;
+            double pressure;
+            double[] force;
+            double[] nodalForce;
+            double[] faceNormal;
+            double[] nodalPressures;
+            double[] nodalForceMagnitudes;
+            FeElement element;
+            Dictionary<int, double> nodeIdPressure = new Dictionary<int, double>();
+            Dictionary<int, double[]> nodeIdForce = new Dictionary<int, double[]>();
+            foreach (var entry in surface.ElementFaces)
+            {
+                foreach (var elementId in _mesh.ElementSets[entry.Value].Labels)
+                {
+                    element = _mesh.Elements[elementId];
+                    _mesh.GetElementFaceNormalAndArea(elementId, entry.Key, out faceNormal, out A);
+                    // Accounf for 2D area
+                    if (element is FeElement2D element2D)
+                    {
+                        sectionId = elementIdSectionId[elementId];
+                        if (sectionId == -1) throw new CaeException("Missing section assignment at element " + elementId +
+                                                                    " from part " + _mesh.GetPartById(element.PartId) + ".");
+                        thickness = sectionIdThickness[sectionId];
+                        A *= thickness;
+                    }
+                    // Node ids
+                    nodeIds = element.GetNodeIdsFromFaceName(entry.Key);
+                    // Pressure
+                    nodalPressures = new double[nodeIds.Length];
+                    for (int i = 0; i < nodeIds.Length; i++)
+                    {
+                        nodeId = nodeIds[i];
+                        if (!nodeIdPressure.TryGetValue(nodeId, out pressure)) 
+                        {
+                            pressure = load.GetPressureForPoint(_mesh.Nodes[nodeId].Coor);
+                            nodeIdPressure.Add(nodeId, pressure);
+                        }
+                        nodalPressures[i] = pressure;
+                    }
+                    // Force magnitudes without area
+                    nodalForceMagnitudes = element.GetEquivalentForcesFromFaceName(entry.Key, nodalPressures);
+                    // Force vectors
+                    for (int i = 0; i < nodeIds.Length; i++)
+                    {
+                        force = new double[] {
+                            A * nodalForceMagnitudes[i] * faceNormal[0],
+                            A * nodalForceMagnitudes[i] * faceNormal[1],
+                            A * nodalForceMagnitudes[i] * faceNormal[2]};
+                        //
+                        if (!nodeIdForce.TryGetValue(nodeIds[i], out nodalForce))
+                        {
+                            nodalForce = new double[3];
+                            nodeIdForce.Add(nodeIds[i], nodalForce);
+                        }
+                        nodalForce[0] += force[0];
+                        nodalForce[1] += force[1];
+                        nodalForce[2] += force[2];
+                    }
+                }
+            }
+            // Concentrated loads
+            CLoad cLoad;
+            List<CLoad> loads = new List<CLoad>();
+            foreach (var entry in nodeIdForce)
+            {
+                if (entry.Value[0] != 0 || entry.Value[1] != 0 || entry.Value[2] != 0)
+                {
+                    cLoad = new CLoad("_CLoad_" + entry.Key.ToString(), entry.Key,
+                                      entry.Value[0],
+                                      entry.Value[1],
+                                      entry.Value[2],
+                                      load.TwoD);
+                    cLoad.AmplitudeName = load.AmplitudeName;
+                    loads.Add(cLoad);
+                }
+            }
+            //
+            return loads.ToArray();
+        }
         // 3D - 2D
         public void UpdateMeshPartsElementTypes()
         {

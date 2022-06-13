@@ -59,6 +59,10 @@ namespace CaeMesh
         {
             throw new NotImplementedException();
         }
+        public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName, double[] nodalValues)
+        {
+            throw new NotImplementedException();
+        }
         public override double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes)
         {
             throw new NotImplementedException();
