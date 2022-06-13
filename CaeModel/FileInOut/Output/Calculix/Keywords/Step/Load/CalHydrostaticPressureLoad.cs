@@ -10,10 +10,10 @@ using CaeGlobals;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalSTLoad : CalculixKeyword
+    internal class CalHydrostaticPressureLoad : CalculixKeyword
     {
         // Variables                                                                                                                
-        private STLoad _load;
+        private HydrostaticPressure _load;
         private CLoad[] _cLoads;
 
 
@@ -21,9 +21,9 @@ namespace FileInOut.Output.Calculix
 
 
         // Constructor                                                                                                              
-        public CalSTLoad(FeModel model, STLoad load)
+        public CalHydrostaticPressureLoad(FeModel model, HydrostaticPressure load)
         {
-            _cLoads = model.GetNodalLoadsFromSurfaceTraction(load);
+            _cLoads = null; // model.GetNodalLoadsFromSurfaceTraction(load);
             _load = load;
         }
 
@@ -56,6 +56,7 @@ namespace FileInOut.Output.Calculix
                     foreach (var dir in directions)
                     {
                         sb.AppendFormat("{0}, {1}, {2}", cLoad.NodeId, dir, cLoad.GetComponent(dir - 1).ToCalculiX16String());
+                        
                         sb.AppendLine();
                     }
                 }

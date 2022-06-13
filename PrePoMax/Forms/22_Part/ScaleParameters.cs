@@ -34,8 +34,8 @@ namespace PrePoMax.Forms
         public bool Copy { get { return _copy; } set { _copy = value; } }
         //
         [Category("Center point coordinates")]
-        [OrderedDisplayName(0, 10, "Select the center point")]
-        [DescriptionAttribute("Select the center point.")]
+        [OrderedDisplayName(0, 10, "By selection")]
+        [DescriptionAttribute("Use selection for the defenition of the center point.")]
         [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 2)]
         public ItemSetData ScaleCenterItemSet

@@ -33,9 +33,9 @@ namespace PrePoMax.Forms
         [Id(1, 1)]
         public bool Copy { get { return _copy; } set { _copy = value; } }
         //
-        [Category("Rotation axis")]
-        [OrderedDisplayName(0, 10, "Select the start point")]
-        [DescriptionAttribute("Select the start point.")]
+        [Category("Start axis point coordinates")]
+        [OrderedDisplayName(0, 10, "By selection")]
+        [DescriptionAttribute("Use selection for the defenition of the start point.")]
         [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 2)]
         public ItemSetData StartPointItemSet
@@ -48,11 +48,11 @@ namespace PrePoMax.Forms
             }
         }
         //
-        [Category("Rotation axis")]
+        [Category("Start axis point coordinates")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the start point.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(1, 2)]
+        [Id(2, 2)]
         public double X1
         {
             get { return _startPoint[0]; }
@@ -63,11 +63,11 @@ namespace PrePoMax.Forms
             }
         }
         //
-        [Category("Rotation axis")]
+        [Category("Start axis point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the start point.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(1, 2)]
+        [Id(3, 2)]
         public double Y1
         {
             get { return _startPoint[1]; }
@@ -78,11 +78,11 @@ namespace PrePoMax.Forms
             }
         }
         //
-        [Category("Rotation axis")]
+        [Category("Start axis point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the start point.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(1, 2)]
+        [Id(4, 2)]
         public double Z1
         {
             get { return _startPoint[2]; }
@@ -93,11 +93,11 @@ namespace PrePoMax.Forms
             }
         }
         //
-        [Category("Rotation axis")]
-        [OrderedDisplayName(4, 10, "Select the end point")]
-        [DescriptionAttribute("Select the end point.")]
+        [Category("End axis point coordinates")]
+        [OrderedDisplayName(0, 10, "By selection ")]    // must be a different name than for the first point !!!
+        [DescriptionAttribute("Use selection for the defenition of the end point.")]
         [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
-        [Id(1, 2)]
+        [Id(1, 3)]
         public ItemSetData EndPointItemSet
         {
             get { return _endPointItemSetData; }
@@ -107,25 +107,25 @@ namespace PrePoMax.Forms
             }
         }
         //
-        [Category("Rotation axis")]
-        [OrderedDisplayName(5, 10, "X")]
+        [Category("End axis point coordinates")]
+        [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the end point.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(1, 2)]
+        [Id(2, 3)]
         public double X2 { get { return _endPoint[0]; } set { _endPoint[0] = value; } }
         //
-        [Category("Rotation axis")]
-        [OrderedDisplayName(6, 10, "Y")]
+        [Category("End axis point coordinates")]
+        [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the end point.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(1, 2)]
+        [Id(3, 3)]
         public double Y2 { get { return _endPoint[1]; } set { _endPoint[1] = value; } }
         //
-        [Category("Rotation axis")]
-        [OrderedDisplayName(7, 10, "Z")]
+        [Category("End axis point coordinates")]
+        [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the end point.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(1, 2)]
+        [Id(4, 3)]
         public double Z2
         {
             get { return _endPoint[2]; }
@@ -140,7 +140,7 @@ namespace PrePoMax.Forms
         [OrderedDisplayName(0, 10, "Angle")]
         [Description("Rotation angle around the axis.")]
         [TypeConverter(typeof(StringAngleDegConverter))]
-        [Id(1, 3)]
+        [Id(1, 4)]
         public double AngleDeg { get { return _angleDeg; } set { _angleDeg = value; } }
 
 
