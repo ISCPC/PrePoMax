@@ -55,11 +55,11 @@ namespace FileInOut.Output.Calculix
             foreach (var dir in directions)
             {
                 if (_load.RegionType == RegionTypeEnum.NodeId)
-                    sb.AppendFormat("{0}, {1}, {2}", _load.NodeId, dir, _load.GetDirection(dir - 1).ToCalculiX16String());
+                    sb.AppendFormat("{0}, {1}, {2}", _load.NodeId, dir, _load.GetComponent(dir - 1).ToCalculiX16String());
                 else if (_load.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName) // node set
-                    sb.AppendFormat("{0}, {1}, {2}", _load.RegionName, dir, _load.GetDirection(dir - 1).ToCalculiX16String());
+                    sb.AppendFormat("{0}, {1}, {2}", _load.RegionName, dir, _load.GetComponent(dir - 1).ToCalculiX16String());
                 else if (_load.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) // reference point
-                    sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[0], dir, _load.GetDirection(dir - 1).ToCalculiX16String());
+                    sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[0], dir, _load.GetComponent(dir - 1).ToCalculiX16String());
                 //
                 sb.AppendLine();
             }

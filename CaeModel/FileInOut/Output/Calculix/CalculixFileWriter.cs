@@ -986,9 +986,14 @@ namespace FileInOut.Output
                     CalDLoad dload = new CalDLoad(dl, model.Mesh.Surfaces[dl.SurfaceName]);
                     parent.AddKeyword(dload);
                 }
+                else if (load is HydrostaticPressure hpl)
+                {
+                    CalHydrostaticPressureLoad hpload = new CalHydrostaticPressureLoad(model, hpl);
+                    parent.AddKeyword(hpload);
+                }
                 else if (load is STLoad stl)
                 {
-                    CalSTLoad stload = new CalSTLoad(model, stl, referencePointsNodeIds);
+                    CalSTLoad stload = new CalSTLoad(model, stl);
                     parent.AddKeyword(stload);
                 }
                 else if (load is ShellEdgeLoad sel)

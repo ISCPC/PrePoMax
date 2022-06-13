@@ -28,7 +28,7 @@ namespace CaeModel
         public double F1 { get { return _f1; } set { _f1 = value; } }
         public double F2 { get { return _f2; } set { _f2 = value; } }
         public double F3 { get { return _f3; } set { _f3 = value; if (_twoD) _f3 = 0; } }
-        public double GetDirection(int direction)
+        public double GetComponent(int direction)
         {
             if (direction == 0) return F1;
             else if (direction == 1) return F2;

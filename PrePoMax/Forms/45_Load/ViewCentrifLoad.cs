@@ -57,14 +57,14 @@ namespace PrePoMax
         //
         [CategoryAttribute("Rotation center coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
-        [DescriptionAttribute("X coordinate of the axis point.")]
+        [DescriptionAttribute("Y coordinate of the axis point.")]
         [TypeConverter(typeof(StringLengthConverter))]
         [Id(3, 3)]
         public double Y { get { return _cenLoad.Y; } set { _cenLoad.Y = value; } }
         //
         [CategoryAttribute("Rotation center coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
-        [DescriptionAttribute("X coordinate of the axis point.")]
+        [DescriptionAttribute("Z coordinate of the axis point.")]
         [TypeConverter(typeof(StringLengthConverter))]
         [Id(4, 3)]
         public double Z { get { return _cenLoad.Z; } set { _cenLoad.Z = value; } }

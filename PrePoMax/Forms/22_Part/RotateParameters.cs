@@ -94,7 +94,7 @@ namespace PrePoMax.Forms
         }
         //
         [Category("End axis point coordinates")]
-        [OrderedDisplayName(0, 10, "By selection")]
+        [OrderedDisplayName(0, 10, "By selection ")]    // must be a different name than for the first point !!!
         [DescriptionAttribute("Use selection for the defenition of the end point.")]
         [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 3)]

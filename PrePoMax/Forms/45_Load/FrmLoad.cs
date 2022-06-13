@@ -31,6 +31,7 @@ namespace PrePoMax.Forms
                 if (clone is CLoad cl) _viewLoad = new ViewCLoad(cl);
                 else if (clone is MomentLoad ml) _viewLoad = new ViewMomentLoad(ml);
                 else if (clone is DLoad dl) _viewLoad = new ViewDLoad(dl);
+                else if (clone is HydrostaticPressure hpl) _viewLoad = new ViewHydrostaticPressureLoad(hpl);
                 else if (clone is STLoad stl) _viewLoad = new ViewSTLoad(stl);
                 else if (clone is ShellEdgeLoad sel) _viewLoad = new ViewShellEdgeLoad(sel);
                 else if (clone is GravityLoad gl) _viewLoad = new ViewGravityLoad(gl);
@@ -136,6 +137,13 @@ namespace PrePoMax.Forms
                     // 2D
                     if (vdl.GetBase().TwoD) _controller.Selection.LimitSelectionToShellEdges = true;
                 }
+                else if (itemTag is ViewHydrostaticPressureLoad vhpl)
+                {
+                    _viewLoad = vhpl;
+                    _controller.Selection.EnableShellEdgeFaceSelection = true;
+                    // 2D
+                    if (vhpl.GetBase().TwoD) _controller.Selection.LimitSelectionToShellEdges = true;
+                }
                 else if (itemTag is ViewSTLoad vstl)
                 {
                     _viewLoad = vstl;
@@ -212,6 +220,10 @@ namespace PrePoMax.Forms
                 HighlightLoad();
             }
             else if (_viewLoad is ViewDLoad vdl && property == nameof(vdl.SurfaceName))
+            {
+                HighlightLoad();
+            }
+            else if (_viewLoad is ViewHydrostaticPressureLoad vhpl && property == nameof(vhpl.SurfaceName))
             {
                 HighlightLoad();
             }
@@ -293,6 +305,10 @@ namespace PrePoMax.Forms
             {
                 if (dl.Magnitude == 0)
                     throw new CaeException("The pressure load magnitude must not be equal to 0.");
+            }
+            else if (FELoad is HydrostaticPressure hpl)
+            {
+                if (!hpl.IsProperlyDefined(out string error)) throw new CaeException(error);
             }
             else if (FELoad is STLoad stl)
             {
@@ -482,6 +498,21 @@ namespace PrePoMax.Forms
                     else throw new NotSupportedException();
                     //
                     vdl.PopulateDropDownLists(surfaceNames, amplitudeNames);
+                }
+                else if (_viewLoad is ViewHydrostaticPressureLoad vhpl)
+                {
+                    string[] surfaceNames;
+                    if (twoD) surfaceNames = shellEdgeSurfaceNames.ToArray();
+                    else surfaceNames = elementBasedSurfaceNames.ToArray();
+                    //
+                    selectedId = lvTypes.FindItemWithText("Hydrostatic pressure").Index;
+                    // Check for deleted regions
+                    if (vhpl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vhpl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref surfaceNames, vhpl.SurfaceName, s => { vhpl.SurfaceName = s; });
+                    else throw new NotSupportedException();
+                    //
+                    vhpl.PopulateDropDownLists(surfaceNames, amplitudeNames);
                 }
                 else if (_viewLoad is ViewSTLoad vstl)
                 {
@@ -683,6 +714,23 @@ namespace PrePoMax.Forms
                 item.Tag = vdl;
                 lvTypes.Items.Add(item);
             }
+            // Hydrostatic Pressure
+            name = "Hydrostatic pressure";
+            loadName = GetLoadName(name);
+            item = new ListViewItem(name);
+            HydrostaticPressure hpLoad = new HydrostaticPressure(loadName, "", RegionTypeEnum.Selection, twoD);
+            if (step.IsLoadSupported(hpLoad))
+            {
+                string[] surfaceNames;
+                if (twoD) surfaceNames = shellEdgeSurfaceNames.ToArray();
+                else surfaceNames = elementBasedSurfaceNames.ToArray();
+                //
+                ViewHydrostaticPressureLoad vhpl = new ViewHydrostaticPressureLoad(hpLoad);
+                vhpl.PopulateDropDownLists(surfaceNames, amplitudeNames);
+                vhpl.Color = color;
+                item.Tag = vhpl;
+                lvTypes.Items.Add(item);
+            }
             // Surface traction
             name = "Surface traction";
             loadName = GetLoadName(name);
@@ -850,6 +898,7 @@ namespace PrePoMax.Forms
                 else if (FELoad is CLoad ||
                          FELoad is MomentLoad ||
                          FELoad is DLoad ||
+                         FELoad is HydrostaticPressure ||
                          FELoad is STLoad ||
                          FELoad is ShellEdgeLoad ||
                          FELoad is GravityLoad ||
@@ -903,6 +952,7 @@ namespace PrePoMax.Forms
                 else if (FELoad is CLoad) _controller.SetSelectItemToNode();
                 else if (FELoad is MomentLoad) _controller.SetSelectItemToNode();
                 else if (FELoad is DLoad) _controller.SetSelectItemToSurface();
+                else if (FELoad is HydrostaticPressure) _controller.SetSelectItemToSurface();
                 else if (FELoad is STLoad) _controller.SetSelectItemToSurface();
                 else if (FELoad is ShellEdgeLoad) _controller.SetSelectItemToSurface();
                 else if (FELoad is GravityLoad) _controller.SetSelectItemToPart();
@@ -938,6 +988,7 @@ namespace PrePoMax.Forms
                     if (FELoad is CLoad ||
                         FELoad is MomentLoad ||
                         FELoad is DLoad ||
+                        FELoad is HydrostaticPressure ||
                         FELoad is STLoad ||
                         FELoad is ShellEdgeLoad ||
                         FELoad is GravityLoad ||
@@ -965,12 +1016,13 @@ namespace PrePoMax.Forms
                 {
                     Enabled = true;
                     //
+                    string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+                    //
                     FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
-                    string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
                     //
                     if (_viewLoad is ViewCentrifLoad vcl)
                     {
-                        if (propertyName == nameof(vcl.CenterPointItemSet))
+                        if (property == nameof(vcl.CenterPointItemSet))
                         {
                             vcl.X = node.X;
                             vcl.Y = node.Y;
@@ -983,6 +1035,28 @@ namespace PrePoMax.Forms
                         _controller.Selection = _selectionCopy;
                         Highlight();
                     }
+                    else if (_viewLoad is ViewHydrostaticPressureLoad vhpl)
+                    {
+                        if (property == nameof(vhpl.FirstPointItemSet))
+                        {
+                            vhpl.X1 = node.X;
+                            vhpl.Y1 = node.Y;
+                            vhpl.Z1 = node.Z;
+                        }
+                        else if (property == nameof(vhpl.SecondPointItemSet))
+                        {
+                            vhpl.X2 = node.X;
+                            vhpl.Y2 = node.Y;
+                            vhpl.Z2 = node.Z;
+                        }
+                        propertyGrid.Refresh();
+                        //
+                        _propertyItemChanged = true;
+                        //
+                        _controller.Selection = _selectionCopy;
+                        Highlight();
+                    }
+                    else throw new NotSupportedException();
                 }
             }
         }

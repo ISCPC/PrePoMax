@@ -460,6 +460,10 @@ namespace CaeModel
             {
                 valid = (_mesh.Surfaces.TryGetValue(dl.SurfaceName, out s) && s.Valid);
             }
+            else if (load is HydrostaticPressure hpl)
+            {
+                valid = (_mesh.Surfaces.TryGetValue(hpl.SurfaceName, out s) && s.Valid);
+            }
             else if (load is STLoad stl)
             {
                 valid = (_mesh.Surfaces.TryGetValue(stl.SurfaceName, out s) && s.Valid);

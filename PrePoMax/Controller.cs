@@ -6892,8 +6892,8 @@ namespace PrePoMax
                     load.RegionType = RegionTypeEnum.ElementSetName;
                 }
                 // Surface
-                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is DFlux ||
-                         load is FilmHeatTransfer || load is RadiationHeatTransfer)
+                else if (load is DLoad || load is HydrostaticPressure || load is STLoad || load is ShellEdgeLoad ||
+                         load is PreTensionLoad || load is DFlux || load is FilmHeatTransfer || load is RadiationHeatTransfer)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces, load.Name);
                     FeSurface surface = new FeSurface(name, load.CreationIds, load.CreationData.DeepClone());
@@ -6924,8 +6924,8 @@ namespace PrePoMax
                     RemoveNodeSets(new string[] { load.RegionName });
                 else if (load is GravityLoad || load is CentrifLoad || load is BodyFlux)
                     RemoveElementSets(new string[] { load.RegionName });
-                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is DFlux ||
-                         load is FilmHeatTransfer || load is RadiationHeatTransfer)
+                else if (load is DLoad || load is HydrostaticPressure || load is STLoad || load is ShellEdgeLoad ||
+                         load is PreTensionLoad || load is DFlux || load is FilmHeatTransfer || load is RadiationHeatTransfer)
                     RemoveSurfaces(new string[] { load.RegionName }, false);
                 else throw new NotSupportedException();
             }
@@ -10717,6 +10717,24 @@ namespace PrePoMax
                         else DrawDLoadSymbols(prefixName, dLoad, color, symbolSize, layer);
                     }
                 }
+                else if (load is HydrostaticPressure hpLoad)
+                {
+                    if (!_model.Mesh.Surfaces.ContainsKey(hpLoad.SurfaceName)) return;
+                    //
+                    count += DrawSurface(prefixName, hpLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    if (layer == vtkControl.vtkRendererLayer.Selection)
+                        DrawSurfaceEdge(prefixName, hpLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    //
+                    if (count > 0)
+                    {
+                        // 2D
+                        if (hpLoad.TwoD)
+                            DrawShellEdgeLoadSymbols(prefixName, hpLoad.SurfaceName, hpLoad.FirstPointPressure, color,
+                                symbolSize, layer);
+                        // 3D
+                        else DrawHydrostaticPressureLoadSymbols(prefixName, hpLoad, color, symbolSize, layer);
+                    }
+                }
                 else if (load is STLoad stLoad)
                 {
                     if (!_model.Mesh.Surfaces.ContainsKey(stLoad.SurfaceName)) return;
@@ -11011,6 +11029,73 @@ namespace PrePoMax
                 ApplyLighting(data);
                 bool translate = dLoad.Magnitude > 0;
                 _form.AddOrientedArrowsActor(data, symbolSize, translate);
+            }
+        }
+        public void DrawHydrostaticPressureLoadSymbols(string prefixName, HydrostaticPressure hpLoad, Color color, int symbolSize,
+                                                       vtkControl.vtkRendererLayer layer)
+        {
+            FeSurface surface = _model.Mesh.Surfaces[hpLoad.SurfaceName];
+            //
+            List<int> allElementIds = new List<int>();
+            List<FeFaceName> allElementFaceNames = new List<FeFaceName>();
+            List<double[]> allCoor = new List<double[]>();
+            double[] faceCenter;
+            FeElementSet elementSet;
+            foreach (var entry in surface.ElementFaces)     // entry:  S3; elementSetName
+            {
+                elementSet = _model.Mesh.ElementSets[entry.Value];
+                foreach (var elementId in elementSet.Labels)
+                {
+                    allElementIds.Add(elementId);
+                    allElementFaceNames.Add(entry.Key);
+                    _model.Mesh.GetElementFaceCenter(elementId, entry.Key, out faceCenter);
+                    allCoor.Add(faceCenter);
+                }
+            }
+            //
+            int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(allCoor.ToArray(), 6);
+            // Front shell face which is a S2 POS face works in the same way as a solid face
+            // Back shell face which is a S1 NEG must be inverted
+            int id;
+            bool shellElement;
+            double[] faceNormal;
+            double maxPressure = 0;
+            double[] pressures = new double[distributedElementIds.Length];
+            double[][] distributedCoor = new double[distributedElementIds.Length][];
+            double[][] distributedLoadNormals = new double[distributedElementIds.Length][];
+            for (int i = 0; i < distributedElementIds.Length; i++)
+            {
+                id = distributedElementIds[i];
+                _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
+                                                          out faceNormal, out shellElement);
+                //
+                pressures[i] = hpLoad.GetPressureForPoint(faceCenter);
+                if (Math.Abs(pressures[i]) > maxPressure) maxPressure = Math.Abs(pressures[i]);
+                //
+                if ((pressures[i] < 0) != shellElement) // if both are equal no need to reverse the direction
+                {
+                    faceNormal[0] *= -1;
+                    faceNormal[1] *= -1;
+                    faceNormal[2] *= -1;
+                }
+                //
+                distributedCoor[i] = faceCenter;
+                distributedLoadNormals[i] = faceNormal;
+            }
+            // Arrows
+            vtkControl.vtkMaxActorData data;
+            for (int i = 0; i < distributedElementIds.Length; i++)
+            {
+                data = new vtkControl.vtkMaxActorData();
+                data.Name = prefixName + "_" + i.ToString();
+                data.Color = color;
+                data.Layer = layer;
+                data.Geometry.Nodes.Coor = new double[][] { distributedCoor[i] };
+                data.Geometry.Nodes.Normals = new double[][] { distributedLoadNormals[i] };
+                data.SectionViewPossible = false;
+                ApplyLighting(data);
+                bool translate = pressures[i] > 0;
+                _form.AddOrientedArrowsActor(data, symbolSize * (Math.Abs(pressures[i]) / maxPressure) , translate);
             }
         }
         public void DrawSTLoadSymbols(string prefixName, STLoad stLoad, double[][] symbolCoor, Color color,
