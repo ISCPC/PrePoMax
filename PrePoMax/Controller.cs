@@ -7290,7 +7290,13 @@ namespace PrePoMax
                                         MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
                 }
             }
-            //
+            // Check for radiation load without Stefan-Boltzmann constant
+            if (_model.StepCollection.IsActiveRadiationLoadDefined() && !_model.Properties.IsStefanBoltzmannDefined())
+            {
+                string msg = "A radiation load is used but the Stefan-Boltzmann constant is not defined. Continue?";
+                if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
+                                    MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
+            }
             return true;
         }
         private bool DeleteFilesBeforeJobRun(string inputFileName)

@@ -381,6 +381,18 @@ namespace CaeModel
             }
             return loadTypes;
         }
+        public bool IsActiveRadiationLoadDefined()
+        {
+            foreach (var _entry in _steps)
+            {
+                foreach (var loadEntry in _entry.Loads)
+                {
+                    if (loadEntry.Value is RadiationHeatTransfer rht && rht.Active) return true;
+                }
+            }
+            //
+            return false;
+        }
         // Defined field
         public string[] GetAllDefinedFieldNames()
         {

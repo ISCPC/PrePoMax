@@ -180,6 +180,9 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-
+        public bool IsStefanBoltzmannDefined()
+        {
+            return StefanBoltzmann != double.PositiveInfinity;
+        }
     }
 }
