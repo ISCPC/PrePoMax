@@ -342,7 +342,9 @@ namespace PrePoMax
             _commands.ModelChanged_ResetJobStatus = ResetAllJobStatus;
             _commands.EnableDisableUndoRedo += _commands_CommandExecuted;
             _commands.OnEnableDisableUndoRedo();
-            //
+            // Annotations
+            _annotations = new AnnotationContainer(this);
+            // Clear
             Clear();
             // Settings - must follow Clear to load the Opened file name
             _settings = new SettingsContainer();

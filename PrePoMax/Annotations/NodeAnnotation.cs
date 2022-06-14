@@ -42,7 +42,6 @@ namespace PrePoMax
             Vec3D nodeVec;
             Vec3D arrowVec;
             string fieldData = "";
-            text = "";
             string numberFormat = Controller.Settings.Annotations.GetNumberFormat();
             //
             if (Controller.CurrentView == ViewGeometryModelResults.Geometry ||
@@ -76,8 +75,12 @@ namespace PrePoMax
             bool addCoorData = Controller.Settings.Annotations.ShowCoordinates;
             bool addFieldData = fieldData.Length > 0;
             if (!addCoorData && !addFieldData) addNodeIdData = true;
+            // Item name
+            string itemName = "Node id: ";
+            if (Controller.CurrentView == ViewGeometryModelResults.Geometry) itemName = "Vertex id: ";
             // Node data
-            if (addNodeIdData) text = "Node id: " + _nodeId;
+            text = "";
+            if (addNodeIdData) text = itemName + _nodeId;
             // Coordinates data
             if (addCoorData)
             {

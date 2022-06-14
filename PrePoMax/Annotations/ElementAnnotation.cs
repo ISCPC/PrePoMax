@@ -29,12 +29,19 @@ namespace PrePoMax
         //
         public override void GetAnnotationData(out string text, out double[] coor)
         {
-            text = string.Format("Element id: {0}", _elementId);
+            // Item name
+            string itemName = "Element id:";
+            if (Controller.CurrentView == ViewGeometryModelResults.Geometry) itemName = "Facet id:";
             //
-            string elementType = Controller.GetElementType(_elementId);
-            if (elementType != null)
+            text = string.Format("{0} {1}", itemName, _elementId);
+            //
+            if (Controller.CurrentView == ViewGeometryModelResults.Model)
             {
-                text += string.Format("{0}Element type: {1}", Environment.NewLine, elementType);
+                string elementType = Controller.GetElementType(_elementId);
+                if (elementType != null)
+                {
+                    text += string.Format("{0}Element type: {1}", Environment.NewLine, elementType);
+                }
             }
             coor = Controller.GetElement(_elementId).GetCG(Controller.DisplayedMesh.Nodes);
             //

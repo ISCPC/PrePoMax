@@ -31,7 +31,6 @@ namespace PrePoMax
             BasePart part = mesh.GetPartById(_partId);
             if (part == null) throw new NotSupportedException();
             //
-            string numberFormat = Controller.Settings.Annotations.GetNumberFormat();
             double[][] nodeCoor = new double[part.NodeLabels.Length][];
             if (Controller.CurrentView == ViewGeometryModelResults.Geometry ||
                 Controller.CurrentView == ViewGeometryModelResults.Model)
@@ -54,6 +53,15 @@ namespace PrePoMax
             bool showPartNumberOfElements = Controller.Settings.Annotations.ShowPartNumberOfElements;
             bool showPartNumberOfNodes = Controller.Settings.Annotations.ShowPartNumberOfNodes;
             if (!showPartId && !showPartType && !showPartNumberOfElements && !showPartNumberOfNodes) showPartName = true;
+            // Item name
+            string elementsName = "Number of elements:";
+            string nodesName = "Number of nodes:";
+            if (Controller.CurrentView == ViewGeometryModelResults.Geometry)
+            {
+                elementsName = "Number of facets:";
+                nodesName = "Number of vertices:";
+            }
+            //
             text = "";
             //
             if (showPartName)
@@ -73,12 +81,12 @@ namespace PrePoMax
             if (showPartNumberOfElements)
             {
                 if (text.Length > 0) text += Environment.NewLine;
-                text += string.Format("Number of elements: {0}", part.Labels.Length);
+                text += string.Format("{0} {1}", elementsName, part.Labels.Length);
             }
             if (showPartNumberOfNodes)
             {
                 if (text.Length > 0) text += Environment.NewLine;
-                text += string.Format("Number of nodes: {0}", part.NodeLabels.Length);
+                text += string.Format("{0} {1}", nodesName, part.NodeLabels.Length);
             }
             //
             if (IsTextOverriden) text = OverridenText;

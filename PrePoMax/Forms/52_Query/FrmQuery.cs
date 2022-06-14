@@ -207,9 +207,12 @@ namespace PrePoMax.Forms
                 _coorNodesToDraw = new double[_numOfNodesToSelect][];
                 //
                 Vec3D baseV = new Vec3D(_controller.GetNode(nodeId).Coor);
+                // Item name
+                string itemName = "Node";
+                if (_controller.CurrentView == ViewGeometryModelResults.Geometry) itemName = "Vertex";
                 //
                 Form_WriteDataToOutput("");
-                data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Node".PadRight(16), "[/]", "id:", nodeId);
+                data = string.Format("{0,16}{1,8}{2,16}{3,16}", itemName.PadRight(16), "[/]", "id:", nodeId);
                 Form_WriteDataToOutput(data);
                 data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}",
                                      "Base".PadRight(16), lenUnitInBrackets, "x, y, z:", baseV.X, baseV.Y, baseV.Z);
@@ -247,8 +250,12 @@ namespace PrePoMax.Forms
         }
         public void OneElementPicked(int elementId)
         {
+            // Item name
+            string itemName = "Element id:";
+            if (_controller.CurrentView == ViewGeometryModelResults.Geometry) itemName = "Facet id:";
+            //
             Form_WriteDataToOutput("");
-            string data = string.Format("{0,16}{1,8}", "Element id:".PadRight(16), elementId);
+            string data = string.Format("{0,16}{1,8}", itemName.PadRight(16), elementId);
             Form_WriteDataToOutput(data);
             if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
@@ -364,11 +371,17 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput(data);
             data = string.Format("Part type: {0}", part.PartType);
             Form_WriteDataToOutput(data);
-            //data = string.Format("Part id: {0}{1}", part.PartId, Environment.NewLine);
-            //WriteLineToOutputWithDate(data);
-            data = string.Format("Number of elements: {0}", part.Labels.Length);
+            // Item name
+            string elementsName = "Number of elements:";
+            string nodesName = "Number of nodes:";
+            if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
+            {
+                elementsName = "Number of facets:";
+                nodesName = "Number of vertices:";
+            }
+            data = string.Format("{0} {1}", elementsName, part.Labels.Length);
             Form_WriteDataToOutput(data);
-            data = string.Format("Number of nodes: {0}", part.NodeLabels.Length);
+            data = string.Format("{0} {1}", nodesName, part.NodeLabels.Length);
             Form_WriteDataToOutput(data);
             Form_WriteDataToOutput("");
             //
@@ -390,9 +403,17 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput(data);
             data = string.Format("Number of parts: {0}", mesh.Parts.Count);
             Form_WriteDataToOutput(data);
-            data = string.Format("Number of elements: {0}", mesh.Elements.Count);
+            // Item name
+            string elementsName = "Number of elements:";
+            string nodesName = "Number of nodes:";
+            if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
+            {
+                elementsName = "Number of facets:";
+                nodesName = "Number of vertices:";
+            }
+            data = string.Format("{0} {1}", elementsName, mesh.Elements.Count);
             Form_WriteDataToOutput(data);
-            data = string.Format("Number of nodes: {0}", mesh.Nodes.Count);
+            data = string.Format("{0} {1}", nodesName, mesh.Nodes.Count);
             Form_WriteDataToOutput(data);
             Form_WriteDataToOutput("");
         }

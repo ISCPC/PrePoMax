@@ -1102,9 +1102,12 @@ namespace PrePoMax
                 // Main menu
                 foreach (ToolStripMenuItem item in menuStripMain.Items) item.Enabled = false;
                 tsmiFile.Enabled = true;
+                tsmiTools.Enabled = true;
                 tsmiHelp.Enabled = true;
                 // File menu
                 foreach (ToolStripItem item in tsmiFile.DropDownItems) item.Enabled = false;
+                // Tools menu
+                tsmiQuery.Enabled = false;
                 // Toolbar File
                 tsbImport.Enabled = false;
                 tsbSave.Enabled = false;
@@ -1125,11 +1128,12 @@ namespace PrePoMax
                 if (_controller.ModelInitialized || _controller.ResultsInitialized)
                 {
                     // Main menu
-                    tsmiEdit.Enabled = true;                    
-                    tsmiTools.Enabled = true;
+                    tsmiEdit.Enabled = true;
                     // File menu
                     foreach (ToolStripItem item in tsmiFile.DropDownItems) item.Enabled = true;
                     tsmiImportFile.Enabled = _controller.ModelInitialized;
+                    // Tools menu
+                    tsmiQuery.Enabled = true;
                     // Toolbar File
                     tsbImport.Enabled = _controller.ModelInitialized;
                     tsbSave.Enabled = true;                    
