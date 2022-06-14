@@ -10735,12 +10735,8 @@ namespace PrePoMax
                     //
                     if (count > 0)
                     {
-                        // 2D
-                        if (hpLoad.TwoD)
-                            DrawShellEdgeLoadSymbols(prefixName, hpLoad.SurfaceName, hpLoad.FirstPointPressure, color,
-                                symbolSize, layer);
-                        // 3D
-                        else DrawHydrostaticPressureLoadSymbols(prefixName, hpLoad, color, symbolSize, layer);
+                        // 2D and 3D
+                        DrawHydrostaticPressureLoadSymbols(prefixName, hpLoad, color, symbolSize, layer);
                     }
                 }
                 else if (load is STLoad stLoad)
@@ -11076,11 +11072,12 @@ namespace PrePoMax
                 id = distributedElementIds[i];
                 _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
                                                           out faceNormal, out shellElement);
-                //
+                // Pressure
                 pressures[i] = hpLoad.GetPressureForPoint(faceCenter);
                 if (Math.Abs(pressures[i]) > maxPressure) maxPressure = Math.Abs(pressures[i]);
                 //
-                if ((pressures[i] < 0) != shellElement) // if both are equal no need to reverse the direction
+                if ((hpLoad.TwoD && pressures[i] < 0) ||    // only 2d edges can be selected, 3d edges cannot be selected
+                    (!hpLoad.TwoD && (pressures[i] < 0) != shellElement))   // if both are equal no need to reverse the direction
                 {
                     faceNormal[0] *= -1;
                     faceNormal[1] *= -1;

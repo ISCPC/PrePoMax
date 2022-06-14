@@ -140,7 +140,8 @@ namespace PrePoMax.Forms
                 else if (itemTag is ViewHydrostaticPressureLoad vhpl)
                 {
                     _viewLoad = vhpl;
-                    _controller.Selection.EnableShellEdgeFaceSelection = true;
+                    // Set a filter in order for S1, S2,... to include the same element types
+                    _controller.Selection.LimitSelectionToFirstGeometryType = true;
                     // 2D
                     if (vhpl.GetBase().TwoD) _controller.Selection.LimitSelectionToShellEdges = true;
                 }
