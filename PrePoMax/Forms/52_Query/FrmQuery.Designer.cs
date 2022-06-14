@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("Point/Node");
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("Element");
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("Vertex/Node");
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("Facet/Element");
             System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Edge");
             System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("Surface");
             System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem("Part");
@@ -82,8 +82,8 @@
             this.lvQueries.FullRowSelect = true;
             this.lvQueries.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.lvQueries.HideSelection = false;
-            listViewItem1.ToolTipText = "Point/Node";
-            listViewItem2.ToolTipText = "Element";
+            listViewItem1.ToolTipText = "Vertex/Node";
+            listViewItem2.ToolTipText = "Facet/Element";
             listViewItem3.ToolTipText = "Edge";
             listViewItem4.ToolTipText = "Surface";
             listViewItem5.ToolTipText = "Part";

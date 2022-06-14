@@ -48,12 +48,12 @@ namespace PrePoMax.Forms
             {
                 switch (lvQueries.SelectedItems[0].Text)
                 {
-                    case ("Point/Node"):
+                    case ("Vertex/Node"):
                         _controller.SelectBy = vtkSelectBy.QueryNode;
                         _controller.Selection.SelectItem = vtkSelectItem.Node;
                         _numOfNodesToSelect = 1;
                         break;
-                    case ("Element"):
+                    case ("Facet/Element"):
                         _controller.SelectBy = vtkSelectBy.QueryElement;
                         _controller.Selection.SelectItem = vtkSelectItem.Element;
                         _numOfNodesToSelect = -1;
