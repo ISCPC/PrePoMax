@@ -1212,6 +1212,7 @@ namespace CaeModel
             int nodeId;
             int[] nodeIds;
             double A;
+            double k;
             double pressure;
             double[] force;
             double[] nodalForce;
@@ -1226,7 +1227,10 @@ namespace CaeModel
                 foreach (var elementId in _mesh.ElementSets[entry.Value].Labels)
                 {
                     element = _mesh.Elements[elementId];
-                    _mesh.GetElementFaceNormalAndArea(elementId, entry.Key, out faceNormal, out A);
+                    //
+                    _mesh.GetElementFaceCenterAndNormal(elementId, entry.Key, out double[] faceCenter, out faceNormal,
+                                                        out bool shellElement);
+                   A = element.GetArea(entry.Key, _mesh.Nodes);
                     // Accounf for 2D area
                     if (element is FeElement2D element2D)
                     {
@@ -1252,13 +1256,16 @@ namespace CaeModel
                     }
                     // Force magnitudes without area
                     nodalForceMagnitudes = element.GetEquivalentForcesFromFaceName(entry.Key, nodalPressures);
+                    // Invert face normal in case of S1 or S2 shell face
+                    if (shellElement && (entry.Key == FeFaceName.S1 || entry.Key == FeFaceName.S2)) k = -1;
+                    else k = 1;
                     // Force vectors
                     for (int i = 0; i < nodeIds.Length; i++)
                     {
                         force = new double[] {
-                            A * nodalForceMagnitudes[i] * faceNormal[0],
-                            A * nodalForceMagnitudes[i] * faceNormal[1],
-                            A * nodalForceMagnitudes[i] * faceNormal[2]};
+                            k * A * nodalForceMagnitudes[i] * faceNormal[0],
+                            k * A * nodalForceMagnitudes[i] * faceNormal[1],
+                            k * A * nodalForceMagnitudes[i] * faceNormal[2]};
                         //
                         if (!nodeIdForce.TryGetValue(nodeIds[i], out nodalForce))
                         {
