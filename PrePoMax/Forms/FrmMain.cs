@@ -5371,7 +5371,7 @@ namespace PrePoMax
             //
             AnnotationBase annotation = _controller.Annotations.GetCurrentAnnotation(name);
             string text = annotation.GetAnnotationText();
-            rectangle.Inflate(2, 2);
+            rectangle.Offset(-4, 4);
             //
             Point vtkLocation = this.PointToClient(_vtk.PointToScreen(_vtk.Location));
             Point location = new Point(vtkLocation.X + rectangle.X,
@@ -5411,7 +5411,7 @@ namespace PrePoMax
                 _controller.Annotations.DrawAnnotations();  // redraw in both cases
             }
         }
-        public override void LeftMousePressedOnForm(Control sender)
+        public override void LeftMouseDownOnForm(Control sender)
         {
             if (aeAnnotationTextEditor.Visible && !aeAnnotationTextEditor.IsOrContainsControl(sender))
                 EndEditArrowAnnotation();

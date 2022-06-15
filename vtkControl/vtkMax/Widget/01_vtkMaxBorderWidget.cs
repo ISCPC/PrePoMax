@@ -335,8 +335,14 @@ namespace vtkControl
                 {
                     position[1] = size[1] - _size[1] - position[1];
                 }
-                // Inside click
+                // Inside release
                 if (x >= position[0] && x <= position[0] + _size[0] && y >= position[1] && y <= position[1] + _size[1])
+                {
+                    _clickPos = null;
+                    return true;
+                }
+                // Outside release
+                else 
                 {
                     _clickPos = null;
                     return true;
