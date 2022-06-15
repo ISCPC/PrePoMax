@@ -18,20 +18,6 @@ using CaeMesh;
 
 namespace PrePoMax
 {
-    public enum Cell3D
-    {
-        Wire,
-        Shell,
-        Solid
-    }
-
-    public enum FormMode
-    {
-        Create,
-        Edit
-    }
-
-
     public partial class FrmMain : MainMouseWheelManagedForm
     {
         // Variables                                                                                                                

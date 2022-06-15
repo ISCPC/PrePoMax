@@ -112,10 +112,15 @@ namespace PrePoMax.Forms
         // Event handlers
         private void FrmLoad_EnabledChanged(object sender, EventArgs e)
         {
-            if (!Enabled) _selectionCopy = _controller.Selection.DeepClone();
+            if (!Enabled)
+            {
+                _selectionCopy = _controller.Selection.DeepClone();
+            }
             //
             ShowHideSelectionForm();
         }
+        
+        
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
         {
@@ -1065,7 +1070,7 @@ namespace PrePoMax.Forms
         // IFormHighlight
         public void Highlight()
         {
-            HighlightLoad();
+            if (Enabled) HighlightLoad();
         }
 
         // IFormItemSetDataParent

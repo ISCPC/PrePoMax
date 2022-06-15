@@ -104,11 +104,9 @@ namespace UserControls
         public bool PreFilterMessage(ref Message m) // Return true if the message was handeled
         {
             IntPtr hWnd;
-
+            //
             if (DisableAllMouseEvents && m.Msg >= 512 && m.Msg <= 527) return true;  // Disable all mouse events
-
-            System.Diagnostics.Debug.WriteLine(m.Msg);
-
+            //
             if (m.Msg == WM_LBUTTONDOWN)
             {
                 if (IsChildControlOnTheSameForm(FromHandle(m.HWnd)))
@@ -116,7 +114,6 @@ namespace UserControls
                     LeftMouseDownOnForm(FromHandle(m.HWnd));
                 }
             }
-
             // Prevent arrow keys to change focus from PassThroughControl
             if (m.Msg == WM_KEYDOWN || m.Msg == WM_KEYUP)
             {
@@ -179,11 +176,8 @@ namespace UserControls
             return false;
         }
         public virtual void LeftMouseDownOnForm(Control sender)
-        { }
-        public virtual void LeftMouseUpGlobalHook(Control sender)
-        { }
-
-
+        {
+        }
 
     }
 }
