@@ -170,14 +170,11 @@ namespace PrePoMax.Forms
         }
         private void HighlightNodes()
         {
-            Color color = Color.Red;
-            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-            //
             _coorNodesToDraw[0][0] = _scaleParameters.CenterX;
             _coorNodesToDraw[0][1] = _scaleParameters.CenterY;
             _coorNodesToDraw[0][2] = _scaleParameters.CenterZ;
             //
-            _controller.DrawNodes("Scale", _coorNodesToDraw, color, layer, 7);
+            _controller.HighlightNodes(_coorNodesToDraw);
         }
 
         

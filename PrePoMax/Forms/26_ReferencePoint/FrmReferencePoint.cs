@@ -265,14 +265,11 @@ namespace PrePoMax.Forms
         }
         private void HighlightReferencePoint()
         {
-            Color color = Color.Red;
-            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-            //
             _coorNodesToDraw[0][0] = _viewReferencePoint.X;
             _coorNodesToDraw[0][1] = _viewReferencePoint.Y;
             _coorNodesToDraw[0][2] = _viewReferencePoint.Z;
             //
-            _controller.DrawNodes("ReferencePoint", _coorNodesToDraw, color, layer, 7);
+            _controller.HighlightNodes(_coorNodesToDraw);
         }
         private void TurnOffSelection()
         {

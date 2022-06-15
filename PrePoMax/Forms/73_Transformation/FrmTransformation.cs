@@ -317,9 +317,6 @@ namespace PrePoMax.Forms
         {
             try
             {
-                Color color = Color.Red;
-                vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-                //
                 _controller.ClearAllSelection();
                 //
                 _coorNodesToDraw = new double[1][];
@@ -363,7 +360,7 @@ namespace PrePoMax.Forms
                 }
                 else throw new NotSupportedException();
                 //
-                _controller.DrawNodes("Transformation", _coorNodesToDraw, color, layer, 7);
+                _controller.HighlightNodes(_coorNodesToDraw);
             }
             catch { }
         }

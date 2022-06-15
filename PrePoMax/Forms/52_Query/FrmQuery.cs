@@ -708,18 +708,15 @@ namespace PrePoMax.Forms
         }
         private void HighlightNodes()
         {
-            Color color = Color.Red;
-            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-            //
             if (_coorNodesToDraw != null)
             {
                 if (_coorNodesToDraw.GetLength(0) == 1)
                 {
-                    _controller.DrawNodes("Querry", _coorNodesToDraw, color, layer, 7);
+                    _controller.HighlightNodes(_coorNodesToDraw);
                 }
                 else if (_coorNodesToDraw.GetLength(0) >= 2)
                 {
-                    _controller.DrawNodes("Querry", _coorNodesToDraw, color, layer, 7);
+                    _controller.HighlightNodes(_coorNodesToDraw);
                     _controller.HighlightConnectedLines(_coorLinesToDraw);
                 }
             }

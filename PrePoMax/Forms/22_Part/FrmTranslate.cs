@@ -178,9 +178,6 @@ namespace PrePoMax.Forms
         }
         private void HighlightNodes()
         {
-            Color color = Color.Red;
-            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-            //
             _controller.ClearAllSelection();
             //
             _coorNodesToDraw[0][0] = _translateParameters.X2;
@@ -192,7 +189,7 @@ namespace PrePoMax.Forms
             _coorLinesToDraw[0][2] = _translateParameters.Z1;
             _coorLinesToDraw[1] = _coorNodesToDraw[0];
             //
-            _controller.DrawNodes("Translate", _coorNodesToDraw, color, layer, 7);
+            _controller.HighlightNodes(_coorNodesToDraw);
             _controller.HighlightConnectedLines(_coorLinesToDraw);
         }
     }

@@ -936,6 +936,17 @@ namespace PrePoMax.Forms
                         }
                     }
                     else throw new NotImplementedException();
+                    // Secondary selection
+                    if (FELoad is HydrostaticPressure hp)
+                    {
+                        double[][] nodeCoor = new double[][] { hp.FirstPointCoor, hp.SecondPointCoor};
+                        _controller.HighlightNodes(nodeCoor, true);
+                    }
+                    else if (FELoad is CentrifLoad cf)
+                    {
+                        double[][] nodeCoor = new double[][] { new double[] { cf.X, cf.Y, cf.Z } };
+                        _controller.HighlightNodes(nodeCoor, true);
+                    }
                 }
                 else throw new NotSupportedException();
             }
@@ -1012,6 +1023,8 @@ namespace PrePoMax.Forms
                         propertyGrid.Refresh();
                         //
                         _propertyItemChanged = true;
+                        //
+                        Highlight();
                     }
                     else throw new NotSupportedException();
                 }

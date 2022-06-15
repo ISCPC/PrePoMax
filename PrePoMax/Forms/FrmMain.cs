@@ -663,6 +663,7 @@ namespace PrePoMax
             _modelTree.DisableMouse = unactive;
             menuStripMain.DisableMouseButtons = unactive;
             tsFile.DisableMouseButtons = unactive;
+            tscbSymbolsForStep.Enabled = !unactive; // changing the symbols clears the selection - unwanted during selection
             // This gets also called from item selection form: by angle, by edge ...
             if (form.Visible == false)
             {
@@ -6468,7 +6469,8 @@ namespace PrePoMax
         //
         private void tscbSymbolsForStep_SelectedIndexChanged(object sender, System.EventArgs e)
         {
-            // If BC or load is selected it will reset the step - clear selection
+            // If BC or load from one step-1 is selected its selection requires the step-1 to be selected.
+            // Changing og the step symols is not possible -> Clear selection
             _controller.ClearAllSelection();
             //
             _controller.DrawSymbolsForStep(tscbSymbolsForStep.SelectedItem.ToString(), false);  // no need to highlight after clear

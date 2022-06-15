@@ -12287,6 +12287,13 @@ namespace PrePoMax
                 }
             }
         }
+        public void HighlightNodes(double[][] nodeCoor, bool useSecondaryHighlightColor = false)
+        {
+            int nodeSize = 1; // node size <= 1 gets overwritten in vtkControl for the highlights in selection layer
+            Color color = Color.Red;
+            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
+            DrawNodes("Highlight", nodeCoor, color, layer, nodeSize, false, useSecondaryHighlightColor);
+        }
         public void HighlightNodeSets(string[] nodeSetsToSelect, bool useSecondaryHighlightColor = false)
         {
             Color color = Color.Red;
@@ -12479,16 +12486,16 @@ namespace PrePoMax
 
             // create wire elements
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-
+            //
             int elementVtkCellType = new LinearBeamElement(0, new int[] { 0, 1 }).GetVtkCellType();
-
+            //
             int n = 0;
             for (int i = 0; i < lineNodeCoor.Length; i++) n += lineNodeCoor[i].Length - 1;
-
+            //
             int[][] cells = new int[n][];
             int[] cellsTypes = new int[cells.GetLength(0)];
             List<double[]> nodeCoor = new List<double[]>();
-
+            //
             int countCells = 0;
             int countNodeIds = 0;
             for (int i = 0; i < lineNodeCoor.Length; i++)                       // lines
@@ -12503,7 +12510,7 @@ namespace PrePoMax
                 countNodeIds++;                                                 // next line
                 nodeCoor.AddRange(lineNodeCoor[i]);
             }
-
+            //
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Layer = layer;
             data.Pickable = false;
@@ -12511,18 +12518,18 @@ namespace PrePoMax
             data.Geometry.Nodes.Coor = nodeCoor.ToArray();
             data.Geometry.Cells.CellNodeIds = cells;
             data.Geometry.Cells.Types = cellsTypes;
-
+            //
             ApplyLighting(data);
             _form.Add3DCells(data);
-
+            //
             nodeCoor.Clear();
-
+            //
             for (int i = 0; i < lineNodeCoor.Length; i++)                       // lines
             {
                 nodeCoor.Add(lineNodeCoor[i][0]);
                 nodeCoor.Add(lineNodeCoor[i][lineNodeCoor[i].Length - 1]);
             }
-            DrawNodes("short_edges", nodeCoor.ToArray(), Color.Empty, layer, nodeSize);
+            HighlightNodes(nodeCoor.ToArray());
         }
         //
         public void HighlightSelection(bool clear = true, bool backfaceCulling = true, bool useSecondaryHighlightColor = false)

@@ -3270,7 +3270,7 @@
             this.tscbSymbolsForStep});
             this.tsViews.Location = new System.Drawing.Point(107, 25);
             this.tsViews.Name = "tsViews";
-            this.tsViews.Size = new System.Drawing.Size(654, 25);
+            this.tsViews.Size = new System.Drawing.Size(687, 25);
             this.tsViews.TabIndex = 6;
             this.tsViews.Text = "Views";
             // 
