@@ -1031,43 +1031,67 @@ namespace PrePoMax.Forms
             }
             else
             {
-                if (ids != null && ids.Length == 1)
+                if (ids != null && ids.Length > 0)
                 {
-                    Enabled = true;
-                    //
+                    bool changed = false;
                     string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
-                    //
-                    FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
                     //
                     if (_viewLoad is ViewCentrifLoad vcl)
                     {
                         if (property == nameof(vcl.CenterPointItemSet))
                         {
-                            vcl.X = node.X;
-                            vcl.Y = node.Y;
-                            vcl.Z = node.Z;
+                            if (ids.Length == 1)
+                            {
+                                FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
+                                vcl.X = node.X;
+                                vcl.Y = node.Y;
+                                vcl.Z = node.Z;
+                                changed = true;
+                            }
                         }
-                        propertyGrid.Refresh();
-                        //
-                        _propertyItemChanged = true;
-                        //
-                        _controller.Selection = _selectionCopy;
-                        Highlight();
                     }
                     else if (_viewLoad is ViewHydrostaticPressureLoad vhpl)
                     {
                         if (property == nameof(vhpl.FirstPointItemSet))
                         {
-                            vhpl.X1 = node.X;
-                            vhpl.Y1 = node.Y;
-                            vhpl.Z1 = node.Z;
+                            if (ids.Length == 1)
+                            {
+                                FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
+                                vhpl.X1 = node.X;
+                                vhpl.Y1 = node.Y;
+                                vhpl.Z1 = node.Z;
+                                changed = true;
+                            }
                         }
                         else if (property == nameof(vhpl.SecondPointItemSet))
                         {
-                            vhpl.X2 = node.X;
-                            vhpl.Y2 = node.Y;
-                            vhpl.Z2 = node.Z;
+                            if (ids.Length == 1)
+                            {
+                                FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
+                                vhpl.X2 = node.X;
+                                vhpl.Y2 = node.Y;
+                                vhpl.Z2 = node.Z;
+                                changed = true;
+                            }
                         }
+                        else if (property == nameof(vhpl.PressureDirectionItemSet))
+                        {
+                            if (ids.Length == 2)
+                            {
+                                FeNode node1 = _controller.Model.Mesh.Nodes[ids[0]];
+                                FeNode node2 = _controller.Model.Mesh.Nodes[ids[1]];
+                                vhpl.N1 = node2.X - node1.X;
+                                vhpl.N2 = node2.Y - node1.Y;
+                                vhpl.N3 = node2.Z - node1.Z;
+                                changed = true;
+                            }
+                        }
+                    }
+                    //
+                    if (changed)
+                    {
+                        Enabled = true; // must be first for the selection to work
+                        //
                         propertyGrid.Refresh();
                         //
                         _propertyItemChanged = true;
@@ -1075,7 +1099,6 @@ namespace PrePoMax.Forms
                         _controller.Selection = _selectionCopy;
                         Highlight();
                     }
-                    else throw new NotSupportedException();
                 }
             }
         }

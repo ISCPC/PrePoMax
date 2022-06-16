@@ -15,8 +15,8 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         private CaeModel.HydrostaticPressure _hpLoad;
-        private ItemSetData _firstPointItemSetData;
-        private ItemSetData _secondPointItemSetData;
+        private ItemSetData _singlePointItemSetData;
+        private ItemSetData _twoPointPointItemSetData;
 
 
         // Properties                                                                                                               
@@ -35,11 +35,11 @@ namespace PrePoMax
         [Id(1, 3)]
         public ItemSetData FirstPointItemSet
         {
-            get { return _firstPointItemSetData; }
+            get { return _singlePointItemSetData; }
             set
             {
-                if (value != _firstPointItemSetData)
-                    _firstPointItemSetData = value;
+                if (value != _singlePointItemSetData)
+                    _singlePointItemSetData = value;
             }
         }
         //
@@ -82,11 +82,11 @@ namespace PrePoMax
         [Id(1, 5)]
         public ItemSetData SecondPointItemSet
         {
-            get { return _secondPointItemSetData; }
+            get { return _singlePointItemSetData; }
             set
             {
-                if (value != _secondPointItemSetData)
-                    _secondPointItemSetData = value;
+                if (value != _singlePointItemSetData)
+                    _singlePointItemSetData = value;
             }
         }
         //
@@ -122,25 +122,40 @@ namespace PrePoMax
             set { _hpLoad.SecondPointPressure = value; }
         }
         //                                                                                                                          
+        [Category("Pressure direction")]
+        [OrderedDisplayName(0, 10, "By selection  ")]    // must be a different name than for the first point !!!
+        [DescriptionAttribute("Use selection for the defenition of the pressure direction.")]
+        [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
+        [Id(1, 7)]
+        public ItemSetData PressureDirectionItemSet
+        {
+            get { return _twoPointPointItemSetData; }
+            set
+            {
+                if (value != _twoPointPointItemSetData)
+                    _twoPointPointItemSetData = value;
+            }
+        }
+        //
         [CategoryAttribute("Pressure direction")]
         [OrderedDisplayName(0, 10, "N1")]
         [DescriptionAttribute("Direction component in the direction of the first axis.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(1, 7)]
+        [Id(2, 7)]
         public double N1 { get { return _hpLoad.N1; } set { _hpLoad.N1 = value; } }
         //
         [CategoryAttribute("Pressure direction")]
         [OrderedDisplayName(1, 10, "N2")]
         [DescriptionAttribute("Direction component in the direction of the second axis.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(2, 7)]
+        [Id(3, 7)]
         public double N2 { get { return _hpLoad.N2; } set { _hpLoad.N2 = value; } }
         //
         [CategoryAttribute("Pressure direction")]
         [OrderedDisplayName(2, 10, "N3")]
         [DescriptionAttribute("Direction component in the direction of the third axis.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(3, 7)]
+        [Id(4, 7)]
         public double N3 { get { return _hpLoad.N3; } set { _hpLoad.N3 = value; } }
         //
         public override string AmplitudeName { get { return _hpLoad.AmplitudeName; } set { _hpLoad.AmplitudeName = value; } }
@@ -160,10 +175,10 @@ namespace PrePoMax
             SetBase(_hpLoad, regionTypePropertyNamePairs);
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             //
-            _firstPointItemSetData = new ItemSetData(); // needed to display ItemSetData.ToString()
-            _firstPointItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
-            _secondPointItemSetData = new ItemSetData(); // needed to display ItemSetData.ToString()
-            _secondPointItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
+            _singlePointItemSetData = new ItemSetData(); // needed to display ItemSetData.ToString()
+            _singlePointItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
+            _twoPointPointItemSetData = new ItemSetData(); // needed to display ItemSetData.ToString()
+            _twoPointPointItemSetData.ToStringType = ItemSetDataToStringType.SelectTwoPoints;
             // 2D
             DynamicCustomTypeDescriptor.GetProperty(nameof(Z1)).SetIsBrowsable(!hpLoad.TwoD);
             DynamicCustomTypeDescriptor.GetProperty(nameof(Z2)).SetIsBrowsable(!hpLoad.TwoD);

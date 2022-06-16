@@ -3308,7 +3308,7 @@ namespace vtkControl
             //
             if (_drawSymbolEdges) AddSymbolEdges(data, glyph.GetOutputPort());
         }
-        public void AddOrientedArrowsActor(vtkMaxActorData data, double symbolSize, bool invert)
+        public void AddOrientedArrowsActor(vtkMaxActorData data, double symbolSize, bool invert, double relativeSize = 1)
         {
             if (symbolSize > _maxSymbolSize) _maxSymbolSize = symbolSize;
             // Points
@@ -3333,15 +3333,15 @@ namespace vtkControl
             // Calculate the distance to the camera of each point.
             vtkDistanceToCamera distanceToCamera = vtkDistanceToCamera.New();
             distanceToCamera.SetInput(polydata);
-            distanceToCamera.SetScreenSize(symbolSize);
+            distanceToCamera.SetScreenSize(symbolSize * relativeSize);
             distanceToCamera.SetRenderer(_renderer);
             // Arrow
             vtkArrowSource arrow = vtkArrowSource.New();
             arrow.SetTipResolution(21);
-            arrow.SetTipLength(0.3);
-            arrow.SetTipRadius(0.1);
+            arrow.SetTipLength(0.3 / relativeSize);
+            arrow.SetTipRadius(0.1 / relativeSize);
             arrow.SetShaftResolution(15);
-            arrow.SetShaftRadius(0.03);
+            arrow.SetShaftRadius(0.03 / relativeSize);
             // Compute normals
             vtkPolyDataNormals normals = vtkPolyDataNormals.New();
             normals.SetInput(arrow.GetOutput());

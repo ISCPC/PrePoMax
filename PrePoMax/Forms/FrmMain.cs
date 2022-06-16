@@ -7017,9 +7017,10 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.AddOrientedRotationalConstraintActor, actorData, symbolSize);
         }
-        public void AddOrientedArrowsActor(vtkControl.vtkMaxActorData actorData, double symbolSize, bool invert = false)
+        public void AddOrientedArrowsActor(vtkControl.vtkMaxActorData actorData, double symbolSize, bool invert = false, 
+                                           double relativeSize = 1)
         {
-            InvokeIfRequired(_vtk.AddOrientedArrowsActor, actorData, symbolSize, invert);
+            InvokeIfRequired(_vtk.AddOrientedArrowsActor, actorData, symbolSize, invert, relativeSize);
         }
         public void AddOrientedDoubleArrowsActor(vtkControl.vtkMaxActorData actorData, double symbolSize)
         {

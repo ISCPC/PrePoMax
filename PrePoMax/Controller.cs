@@ -11100,7 +11100,7 @@ namespace PrePoMax
                 data.SectionViewPossible = false;
                 ApplyLighting(data);
                 bool translate = pressures[i] > 0;
-                _form.AddOrientedArrowsActor(data, symbolSize * (Math.Abs(pressures[i]) / maxPressure) , translate);
+                _form.AddOrientedArrowsActor(data, symbolSize, translate, Math.Abs(pressures[i]) / maxPressure);
             }
         }
         public void DrawSTLoadSymbols(string prefixName, STLoad stLoad, double[][] symbolCoor, Color color,
