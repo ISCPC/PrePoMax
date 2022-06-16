@@ -21,6 +21,9 @@ namespace vtkControl
         private DataFieldType _fieldType;
         private int _stepNumber;
         private int _incrementNumber;
+        private bool _deformationScaleFactorTextClicked;
+        private System.Drawing.Rectangle _deformationScaleFactorRect;
+
 
 
         // Properties                                                                                                               
@@ -42,6 +45,11 @@ namespace vtkControl
         public DataFieldType FieldType { get { return _fieldType; } set { _fieldType = value; SetText(); } }
         public int StepNumber { get { return _stepNumber; } set { _stepNumber = value; SetText(); } }
         public int IncrementNumber { get { return _incrementNumber; } set { _incrementNumber = value; SetText(); } }
+        public bool DeformationScaleFactorTextClicked
+        {
+            get { return _deformationScaleFactorTextClicked; }
+            set { _deformationScaleFactorTextClicked = value; }
+        }
 
 
         // Constructors                                                                                                             
@@ -63,51 +71,83 @@ namespace vtkControl
         {
             string sysUIFormat = System.Globalization.CultureInfo.CurrentUICulture.DateTimeFormat.ShortDatePattern;
             //
-            _text = "Name: " + _name + "   ";
-            _text += "Date: " + _dateTime.ToString(sysUIFormat) + "   Time: " + _dateTime.ToString("HH:mm:ss") + Environment.NewLine;
+            string line1 = null;
+            string line2 = null;
+            string line3fix = null;
+            string line3factor = null;
+            string line4 = null;
+            //
+            line1 = "Name: " + _name + "   ";
+            line1 += "Date: " + _dateTime.ToString(sysUIFormat) + "   Time: " + _dateTime.ToString("HH:mm:ss");
             //
             if (_fieldType == DataFieldType.Static)
             {
-                _text += "Step: #" + _stepNumber + "   Increment: #" + _incrementNumber +
-                         "   Analysis time: " + _analysisTime.ToString() + " " + _analysisTimeUnit;
+                line2 = "Step: #" + _stepNumber + "   Increment: #" + _incrementNumber +
+                        "   Analysis time: " + _analysisTime.ToString() + " " + _analysisTimeUnit;
             }
             else if (_fieldType == DataFieldType.Frequency)
             {
-                _text += "Step: #" + _stepNumber + "   Mode: #" + _incrementNumber + "   Frequency: " +
-                         _analysisTime.ToString() + " " + _analysisTimeUnit;
+                line2 = "Step: #" + _stepNumber + "   Mode: #" + _incrementNumber + "   Frequency: " +
+                        _analysisTime.ToString() + " " + _analysisTimeUnit;
             }
             else if (_fieldType == DataFieldType.FrequencySensitivity)
             {
                 // subtract 1 since first increment contains only normals
-                _text += "Step: #" + _stepNumber + "   Mode: #" + _incrementNumber + "   Frequency: " +
-                         _analysisTime.ToString() + " " + _analysisTimeUnit;
+                line2 = "Step: #" + _stepNumber + "   Mode: #" + _incrementNumber + "   Frequency: " +
+                        _analysisTime.ToString() + " " + _analysisTimeUnit;
             }
             else if (_fieldType == DataFieldType.Buckling)
             {
-                _text += "Step: #" + _stepNumber + "   Buckling factor: " + _analysisTime.ToString();
+                line2 = "Step: #" + _stepNumber + "   Buckling factor: " + _analysisTime.ToString();
             }
             else if (_fieldType == DataFieldType.LastIterations)
             {
-                _text += "Increment: #" + _stepNumber + "   Iteration: #" + _incrementNumber +
-                         "   Analysis time: " + _analysisTime.ToString() + " " + _analysisTimeUnit;
+                line2 = "Increment: #" + _stepNumber + "   Iteration: #" + _incrementNumber +
+                        "   Analysis time: " + _analysisTime.ToString() + " " + _analysisTimeUnit;
             }
             else throw new NotSupportedException();
             //
-            _text += Environment.NewLine;
-            _text += "Deformation variable: " + _deformationVariable + "   " +
-                     "Deformation scale factor: " + _deformationScaleFactor.ToString();
+            line3fix = "Deformation variable: " + _deformationVariable + "   " + "Deformation scale factor: ";
+            line3factor = _deformationScaleFactor.ToString();
             //
             if (_animationScaleFactor >= 0)
             {
-                _text += Environment.NewLine;
-                _text += "Animation scale factor: " + _animationScaleFactor.ToString();
+                line4 = "Animation scale factor: " + _animationScaleFactor.ToString();
             }
+            //
+            _text = line1 + Environment.NewLine + line2 + Environment.NewLine + line3fix + line3factor;
+            if (line4 != null) _text += Environment.NewLine + line4;
+            // Compute the position and size of the deformation scale factor text
+            this.SetText(line1);
+            double[] line1Size = _size.ToArray();
+            this.SetText(line1 + Environment.NewLine + line2);
+            double[] line1And2Size = _size.ToArray();
+            this.SetText(line1 + Environment.NewLine + line2 + Environment.NewLine + line3fix);
+            double[] line1And2And3Size = _size.ToArray();
+            this.SetText(line3fix);
+            double[] line3fixSize = _size.ToArray();
+            this.SetText(line3fix + line3factor);
+            double[] line3fixAndFactorSize = _size.ToArray();
+            //
+            _deformationScaleFactorRect = new System.Drawing.Rectangle((int)line3fixSize[0],
+                                                                       (int)line1And2Size[1],
+                                                                       (int)(line3fixAndFactorSize[0] - line3fixSize[0]),
+                                                                       (int)(line1And2And3Size[1] - line1And2Size[1]));
             //
             this.SetText(_text);
         }
 
 
         // Public methods                                                                                                           
-
+        public override bool LeftButtonPress(int x, int y)
+        {
+            int[] size = _renderer.GetSize();
+            int localX = x - (int)_position[0];
+            int loaclY = size[1] - y - (int)_position[1];
+            //
+            _deformationScaleFactorTextClicked = _deformationScaleFactorRect.Contains(localX, loaclY);
+            //
+            return base.LeftButtonPress(x, y);
+        }
     }
 }

@@ -403,6 +403,13 @@
             this.toolStripViewSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tslSymbols = new System.Windows.Forms.ToolStripLabel();
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripFocus1 = new UserControls.ToolStripFocus();
+            this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripComboBox1 = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripComboBox2 = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
+            this.toolStripLabel3 = new System.Windows.Forms.ToolStripLabel();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
             this.menuStripMain.SuspendLayout();
@@ -422,6 +429,7 @@
             this.splitContainer2.SuspendLayout();
             this.tsFile.SuspendLayout();
             this.tsViews.SuspendLayout();
+            this.toolStripFocus1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStripMain
@@ -2838,7 +2846,7 @@
             this.panelControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControl.Location = new System.Drawing.Point(0, 0);
             this.panelControl.Name = "panelControl";
-            this.panelControl.Size = new System.Drawing.Size(1229, 662);
+            this.panelControl.Size = new System.Drawing.Size(1229, 612);
             this.panelControl.TabIndex = 1;
             // 
             // aeAnnotationTextEditor
@@ -3112,7 +3120,7 @@
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.Controls.Add(this.splitContainer1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1502, 747);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1502, 722);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.LeftToolStripPanelVisible = false;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 24);
@@ -3127,6 +3135,7 @@
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsResults);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsFile);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsViews);
+            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.toolStripFocus1);
             // 
             // splitContainer1
             // 
@@ -3140,7 +3149,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Panel2MinSize = 250;
-            this.splitContainer1.Size = new System.Drawing.Size(1502, 747);
+            this.splitContainer1.Size = new System.Drawing.Size(1502, 722);
             this.splitContainer1.SplitterDistance = 269;
             this.splitContainer1.TabIndex = 2;
             // 
@@ -3159,8 +3168,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.tbOutput);
-            this.splitContainer2.Size = new System.Drawing.Size(1229, 747);
-            this.splitContainer2.SplitterDistance = 662;
+            this.splitContainer2.Size = new System.Drawing.Size(1229, 722);
+            this.splitContainer2.SplitterDistance = 612;
             this.splitContainer2.TabIndex = 2;
             // 
             // tbOutput
@@ -3175,7 +3184,7 @@
             this.tbOutput.Name = "tbOutput";
             this.tbOutput.ReadOnly = true;
             this.tbOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbOutput.Size = new System.Drawing.Size(1229, 80);
+            this.tbOutput.Size = new System.Drawing.Size(1229, 105);
             this.tbOutput.TabIndex = 0;
             this.tbOutput.Text = "Output text box";
             // 
@@ -3270,7 +3279,7 @@
             this.tscbSymbolsForStep});
             this.tsViews.Location = new System.Drawing.Point(107, 25);
             this.tsViews.Name = "tsViews";
-            this.tsViews.Size = new System.Drawing.Size(687, 25);
+            this.tsViews.Size = new System.Drawing.Size(654, 25);
             this.tsViews.TabIndex = 6;
             this.tsViews.Text = "Views";
             // 
@@ -3505,6 +3514,71 @@
             this.tscbSymbolsForStep.Size = new System.Drawing.Size(121, 25);
             this.tscbSymbolsForStep.ToolTipText = "Select how symbols are displayed.";
             // 
+            // toolStripFocus1
+            // 
+            this.toolStripFocus1.BackColor = System.Drawing.SystemColors.Control;
+            this.toolStripFocus1.DisableMouseButtons = false;
+            this.toolStripFocus1.Dock = System.Windows.Forms.DockStyle.None;
+            this.toolStripFocus1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripLabel1,
+            this.toolStripComboBox1,
+            this.toolStripLabel2,
+            this.toolStripComboBox2,
+            this.toolStripLabel3,
+            this.toolStripTextBox1});
+            this.toolStripFocus1.Location = new System.Drawing.Point(3, 50);
+            this.toolStripFocus1.Name = "toolStripFocus1";
+            this.toolStripFocus1.Size = new System.Drawing.Size(588, 25);
+            this.toolStripFocus1.TabIndex = 8;
+            // 
+            // toolStripLabel1
+            // 
+            this.toolStripLabel1.Name = "toolStripLabel1";
+            this.toolStripLabel1.Size = new System.Drawing.Size(118, 22);
+            this.toolStripLabel1.Text = "Deformation variable";
+            // 
+            // toolStripComboBox1
+            // 
+            this.toolStripComboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.toolStripComboBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.toolStripComboBox1.Items.AddRange(new object[] {
+            "Displacements",
+            "Forces"});
+            this.toolStripComboBox1.Name = "toolStripComboBox1";
+            this.toolStripComboBox1.Size = new System.Drawing.Size(121, 25);
+            // 
+            // toolStripLabel2
+            // 
+            this.toolStripLabel2.Name = "toolStripLabel2";
+            this.toolStripLabel2.Size = new System.Drawing.Size(94, 22);
+            this.toolStripLabel2.Text = "Scale factor type";
+            // 
+            // toolStripComboBox2
+            // 
+            this.toolStripComboBox2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.toolStripComboBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.toolStripComboBox2.Items.AddRange(new object[] {
+            "Automatic",
+            "True scale",
+            "Off",
+            "User defined"});
+            this.toolStripComboBox2.Name = "toolStripComboBox2";
+            this.toolStripComboBox2.Size = new System.Drawing.Size(121, 25);
+            // 
+            // toolStripTextBox1
+            // 
+            this.toolStripTextBox1.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.toolStripTextBox1.Name = "toolStripTextBox1";
+            this.toolStripTextBox1.Size = new System.Drawing.Size(50, 25);
+            this.toolStripTextBox1.Text = "10";
+            this.toolStripTextBox1.TextBoxTextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // toolStripLabel3
+            // 
+            this.toolStripLabel3.Name = "toolStripLabel3";
+            this.toolStripLabel3.Size = new System.Drawing.Size(35, 22);
+            this.toolStripLabel3.Text = "Value";
+            // 
             // timerTest
             // 
             this.timerTest.Tick += new System.EventHandler(this.timerTest_Tick);
@@ -3557,6 +3631,8 @@
             this.tsFile.PerformLayout();
             this.tsViews.ResumeLayout(false);
             this.tsViews.PerformLayout();
+            this.toolStripFocus1.ResumeLayout(false);
+            this.toolStripFocus1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -3944,6 +4020,13 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEditAnnotation;
         private System.Windows.Forms.ToolStripMenuItem tsmiResetAnnotation;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerAnnotation2;
+        private UserControls.ToolStripFocus toolStripFocus1;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel1;
+        private System.Windows.Forms.ToolStripComboBox toolStripComboBox1;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel2;
+        private System.Windows.Forms.ToolStripComboBox toolStripComboBox2;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBox1;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel3;
     }
 }
 

@@ -76,10 +76,5 @@ namespace UserControls
             else if (wertbData == control) return true;
             else return false;
         }
-
-        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }

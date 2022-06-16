@@ -354,7 +354,14 @@ namespace vtkControl
         {
             if (sender is vtkMaxColorBarWidget) Form_ShowColorBarSettings?.Invoke();
             else if (sender is vtkMaxScalarBarWidget) Form_ShowLegendSettings?.Invoke();
-            else if (sender is vtkMaxStatusBlockWidget) Form_ShowStatusBlockSettings?.Invoke();
+            else if (sender is vtkMaxStatusBlockWidget sbw)
+            {
+                if (sbw.DeformationScaleFactorTextClicked)
+                {
+
+                }
+                else Form_ShowStatusBlockSettings?.Invoke();
+            }
             else if (sender is vtkMaxTextWithArrowWidget aw) EditArrowWidget(aw);
         }
 

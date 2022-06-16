@@ -282,7 +282,7 @@ namespace vtkControl
             OnMovedOrSizeChanged();
         }
         //
-        public bool LeftButtonPress(int x, int y)
+        public virtual bool LeftButtonPress(int x, int y)
         {
             if (!_visibility) return false;
             //
