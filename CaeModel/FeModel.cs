@@ -1325,7 +1325,7 @@ namespace CaeModel
             // Steps
             StaticStep staticStep = new StaticStep("Step-1");
             bdmModel._stepCollection.AddStep(staticStep);
-            // Merge existing BCs
+            // Merge existing BCs - check for symetry boundary conditions
             bool twoD = false;
             string nodeSetName;
             BoundaryCondition bc;
@@ -1334,9 +1334,15 @@ namespace CaeModel
             {
                 foreach (var entry in step.BoundaryConditions)
                 {
-                    if (entry.Value.RegionType == RegionTypeEnum.ReferencePointName) continue;
-                    //
+                    // Clone
                     bc = entry.Value.DeepClone();
+                    // Skip reference point BCs
+                    if (bc.RegionType == RegionTypeEnum.ReferencePointName) continue;
+                    // Skip non zero displacement rotations
+                    if (bc is DisplacementRotation dr && !dr.IsFreeFixedOrZero()) continue;
+                    // Amplitudes
+                    bc.AmplitudeName = BoundaryCondition.DefaultAmplitudeName;
+                    //
                     bc.Name = step.Name + "_" + bc.Name;
                     twoD |= bc.TwoD;
                     staticStep.AddBoundaryCondition(bc);
@@ -1354,7 +1360,7 @@ namespace CaeModel
             string name;
             double[] xyz;
             FeNodeSet nodeSet;
-            DisplacementRotation dr;
+            DisplacementRotation displacementRotation;
             //
             if (deformations != null)
             {
@@ -1367,11 +1373,11 @@ namespace CaeModel
                     // Boundary condition
                     xyz = entry.Value;
                     name = staticStep.BoundaryConditions.GetNextNumberedKey("BDM-" + entry.Key);
-                    dr = new DisplacementRotation(name, nodeSet.Name, RegionTypeEnum.NodeSetName, twoD);
-                    if (xyz[0] != 0) dr.U1 = xyz[0];
-                    if (xyz[1] != 0) dr.U2 = xyz[1];
-                    if (xyz[2] != 0) dr.U3 = xyz[2];
-                    staticStep.AddBoundaryCondition(dr);
+                    displacementRotation = new DisplacementRotation(name, nodeSet.Name, RegionTypeEnum.NodeSetName, twoD);
+                    if (xyz[0] != 0) displacementRotation.U1 = xyz[0];
+                    if (xyz[1] != 0) displacementRotation.U2 = xyz[1];
+                    if (xyz[2] != 0) displacementRotation.U3 = xyz[2];
+                    staticStep.AddBoundaryCondition(displacementRotation);
                 }
                 //
                 bcNodeIds.UnionWith(deformations.Keys);
@@ -1386,11 +1392,11 @@ namespace CaeModel
             bdmModel.Mesh.NodeSets.Add(nodeSet.Name, nodeSet);
             // Boundary condition
             name = staticStep.BoundaryConditions.GetNextNumberedKey("FIXED-BDM");
-            dr = new DisplacementRotation(name, nodeSet.Name, RegionTypeEnum.NodeSetName, twoD);
-            dr.U1 = 0;
-            dr.U2 = 0;
-            dr.U3 = 0;
-            staticStep.AddBoundaryCondition(dr);
+            displacementRotation = new DisplacementRotation(name, nodeSet.Name, RegionTypeEnum.NodeSetName, twoD);
+            displacementRotation.U1 = 0;
+            displacementRotation.U2 = 0;
+            displacementRotation.U3 = 0;
+            staticStep.AddBoundaryCondition(displacementRotation);
             //
             return bdmModel;
         }

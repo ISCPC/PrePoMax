@@ -81,6 +81,15 @@ namespace CaeModel
             if (!double.IsNaN(_ur3)) values.Add(_ur3);
             return values.ToArray();
         }
+        public bool IsFreeFixedOrZero()
+        {
+            for (int i = 1; i <= 6; i++)
+            {
+                if (GetDofType(i) == DOFType.Prescribed) return false;
+            }
+            //
+            return true;
+        }
         public int[] GetFixedDirections()
         {
             List<int> directions = new List<int>();
