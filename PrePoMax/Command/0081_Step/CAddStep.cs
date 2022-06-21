@@ -16,20 +16,22 @@ namespace PrePoMax.Commands
     {
         // Variables                                                                                                                
         private Step _step;
+        private bool _copyBCsAndLoads;
 
 
         // Constructor                                                                                                              
-        public CAddStep(Step step)
+        public CAddStep(Step step, bool copyBCsAndLoads)
             : base("Add step")
         {
             _step = step.DeepClone();
+            _copyBCsAndLoads = copyBCsAndLoads;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.AddStep(_step.DeepClone());
+            receiver.AddStep(_step.DeepClone(), _copyBCsAndLoads);
             return true;
         }
 

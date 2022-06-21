@@ -802,6 +802,10 @@ namespace FileInOut.Output
                         CalStaticStep calStaticStep = new CalStaticStep(staticStep);
                         calStep.AddKeyword(calStaticStep);
                     }
+                    else if (step is BoundaryDisplacementStep boundaryDisplacementStep)
+                    {
+                        // No action needed - this is a virtual step for the boundary displacement method after the wear step
+                    }
                     else if (step is FrequencyStep frequencyStep)
                     {
                         CalFrequencyStep calFrequencyStep = new CalFrequencyStep(frequencyStep);

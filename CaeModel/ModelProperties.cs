@@ -130,8 +130,8 @@ namespace CaeModel
         // Slip wear model
         public SlipWearResultsEnum SlipWearResults;
         private int _numberOfCycles;
-        private bool _enforceZeroBoundaryConditions;
-        private bool _meshDeformation;
+        private int _cyclesIncrement;
+        private bool _meshSmoothing;
         //
         public double AbsoluteZero;
         public double StefanBoltzmann;
@@ -148,18 +148,22 @@ namespace CaeModel
                 if (_numberOfCycles < 1) _numberOfCycles = 1;
             }
         }
-        public bool EnforceZeroBoundaryConditions
+        public int CyclesIncrement
         {
-            get { return _enforceZeroBoundaryConditions; }
-            set { _enforceZeroBoundaryConditions = value; }
+            get { return _cyclesIncrement; }
+            set
+            {
+                _cyclesIncrement = value;
+                if (_cyclesIncrement < 1) _cyclesIncrement = 1;
+            }
         }
-        public bool MeshDeformation
+        public bool MeshSmoothing
         {
-            get { return _meshDeformation; }
-            set { _meshDeformation = value; }
+            get { return _meshSmoothing; }
+            set { _meshSmoothing = value; }
         }
 
-
+        
         // Constructors                                                                                                             
         public ModelProperties()
         {
@@ -170,8 +174,8 @@ namespace CaeModel
             // Slip wear model
             SlipWearResults = SlipWearResultsEnum.All;
             _numberOfCycles = 1;
-            _enforceZeroBoundaryConditions = true;
-            _meshDeformation = false;
+            _cyclesIncrement = 1;
+            _meshSmoothing = false;
             //
             AbsoluteZero = double.PositiveInfinity;
             StefanBoltzmann = double.PositiveInfinity;

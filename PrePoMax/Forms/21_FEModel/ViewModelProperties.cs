@@ -90,22 +90,22 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Slip wear model")]
-        [OrderedDisplayName(2, 10, "Mesh deformation")]
-        [Description("Use boundary displacement method to deform sub-surface node positions due to surface wear " +
-                     "after each wear cycle.")]
+        [OrderedDisplayName(2, 10, "Cycles increment")]
+        [Description("Set the increment of slip wear cycles.")]
         [Id(3, 3)]
-        public bool MeshDeformation { get { return _modelProperties.MeshDeformation; } set { _modelProperties.MeshDeformation = value; } }
+        public int CyclesIncrement
+        {
+            get { return _modelProperties.CyclesIncrement; }
+            set { _modelProperties.CyclesIncrement = value; }
+        }
         //
         [Category("Slip wear model")]
-        [OrderedDisplayName(3, 10, "Enforce zero BCs")]
-        [Description("Enforcing zero boundary conditions will account for zero boundary conditions " +
-                     "during the slip wear depth computation. Useful for symmetry boundary conditions.")]
+        [OrderedDisplayName(3, 10, "Mesh smoothing")]
+        [Description("Use boundary displacement method after each wear cycle to smooth the mesh after surface wear " + 
+                     "displacements are applied. Use boundary displacement step to define fixed regions and prevent " +
+                     "the rigid body motions.")]
         [Id(4, 3)]
-        public bool EnforceZeroBoundaryConditions
-        {
-            get { return _modelProperties.EnforceZeroBoundaryConditions; }
-            set { _modelProperties.EnforceZeroBoundaryConditions = value; }
-        }
+        public bool MeshSmoothing { get { return _modelProperties.MeshSmoothing; } set { _modelProperties.MeshSmoothing = value; } }
         // Physical constants
         [Category("Physical constants")]
         [OrderedDisplayName(0, 10, "Absolute zero")]
@@ -115,7 +115,7 @@ namespace PrePoMax.Forms
         public double AbsoluteZero { get { return _modelProperties.AbsoluteZero; } set { _modelProperties.AbsoluteZero = value; } }
         //
         [Category("Physical constants")]
-        [OrderedDisplayName(1, 10, "Stefan-Boltzmann constant")]
+        [OrderedDisplayName(1, 10, "Stefan-Boltzmann const")]
         [Description("Value of the Stefan-Boltzmann constant.")]
         [TypeConverter(typeof(StringStefanBoltzmannUndefinedConverter))]
         [Id(2, 4)]
@@ -126,7 +126,7 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Physical constants")]
-        [OrderedDisplayName(2, 10, "Gravitational constant")]
+        [OrderedDisplayName(2, 10, "Gravitational const")]
         [Description("Value of the Newton gravitational constant.")]
         [TypeConverter(typeof(StringNewtonGravityUndefinedConverter))]
         [Id(3, 4)]
@@ -146,8 +146,7 @@ namespace PrePoMax.Forms
             _dctd.CategorySortOrder = CustomSortOrder.AscendingById;
             _dctd.PropertySortOrder = CustomSortOrder.AscendingById;
             //
-            _dctd.RenameBooleanPropertyToYesNo(nameof(MeshDeformation));
-            _dctd.RenameBooleanPropertyToYesNo(nameof(EnforceZeroBoundaryConditions));
+            _dctd.RenameBooleanPropertyToOnOff(nameof(MeshSmoothing));
             //
             UpdateVisibility();
         }
@@ -179,8 +178,8 @@ namespace PrePoMax.Forms
             _dctd.GetProperty(nameof(GlobalResultsFileName)).SetIsBrowsable(subModel);
             _dctd.GetProperty(nameof(SlipWearResults)).SetIsBrowsable(slipWearModel);
             _dctd.GetProperty(nameof(NumberOfCycles)).SetIsBrowsable(slipWearModel);
-            _dctd.GetProperty(nameof(MeshDeformation)).SetIsBrowsable(slipWearModel);
-            _dctd.GetProperty(nameof(EnforceZeroBoundaryConditions)).SetIsBrowsable(slipWearModel);
+            _dctd.GetProperty(nameof(CyclesIncrement)).SetIsBrowsable(slipWearModel);
+            _dctd.GetProperty(nameof(MeshSmoothing)).SetIsBrowsable(slipWearModel);
         }
 
 

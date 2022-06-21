@@ -99,7 +99,7 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        public void AddStep(Step step, bool copyBCsAndLoads = true)
+        public void AddStep(Step step, bool copyBCsAndLoads)
         {
             if (copyBCsAndLoads && _steps.Count >= 1)
             {
@@ -178,6 +178,7 @@ namespace CaeModel
             foreach (var step in _steps)
             {
                 if (step is StaticStep ss) stepIdDuration.Add(count++, ss.TimePeriod);
+                else if (step is BoundaryDisplacementStep) continue;
                 else if (step is FrequencyStep fs) stepIdDuration.Add(count++, 0);
                 else if (step is BuckleStep bs) stepIdDuration.Add(count++, 0);
                 else throw new NotImplementedException();
@@ -445,11 +446,30 @@ namespace CaeModel
             }
             return stepIds.ToArray();
         }
+        public BoundaryDisplacementStep GetBoundaryDisplacementStep()
+        {
+            int count = 0;
+            BoundaryDisplacementStep boundaryDisplacementStep = null;
+            foreach (var step in _steps)
+            {
+                if (step is BoundaryDisplacementStep bds)
+                {
+                    boundaryDisplacementStep = bds;
+                    count++;
+                }
+            }
+            //
+            if (count > 1) throw new CaeException("More than one boundary displacement step defined.");
+            else if (count == 1) return boundaryDisplacementStep;
+            else return null;
+        }
         public bool AreContactHistoryOutputsDefined()
         {
             bool defined;
             foreach (var step in _steps)
             {
+                if (step is BoundaryDisplacementStep) continue;
+                //
                 defined = false;
                 foreach (var entry in step.HistoryOutputs)
                 {

@@ -65,7 +65,12 @@ namespace PrePoMax.Forms
                 fileName = System.IO.Path.Combine(_controller.Settings.GetWorkDirectory(), fileName);
                 //
                 if (!System.IO.File.Exists(fileName))
-                    throw new CaeGlobals.CaeException("The selected global results file " + fileName +" does not exist.");
+                    throw new CaeException("The selected global results file " + fileName +" does not exist.");
+            }
+            else if (_viewModelProperties.ModelType == CaeModel.ModelType.SlipWearModel)
+            {
+                if (_viewModelProperties.NumberOfCycles % _viewModelProperties.CyclesIncrement != 0)
+                    throw new CaeException("The number of slip wear cycles must be divided by the cycles increment.");
             }
             // Replace
             if (_propertyItemChanged)

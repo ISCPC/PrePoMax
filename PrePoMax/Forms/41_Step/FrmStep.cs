@@ -29,6 +29,8 @@ namespace PrePoMax.Forms
                     _viewStep = new ViewStaticStep((value as StaticStep).DeepClone());  // use this form due to inheritance
                 else if (value is SlipWearStep sws)
                     _viewStep = new ViewSlipWearStep(sws.DeepClone());
+                else if (value is BoundaryDisplacementStep bds)
+                    _viewStep = new ViewBoundaryDisplacementStep(bds.DeepClone());
                 else if (value is FrequencyStep fs)
                     _viewStep = new ViewFrequencyStep(fs.DeepClone());
                 else if (value is BuckleStep bs)
@@ -127,7 +129,10 @@ namespace PrePoMax.Forms
             // Create
             if (_stepToEditName == null)
             {
-                _controller.AddStepCommand(this.Step);
+                bool copyBCsAndLoads = true;
+                if (Step is BoundaryDisplacementStep) copyBCsAndLoads = false;
+                //
+                _controller.AddStepCommand(Step, copyBCsAndLoads);
             }
             // Replace
             else
@@ -190,6 +195,7 @@ namespace PrePoMax.Forms
             Step prevOrLastStep = GetPreviousOrLastStep();
             bool addStatic = false;
             bool addSlipWearStep = false;
+            bool addBoundaryDisplacementStep = false;
             bool addFrequency = false;
             bool addBuckle = false;
             bool addHeatTransfer = false;
@@ -197,9 +203,14 @@ namespace PrePoMax.Forms
             bool addCoupledTemDisp = false;
             bool cannotAdd;
             //
-            if (prevOrLastStep is SlipWearStep)
+            if (prevOrLastStep is BoundaryDisplacementStep)
             {
-                addSlipWearStep = true; // only one possibility
+                // no possible steps to add
+            }
+            else if (prevOrLastStep is SlipWearStep)
+            {
+                addSlipWearStep = true;
+                addBoundaryDisplacementStep = true; // only one possibility
             }
             else
             {
@@ -217,8 +228,8 @@ namespace PrePoMax.Forms
                 addCoupledTemDisp = true;
             }
             //
-            cannotAdd = !(addStatic || addSlipWearStep || addFrequency || addBuckle || addHeatTransfer ||
-                          addUncoupledTemDisp || addCoupledTemDisp);
+            cannotAdd = !(addStatic || addSlipWearStep || addBoundaryDisplacementStep || addFrequency || addBuckle ||
+                          addHeatTransfer || addUncoupledTemDisp || addCoupledTemDisp);
             //
             ListViewItem item;
             if (cannotAdd)
@@ -247,6 +258,14 @@ namespace PrePoMax.Forms
                     SlipWearStep slipWearStep = (SlipWearStep)CreateNewOrCloneLast(typeof(SlipWearStep));
                     slipWearStep.SolverType = defaultSolverType;
                     item.Tag = new ViewSlipWearStep(slipWearStep);
+                    lvTypes.Items.Add(item);
+                }
+                if (addBoundaryDisplacementStep)
+                {
+                    // Boundary displacement step
+                    item = new ListViewItem("Boundary displacement step");
+                    BoundaryDisplacementStep boundaryDisplacementStep = new BoundaryDisplacementStep(GetStepName());
+                    item.Tag = new ViewBoundaryDisplacementStep(boundaryDisplacementStep);
                     lvTypes.Items.Add(item);
                 }
                 if (addFrequency)

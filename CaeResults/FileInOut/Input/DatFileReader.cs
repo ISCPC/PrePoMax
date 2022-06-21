@@ -146,7 +146,7 @@ namespace CaeResults
                 if (theName == HOFieldNames.StatisticsForSlaveSet)
                 {
                     dataSet = new List<string>();
-                    for (int j = 0; j <= 8; j++)
+                    for (int j = 0; j <= 8 && i < lines.Length; j++)
                     {
                         if (lines[i].Trim().Length != 0) dataSet.Add(lines[i]);
                         i+=2;

@@ -19,6 +19,7 @@ namespace CaeModel
         private Selection _creationData;
         protected bool _twoD;
         protected string _amplitudeName;
+        protected bool _boundaryDisplacementBC;
         protected Color _color;
         public const string DefaultAmplitudeName = "Default";
 

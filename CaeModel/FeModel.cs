@@ -639,9 +639,9 @@ namespace CaeModel
                 coefficient = 0;
                 foreach (var property in entry.Value.Properties)
                 {
-                    if (property is CaeModel.SlipWear sw)
+                    if (property is SlipWear sw)
                     {
-                        coefficient = sw.WearCoefficient / sw.Hardness;
+                        coefficient = sw.WearCoefficient / sw.Hardness * _properties.CyclesIncrement;
                         containsWear = true;
                         break;
                     }
@@ -1077,11 +1077,6 @@ namespace CaeModel
             reservedPartNames.UnionWith(GetAllMeshEntityNames());
             return reservedPartNames;
         }
-        public Dictionary<int, bool[]> GetAllZeroDisplacements()
-        {
-            if (_properties.EnforceZeroBoundaryConditions) return _stepCollection.GetAllZeroDisplacements(this);
-            else return null;
-        }
         // Springs
         public PointSpring[] GetPointSpringsFromSurfaceSpring(SurfaceSpring spring)
         {
@@ -1322,39 +1317,34 @@ namespace CaeModel
                 section.MaterialName = materialElastic.Name;
                 bdmModel.Sections.Add(section.Name, section);
             }
+            // Constraints
+            Constraint constraint;
+            foreach (var entry in _constraints)
+            {
+                constraint = entry.Value.DeepClone();
+                bdmModel.Constraints.Add(constraint.Name, constraint);
+            }
+            // Amplitudes
+            Amplitude amplitude;
+            foreach (var entry in _amplitudes)
+            {
+                amplitude = entry.Value.DeepClone();
+                bdmModel.Amplitudes.Add(amplitude.Name, amplitude);
+            }
             // Steps
             StaticStep staticStep = new StaticStep("Step-1");
-            bdmModel._stepCollection.AddStep(staticStep);
-            // Merge existing BCs - check for symetry boundary conditions
+            bdmModel._stepCollection.AddStep(staticStep, false);
+            BoundaryDisplacementStep boundaryDisplacementStep = _stepCollection.GetBoundaryDisplacementStep();
+            if (boundaryDisplacementStep == null)
+                throw new CaeException("The boundary displacement step is missing.");
+            // Add existing boundary conditions
             bool twoD = false;
-            string nodeSetName;
             BoundaryCondition bc;
-            HashSet<int> bcNodeIds = new HashSet<int>();
-            foreach (var step in _stepCollection.StepsList)
+            foreach (var entry in boundaryDisplacementStep.BoundaryConditions)
             {
-                foreach (var entry in step.BoundaryConditions)
-                {
-                    // Clone
-                    bc = entry.Value.DeepClone();
-                    // Skip reference point BCs
-                    if (bc.RegionType == RegionTypeEnum.ReferencePointName) continue;
-                    // Skip non zero displacement rotations
-                    if (bc is DisplacementRotation dr && !dr.IsFreeFixedOrZero()) continue;
-                    // Amplitudes
-                    bc.AmplitudeName = BoundaryCondition.DefaultAmplitudeName;
-                    //
-                    bc.Name = step.Name + "_" + bc.Name;
-                    twoD |= bc.TwoD;
-                    staticStep.AddBoundaryCondition(bc);
-                    //
-                    if (bc.RegionType == RegionTypeEnum.NodeSetName)
-                        nodeSetName = bc.RegionName;
-                    else if (bc.RegionType == RegionTypeEnum.SurfaceName)
-                        nodeSetName = _mesh.Surfaces[bc.RegionName].NodeSetName;
-                    else throw new NotSupportedException();
-                    //
-                    bcNodeIds.UnionWith(_mesh.NodeSets[nodeSetName].Labels);
-                }
+                bc = entry.Value.DeepClone();
+                staticStep.AddBoundaryCondition(bc);
+                twoD = bc.TwoD;
             }
             // Create BDM boundary conditions
             string name;
@@ -1379,24 +1369,7 @@ namespace CaeModel
                     if (xyz[2] != 0) displacementRotation.U3 = xyz[2];
                     staticStep.AddBoundaryCondition(displacementRotation);
                 }
-                //
-                bcNodeIds.UnionWith(deformations.Keys);
             }
-            // Fix remaining free visualization nodes
-            HashSet<int> allVisNodes = new HashSet<int>();
-            foreach (var entry in _mesh.Parts) allVisNodes.UnionWith(entry.Value.Visualization.GetNodeIds());
-            allVisNodes.ExceptWith(bcNodeIds);
-            // Node set
-            name = bdmModel.Mesh.NodeSets.GetNextNumberedKey("FIXED_BDM");
-            nodeSet = new FeNodeSet(name, allVisNodes.ToArray());
-            bdmModel.Mesh.NodeSets.Add(nodeSet.Name, nodeSet);
-            // Boundary condition
-            name = staticStep.BoundaryConditions.GetNextNumberedKey("FIXED-BDM");
-            displacementRotation = new DisplacementRotation(name, nodeSet.Name, RegionTypeEnum.NodeSetName, twoD);
-            displacementRotation.U1 = 0;
-            displacementRotation.U2 = 0;
-            displacementRotation.U3 = 0;
-            staticStep.AddBoundaryCondition(displacementRotation);
             //
             return bdmModel;
         }

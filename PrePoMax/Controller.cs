@@ -704,7 +704,7 @@ namespace PrePoMax
             // Wear
             _results.ComputeWear(_model.StepCollection.GetSlipWearStepIds(),
                                  _model.GetNodalSlipWearCoefficients(),
-                                 _model.GetAllZeroDisplacements());
+                                 null);
             //
             if (_results.GetHistory() == null)
             {
@@ -6225,9 +6225,9 @@ namespace PrePoMax
 
         #region Step menu   ########################################################################################################
         // COMMANDS ********************************************************************************
-        public void AddStepCommand(Step step)
+        public void AddStepCommand(Step step, bool copyBCsAndLoads)
         {
-            Commands.CAddStep comm = new Commands.CAddStep(step);
+            Commands.CAddStep comm = new Commands.CAddStep(step.DeepClone(), copyBCsAndLoads);
             _commands.AddAndExecute(comm);
         }
         public void ReplaceStepCommand(string oldStepName, Step newStep)
@@ -6250,7 +6250,7 @@ namespace PrePoMax
         {
             return _model.StepCollection.GetStepNames();
         }
-        public void AddStep(Step step, bool copyBCsAndLoads = true)
+        public void AddStep(Step step, bool copyBCsAndLoads)
         {
             // Create the default anaysis the first time a step is added
             if (_model.StepCollection.StepsList.Count == 0 && _jobs.Count == 0)
@@ -7275,6 +7275,14 @@ namespace PrePoMax
                 if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
                                     MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
             }
+            // Check for existance of boundary displacement step
+            if (_model.Properties.MeshSmoothing && _model.StepCollection.GetBoundaryDisplacementStep() == null)
+            {
+                string msg = "Mesh smoothing after the slip wear step is turned on but the boundary displacement step " +
+                             "is not defined. Continue?";
+                if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
+                                    MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
+            }
             // Check for wear coefficients in a wear analysis
             Dictionary<int, double> materialIdCoefficient;
             if (_model.Properties.ModelType == ModelType.SlipWearModel)                
@@ -7344,8 +7352,8 @@ namespace PrePoMax
             job.PostRun = PostWearRun;
             job.LastRunCompleted = LastWearRunCompleted;
             //
-            int numOfRunSteps = _model.Properties.NumberOfCycles;
-            int numOfRunIncrements = _model.Properties.MeshDeformation ?  2 : 1;
+            int numOfRunSteps = _model.Properties.NumberOfCycles / _model.Properties.CyclesIncrement;
+            int numOfRunIncrements = _model.Properties.MeshSmoothing ?  2 : 1;
             //
             job.Submit(numOfRunSteps, numOfRunIncrements);
             //
@@ -7360,7 +7368,7 @@ namespace PrePoMax
             //
             if (job.CurrentRunIncrement == 1)
             {
-                _form.WriteDataToOutput("Starting wear cycle number: " + job.CurrentRunStep);
+                _form.WriteDataToOutput("Starting wear cycle number: " + job.CurrentRunStep * _model.Properties.CyclesIncrement);
                 //
                 ExportToCalculix(job.InputFileName, deformations);
                 //
@@ -7417,7 +7425,7 @@ namespace PrePoMax
                 results.SetHistory(DatFileReader.Read(resultsFileDat));
                 //
                 int[] slipWearStepIds = _model.StepCollection.GetSlipWearStepIds();
-                if (results.ComputeWear(slipWearStepIds, _model.GetNodalSlipWearCoefficients(), _model.GetAllZeroDisplacements()))
+                if (results.ComputeWear(slipWearStepIds, _model.GetNodalSlipWearCoefficients(), null))
                 {
                     results.KeepOnlySelectedSlipWearResults(_model.StepCollection.GetStepIdDuration(),
                                                              slipWearStepIds,

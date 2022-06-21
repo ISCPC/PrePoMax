@@ -183,6 +183,7 @@
     <Compile Include="Steps\CoupledTempDispStep.cs" />
     <Compile Include="Steps\Loads\HydrostaticPressure.cs" />
     <Compile Include="Steps\SlipWearStep.cs" />
+    <Compile Include="Steps\BoundaryDisplacementStep.cs" />
     <Compile Include="Steps\UncoupledTempDispStep.cs" />
     <Compile Include="Steps\HistoryOutputs\HistoryOutput.cs" />
     <Compile Include="Steps\HistoryOutputs\ElementHistoryOutput.cs" />
