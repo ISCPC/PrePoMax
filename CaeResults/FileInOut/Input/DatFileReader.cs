@@ -181,7 +181,7 @@ namespace CaeResults
         }
         static private List<string[]> RepairContactStatistics(string[] lines, ref Dictionary<string, HashSet<string>> existingNames,
                                                               Dictionary<string, string> repairedSetNames)
-        {
+        {            
             //statistics for slave set INTERNAL_SELECTION - 2_CONTACTPAIR - 1_SLAVE, master set INTERNAL_SELECTION - 1_CONTACTPAIR - 1_MASTER and time  0.5000000E+00
             //total surface force (fx, fy, fz) and moment about the origin (mx, my, mz)
             //3.821561E+02  1.814803E+02 - 5.224860E+03  4.075417E+05  3.873634E+03  2.996193E+04
@@ -194,6 +194,8 @@ namespace CaeResults
             //
             string[] dataSet;
             List<string[]> repairedDataSets = new List<string[]>();
+            //
+            if (lines.Length != 8) return repairedDataSets;
             //
             string[] tmp = lines[0].Split(new string[] { "slave set", "master set", "and time"}, 
                                           StringSplitOptions.RemoveEmptyEntries);

@@ -785,6 +785,7 @@ namespace FileInOut.Output
             foreach (var step in model.StepCollection.StepsList)
             {
                 if (step is InitialStep) continue;
+                else if (step is BoundaryDisplacementStep boundaryDisplacementStep) continue;
                 //
                 title = new CalTitle(step.Name, "");
                 parent.AddKeyword(title);
@@ -801,10 +802,6 @@ namespace FileInOut.Output
                         StaticStep staticStep = step as StaticStep;
                         CalStaticStep calStaticStep = new CalStaticStep(staticStep);
                         calStep.AddKeyword(calStaticStep);
-                    }
-                    else if (step is BoundaryDisplacementStep boundaryDisplacementStep)
-                    {
-                        // No action needed - this is a virtual step for the boundary displacement method after the wear step
                     }
                     else if (step is FrequencyStep frequencyStep)
                     {

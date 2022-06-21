@@ -2750,7 +2750,7 @@ namespace CaeResults
             else throw new NotSupportedException();
         }
         private void KeepOnlySelectedHistorySlipWearResults(OrderedDictionary<int, double> stepIdDuration, int[] slipStepIds,
-                                                             SlipWearResultsEnum slipWearResultsToKeep)
+                                                            SlipWearResultsEnum slipWearResultsToKeep)
         {
             HashSet<int> slipStepIdsHash = new HashSet<int>(slipStepIds);
             //

@@ -95,7 +95,9 @@ namespace CaeResults
                 {
                     _time.Add(time[i]);
                     _values.Add(values[i]);
-                    _count.Add(count[i]);
+                    //
+                    if (i >= count.Length) _count.Add(1); // error handling
+                    else _count.Add(count[i]);
                 }
             }
         }
