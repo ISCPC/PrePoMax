@@ -131,7 +131,7 @@ namespace CaeModel
         public SlipWearResultsEnum SlipWearResults;
         private int _numberOfCycles;
         private int _cyclesIncrement;
-        private bool _meshSmoothing;
+        private bool _bdmRemeshing;
         //
         public double AbsoluteZero;
         public double StefanBoltzmann;
@@ -157,10 +157,10 @@ namespace CaeModel
                 if (_cyclesIncrement < 1) _cyclesIncrement = 1;
             }
         }
-        public bool MeshSmoothing
+        public bool BdmRemeshing
         {
-            get { return _meshSmoothing; }
-            set { _meshSmoothing = value; }
+            get { return _bdmRemeshing; }
+            set { _bdmRemeshing = value; }
         }
 
         
@@ -175,7 +175,7 @@ namespace CaeModel
             SlipWearResults = SlipWearResultsEnum.All;
             _numberOfCycles = 1;
             _cyclesIncrement = 1;
-            _meshSmoothing = false;
+            _bdmRemeshing = false;
             //
             AbsoluteZero = double.PositiveInfinity;
             StefanBoltzmann = double.PositiveInfinity;

@@ -496,7 +496,7 @@ namespace PrePoMax.Forms
                     if (twoD) surfaceNames = shellEdgeSurfaceNames.ToArray();
                     else surfaceNames = noEdgeSurfaceNames.ToArray();
                     //
-                    selectedId = lvTypes.FindItemWithText("Pressure").Index;
+                    selectedId = lvTypes.FindItemWithText("Uniform pressure").Index;
                     // Check for deleted regions
                     if (vdl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vdl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -704,7 +704,7 @@ namespace PrePoMax.Forms
                 lvTypes.Items.Add(item);
             }
             // Pressure
-            name = "Pressure";
+            name = "Uniform pressure";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
             DLoad dLoad = new DLoad(loadName, "", RegionTypeEnum.Selection, 0, twoD);

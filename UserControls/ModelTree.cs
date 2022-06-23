@@ -772,22 +772,26 @@ namespace UserControls
         }
         public void cltv_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Delete)
+            CodersLabTreeView tree = GetActiveTree();
+            //
+            if (tree.Focused)
             {
-                tsmiDelete_Click(null, null);
+                if (e.KeyCode == Keys.Delete)
+                {
+                    tsmiDelete_Click(null, null);
+                }
+                else if (e.KeyCode == Keys.Space)
+                {
+                    tsmiInvertHideShow_Click(null, null);
+                }
+                else if (e.KeyCode == Keys.Enter)
+                {
+                    if (tree.SelectedNodes.Count == 1 && tree.SelectedNodes[0].Tag == null) tsmiCreate_Click(null, null);
+                    else tsmiEdit_Click(null, null);
+                }
+                // No beep
+                e.SuppressKeyPress = true;
             }
-            else if (e.KeyCode == Keys.Space)
-            {
-                tsmiInvertHideShow_Click(null, null);
-            }
-            else if (e.KeyCode == Keys.Enter)
-            {
-                CodersLabTreeView tree = GetActiveTree();
-                if (tree.SelectedNodes.Count == 1 && tree.SelectedNodes[0].Tag == null) tsmiCreate_Click(null, null);
-                else tsmiEdit_Click(null, null);
-            }
-            // No beep
-            e.SuppressKeyPress = true;
         }
 
         #endregion

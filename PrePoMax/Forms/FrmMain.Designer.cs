@@ -403,13 +403,13 @@
             this.toolStripViewSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tslSymbols = new System.Windows.Forms.ToolStripLabel();
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
-            this.toolStripFocus1 = new UserControls.ToolStripFocus();
-            this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
-            this.toolStripComboBox1 = new System.Windows.Forms.ToolStripComboBox();
-            this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
-            this.toolStripComboBox2 = new System.Windows.Forms.ToolStripComboBox();
-            this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
-            this.toolStripLabel3 = new System.Windows.Forms.ToolStripLabel();
+            this.tsDeformationFactor = new UserControls.ToolStripFocus();
+            this.tslDeformationVariable = new System.Windows.Forms.ToolStripLabel();
+            this.tscbDeformationVariable = new System.Windows.Forms.ToolStripComboBox();
+            this.tslDeformationType = new System.Windows.Forms.ToolStripLabel();
+            this.tscbDeformationType = new System.Windows.Forms.ToolStripComboBox();
+            this.tslDeformationFactor = new System.Windows.Forms.ToolStripLabel();
+            this.tstbDeformationFactor = new UserControls.NumericToolStripTextBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
             this.menuStripMain.SuspendLayout();
@@ -429,7 +429,7 @@
             this.splitContainer2.SuspendLayout();
             this.tsFile.SuspendLayout();
             this.tsViews.SuspendLayout();
-            this.toolStripFocus1.SuspendLayout();
+            this.tsDeformationFactor.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStripMain
@@ -2846,7 +2846,7 @@
             this.panelControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControl.Location = new System.Drawing.Point(0, 0);
             this.panelControl.Name = "panelControl";
-            this.panelControl.Size = new System.Drawing.Size(1229, 612);
+            this.panelControl.Size = new System.Drawing.Size(1229, 637);
             this.panelControl.TabIndex = 1;
             // 
             // aeAnnotationTextEditor
@@ -2991,7 +2991,7 @@
             this.tsbNextStepIncrement,
             this.tsbLastStepIncrement,
             this.tsbAnimate});
-            this.tsResults.Location = new System.Drawing.Point(3, 0);
+            this.tsResults.Location = new System.Drawing.Point(3, 25);
             this.tsResults.Name = "tsResults";
             this.tsResults.Size = new System.Drawing.Size(398, 25);
             this.tsResults.TabIndex = 7;
@@ -3120,7 +3120,7 @@
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.Controls.Add(this.splitContainer1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1502, 722);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1502, 747);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.LeftToolStripPanelVisible = false;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 24);
@@ -3132,10 +3132,10 @@
             // 
             // toolStripContainer1.TopToolStripPanel
             // 
-            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsResults);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsFile);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsViews);
-            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.toolStripFocus1);
+            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsDeformationFactor);
+            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsResults);
             // 
             // splitContainer1
             // 
@@ -3149,7 +3149,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Panel2MinSize = 250;
-            this.splitContainer1.Size = new System.Drawing.Size(1502, 722);
+            this.splitContainer1.Size = new System.Drawing.Size(1502, 747);
             this.splitContainer1.SplitterDistance = 269;
             this.splitContainer1.TabIndex = 2;
             // 
@@ -3168,8 +3168,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.tbOutput);
-            this.splitContainer2.Size = new System.Drawing.Size(1229, 722);
-            this.splitContainer2.SplitterDistance = 612;
+            this.splitContainer2.Size = new System.Drawing.Size(1229, 747);
+            this.splitContainer2.SplitterDistance = 637;
             this.splitContainer2.TabIndex = 2;
             // 
             // tbOutput
@@ -3198,7 +3198,7 @@
             this.tsbOpen,
             this.tsbImport,
             this.tsbSave});
-            this.tsFile.Location = new System.Drawing.Point(3, 25);
+            this.tsFile.Location = new System.Drawing.Point(3, 0);
             this.tsFile.Name = "tsFile";
             this.tsFile.Size = new System.Drawing.Size(104, 25);
             this.tsFile.TabIndex = 5;
@@ -3277,7 +3277,7 @@
             this.toolStripViewSeparator4,
             this.tslSymbols,
             this.tscbSymbolsForStep});
-            this.tsViews.Location = new System.Drawing.Point(107, 25);
+            this.tsViews.Location = new System.Drawing.Point(107, 0);
             this.tsViews.Name = "tsViews";
             this.tsViews.Size = new System.Drawing.Size(654, 25);
             this.tsViews.TabIndex = 6;
@@ -3514,70 +3514,69 @@
             this.tscbSymbolsForStep.Size = new System.Drawing.Size(121, 25);
             this.tscbSymbolsForStep.ToolTipText = "Select how symbols are displayed.";
             // 
-            // toolStripFocus1
+            // tsDeformationFactor
             // 
-            this.toolStripFocus1.BackColor = System.Drawing.SystemColors.Control;
-            this.toolStripFocus1.DisableMouseButtons = false;
-            this.toolStripFocus1.Dock = System.Windows.Forms.DockStyle.None;
-            this.toolStripFocus1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripLabel1,
-            this.toolStripComboBox1,
-            this.toolStripLabel2,
-            this.toolStripComboBox2,
-            this.toolStripLabel3,
-            this.toolStripTextBox1});
-            this.toolStripFocus1.Location = new System.Drawing.Point(3, 50);
-            this.toolStripFocus1.Name = "toolStripFocus1";
-            this.toolStripFocus1.Size = new System.Drawing.Size(588, 25);
-            this.toolStripFocus1.TabIndex = 8;
+            this.tsDeformationFactor.BackColor = System.Drawing.SystemColors.Control;
+            this.tsDeformationFactor.DisableMouseButtons = false;
+            this.tsDeformationFactor.Dock = System.Windows.Forms.DockStyle.None;
+            this.tsDeformationFactor.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tslDeformationVariable,
+            this.tscbDeformationVariable,
+            this.tslDeformationType,
+            this.tscbDeformationType,
+            this.tslDeformationFactor,
+            this.tstbDeformationFactor});
+            this.tsDeformationFactor.Location = new System.Drawing.Point(401, 25);
+            this.tsDeformationFactor.Name = "tsDeformationFactor";
+            this.tsDeformationFactor.Size = new System.Drawing.Size(460, 25);
+            this.tsDeformationFactor.TabIndex = 8;
             // 
-            // toolStripLabel1
+            // tslDeformationVariable
             // 
-            this.toolStripLabel1.Name = "toolStripLabel1";
-            this.toolStripLabel1.Size = new System.Drawing.Size(118, 22);
-            this.toolStripLabel1.Text = "Deformation variable";
+            this.tslDeformationVariable.Name = "tslDeformationVariable";
+            this.tslDeformationVariable.Size = new System.Drawing.Size(48, 22);
+            this.tslDeformationVariable.Text = "Variable";
             // 
-            // toolStripComboBox1
+            // tscbDeformationVariable
             // 
-            this.toolStripComboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.toolStripComboBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.toolStripComboBox1.Items.AddRange(new object[] {
-            "Displacements",
-            "Forces"});
-            this.toolStripComboBox1.Name = "toolStripComboBox1";
-            this.toolStripComboBox1.Size = new System.Drawing.Size(121, 25);
+            this.tscbDeformationVariable.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tscbDeformationVariable.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.tscbDeformationVariable.Name = "tscbDeformationVariable";
+            this.tscbDeformationVariable.Size = new System.Drawing.Size(121, 25);
+            this.tscbDeformationVariable.ToolTipText = "Select the deformation variable";
+            this.tscbDeformationVariable.SelectedIndexChanged += new System.EventHandler(this.tscbDeformationVariable_SelectedIndexChanged);
             // 
-            // toolStripLabel2
+            // tslDeformationType
             // 
-            this.toolStripLabel2.Name = "toolStripLabel2";
-            this.toolStripLabel2.Size = new System.Drawing.Size(94, 22);
-            this.toolStripLabel2.Text = "Scale factor type";
+            this.tslDeformationType.Name = "tslDeformationType";
+            this.tslDeformationType.Size = new System.Drawing.Size(31, 22);
+            this.tslDeformationType.Text = "Type";
             // 
-            // toolStripComboBox2
+            // tscbDeformationType
             // 
-            this.toolStripComboBox2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.toolStripComboBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.toolStripComboBox2.Items.AddRange(new object[] {
-            "Automatic",
-            "True scale",
-            "Off",
-            "User defined"});
-            this.toolStripComboBox2.Name = "toolStripComboBox2";
-            this.toolStripComboBox2.Size = new System.Drawing.Size(121, 25);
+            this.tscbDeformationType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tscbDeformationType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.tscbDeformationType.Name = "tscbDeformationType";
+            this.tscbDeformationType.Size = new System.Drawing.Size(121, 25);
+            this.tscbDeformationType.ToolTipText = "Select the deformation type";
+            this.tscbDeformationType.SelectedIndexChanged += new System.EventHandler(this.tscbDeformationType_SelectedIndexChanged);
             // 
-            // toolStripTextBox1
+            // tslDeformationFactor
             // 
-            this.toolStripTextBox1.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.toolStripTextBox1.Name = "toolStripTextBox1";
-            this.toolStripTextBox1.Size = new System.Drawing.Size(50, 25);
-            this.toolStripTextBox1.Text = "10";
-            this.toolStripTextBox1.TextBoxTextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tslDeformationFactor.Name = "tslDeformationFactor";
+            this.tslDeformationFactor.Size = new System.Drawing.Size(40, 22);
+            this.tslDeformationFactor.Text = "Factor";
             // 
-            // toolStripLabel3
+            // tstbDeformationFactor
             // 
-            this.toolStripLabel3.Name = "toolStripLabel3";
-            this.toolStripLabel3.Size = new System.Drawing.Size(35, 22);
-            this.toolStripLabel3.Text = "Value";
+            this.tstbDeformationFactor.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.tstbDeformationFactor.Name = "tstbDeformationFactor";
+            this.tstbDeformationFactor.ShortcutsEnabled = false;
+            this.tstbDeformationFactor.Size = new System.Drawing.Size(50, 25);
+            this.tstbDeformationFactor.Text = "10";
+            this.tstbDeformationFactor.TextBoxTextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tstbDeformationFactor.ToolTipText = "Enter the deformation scale factor";
+            this.tstbDeformationFactor.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tstbDeformationFactor_KeyDown);
             // 
             // timerTest
             // 
@@ -3631,8 +3630,8 @@
             this.tsFile.PerformLayout();
             this.tsViews.ResumeLayout(false);
             this.tsViews.PerformLayout();
-            this.toolStripFocus1.ResumeLayout(false);
-            this.toolStripFocus1.PerformLayout();
+            this.tsDeformationFactor.ResumeLayout(false);
+            this.tsDeformationFactor.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -4020,13 +4019,13 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEditAnnotation;
         private System.Windows.Forms.ToolStripMenuItem tsmiResetAnnotation;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerAnnotation2;
-        private UserControls.ToolStripFocus toolStripFocus1;
-        private System.Windows.Forms.ToolStripLabel toolStripLabel1;
-        private System.Windows.Forms.ToolStripComboBox toolStripComboBox1;
-        private System.Windows.Forms.ToolStripLabel toolStripLabel2;
-        private System.Windows.Forms.ToolStripComboBox toolStripComboBox2;
-        private System.Windows.Forms.ToolStripTextBox toolStripTextBox1;
-        private System.Windows.Forms.ToolStripLabel toolStripLabel3;
+        private UserControls.ToolStripFocus tsDeformationFactor;
+        private System.Windows.Forms.ToolStripLabel tslDeformationVariable;
+        private System.Windows.Forms.ToolStripComboBox tscbDeformationVariable;
+        private System.Windows.Forms.ToolStripLabel tslDeformationType;
+        private System.Windows.Forms.ToolStripComboBox tscbDeformationType;
+        private UserControls.NumericToolStripTextBox tstbDeformationFactor;
+        private System.Windows.Forms.ToolStripLabel tslDeformationFactor;
     }
 }
 

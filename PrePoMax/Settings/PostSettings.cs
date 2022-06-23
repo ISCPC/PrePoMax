@@ -12,22 +12,6 @@ using System.Drawing;
 namespace PrePoMax
 {
     [Serializable]
-    public enum DeformationScaleFactorTypeEnum
-    {
-        [StandardValue("Automatic", Description = "Automatic")]
-        Automatic,
-        //
-        [StandardValue("TrueScale", DisplayName = "True scale", Description = "True scale")]
-        TrueScale,
-        //
-        [StandardValue("Off", DisplayName = "Off", Description = "Off")]
-        Off,
-        //
-        [StandardValue("UserDefined", DisplayName = "User defined", Description = "User defined")]
-        UserDefined
-    }
-    //
-    [Serializable]
     public enum UndeformedModelTypeEnum
     {
         [StandardValue("None", Description = "None")]
@@ -46,7 +30,7 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         private string _deformationFieldOutputName;
-        private DeformationScaleFactorTypeEnum _dsfType;
+        private CaeResults.DeformationScaleFactorTypeEnum _dsfType;
         private double _deformationScaleFactorValue;
         private UndeformedModelTypeEnum _undeformedModelType;
         private Color _undeformedModelColor;
@@ -56,40 +40,6 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
-        public string DeformationFieldOutputName
-        {
-            get { return _deformationFieldOutputName; }
-            set { _deformationFieldOutputName = value; }
-        }
-        public DeformationScaleFactorTypeEnum DeformationScaleFactorType
-        {
-            get { return _dsfType; }
-            set
-            {
-                if (_dsfType != value)
-                {
-                    _dsfType = value;
-                    if (_dsfType == DeformationScaleFactorTypeEnum.Automatic)
-                        _deformationScaleFactorValue = -1;
-                    else if (_dsfType == DeformationScaleFactorTypeEnum.TrueScale)
-                        _deformationScaleFactorValue = 1;
-                    else if (_dsfType == DeformationScaleFactorTypeEnum.Off)
-                        _deformationScaleFactorValue = 0;
-                    else if (_dsfType == DeformationScaleFactorTypeEnum.UserDefined)
-                        _deformationScaleFactorValue = 1;
-                    else throw new NotSupportedException();
-                }
-            }
-        }
-        public double DeformationScaleFactorValue 
-        {
-            get { return _deformationScaleFactorValue; }
-            set 
-            {
-                _deformationScaleFactorValue = value;
-                if (_deformationScaleFactorValue < -1) _deformationScaleFactorValue = -1;
-            } 
-        }
         public UndeformedModelTypeEnum UndeformedModelType
         {
             get { return _undeformedModelType; }
@@ -127,7 +77,7 @@ namespace PrePoMax
         public void Reset()
         {
             _deformationFieldOutputName = CaeResults.FeResults.GetPossibleDeformationFieldOutputNames()[0];
-            _dsfType = DeformationScaleFactorTypeEnum.Automatic;
+            _dsfType = CaeResults.DeformationScaleFactorTypeEnum.Automatic;
             _deformationScaleFactorValue = -1;
             _undeformedModelType = UndeformedModelTypeEnum.WireframeBody;
             _undeformedModelColor = Color.Black;

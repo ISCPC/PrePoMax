@@ -7276,7 +7276,7 @@ namespace PrePoMax
                                     MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
             }
             // Check for existance of boundary displacement step
-            if (_model.Properties.MeshSmoothing && _model.StepCollection.GetBoundaryDisplacementStep() == null)
+            if (_model.Properties.BdmRemeshing && _model.StepCollection.GetBoundaryDisplacementStep() == null)
             {
                 string msg = "Mesh smoothing after the slip wear step is turned on but the boundary displacement step " +
                              "is not defined. Continue?";
@@ -7353,7 +7353,7 @@ namespace PrePoMax
             job.LastRunCompleted = LastWearRunCompleted;
             //
             int numOfRunSteps = _model.Properties.NumberOfCycles / _model.Properties.CyclesIncrement;
-            int numOfRunIncrements = _model.Properties.MeshSmoothing ?  2 : 1;
+            int numOfRunIncrements = _model.Properties.BdmRemeshing ?  2 : 1;
             //
             job.Submit(numOfRunSteps, numOfRunIncrements);
             //
@@ -12948,8 +12948,7 @@ namespace PrePoMax
         // Common
         private void SetPostLegendAndStatusBlockSettings()
         {
-            PostSettings postSettings = _settings.Post;
-            if (_results != null) _results.DeformationFieldOutputName = postSettings.DeformationFieldOutputName;
+            if (_results != null) _results.DeformationFieldOutputName = _form.GetDeformationVariable();
             //
             if (_viewResultsType == ViewResultsType.ColorContours)
             {
@@ -12983,8 +12982,7 @@ namespace PrePoMax
             else if (_currentFieldData.Type == StepType.LastIterations) unit = _results.UnitSystem.TimeUnitAbbreviation;
             else throw new NotSupportedException();
             // Deformation variable
-            string deformationVariable = _settings.Post.DeformationFieldOutputName;
-            //deformationVariable = FeResults.GetPossibleDeformationFieldOutputNamesMap()[deformationVariable];
+            string deformationVariable = _form.GetDeformationVariable();
             //
             vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
             //
@@ -13149,41 +13147,44 @@ namespace PrePoMax
         // Tools
         public float GetScale()
         {
-            if (_viewResultsType == ViewResultsType.Undeformed) return 0;
-            //
-            float scale = 1;
-            //
-            if (_settings.Post.DeformationScaleFactorType == DeformationScaleFactorTypeEnum.Automatic &&
-                _results != null && _results.Mesh != null)
-            {
-                float size;
-                // 2D
-                if (_results.Mesh.BoundingBox.Is2D()) size = (float)_results.Mesh.GetBoundingBoxAreaAsSquareSide();
-                // 3D
-                else size = (float)_results.Mesh.GetBoundingBoxVolumeAsCubeSide();
-                //
-                float maxDisp = _results.GetMaxDeformation(_currentFieldData.StepId, _currentFieldData.StepIncrementId);
-                if (maxDisp == -float.MaxValue) scale = 0;       // the displacement filed does not exist
-                else if (maxDisp != 0) scale = size * 0.25f / maxDisp;
-            }
-            else scale = (float)_settings.Post.DeformationScaleFactorValue;
-            return scale;
+            float maxDisplacement = _results.GetMaxDeformation(_currentFieldData.StepId, _currentFieldData.StepIncrementId);
+            return GetScale(maxDisplacement);
         }
         public float GetScaleForAllStepsAndIncrements()
         {
+            float maxDisplacement = _results.GetMaxDeformation();
+            return GetScale(maxDisplacement);
+        }
+        private float GetScale(float maxDisplacement)
+        {
             if (_viewResultsType == ViewResultsType.Undeformed) return 0;
             //
-            float scale = 1;
-            //
-            if (_settings.Post.DeformationScaleFactorType == DeformationScaleFactorTypeEnum.Automatic)
+            DeformationScaleFactorTypeEnum scaleFactorType = _form.GetDeformationType();
+            if (scaleFactorType == DeformationScaleFactorTypeEnum.Undeformed) return 0;
+            else if (scaleFactorType == DeformationScaleFactorTypeEnum.TrueScale) return 1;
+            else
             {
-                float size = (float)_results.Mesh.GetBoundingBoxVolumeAsCubeSide();
-                float maxDisp = _results.GetMaxDeformation();
-                if (maxDisp == -float.MaxValue) scale = 0;       // the displacement filed does not exist
-                else if (maxDisp != 0) scale = size * 0.25f / maxDisp;
+                float scale = 1;
+                float automaticScale = scaleFactorType.GetAutomaticFactor();
+                // Automatic
+                if (_results != null && _results.Mesh != null && automaticScale != -1)
+                {
+                    float size;
+                    // 2D
+                    if (_results.Mesh.BoundingBox.Is2D()) size = (float)_results.Mesh.GetBoundingBoxAreaAsSquareSide();
+                    // 3D
+                    else size = (float)_results.Mesh.GetBoundingBoxVolumeAsCubeSide();
+                    //
+
+                    if (maxDisplacement == -float.MaxValue) scale = 0;  // the displacement filed does not exist
+                    else if (maxDisplacement != 0) scale = automaticScale * (size * 0.25f / maxDisplacement);
+                }
+                // User defined
+                else scale = _form.GetDeformationFactor();
+                //
+                scale = (float)CaeGlobals.Tools.RoundToSignificantDigits(scale, 3);
+                return scale;
             }
-            else scale = (float)_settings.Post.DeformationScaleFactorValue;
-            return scale;
         }
     }
 

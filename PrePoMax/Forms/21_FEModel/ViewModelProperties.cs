@@ -100,12 +100,12 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Slip wear model")]
-        [OrderedDisplayName(3, 10, "Mesh smoothing")]
-        [Description("Use boundary displacement method after each wear cycle to smooth the mesh after surface wear " + 
-                     "displacements are applied. Use boundary displacement step to define fixed regions and prevent " +
-                     "the rigid body motions.")]
+        [OrderedDisplayName(3, 10, "BDM remeshing")]
+        [Description("Use boundary displacement method (BDM) for remeshing due to the applied surface wear displacements " +
+                     "after each wear cycle. Boundary displacement step must be used to define fixed model regions to prevent all " +
+                     "rigid body motions.")]
         [Id(4, 3)]
-        public bool MeshSmoothing { get { return _modelProperties.MeshSmoothing; } set { _modelProperties.MeshSmoothing = value; } }
+        public bool BdmRemeshing { get { return _modelProperties.BdmRemeshing; } set { _modelProperties.BdmRemeshing = value; } }
         // Physical constants
         [Category("Physical constants")]
         [OrderedDisplayName(0, 10, "Absolute zero")]
@@ -146,7 +146,7 @@ namespace PrePoMax.Forms
             _dctd.CategorySortOrder = CustomSortOrder.AscendingById;
             _dctd.PropertySortOrder = CustomSortOrder.AscendingById;
             //
-            _dctd.RenameBooleanPropertyToOnOff(nameof(MeshSmoothing));
+            _dctd.RenameBooleanPropertyToOnOff(nameof(BdmRemeshing));
             //
             UpdateVisibility();
         }
@@ -179,7 +179,7 @@ namespace PrePoMax.Forms
             _dctd.GetProperty(nameof(SlipWearResults)).SetIsBrowsable(slipWearModel);
             _dctd.GetProperty(nameof(NumberOfCycles)).SetIsBrowsable(slipWearModel);
             _dctd.GetProperty(nameof(CyclesIncrement)).SetIsBrowsable(slipWearModel);
-            _dctd.GetProperty(nameof(MeshSmoothing)).SetIsBrowsable(slipWearModel);
+            _dctd.GetProperty(nameof(BdmRemeshing)).SetIsBrowsable(slipWearModel);
         }
 
 

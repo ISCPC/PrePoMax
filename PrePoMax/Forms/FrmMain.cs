@@ -22,9 +22,9 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         #region Variables ##########################################################################################################
-
+        //
         FrmSplash splash;
-
+        //
         private vtkControl.vtkControl _vtk;
         private ModelTree _modelTree;
         private Controller _controller;
@@ -79,9 +79,7 @@ namespace PrePoMax
         private FrmViewResultHistoryOutput _frmViewResultHistoryOutput;
         private FrmResultHistoryOutput _frmResultHistoryOutput;
         private FrmTransformation _frmTransformation;
-
-
-
+        //
         #endregion  ################################################################################################################
 
         #region Properties #########################################################################################################
@@ -250,7 +248,8 @@ namespace PrePoMax
                 // Strip menus
                 tsFile.Location = new Point(0, 0);
                 tsViews.Location = new Point(tsFile.Left + tsFile.Width, 0);
-                tsResults.Location = new Point(tsViews.Left + tsViews.Width, 0);
+                tsDeformationFactor.Location = new Point(0, tsFile.Height);
+                tsResults.Location = new Point(tsDeformationFactor.Left + tsDeformationFactor.Width, tsFile.Height);
                 tscbSymbolsForStep.SelectedIndexChanged += tscbSymbolsForStep_SelectedIndexChanged;
                 // Controller
                 _controller = new Controller(this);
@@ -412,11 +411,13 @@ namespace PrePoMax
                 //
                 _vtk.Hide();
                 _vtk.Enabled = false;
+                // Deformation toolstrip
+                InitializeDeformationComboBoxes();
                 //
                 // Create the Keyboard Hook
                 _keyboardHook = new KeyboardHook();
                 // Capture the events
-                _keyboardHook.KeyDown += KeyboardHook_Keydown;
+                _keyboardHook.KeyDown += KeyboardHook_KeyDown;
                 // Install the hook
                 _keyboardHook.Install();
             }
@@ -686,7 +687,7 @@ namespace PrePoMax
             SaveFormLoaction(form);
         }
         // Keyboard
-        private void KeyboardHook_Keydown(KeyboardHook.VKeys vKey)
+        private void KeyboardHook_KeyDown(KeyboardHook.VKeys vKey)
         {
             if (this == ActiveForm)
             {
@@ -733,7 +734,6 @@ namespace PrePoMax
                 //
                 CloseAllForms();
                 _controller.SelectBy = vtkSelectBy.Default;
-                //_vtk.RenderingOn = true;    // reset
                 //
                 if (viewType == ViewType.Geometry) _controller.CurrentView = ViewGeometryModelResults.Geometry;
                 else if (viewType == ViewType.Model) _controller.CurrentView = ViewGeometryModelResults.Model;
@@ -1099,13 +1099,12 @@ namespace PrePoMax
                 tsbImport.Enabled = false;
                 tsbSave.Enabled = false;
                 // Toolbar View
-                //foreach (ToolStripItem item in tsViews.Items) item.Enabled = false;
                 tsViews.DisableMouseButtons = true;
-                toolStripViewSeparator4.Visible = false;
-                tslSymbols.Visible = false;
-                tscbSymbolsForStep.Visible = false;
+                tslSymbols.Enabled = false;
+                tscbSymbolsForStep.Enabled = false;
                 // Toolbar Results
-                tsResults.Visible = false;
+                tsDeformationFactor.Enabled = false;
+                tsResults.Enabled = false;
                 // Vtk
                 bool vtkVisible = false;
                 // Tree
@@ -1171,9 +1170,8 @@ namespace PrePoMax
                     tsmiAnalysis.Enabled = true;
                     // Toolbar View
                     tsViews.DisableMouseButtons = false;
-                    toolStripViewSeparator4.Visible = true;
-                    tslSymbols.Visible = true;
-                    tscbSymbolsForStep.Visible = true;
+                    tslSymbols.Enabled = true;
+                    tscbSymbolsForStep.Enabled = true;
                     // Vtk
                     vtkVisible = true;
                     // Tree
@@ -1187,7 +1185,9 @@ namespace PrePoMax
                     // Toolbar View
                     tsViews.DisableMouseButtons = false;
                     // Toolbar Results
-                    tsResults.Visible = true;
+                    tsDeformationFactor.Enabled = true;
+                    UpdateScaleFactorTextBoxState();
+                    tsResults.Enabled = true;
                     // Vtk
                     vtkVisible = true;
                     // Tree
@@ -6551,6 +6551,102 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
+        #region Deformation toolbar  ###############################################################################################
+        private void tscbDeformationVariable_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                _controller.Redraw();
+                this.ActiveControl = null;
+            }
+            catch
+            { }
+        }
+        private void tscbDeformationType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                // Enable scale factor text box
+                UpdateScaleFactorTextBoxState();
+                //
+                _controller.Redraw();
+                this.ActiveControl = null;
+            }
+            catch
+            { }
+        }
+        private void tstbDeformationFactor_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    _controller.Redraw();
+                    this.ActiveControl = null;
+                    // No beep
+                    e.SuppressKeyPress = true;
+                }
+            }
+            catch
+            { }
+        }
+        private void InitializeDeformationComboBoxes()
+        {
+            tscbDeformationVariable.Items.Clear();
+            string[] variableNames = CaeResults.FeResults.GetPossibleDeformationFieldOutputNames();
+            tscbDeformationVariable.Items.AddRange(variableNames);
+            tscbDeformationVariable.SelectedIndex = 0;  // Displacements
+            //
+            tscbDeformationType.Items.Clear();
+            Type type = typeof(CaeResults.DeformationScaleFactorTypeEnum);
+            string[] typeNames = Enum.GetNames(type);
+            for (int i = 0; i < typeNames.Length; i++)
+            {
+                typeNames[i] = ((CaeResults.DeformationScaleFactorTypeEnum)Enum.Parse(type, typeNames[i])).GetDisplayedName();
+            }
+            tscbDeformationType.Items.AddRange(typeNames);
+            tscbDeformationType.SelectedIndex = 2;      // Automatic
+
+
+            //if (controller.Results != null)
+            //    vps.PopulateDropDownList(controller.Results.GetExistingDeformationFieldOutputNames());
+            //else
+            //    vps.PopulateDropDownList(CaeResults.FeResults.GetPossibleDeformationFieldOutputNames());
+        }
+        private void UpdateScaleFactorTextBoxState()
+        {
+            tstbDeformationFactor.Enabled = GetDeformationType() == CaeResults.DeformationScaleFactorTypeEnum.UserDefined;
+        }
+        public string GetDeformationVariable()
+        {
+            if (InvokeRequired) return (string)Invoke(new Func<string>(GetDeformationVariable));
+            //
+            return tscbDeformationVariable.SelectedItem.ToString();
+        }
+        public CaeResults.DeformationScaleFactorTypeEnum GetDeformationType()
+        {
+            if (InvokeRequired)
+                return (CaeResults.DeformationScaleFactorTypeEnum)Invoke(
+                    new Func<CaeResults.DeformationScaleFactorTypeEnum>(GetDeformationType));
+            //
+            string displayName = tscbDeformationType.SelectedItem.ToString();
+            CaeResults.DeformationScaleFactorTypeEnum[] scaleFactorTypes =
+                (CaeResults.DeformationScaleFactorTypeEnum[])Enum.GetValues(typeof(CaeResults.DeformationScaleFactorTypeEnum));
+            //
+            for (int i = 0; i < scaleFactorTypes.Length; i++)
+            {
+                if (displayName == scaleFactorTypes[i].GetDisplayedName()) return scaleFactorTypes[i];
+            }
+            //
+            throw new NotSupportedException();
+        }
+        public float GetDeformationFactor()
+        {
+            return float.Parse(tstbDeformationFactor.Text);
+        }
+
+        #endregion  ################################################################################################################
+
         #region Results field toolbar  #############################################################################################
 
         private void tsbResultsUndeformed_Click(object sender, EventArgs e)
@@ -6644,9 +6740,15 @@ namespace PrePoMax
             // _modelTree.DisableMouse = !enable; this is done in the itemForm_VisibleChanged
             menuStripMain.DisableMouseButtons = !enable;
             tsFile.DisableMouseButtons = !enable;
+            //
+            tsDeformationFactor.DisableMouseButtons = !enable;
+            tscbDeformationVariable.Enabled = enable;   // must be here
+            tscbDeformationType.Enabled = enable;       // must be here
+            tstbDeformationFactor.Enabled = enable;     // must be here
+            //
             tsResults.DisableMouseButtons = !enable;
             tscbStepAndIncrement.Enabled = enable;      // must be here despite the tsResults.DisableMouseButtons = !enable;
-
+            //
             tsbShowAllParts.Enabled = enable;
             tsbHideAllParts.Enabled = enable;
             tsbInvertVisibleParts.Enabled = enable;
@@ -6674,6 +6776,7 @@ namespace PrePoMax
                 menuStripMain.DisableMouseButtons = working;
                 tsFile.DisableMouseButtons = working;
                 tsViews.DisableMouseButtons = working;
+                tsDeformationFactor.DisableMouseButtons = working;
                 tsResults.DisableMouseButtons = working;
                 //
                 //this.DisableAllMouseEvents = working;
@@ -7549,6 +7652,17 @@ namespace PrePoMax
                 action();
             }
         }
+        public object InvokeIfRequired(Func<object> function)
+        {
+            if (this.InvokeRequired)
+            {
+                return (object)this.Invoke((MethodInvoker)delegate () { function(); });
+            }
+            else
+            {
+                return function();
+            }
+        }
         public void InvokeIfRequired<T>(Action<T> action, T parameter)
         {
             if (this.InvokeRequired)
@@ -7840,5 +7954,6 @@ namespace PrePoMax
             }
         }
 
+      
     }
 }

@@ -58,7 +58,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SlipWearResultsEnum.cs" />
+    <Compile Include="Enums\DeformationScaleFactorTypeEnum.cs" />
+    <Compile Include="Enums\SlipWearResultsEnum.cs" />
     <Compile Include="FeResults.cs" />
     <Compile Include="FieldOutputNames.cs" />
     <Compile Include="HistoryOutputNames.cs" />

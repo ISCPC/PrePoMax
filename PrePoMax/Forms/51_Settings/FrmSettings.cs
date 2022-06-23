@@ -178,14 +178,6 @@ namespace PrePoMax.Forms
                 {
                     lvi = lvSettings.Items.Add(entry.Key);
                     lvi.Tag = entry.Value;
-                    //
-                    if (entry.Value is ViewPostSettings vps)
-                    {
-                        if (controller.Results != null)
-                            vps.PopulateDropDownList(controller.Results.GetExistingDeformationFieldOutputNames());
-                        else
-                            vps.PopulateDropDownList(CaeResults.FeResults.GetPossibleDeformationFieldOutputNames());
-                    }
                 }
             }
             // Open previously shown settings

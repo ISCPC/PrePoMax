@@ -136,6 +136,12 @@
     <Compile Include="TextBoxes\AnnotationEditorRichTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="TextBoxes\NumericToolStripTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="TextBoxes\NumericToolStripTextBox.Designer.cs">
+      <DependentUpon>NumericToolStripTextBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="TextBoxes\ResizableTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -243,6 +249,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="TextBoxes\AutoScrollTextBox.resx">
       <DependentUpon>AutoScrollTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TextBoxes\NumericToolStripTextBox.resx">
+      <DependentUpon>NumericToolStripTextBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TextBoxes\SearchTextBox.resx">
       <DependentUpon>SearchTextBox.cs</DependentUpon>
