@@ -6625,6 +6625,7 @@ namespace PrePoMax
         }
         public CaeResults.DeformationScaleFactorTypeEnum GetDeformationType()
         {
+            // Invoke
             if (InvokeRequired)
                 return (CaeResults.DeformationScaleFactorTypeEnum)Invoke(
                     new Func<CaeResults.DeformationScaleFactorTypeEnum>(GetDeformationType));
