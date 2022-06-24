@@ -122,7 +122,8 @@ namespace PrePoMax
             if (stepName != _drawSymbolsForStep)
             {
                 _drawSymbolsForStep = stepName;
-                RedrawSymbols(updateHighlight);
+                // Prevent the symbols from showing up first at: File open -> Regenerate tree
+                if (!_form.IsStateOpening()) RedrawSymbols(updateHighlight);
             }
         }
         public string GetDrawSymbolsForStep()

@@ -104,7 +104,7 @@ namespace vtkControl
                     _renderingOn = value;
                     if (_renderingOn)
                     {
-                        this.Invalidate();
+                        RenderSceene();
                         AdjustCameraDistanceAndClipping();  // Update the scale widget after render
                     }
                 }
@@ -2302,7 +2302,7 @@ namespace vtkControl
                 ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value, entry.Value.GetProperty(), vtkRendererLayer.Overlay);
             }
             //
-            this.Invalidate();
+            RenderSceene();
         }
         private void ApplyEdgeVisibilityAndBackfaceCullingToActor(vtkActor actor, vtkProperty actorProperty, vtkRendererLayer layer)
         {
@@ -2417,7 +2417,7 @@ namespace vtkControl
             ResetCamera();
          
             if (animate) AnimateCamera(cameraStart, camera, camera);
-            else this.Invalidate();
+            else RenderSceene();
         }
         public void SetTopBottomView(bool animate, bool top)
         {
@@ -2438,7 +2438,7 @@ namespace vtkControl
             ResetCamera();
 
             if (animate) AnimateCamera(cameraStart, camera, camera);
-            else this.Invalidate();
+            else RenderSceene();
         }
         public void SetLeftRightView(bool animate, bool left)
         {
@@ -2459,7 +2459,7 @@ namespace vtkControl
             ResetCamera();
 
             if (animate) AnimateCamera(cameraStart, camera, camera);
-            else this.Invalidate();
+            else RenderSceene();
         }
         public void SetVerticalView(bool animate, bool updateView)
         {
@@ -2513,7 +2513,7 @@ namespace vtkControl
             if (updateView)
             {
                 if (animate) AnimateCamera(cameraStart, camera, camera);
-                else this.Invalidate();
+                else RenderSceene();
             }
         }
         public void SetNormalView(bool animate)
@@ -2549,7 +2549,7 @@ namespace vtkControl
             SetVerticalView(false, false);
 
             if (animate) AnimateCamera(cameraStart, camera, camera);
-            else this.Invalidate();
+            else RenderSceene();
         }
         public void SetIsometricView(bool animate, bool positive)
         {
@@ -2598,7 +2598,7 @@ namespace vtkControl
             ResetCamera();
 
             if (animate) AnimateCamera(cameraStart, camera, camera);
-            else this.Invalidate();
+            else RenderSceene();
         }
         public void SetZoomFactor(double factor)
         {
@@ -2617,7 +2617,7 @@ namespace vtkControl
             ResetCamera();
             //_renderWindowInteractor.Modified(); // this updates the vtkMax annotation objects
             if (animate) AnimateCamera(cameraStart, camera, camera);
-            else this.Invalidate();
+            else RenderSceene();
         }
         //
         private void ResetCamera()
@@ -2839,12 +2839,12 @@ namespace vtkControl
                 camera.OrthogonalizeViewUp();
                 _style.AdjustCameraDistanceAndClipping();
                 System.Threading.Thread.Sleep(1);
-                this.Invalidate();
+                RenderSceene();
                 Application.DoEvents();
             }
 
             interpolator.InterpolateCamera(1, camera);
-            this.Invalidate();
+            RenderSceene();
         }
         public void AnimateCameraQuat(vtkCamera cameraStart, vtkCamera cameraEnd, vtkCamera camera)
         {
@@ -2939,7 +2939,7 @@ namespace vtkControl
                 camera.OrthogonalizeViewUp();
                 _style.AdjustCameraDistanceAndClipping();
                 System.Threading.Thread.Sleep(5);
-                this.Invalidate();
+                RenderSceene();
                 Application.DoEvents();
             } while (currentDelta < delta);
 
@@ -3062,7 +3062,7 @@ namespace vtkControl
                     _style.AdjustCameraDistanceAndClipping();
                     //System.Threading.Thread.Sleep(5);
                     _renderWindowInteractor.Modified(); // this updates the vtkMax annotation objects
-                    this.Invalidate();
+                    RenderSceene();
                     //
                     Application.DoEvents();
                 }
@@ -3087,14 +3087,14 @@ namespace vtkControl
         public void AdjustCameraDistanceAndClippingRedraw()
         {
             _style.AdjustCameraDistanceAndClipping();
-            this.Invalidate();
+            RenderSceene();
         }
         public void UpdateScalarsAndRedraw()
         {
             // Update scalar field
             UpdateScalarFormatting();
             //
-            this.Invalidate();
+            RenderSceene();
         }
         public void UpdateScalarsAndCameraAndRedraw()
         {
@@ -3103,7 +3103,7 @@ namespace vtkControl
             //
             _style.AdjustCameraDistanceAndClipping();
             //
-            this.Invalidate();
+            RenderSceene();
         }
 
         #endregion  ################################################################################################################
@@ -3963,7 +3963,7 @@ namespace vtkControl
             {
                 highlightActor.GeometryProperty.SetOpacity(1);
                 AddActorGeometry(highlightActor, vtkRendererLayer.Selection);
-                this.Invalidate();
+                RenderSceene();
             }
         }
         private vtkMaxActor GetHighlightActorFromActorName(string actorName)
@@ -4173,7 +4173,7 @@ namespace vtkControl
                     //
                     UpdateScalarFormatting();
                     //
-                    this.Invalidate();
+                    RenderSceene();
                 }
             }
         }
@@ -4205,7 +4205,7 @@ namespace vtkControl
                     //
                     UpdateScalarFormatting();
                     //
-                    this.Invalidate();
+                    RenderSceene();
                 }
             }
         }
@@ -4224,7 +4224,7 @@ namespace vtkControl
                     //
                     UpdateScalarFormatting();
                     //
-                    this.Invalidate();
+                    RenderSceene();
                 }
             }
         }
@@ -4691,7 +4691,7 @@ namespace vtkControl
                 //
                 AdjustCameraDistanceAndClipping();
                 //
-                this.Invalidate();
+                RenderSceene();
                 //
                 Application.DoEvents();
             }
@@ -4712,7 +4712,7 @@ namespace vtkControl
                 }
             }
             //
-            this.Invalidate();
+            RenderSceene();
         }
 
         #endregion  ################################################################################################################
@@ -4751,7 +4751,7 @@ namespace vtkControl
             //
             UpdateScalarFormatting();
             //
-            this.Invalidate();
+            RenderSceene();
         }
         public void RemoveTransformedActors()
         {
@@ -4889,7 +4889,7 @@ namespace vtkControl
         {
             _scaleWidget.SetUnit(unit);
             //
-            this.Invalidate();
+            RenderSceene();
         }
         // Scalar bar
         public void InitializeResultWidgetPositions()
@@ -4972,7 +4972,7 @@ namespace vtkControl
             _colorBarWidget.VisibilityOff();
             _colorBarWidget.ClearColorsAndLabels();
             //
-            this.Invalidate();
+            RenderSceene();
         }
         // Status bar
         public void DrawStatusBlockBackground(bool drawBackground)
@@ -5011,7 +5011,7 @@ namespace vtkControl
                 _renderer.SetGradientBackground(gradient);
                 _renderer.SetBackground2(topColor.R / 255.0, topColor.G / 255.0, topColor.B / 255.0);
                 _renderer.SetBackground(bottomColor.R / 255.0, bottomColor.G / 255.0, bottomColor.B / 255.0);
-                if (redraw) this.Invalidate();
+                if (redraw) RenderSceene();
             }
         }
         public void SetLighting(double ambient, double diffuse, bool redraw)
@@ -5021,7 +5021,7 @@ namespace vtkControl
                 entry.Value.Ambient = ambient; // calls update color
                 entry.Value.Diffuse = diffuse; // calls update color
             }
-            if (redraw) this.Invalidate();
+            if (redraw) RenderSceene();
         }
         public void SetSmoothing(bool pointSmoothing, bool lineSmoothing, bool redraw)
         {
@@ -5068,7 +5068,7 @@ namespace vtkControl
                 }
             }
             
-            if (redraw) this.Invalidate();
+            if (redraw) RenderSceene();
         }
         // Highlight
         public void SetHighlightColor(Color primaryHighlightColor, Color secondaryHighlightColor)
@@ -5084,7 +5084,7 @@ namespace vtkControl
                 //
                 actor.GeometryProperty.SetColor(highlightColor.R / 255.0, highlightColor.G / 255.0, highlightColor.B / 255.0);
             }
-            this.Invalidate();
+            RenderSceene();
         }
         public void SetMouseHighlightColor(Color mousehighlightColor)
         {
@@ -5525,7 +5525,7 @@ namespace vtkControl
                     //}
                 }
 
-                this.Invalidate();
+                RenderSceene();
 
                 countError++;
                 if (countError % 1000 == 0) System.Diagnostics.Debug.WriteLine("Count: " + countError);
@@ -5537,7 +5537,7 @@ namespace vtkControl
             //
             UpdateScalarFormatting();
             //
-            this.Invalidate();
+            RenderSceene();
         }
         private void UpdateActorColorContoursVisibility(string actorName, bool colorContours)
         {
@@ -5877,7 +5877,7 @@ namespace vtkControl
             }
             _selectedActors.Clear();
             //
-            this.Invalidate();
+            RenderSceene();
         }
         public void ClearCurrentMouseSelection()
         {
@@ -5892,7 +5892,7 @@ namespace vtkControl
             _mouseSelectionCurrentIds = null;
             //
             if (_probeWidget != null && _probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
-            this.Invalidate();
+            RenderSceene();
         }
         public void ClearOverlay()
         {
@@ -5902,7 +5902,7 @@ namespace vtkControl
                 _overlayRenderer.RemoveActor(entry.Value);
             }
             _overlayActors.Clear();
-            this.Invalidate();
+            RenderSceene();
         }
         #endregion #################################################################################################################
 
@@ -5955,7 +5955,7 @@ namespace vtkControl
             if (drawBorder) arrowWidget.BorderVisibilityOn();
             else arrowWidget.BorderVisibilityOff();
             //
-            this.Invalidate();
+            RenderSceene();
         }
         private void ArrangeVisibleArrowWidgets()
         {
@@ -6011,7 +6011,7 @@ namespace vtkControl
                 }
             }
             //
-            this.Invalidate();
+            RenderSceene();
         }
         public void HideAllArrowWidgets()
         {
@@ -6038,7 +6038,7 @@ namespace vtkControl
             light3.SetLightTypeToCameraLight();
             _renderer.AddLight(light3);
             //
-            this.Invalidate();
+            RenderSceene();
         }
 
 
@@ -6084,7 +6084,7 @@ namespace vtkControl
             //
             ApplyEdgesVisibilityAndBackfaceCulling();
             //
-            this.Invalidate();
+            RenderSceene();
         }
         public void UpdateActorColor(vtkMaxActor actor, Color newColor)
         {
@@ -6111,7 +6111,12 @@ namespace vtkControl
             return Math.Sqrt(Math.Pow(b[0], 2) + Math.Pow(b[1], 2) + Math.Pow(b[2], 2));
         }
 
-
+        // Render
+        private void RenderSceene()
+        {
+            if (_renderingOn)
+                this.Invalidate();
+        }
 
 
         public void CropPartWithCylinder(string partName, double r, string fileName)
@@ -6210,7 +6215,7 @@ namespace vtkControl
 
             AddActorGeometry(actorGrid, layer);
 
-            this.Invalidate();
+            RenderSceene();
         }
         
         public void AddTest()
@@ -6303,7 +6308,7 @@ namespace vtkControl
 
             AddActorGeometry(actorGrid, vtkRendererLayer.Base);
 
-            this.Invalidate();
+            RenderSceene();
         }
         private void Hexahedron()
         {
@@ -6371,7 +6376,7 @@ namespace vtkControl
             _renderer.ComputeVisiblePropBounds(test);
             _renderer.ResetCamera(test);
 
-            this.Invalidate();
+            RenderSceene();
         }
         public void AddSphere()
         {
@@ -6411,7 +6416,7 @@ namespace vtkControl
             // but in case more than one actor needs to be shown it might be a good idea)
             _renderer.ResetCamera();
 
-            this.Invalidate();
+            RenderSceene();
         }
         private void Actor2D()
         {
@@ -6477,7 +6482,7 @@ namespace vtkControl
 
             follower.SetCamera(_renderer.GetActiveCamera());
 
-            this.Invalidate();
+            RenderSceene();
         }
         private void AddCaptionWidget()
         {
@@ -6565,7 +6570,7 @@ namespace vtkControl
             //        polyData.SetPoints(vtkPointsList[i]);
             //        _renderWindow.Render();
             //        //Application.DoEvents();
-            //        //this.Invalidate();
+            //        //RenderSceene();
             //    }
             //}
 

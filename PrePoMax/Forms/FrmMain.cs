@@ -6473,7 +6473,7 @@ namespace PrePoMax
             // Changing og the step symols is not possible -> Clear selection
             _controller.ClearAllSelection();
             //
-            _controller.DrawSymbolsForStep(tscbSymbolsForStep.SelectedItem.ToString(), false);  // no need to highlight after clear
+            _controller.DrawSymbolsForStep(tscbSymbolsForStep.SelectedItem.ToString(), false);
         }
         public void UpadteSymbolsForStepList()
         {
@@ -6804,6 +6804,10 @@ namespace PrePoMax
         private bool IsStateWorking()
         {
             return tsslState.Text != Globals.ReadyText;
+        }
+        public bool IsStateOpening()
+        {
+            return tsslState.Text == Globals.OpeningText;
         }
 
         private void tsslCancel_MouseDown(object sender, MouseEventArgs e)
