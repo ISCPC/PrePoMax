@@ -6038,7 +6038,7 @@ namespace vtkControl
             light3.SetLightTypeToCameraLight();
             _renderer.AddLight(light3);
             //
-            Invalidate();
+            this.Invalidate();
         }
 
 

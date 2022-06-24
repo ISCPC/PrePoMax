@@ -7293,14 +7293,57 @@ namespace CaeMesh
         {
             return GetRenumberedNodesAndCells(0, out nodeCoor, ref cells);
         }
+        private int[] GetSortedUniqueIds(int[][] cells)
+        {
+            int maxId = -1;
+            for (int i = 0; i < cells.Length; i++)
+            {
+                for (int j = 0; j < cells[i].Length; j++)
+                {
+                    if (cells[i][j] > maxId) maxId = cells[i][j];
+                }
+            }
+            maxId++;        // add 1
+            //
+            int[] nodeIds;
+            int count = 0;
+            int twoGig = 2147483591;
+            if (maxId < twoGig)
+            {
+                byte[] idArray = new byte[maxId];
+                for (int i = 0; i < cells.Length; i++)
+                {
+                    for (int j = 0; j < cells[i].Length; j++)
+                    {
+                        if (idArray[cells[i][j]] == 0)
+                        {
+                            idArray[cells[i][j]] = 1;
+                            count++;
+                        }
+                    }
+                }
+                //
+                nodeIds = new int[count];
+                count = 0;
+                for (int i = 0; i < idArray.Length; i++)
+                {
+                    if (idArray[i] == 1) nodeIds[count++] = i;
+                }
+            }
+            else
+            {
+                HashSet<int> nodeIdsHash = new HashSet<int>();
+                // Get all cells and all nodes ids for elementSet
+                for (int i = 0; i < cells.Length; i++) nodeIdsHash.UnionWith(cells[i]);
+                nodeIds = nodeIdsHash.ToArray();
+                Array.Sort(nodeIds);
+            }
+            //
+            return nodeIds;
+        }
         private int[] GetRenumberedNodesAndCells(int firstNodeId, out double[][] nodeCoor, ref int[][] cells)
         {
-            HashSet<int> nodeIdsHash = new HashSet<int>();
-            // Get all cells and all nodes ids for elementSet
-            for (int i = 0; i < cells.Length; i++) nodeIdsHash.UnionWith(cells[i]);
-            int[] nodeIds = nodeIdsHash.ToArray();
-            // Sort nodes
-            Array.Sort(nodeIds);
+            int[] nodeIds = GetSortedUniqueIds(cells);
             // Get all node coordinates and prepare re-numbering map
             Dictionary<int, int> oldIds = new Dictionary<int, int>();   // the order of items is not retained
             int[] orderedNodeIds = new int[nodeIds.Length];

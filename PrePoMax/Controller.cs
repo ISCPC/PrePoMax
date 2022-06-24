@@ -588,13 +588,13 @@ namespace PrePoMax
             _currentView = ViewGeometryModelResults.Geometry;
             if (_model != null && _model.Mesh != null && _model.Mesh.Parts.Count > 0)
                 _currentView = ViewGeometryModelResults.Model;
-            else if (_results != null) _currentView = ViewGeometryModelResults.Results;           
+            else if (_results != null) _currentView = ViewGeometryModelResults.Results;
+            // Set view
+            _form.SetCurrentView(_currentView);
             // Regenerate tree
-            _form.RegenerateTree();
+            _form.RegenerateTree(false);
             // Set tree states
             if (data[2] is bool[][] states) _form.SetTreeExpandCollapseState(states);
-            // Set view - at the end
-            _form.SetCurrentView(_currentView);
         }
         private void OpenPmh(string fileName)
         {
@@ -12675,12 +12675,12 @@ namespace PrePoMax
                 {
                     if (_viewResultsType == ViewResultsType.Undeformed)
                     {
-                        // Udeformed view rype
+                        // Udeformed view
                         DrawModelPart(_results.Mesh, resultPart, layer);
                     }
                     else
                     {
-                        // Undeformed 
+                        // Undeformed copy
                         if (undeformedModelType != UndeformedModelTypeEnum.None)
                             DrawUndeformedPartCopy(resultPart, undeformedModelType, undeformedModelColor, layer);
                         // Deformed
@@ -13178,11 +13178,12 @@ namespace PrePoMax
 
                     if (maxDisplacement == -float.MaxValue) scale = 0;  // the displacement filed does not exist
                     else if (maxDisplacement != 0) scale = automaticScale * (size * 0.25f / maxDisplacement);
+                    // Round
+                    scale = (float)CaeGlobals.Tools.RoundToSignificantDigits(scale, 3);
                 }
                 // User defined
                 else scale = _form.GetDeformationFactor();
                 //
-                scale = (float)CaeGlobals.Tools.RoundToSignificantDigits(scale, 3);
                 return scale;
             }
         }
