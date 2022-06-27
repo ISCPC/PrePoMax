@@ -933,6 +933,9 @@ namespace CaeResults
         //
         public HistoryResultSet AddResultHistoryOutput(ResultHistoryOutput resultHistoryOutput)
         {
+            // Compatibility for version v1.2.1
+            if (_history == null) _history = new HistoryResults("Tmp");
+            //
             HistoryResultSet historyResultSet = null;
             //
             if (resultHistoryOutput is ResultHistoryOutputFromField rhoff)
