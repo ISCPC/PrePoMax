@@ -415,8 +415,8 @@ namespace UserControls
             tsmiEdit.Visible = visible;
             oneAboveVisible |= visible;
             // Query
-            visible = menuFields.Query > 1;
-            tsmiEdit.Visible = visible;
+            visible = menuFields.Query > 0;
+            tsmiQuery.Visible = visible;
             oneAboveVisible |= visible;
             // Duplicate
             visible = menuFields.Duplicate == n;
