@@ -189,6 +189,23 @@ namespace CaeGlobals
             }
             return true;
         }
+        public static string[] GetLinesFromFile(string fileName)
+        {
+            List<string> lines = new List<string>();
+            //
+            if (!WaitForFileToUnlock(fileName, 5000)) return null;
+
+            using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (StreamReader streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 4096))
+            {
+                while (!streamReader.EndOfStream) lines.Add(streamReader.ReadLine()); // faster than streamReader.ReadToEnd().Split ...
+                //
+                streamReader.Close();
+                fileStream.Close();
+            }
+            //
+            return lines.ToArray();
+        }
 
         // String
         public static string GetRandomString(int len)

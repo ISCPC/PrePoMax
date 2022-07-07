@@ -538,7 +538,8 @@ namespace PrePoMax
             if (extension == ".pmx") OpenPmx(fileName);
             else if (extension == ".pmh") OpenPmh(fileName);
             else if (extension == ".frd") OpenFrd(fileName);
-            else if (extension == ".dat") OpenDatFile(fileName);
+            else if (extension == ".dat") OpenDat(fileName);
+            else if (extension == ".foam") OpenFoam(fileName);
             else throw new NotSupportedException();
             // Check validity
             CheckAndUpdateValidity();
@@ -632,16 +633,12 @@ namespace PrePoMax
             }
             else results = FrdFileReader.Read(fileName);
             //
-            LoadResults(results, readDatFile);
-        }
-        private void LoadResults(FeResults results, bool readDatFile)
-        {
             if (results == null || results.Mesh == null)
             {
                 MessageBoxes.ShowError("The results file does not exist or is empty.");
                 return;
             }
-            //
+            // Load results
             _form.Clear3D();
             ClearResults();
             //
@@ -683,13 +680,13 @@ namespace PrePoMax
             // Open .cel file
             string celFileName = Path.GetFileNameWithoutExtension(_results.FileName) + ".cel";
             celFileName = Path.Combine(Path.GetDirectoryName(_results.FileName), celFileName);
-            if (File.Exists(celFileName)) OpenCelFile(celFileName, false);
+            if (File.Exists(celFileName)) OpenCel(celFileName, false);
             // Open .dat file
             if (readDatFile)
             {
                 string datFileName = Path.GetFileNameWithoutExtension(_results.FileName) + ".dat";
                 datFileName = Path.Combine(Path.GetDirectoryName(_results.FileName), datFileName);
-                if (File.Exists(datFileName)) OpenDatFile(datFileName, false);
+                if (File.Exists(datFileName)) OpenDat(datFileName, false);
             }
             // Redraw
             // Set the view but do not draw
@@ -698,7 +695,7 @@ namespace PrePoMax
             // Regenerate tree
             _form.RegenerateTree();
         }
-        private void OpenDatFile(string fileName, bool redraw = true)
+        private void OpenDat(string fileName, bool redraw = true)
         {
             if (_results == null) _results = new FeResults(fileName);
             _results.SetHistory(DatFileReader.Read(fileName));
@@ -726,7 +723,7 @@ namespace PrePoMax
                 _modelChanged = true;
             }
         }
-        private void OpenCelFile(string fileName, bool redraw = true)
+        private void OpenCel(string fileName, bool redraw = true)
         {
             Dictionary<int, FeElement> elements;
             Dictionary<string, FeElementSet> elementSets;
@@ -759,6 +756,55 @@ namespace PrePoMax
                 // Model changed
                 _modelChanged = true;
             }
+        }
+        private void OpenFoam(string fileName)
+        {
+            FeResults results = OpenFoamFileReader.Read(fileName);
+            // Load results
+            _form.Clear3D();
+            ClearResults();
+            //
+            _results = results;
+            // Check if the meshes are the same and rename the parts
+            if (_model.Mesh != null && _results.Mesh != null && _model.HashName == _results.HashName)
+            {
+                SuppressExplodedViews();
+                //
+                double similarity = _model.Mesh.IsEqual(_results.Mesh);
+                //
+                if (similarity > 0)
+                {
+                    if (similarity < 1)
+                    {
+                        if (MessageBox.Show("Some node coordinates in the result .frd file are different from " +
+                                            "the coordinates in the model mesh." + Environment.NewLine + Environment.NewLine +
+                                            "Apply model mesh properties (part names, geomery...) to the result mesh?",
+                                            "Warning",
+                                            MessageBoxButtons.YesNo,
+                                            MessageBoxIcon.Warning) == DialogResult.Yes) similarity = 1;
+                    }
+                    //
+                    if (similarity == 1)
+                    {
+                        _results.CopyPartsFromMesh(_model.Mesh);
+                        _results.CopyMeshitemsFromMesh(_model.Mesh);
+                    }
+                    else if (similarity == 2)
+                    {
+                        _results.Mesh.MergePartsBasedOnMesh(_model.Mesh, typeof(ResultPart));
+                    }
+                }
+                //
+                ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
+            }
+            // Model changed
+            _modelChanged = true;
+            // Redraw
+            // Set the view but do not draw
+            _currentView = ViewGeometryModelResults.Results;
+            _form.SetCurrentView(_currentView);
+            // Regenerate tree
+            _form.RegenerateTree();
         }
         private Dictionary<string, FeNodeSet> GetNodeSetsFromCelElements(Dictionary<int, FeNode> nodes,
                                                                          Dictionary<int, FeElement> elements,

@@ -62,6 +62,7 @@
     <Compile Include="Enums\SlipWearResultsEnum.cs" />
     <Compile Include="FeResults.cs" />
     <Compile Include="FieldOutputNames.cs" />
+    <Compile Include="FileInOut\Input\OpenFoam\OpenFoamFileReader.cs" />
     <Compile Include="HistoryOutputNames.cs" />
     <Compile Include="HistoryOutputs\HistoryResultData.cs" />
     <Compile Include="HistoryOutputs\HistoryResultComponent.cs" />
@@ -71,10 +72,10 @@
     <Compile Include="HistoryOutputs\HistoryResultEntries.cs" />
     <Compile Include="FieldOutput\FieldComponent.cs" />
     <Compile Include="FieldOutput\FieldData.cs" />
-    <Compile Include="FileInOut\Input\DatDataSet.cs" />
-    <Compile Include="FileInOut\Input\FrdFeDescriptorId.cs" />
-    <Compile Include="FileInOut\Input\DatFileReader.cs" />
-    <Compile Include="FileInOut\Input\FrdFileReader.cs" />
+    <Compile Include="FileInOut\Input\Frd\DatDataSet.cs" />
+    <Compile Include="FileInOut\Input\Frd\FrdFeDescriptorId.cs" />
+    <Compile Include="FileInOut\Input\Frd\DatFileReader.cs" />
+    <Compile Include="FileInOut\Input\Frd\FrdFileReader.cs" />
     <Compile Include="HistoryOutputs\ResultHistoryOutput.cs" />
     <Compile Include="HistoryOutputs\ResultHistoryOutputFromField.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

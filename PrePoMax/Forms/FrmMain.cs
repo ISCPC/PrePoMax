@@ -1246,11 +1246,12 @@ namespace PrePoMax
                     // Debugger attached
                     if (System.Diagnostics.Debugger.IsAttached)
                     {
-                        openFileDialog.Filter = "All files|*.pmx;*.pmh;*.frd;*.dat" +
+                        openFileDialog.Filter = "All files|*.pmx;*.pmh;*.frd;*.dat;*.foam" +
                                                 "|PrePoMax files|*.pmx" +
                                                 "|PrePoMax history|*.pmh" +
                                                 "|Calculix result files|*.frd" +
-                                                "|Calculix dat files|*.dat";        // added .dat file
+                                                "|Calculix dat files|*.dat" +       // added .dat file
+                                                "|OpenFoam files|*.foam";           // added .foam file
                     }
                     // No dedugger
                     else
@@ -1282,12 +1283,13 @@ namespace PrePoMax
             //
             if (_controller.ModelChanged)
             {
-                if (Path.GetExtension(fileName).ToLower() == ".pmx")
+                string extension = Path.GetExtension(fileName).ToLower();
+                if (extension == ".pmx")
                 {
                     if (MessageBoxes.ShowWarningQuestion("OK to close the current model?") != DialogResult.OK)
                         return false;
                 }
-                else if (Path.GetExtension(fileName).ToLower() == ".frd" && _controller.Results != null)
+                else if ((extension == ".frd" || extension == ".foam") && _controller.Results != null)
                 {
                     if (MessageBoxes.ShowWarningQuestion("OK to overwrite the current results?") != DialogResult.OK)
                         return false;
