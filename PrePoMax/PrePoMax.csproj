@@ -855,6 +855,9 @@
     <None Include="Icons\Step\Defined_field.ico" />
     <None Include="Icons\Material\Remove.ico" />
     <None Include="Icons\Mesh\Part.png" />
+    <None Include="Icons\Tools\Query.ico" />
+    <None Include="Icons\Tools\Clear_query.ico" />
+    <None Include="Icons\Tools\Remove_annotations.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

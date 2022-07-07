@@ -25,6 +25,7 @@ namespace UserControls
     {
         public int Create;
         public int Edit;
+        public int Query;
         public int Duplicate;
         public int Propagate;
         //
@@ -221,6 +222,7 @@ namespace UserControls
         //
         public event Action<string, string> CreateEvent;
         public event Action<NamedClass, string> EditEvent;
+        public event Action QueryEvent;
         public event Action<NamedClass[]> DuplicateEvent;
         public event Action<NamedClass[], string[]> PropagateEvent;
         public event Action<string[]> CreateCompoundPart;
@@ -412,6 +414,10 @@ namespace UserControls
             visible = menuFields.Edit == n;
             tsmiEdit.Visible = visible;
             oneAboveVisible |= visible;
+            // Query
+            visible = menuFields.Query > 1;
+            tsmiEdit.Visible = visible;
+            oneAboveVisible |= visible;
             // Duplicate
             visible = menuFields.Duplicate == n;
             tsmiDuplicate.Visible = visible;
@@ -570,6 +576,8 @@ namespace UserControls
                           item is FeSurface)) { }
                 else menuFields.Edit++;
             }
+            // Query
+            if (item != null && item is BasePart) menuFields.Query++;
             //Duplicate
             if (item != null && CanDuplicate(node)) menuFields.Duplicate++;
             //Propagate
@@ -839,6 +847,22 @@ namespace UserControls
                     stepName = selectedNode.Parent.Parent.Text;
                 //
                 EditEvent?.Invoke((NamedClass)selectedNode.Tag, stepName);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiQuery_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<string> names = new List<string>();
+                foreach (TreeNode node in GetActiveTree().SelectedNodes)
+                {
+                    if (node.Tag != null) names.Add(((NamedClass)node.Tag).Name);
+                }
+                if (names.Count > 0) QueryEvent?.Invoke();
             }
             catch (Exception ex)
             {
@@ -2755,6 +2779,6 @@ namespace UserControls
             }
         }
 
-        
+       
     }
 }

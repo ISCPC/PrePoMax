@@ -99,6 +99,7 @@
             this.cmsTree = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiCreate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiQuery = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDuplicate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiPropagate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceCompoundPart = new System.Windows.Forms.ToolStripSeparator();
@@ -168,6 +169,7 @@
             this.cmsTree.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiCreate,
             this.tsmiEdit,
+            this.tsmiQuery,
             this.tsmiDuplicate,
             this.tsmiPropagate,
             this.tsmiSpaceCompoundPart,
@@ -214,7 +216,7 @@
             this.tsmiSpaceDelete,
             this.tsmiDelete});
             this.cmsTree.Name = "cmsTree";
-            this.cmsTree.Size = new System.Drawing.Size(212, 798);
+            this.cmsTree.Size = new System.Drawing.Size(212, 842);
             // 
             // tsmiCreate
             // 
@@ -229,6 +231,14 @@
             this.tsmiEdit.Size = new System.Drawing.Size(211, 22);
             this.tsmiEdit.Text = "Edit";
             this.tsmiEdit.Click += new System.EventHandler(this.tsmiEdit_Click);
+            // 
+            // tsmiQuery
+            // 
+            this.tsmiQuery.Image = global::UserControls.Properties.Resources.Query;
+            this.tsmiQuery.Name = "tsmiQuery";
+            this.tsmiQuery.Size = new System.Drawing.Size(211, 22);
+            this.tsmiQuery.Text = "Query";
+            this.tsmiQuery.Click += new System.EventHandler(this.tsmiQuery_Click);
             // 
             // tsmiDuplicate
             // 
@@ -1015,5 +1025,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiMergeByMasterSlave;
         private System.Windows.Forms.ToolStripSeparator tsmiSpaceSearchContactPairs;
         private System.Windows.Forms.ToolStripMenuItem tsmiSearchContactPairs;
+        private System.Windows.Forms.ToolStripMenuItem tsmiQuery;
     }
 }

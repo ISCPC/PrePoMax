@@ -397,10 +397,13 @@
             this.tsbSectionView = new System.Windows.Forms.ToolStripButton();
             this.tsbExplodedView = new System.Windows.Forms.ToolStripButton();
             this.toolStripViewSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsbQuery = new System.Windows.Forms.ToolStripButton();
+            this.tsbRemoveAnnotations = new System.Windows.Forms.ToolStripButton();
+            this.toolStripViewSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tsbShowAllParts = new System.Windows.Forms.ToolStripButton();
             this.tsbHideAllParts = new System.Windows.Forms.ToolStripButton();
             this.tsbInvertVisibleParts = new System.Windows.Forms.ToolStripButton();
-            this.toolStripViewSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripViewSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.tslSymbols = new System.Windows.Forms.ToolStripLabel();
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.tsDeformationFactor = new UserControls.ToolStripFocus();
@@ -2789,6 +2792,7 @@
             // 
             // tsmiQuery
             // 
+            this.tsmiQuery.Image = global::PrePoMax.Properties.Resources.Query;
             this.tsmiQuery.Name = "tsmiQuery";
             this.tsmiQuery.Size = new System.Drawing.Size(116, 22);
             this.tsmiQuery.Text = "Query";
@@ -3271,15 +3275,18 @@
             this.tsbSectionView,
             this.tsbExplodedView,
             this.toolStripViewSeparator3,
+            this.tsbQuery,
+            this.tsbRemoveAnnotations,
+            this.toolStripViewSeparator4,
             this.tsbShowAllParts,
             this.tsbHideAllParts,
             this.tsbInvertVisibleParts,
-            this.toolStripViewSeparator4,
+            this.toolStripViewSeparator5,
             this.tslSymbols,
             this.tscbSymbolsForStep});
             this.tsViews.Location = new System.Drawing.Point(107, 0);
             this.tsViews.Name = "tsViews";
-            this.tsViews.Size = new System.Drawing.Size(654, 25);
+            this.tsViews.Size = new System.Drawing.Size(737, 25);
             this.tsViews.TabIndex = 6;
             this.tsViews.Text = "Views";
             // 
@@ -3463,6 +3470,31 @@
             this.toolStripViewSeparator3.Name = "toolStripViewSeparator3";
             this.toolStripViewSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
+            // tsbQuery
+            // 
+            this.tsbQuery.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbQuery.Image = global::PrePoMax.Properties.Resources.Query;
+            this.tsbQuery.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbQuery.Name = "tsbQuery";
+            this.tsbQuery.Size = new System.Drawing.Size(23, 22);
+            this.tsbQuery.Text = "Query";
+            this.tsbQuery.Click += new System.EventHandler(this.tsbQuery_Click);
+            // 
+            // tsbRemoveAnnotations
+            // 
+            this.tsbRemoveAnnotations.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbRemoveAnnotations.Image = global::PrePoMax.Properties.Resources.Remove_annotations;
+            this.tsbRemoveAnnotations.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbRemoveAnnotations.Name = "tsbRemoveAnnotations";
+            this.tsbRemoveAnnotations.Size = new System.Drawing.Size(23, 22);
+            this.tsbRemoveAnnotations.Text = "Remove annotations";
+            this.tsbRemoveAnnotations.Click += new System.EventHandler(this.tsbRemoveAnnotations_Click);
+            // 
+            // toolStripViewSeparator4
+            // 
+            this.toolStripViewSeparator4.Name = "toolStripViewSeparator4";
+            this.toolStripViewSeparator4.Size = new System.Drawing.Size(6, 25);
+            // 
             // tsbShowAllParts
             // 
             this.tsbShowAllParts.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -3493,10 +3525,10 @@
             this.tsbInvertVisibleParts.Text = "Invert visible parts";
             this.tsbInvertVisibleParts.Click += new System.EventHandler(this.tsbInvertVisibleParts_Click);
             // 
-            // toolStripViewSeparator4
+            // toolStripViewSeparator5
             // 
-            this.toolStripViewSeparator4.Name = "toolStripViewSeparator4";
-            this.toolStripViewSeparator4.Size = new System.Drawing.Size(6, 25);
+            this.toolStripViewSeparator5.Name = "toolStripViewSeparator5";
+            this.toolStripViewSeparator5.Size = new System.Drawing.Size(6, 25);
             // 
             // tslSymbols
             // 
@@ -3528,7 +3560,7 @@
             this.tstbDeformationFactor});
             this.tsDeformationFactor.Location = new System.Drawing.Point(401, 25);
             this.tsDeformationFactor.Name = "tsDeformationFactor";
-            this.tsDeformationFactor.Size = new System.Drawing.Size(460, 25);
+            this.tsDeformationFactor.Size = new System.Drawing.Size(429, 25);
             this.tsDeformationFactor.TabIndex = 8;
             // 
             // tslDeformationVariable
@@ -4026,6 +4058,9 @@
         private System.Windows.Forms.ToolStripComboBox tscbDeformationType;
         private UserControls.NumericToolStripTextBox tstbDeformationFactor;
         private System.Windows.Forms.ToolStripLabel tslDeformationFactor;
+        private System.Windows.Forms.ToolStripButton tsbQuery;
+        private System.Windows.Forms.ToolStripSeparator toolStripViewSeparator5;
+        private System.Windows.Forms.ToolStripButton tsbRemoveAnnotations;
     }
 }
 

@@ -392,6 +392,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License-LGPL.txt" />
+    <None Include="Resources\Query.ico" />
     <None Include="Resources\NoResult.ico" />
     <None Include="Resources\OK1.ico" />
     <None Include="Resources\Part.png" />

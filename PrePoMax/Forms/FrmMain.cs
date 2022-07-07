@@ -217,6 +217,7 @@ namespace PrePoMax
                 _modelTree.ClearSelectionEvent += Clear3DSelection;
                 _modelTree.CreateEvent += ModelTree_CreateEvent;
                 _modelTree.EditEvent += ModelTree_Edit;
+                _modelTree.QueryEvent += ModelTree_Query;
                 _modelTree.DuplicateEvent += ModelTree_DuplicateEvent;
                 _modelTree.PropagateEvent += ModelTree_PropagateEvent;
                 _modelTree.CreateCompoundPart += CreateAndImportCompoundPart;
@@ -834,6 +835,10 @@ namespace PrePoMax
                 else if (namedClass is CaeResults.HistoryResultData hd) ViewResultHistoryOutputData(hd);
                 else if (namedClass is CaeResults.FieldData fd) ShowLegendSettings();
             }
+        }
+        private void  ModelTree_Query()
+        {
+            tsmiQuery_Click(null, null);
         }
         private void ModelTree_DuplicateEvent(NamedClass[] items)
         {
@@ -6467,6 +6472,15 @@ namespace PrePoMax
             tsmiInvertVisibleParts_Click(sender, e);
         }
         //
+        private void tsbQuery_Click(object sender, EventArgs e)
+        {
+            tsmiQuery_Click(sender, e);
+        }
+        private void tsbRemoveAnnotations_Click(object sender, EventArgs e)
+        {
+            _controller.Annotations.RemoveCurrentArrowAnnotations();
+        }
+        //
         private void tscbSymbolsForStep_SelectedIndexChanged(object sender, System.EventArgs e)
         {
             // If BC or load from one step-1 is selected its selection requires the step-1 to be selected.
@@ -7959,6 +7973,6 @@ namespace PrePoMax
             }
         }
 
-      
+        
     }
 }

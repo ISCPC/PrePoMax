@@ -130,6 +130,9 @@
   <data name="Stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Stop.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Right_arrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Common\Right_arrow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Down_arrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Down_arrow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -144,6 +147,9 @@
   </data>
   <data name="Copy" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Copy.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Part" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Mesh\Part.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Defined_field" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Step\Defined_field.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -172,17 +178,20 @@
   <data name="SectionView" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\View\SectionView.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Query" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Tools\Query.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Paste" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Paste.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Cut" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Cut.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Last" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Results\Last.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Left_arrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Left_arrow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="InvertHideShow" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Common\InvertHideShow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="SymbolsOff" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\View\SymbolsOff.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -190,8 +199,8 @@
   <data name="Hide" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Hide.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Last" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Results\Last.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Warning" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Analysis\Warning.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="SymbolsOn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\View\SymbolsOn.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -205,17 +214,14 @@
   <data name="Bc" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Step\Bc.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Right_arrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Common\Right_arrow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Transformations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Results\Transformations.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Warning" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Analysis\Warning.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="InvertHideShow" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Common\InvertHideShow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Undeformed" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Undeformed.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Running" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Analysis\Running.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Constraints" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Constraints\Constraints.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -226,8 +232,8 @@
   <data name="Contact" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Contact\Contact.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Transformations" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Results\Transformations.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Running" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Analysis\Running.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Open" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\File\Open.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -238,7 +244,7 @@
   <data name="Color_contours" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Color_contours.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Part" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Mesh\Part.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Remove_annotations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Tools\Remove_annotations.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>
