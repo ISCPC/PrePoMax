@@ -36,7 +36,7 @@ namespace CaeGlobals
         {
             using (new CenterWinDialog(ParentForm))
             {
-                MessageBox.Show(text, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(text, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
         public static DialogResult ShowWarningQuestion(string text)

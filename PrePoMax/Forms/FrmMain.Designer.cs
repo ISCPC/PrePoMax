@@ -559,66 +559,66 @@
             // tsmiExportToStep
             // 
             this.tsmiExportToStep.Name = "tsmiExportToStep";
-            this.tsmiExportToStep.Size = new System.Drawing.Size(218, 22);
+            this.tsmiExportToStep.Size = new System.Drawing.Size(222, 22);
             this.tsmiExportToStep.Text = "Step *.stp";
             this.tsmiExportToStep.Click += new System.EventHandler(this.tsmiExportToStep_Click);
             // 
             // tsmiExportToBrep
             // 
             this.tsmiExportToBrep.Name = "tsmiExportToBrep";
-            this.tsmiExportToBrep.Size = new System.Drawing.Size(218, 22);
+            this.tsmiExportToBrep.Size = new System.Drawing.Size(222, 22);
             this.tsmiExportToBrep.Text = "Brep *.brep";
             this.tsmiExportToBrep.Click += new System.EventHandler(this.tsmiExportToBrep_Click);
             // 
             // tsmiExportToStereolitography
             // 
             this.tsmiExportToStereolitography.Name = "tsmiExportToStereolitography";
-            this.tsmiExportToStereolitography.Size = new System.Drawing.Size(218, 22);
+            this.tsmiExportToStereolitography.Size = new System.Drawing.Size(222, 22);
             this.tsmiExportToStereolitography.Text = "Stereolitography *.stl";
             this.tsmiExportToStereolitography.Click += new System.EventHandler(this.tsmiExportToStereolitography_Click);
             // 
             // tsmiDividerExport1
             // 
             this.tsmiDividerExport1.Name = "tsmiDividerExport1";
-            this.tsmiDividerExport1.Size = new System.Drawing.Size(215, 6);
+            this.tsmiDividerExport1.Size = new System.Drawing.Size(219, 6);
             // 
             // tsmiExportToCalculix
             // 
             this.tsmiExportToCalculix.Name = "tsmiExportToCalculix";
-            this.tsmiExportToCalculix.Size = new System.Drawing.Size(218, 22);
+            this.tsmiExportToCalculix.Size = new System.Drawing.Size(222, 22);
             this.tsmiExportToCalculix.Text = "Calculix *.inp";
             this.tsmiExportToCalculix.Click += new System.EventHandler(this.tsmiExportToCalculix_Click);
             // 
             // tsmiExportToAbaqus
             // 
             this.tsmiExportToAbaqus.Name = "tsmiExportToAbaqus";
-            this.tsmiExportToAbaqus.Size = new System.Drawing.Size(218, 22);
-            this.tsmiExportToAbaqus.Text = "Abaqus *.inp";
+            this.tsmiExportToAbaqus.Size = new System.Drawing.Size(222, 22);
+            this.tsmiExportToAbaqus.Text = "Abaqus *.inp (experimental)";
             this.tsmiExportToAbaqus.Click += new System.EventHandler(this.tsmiExportToAbaqus_Click);
             // 
             // tsmiExportToMmgMesh
             // 
             this.tsmiExportToMmgMesh.Name = "tsmiExportToMmgMesh";
-            this.tsmiExportToMmgMesh.Size = new System.Drawing.Size(218, 22);
+            this.tsmiExportToMmgMesh.Size = new System.Drawing.Size(222, 22);
             this.tsmiExportToMmgMesh.Text = "Mmg *.mesh";
             this.tsmiExportToMmgMesh.Click += new System.EventHandler(this.tsmiExportToMmgMesh_Click);
             // 
             // tsmiDividerExport2
             // 
             this.tsmiDividerExport2.Name = "tsmiDividerExport2";
-            this.tsmiDividerExport2.Size = new System.Drawing.Size(215, 6);
+            this.tsmiDividerExport2.Size = new System.Drawing.Size(219, 6);
             // 
             // tsmiExportToDeformedInp
             // 
             this.tsmiExportToDeformedInp.Name = "tsmiExportToDeformedInp";
-            this.tsmiExportToDeformedInp.Size = new System.Drawing.Size(218, 22);
+            this.tsmiExportToDeformedInp.Size = new System.Drawing.Size(222, 22);
             this.tsmiExportToDeformedInp.Text = "Deformed mesh *.inp";
             this.tsmiExportToDeformedInp.Click += new System.EventHandler(this.tsmiExportToDeformedInp_Click);
             // 
             // tsmiExportToDeformedStl
             // 
             this.tsmiExportToDeformedStl.Name = "tsmiExportToDeformedStl";
-            this.tsmiExportToDeformedStl.Size = new System.Drawing.Size(218, 22);
+            this.tsmiExportToDeformedStl.Size = new System.Drawing.Size(222, 22);
             this.tsmiExportToDeformedStl.Text = "Deformed visualization *.stl";
             this.tsmiExportToDeformedStl.Click += new System.EventHandler(this.tsmiExportToDeformedStl_Click);
             // 
@@ -2850,7 +2850,7 @@
             this.panelControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControl.Location = new System.Drawing.Point(0, 0);
             this.panelControl.Name = "panelControl";
-            this.panelControl.Size = new System.Drawing.Size(1229, 637);
+            this.panelControl.Size = new System.Drawing.Size(1229, 612);
             this.panelControl.TabIndex = 1;
             // 
             // aeAnnotationTextEditor
@@ -3124,7 +3124,7 @@
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.Controls.Add(this.splitContainer1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1502, 747);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1502, 722);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.LeftToolStripPanelVisible = false;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 24);
@@ -3138,8 +3138,8 @@
             // 
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsFile);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsViews);
-            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsDeformationFactor);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsResults);
+            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsDeformationFactor);
             // 
             // splitContainer1
             // 
@@ -3153,7 +3153,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Panel2MinSize = 250;
-            this.splitContainer1.Size = new System.Drawing.Size(1502, 747);
+            this.splitContainer1.Size = new System.Drawing.Size(1502, 722);
             this.splitContainer1.SplitterDistance = 269;
             this.splitContainer1.TabIndex = 2;
             // 
@@ -3172,8 +3172,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.tbOutput);
-            this.splitContainer2.Size = new System.Drawing.Size(1229, 747);
-            this.splitContainer2.SplitterDistance = 637;
+            this.splitContainer2.Size = new System.Drawing.Size(1229, 722);
+            this.splitContainer2.SplitterDistance = 612;
             this.splitContainer2.TabIndex = 2;
             // 
             // tbOutput
@@ -3558,7 +3558,7 @@
             this.tscbDeformationType,
             this.tslDeformationFactor,
             this.tstbDeformationFactor});
-            this.tsDeformationFactor.Location = new System.Drawing.Point(401, 25);
+            this.tsDeformationFactor.Location = new System.Drawing.Point(3, 50);
             this.tsDeformationFactor.Name = "tsDeformationFactor";
             this.tsDeformationFactor.Size = new System.Drawing.Size(429, 25);
             this.tsDeformationFactor.TabIndex = 8;
