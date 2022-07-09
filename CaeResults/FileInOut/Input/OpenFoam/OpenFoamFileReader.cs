@@ -11,6 +11,20 @@ namespace CaeResults
 {
     public static class OpenFoamFileReader
     {
+        // Variables                                                                                                                
+        static private HashSet<string> resultFileNames = new HashSet<string>() {
+            "gammaInt", 
+            "k",
+            "nut",
+            "omega",
+            "p",
+            "phi",
+            "pMean",
+            "ReThetat",
+            "U",
+        };
+
+
         // Methods                                                                                                                  
         static public FeResults Read(string fileName)
         {
@@ -27,10 +41,10 @@ namespace CaeResults
                     //
                     if (File.Exists(pointsFile) && File.Exists(boundaryFile) && File.Exists(facesFile)  && File.Exists(ownerFile))
                     {
-                        FeResults result = new FeResults(fileName);
-                        //
+                        // Read mesh
+                        int maxNodeId;
                         Dictionary<int, int> nodeIdsLookUp;
-                        Dictionary<int, FeNode> nodes = GetNodes(pointsFile, out nodeIdsLookUp);
+                        Dictionary<int, FeNode> nodes = GetNodes(pointsFile, out nodeIdsLookUp, out maxNodeId);
                         //
                         Dictionary<int, HashSet<int>> faceIdNodeIds;
                         HashSet<int> boundaryFaceIds = GetBoundaryFaceIds(boundaryFile);
@@ -38,10 +52,42 @@ namespace CaeResults
                                                                                        out faceIdNodeIds);
                         Dictionary<int, HashSet<int>> cellIdNodeIds = GetCellIdNodeIds(ownerFile, boundaryFaceIds, faceIdNodeIds);
                         Dictionary<int, int> nodeIdCellCount = GetNodeIdCellCount(cellIdNodeIds);
-
+                        //
                         FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Results);
                         mesh.ResetPartsColor();
+                        // Read results
+                        FeResults result = new FeResults(fileName);
                         result.SetMesh(mesh, nodeIdsLookUp);
+                        //
+                        int globalIncrementId = 1;
+                        int stepId = 1;
+                        FieldData fieldData;
+                        Field field;
+                        string[] resultFileNames;
+                        Dictionary<double, string> timeResultFolderNames = GerTimeResultFolderNames(baseFolder);
+                        double[] sortedTimes = timeResultFolderNames.Keys.ToArray();
+                        Array.Sort(sortedTimes);
+                        //
+                        foreach (var sortedTime in sortedTimes)
+                        {
+                            resultFileNames = Directory.GetFiles(timeResultFolderNames[sortedTime]);
+                            foreach (var resultFileName in resultFileNames)
+                            {
+                                try
+                                {
+                                    GetField(resultFileName, sortedTime, globalIncrementId, stepId, maxNodeId, cellIdNodeIds,
+                                         nodeIdCellCount, out fieldData, out field);
+                                    //
+                                    result.AddFiled(fieldData, field);
+                                }
+                                catch
+                                { }
+                                //
+                                globalIncrementId++;
+                            }
+                            //
+                            stepId++;
+                        }
                         //
                         return result;
                     }
@@ -54,8 +100,8 @@ namespace CaeResults
             //
             return null;
         }
-
-        static private Dictionary<int, FeNode> GetNodes(string fileName, out Dictionary<int, int> nodeIdsLookUp)
+        // Mesh
+        static private Dictionary<int, FeNode> GetNodes(string fileName, out Dictionary<int, int> nodeIdsLookUp, out int maxNodeId)
         {
             string[] lines = Tools.GetLinesFromFile(fileName);
             //
@@ -73,6 +119,8 @@ namespace CaeResults
             numOfNodes = int.Parse(lines[lineId++]);
             // Skip bracket
             if (lines[lineId].StartsWith("(")) lineId++;
+            maxNodeId = 0;
+            //
             for (int i = 0; i < numOfNodes; i++)
             {
                 tmp = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
@@ -81,11 +129,14 @@ namespace CaeResults
                     node = new FeNode(i, double.Parse(tmp[0]), double.Parse(tmp[1]), double.Parse(tmp[2]));
                     nodes.Add(i, node);
                     nodeIdsLookUp.Add(i, i);
+                    //
+                    if (i > maxNodeId) maxNodeId = i;
                 }
                 else throw new NotSupportedException();
                 //
                 lineId++;
             }
+            maxNodeId++;    // add 1 to accoutn for node id 0
             //
             return nodes;
         }
@@ -254,7 +305,97 @@ namespace CaeResults
             }
             return nodeIdCellCount;
         }
-        //
+        
+        // Results
+        static private Dictionary<double, string> GerTimeResultFolderNames(string baseFolder)
+        {
+            double time;
+            string directoryName;
+            Dictionary<double, string> timeResultFolderNames = new Dictionary<double, string>();
+            //
+            foreach (var directory in Directory.GetDirectories(baseFolder))
+            {
+                directoryName = Path.GetFileNameWithoutExtension(directory);
+                //
+                if (double.TryParse(directoryName, out time) && time > 0)
+                {
+                    timeResultFolderNames.Add(time, directory);
+                }
+            }
+            return timeResultFolderNames;
+        }
+        static private void GetField(string fileName, double time, int globalIncrementId, int stepId,
+                                     int maxNodeId, Dictionary<int, HashSet<int>> cellIdNodeIds,
+                                     Dictionary<int, int> nodeIdCellCount,
+                                     out FieldData fieldData, out Field field)
+        {
+            fieldData = new FieldData(Path.GetFileNameWithoutExtension(fileName));
+            fieldData.GlobalIncrementId = globalIncrementId;
+            fieldData.Type = StepType.Static;
+            fieldData.Time = (float)time;
+            fieldData.MethodId = 1;
+            fieldData.StepId = stepId;
+            fieldData.StepIncrementId = 1;
+            // Read file
+            string[] lines = Tools.GetLinesFromFile(fileName);
+            //
+            int lineId = 0;
+            lines = SkipCommentsAndEmptyLines(lines);
+            SkipFoamFile(lines, ref lineId);
+            //
+            string[] tmp;
+            string[] splitter = new string[] { "(", ",", " ", ")" };
+            int numOfCells;
+            int numOfComponents;
+            float[][] cellValues;
+            // Skip keywords until internalField
+            while (!lines[lineId].ToUpper().StartsWith("INTERNALFIELD")) lineId++;
+            lineId++;
+            //
+            numOfCells = int.Parse(lines[lineId++]);
+            // Skip bracket
+            if (lines[lineId].StartsWith("(")) lineId++;
+            // Count the number of components
+            tmp = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+            numOfComponents = tmp.Length;
+            cellValues = new float[numOfComponents][];
+            for (int i = 0; i < numOfComponents; i++) cellValues[i] = new float[numOfCells];
+            //
+            for (int i = 0; i < numOfCells; i++)
+            {
+                tmp = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                //
+                for (int j = 0; j < numOfComponents; j++) cellValues[j][i] = float.Parse(tmp[j]);
+                //
+                lineId++;
+            }
+            // Get sum of nodal values
+            float[][] nodeValues = new float[numOfComponents][];
+            for (int i = 0; i < numOfComponents; i++) nodeValues[i] = new float[maxNodeId];
+            //
+            foreach (var entry in cellIdNodeIds)
+            {
+                foreach (var nodeId in entry.Value)
+                {
+                    for (int j = 0; j < numOfComponents; j++) nodeValues[j][nodeId] += cellValues[j][entry.Key];
+                }
+            }
+            // Average nodal values
+            foreach (var entry in nodeIdCellCount)
+            {
+                for (int j = 0; j < numOfComponents; j++) nodeValues[j][entry.Key] /= entry.Value;
+            }
+            //
+            field = new Field(fieldData.Name);
+            string componentName;
+            for (int i = 0; i < numOfComponents; i++)
+            {
+                if (numOfComponents == 1) componentName = "ALL";
+                else componentName = (i + 1).ToString();
+                field.AddComponent(componentName, nodeValues[i]);
+            }
+        }
+        // File
         static private string[] SkipCommentsAndEmptyLines(string[] lines)
         {
             string line;
@@ -279,8 +420,8 @@ namespace CaeResults
             }
             lineId++;
         }
-        //
-        
+
+
 
     }
 }
