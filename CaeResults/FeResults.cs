@@ -720,7 +720,9 @@ namespace CaeResults
                         unitAbbreviation = "/";
                         break;
                     default:
-                        if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
+                        // OpenFOAM
+                        if (componentName.StartsWith("VAL")) { }
+                        else if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
                         //
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "?";

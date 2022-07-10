@@ -9,6 +9,14 @@ using CaeGlobals;
 
 namespace CaeResults
 {
+    public enum OpenFoamFieldType
+    {
+        Unknown,
+        SurfaceScalarField,
+        VolScalarField,
+        VolVectorField
+    }
+
     public static class OpenFoamFileReader
     {
         // Variables                                                                                                                
@@ -78,7 +86,7 @@ namespace CaeResults
                                     GetField(resultFileName, sortedTime, globalIncrementId, stepId, maxNodeId, cellIdNodeIds,
                                          nodeIdCellCount, out fieldData, out field);
                                     //
-                                    result.AddFiled(fieldData, field);
+                                    if (field != null) result.AddFiled(fieldData, field);
                                 }
                                 catch
                                 { }
@@ -91,10 +99,6 @@ namespace CaeResults
                         //
                         return result;
                     }
-
-
-
-                    
                 }
             }
             //
@@ -158,7 +162,7 @@ namespace CaeResults
             //
             for (int i = lineId; i < lines.Length; i++)
             {
-                line = lines[i].Trim();
+                line = lines[i];
                 //
                 if (line[0] == '(' || line[0] == ')' || line[0] == '{' || line[0] == '}')
                 {
@@ -283,7 +287,7 @@ namespace CaeResults
             {
                 if (boundaryFaceIds.Contains(i))
                 {
-                    cellId = int.Parse(lines[lineId].Trim());
+                    cellId = int.Parse(lines[lineId]);
                     if (cellIdNodeIds.TryGetValue(cellId, out cellNodeIds)) cellNodeIds.UnionWith(faceIdNodeIds[i]);
                     else cellIdNodeIds.Add(cellId, new HashSet<int>(faceIdNodeIds[i]));
                 }
@@ -336,12 +340,16 @@ namespace CaeResults
             fieldData.MethodId = 1;
             fieldData.StepId = stepId;
             fieldData.StepIncrementId = 1;
+            //
+            field = null;
             // Read file
             string[] lines = Tools.GetLinesFromFile(fileName);
             //
             int lineId = 0;
             lines = SkipCommentsAndEmptyLines(lines);
-            SkipFoamFile(lines, ref lineId);
+            OpenFoamFieldType fieldType = SkipFoamFile(lines, ref lineId);
+            // This field types are not supported
+            if (fieldType == OpenFoamFieldType.Unknown || fieldType == OpenFoamFieldType.SurfaceScalarField) return;
             //
             string[] tmp;
             string[] splitter = new string[] { "(", ",", " ", ")" };
@@ -361,13 +369,24 @@ namespace CaeResults
             cellValues = new float[numOfComponents][];
             for (int i = 0; i < numOfComponents; i++) cellValues[i] = new float[numOfCells];
             //
-            for (int i = 0; i < numOfCells; i++)
+            string line;
+            if (fieldType == OpenFoamFieldType.VolScalarField)
             {
-                tmp = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-                //
-                for (int j = 0; j < numOfComponents; j++) cellValues[j][i] = float.Parse(tmp[j]);
-                //
-                lineId++;
+                for (int i = 0; i < numOfCells; i++)
+                {
+                    line = lines[lineId];
+                    cellValues[0][i] = float.Parse(line);
+                    lineId++;
+                }
+            }
+            else if (fieldType == OpenFoamFieldType.VolVectorField)
+            {
+                for (int i = 0; i < numOfCells; i++)
+                {
+                    tmp = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                    for (int j = 0; j < numOfComponents; j++) cellValues[j][i] = float.Parse(tmp[j]);
+                    lineId++;
+                }
             }
             // Get sum of nodal values
             float[][] nodeValues = new float[numOfComponents][];
@@ -390,8 +409,8 @@ namespace CaeResults
             string componentName;
             for (int i = 0; i < numOfComponents; i++)
             {
-                if (numOfComponents == 1) componentName = "ALL";
-                else componentName = (i + 1).ToString();
+                if (numOfComponents == 1) componentName = "VAL";
+                else componentName = "VAL" + (i + 1).ToString();
                 field.AddComponent(componentName, nodeValues[i]);
             }
         }
@@ -406,22 +425,54 @@ namespace CaeResults
                 line = lines[i].Trim();
                 if (line.Length > 0 && line[0] != '/' && line[0] != '\\' && line[0] != '|')
                 {
-                    dataLines.Add(lines[i]);
+                    dataLines.Add(line);
                 }
             }
             //
             return dataLines.ToArray();
         }
-        static private void SkipFoamFile(string[] lines, ref int lineId)
+        static private OpenFoamFieldType SkipFoamFile(string[] lines, ref int lineId)
         {
-            if (lines[lineId].Trim().ToUpper().StartsWith("FOAMFILE"))
+            string line;
+            string[] tmp;
+            string[] splitter = new string[] { " ", ";" };
+            OpenFoamFieldType fieldType = OpenFoamFieldType.Unknown;
+            //
+            line = lines[lineId].ToUpper();
+            //
+            if (line.StartsWith("FOAMFILE"))
             {
-                while (!lines[lineId].Trim().StartsWith("}")) lineId++;
+                while (!line.StartsWith("}"))
+                {
+                    //All lines are trimmed: class volScalarField;
+                    if (line.StartsWith("CLASS"))
+                    {
+                        tmp = line.Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                        if (tmp.Length == 2)
+                        {
+                            switch (tmp[1])
+                            {
+                                case "SURFACESCALARFIELD":
+                                    fieldType = OpenFoamFieldType.SurfaceScalarField;
+                                    break;
+                                case "VOLSCALARFIELD":
+                                    fieldType = OpenFoamFieldType.VolScalarField;
+                                    break;
+                                case "VOLVECTORFIELD":
+                                    fieldType = OpenFoamFieldType.VolVectorField;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    lineId++;
+                    line = lines[lineId].ToUpper();
+                }
             }
             lineId++;
+            //
+            return fieldType;
         }
-
-
-
     }
 }

@@ -249,6 +249,7 @@ namespace PrePoMax
                 // Strip menus
                 tsFile.Location = new Point(0, 0);
                 tsViews.Location = new Point(tsFile.Left + tsFile.Width, 0);
+                tsModel.Location = new Point(tsViews.Left + tsViews.Width, 0);
                 tsDeformationFactor.Location = new Point(0, tsFile.Height);
                 tsResults.Location = new Point(tsDeformationFactor.Left + tsDeformationFactor.Width, tsFile.Height);
                 tscbSymbolsForStep.SelectedIndexChanged += tscbSymbolsForStep_SelectedIndexChanged;
@@ -665,7 +666,7 @@ namespace PrePoMax
             _modelTree.DisableMouse = unactive;
             menuStripMain.DisableMouseButtons = unactive;
             tsFile.DisableMouseButtons = unactive;
-            tscbSymbolsForStep.Enabled = !unactive; // changing the symbols clears the selection - unwanted during selection
+            tsModel.Enabled = !unactive; // changing the symbols clears the selection - unwanted during selection
             // This gets also called from item selection form: by angle, by edge ...
             if (form.Visible == false)
             {
@@ -1105,6 +1106,7 @@ namespace PrePoMax
                 tsbSave.Enabled = false;
                 // Toolbar View
                 tsViews.DisableMouseButtons = true;
+                // Toolbar Model
                 tslSymbols.Enabled = false;
                 tscbSymbolsForStep.Enabled = false;
                 // Toolbar Results
@@ -1175,6 +1177,7 @@ namespace PrePoMax
                     tsmiAnalysis.Enabled = true;
                     // Toolbar View
                     tsViews.DisableMouseButtons = false;
+                    // Toolbar Model
                     tslSymbols.Enabled = true;
                     tscbSymbolsForStep.Enabled = true;
                     // Vtk

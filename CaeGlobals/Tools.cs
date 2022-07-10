@@ -191,12 +191,12 @@ namespace CaeGlobals
         }
         public static string[] GetLinesFromFile(string fileName)
         {
-            List<string> lines = new List<string>();
+            List<string> lines = new List<string>(1024);
             //
             if (!WaitForFileToUnlock(fileName, 5000)) return null;
-
+            //
             using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            using (StreamReader streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 4096))
+            using (StreamReader streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 16*4096))
             {
                 while (!streamReader.EndOfStream) lines.Add(streamReader.ReadLine()); // faster than streamReader.ReadToEnd().Split ...
                 //
