@@ -52,7 +52,7 @@ namespace PrePoMax.Forms
         [Category("Submodel")]
         [OrderedDisplayName(0, 10, "Global results .frd")]
         [Description("Global results file name (.frd) without path.")]
-        [EditorAttribute(typeof(FrdFileNameEditor), typeof(UITypeEditor))]
+        [EditorAttribute(typeof(FilteredFileNameEditor), typeof(UITypeEditor))]
         [Id(1, 2)]
         public string GlobalResultsFileName
         {
@@ -148,7 +148,7 @@ namespace PrePoMax.Forms
             //
             _dctd.RenameBooleanPropertyToOnOff(nameof(BdmRemeshing));
             //
-            FrdFileNameEditor.Filter = "Result files|*.frd";
+            FilteredFileNameEditor.Filter = "Result files|*.frd";
             //
             UpdateVisibility();
         }

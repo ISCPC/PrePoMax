@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace CaeGlobals
 {
-    public class FrdFileNameEditor : System.Windows.Forms.Design.FileNameEditor
+    public class FilteredFileNameEditor : System.Windows.Forms.Design.FileNameEditor
     {
         public static string Filter = "";
 
 
-        public FrdFileNameEditor()
+        public FilteredFileNameEditor()
         {
         }
 
@@ -20,7 +20,7 @@ namespace CaeGlobals
         {
             base.InitializeDialog(openFileDialog);
             openFileDialog.Multiselect = false;
-            openFileDialog.Filter = Filter; // "Result files|*.frd";
+            openFileDialog.Filter = Filter;
         }
     }
 }

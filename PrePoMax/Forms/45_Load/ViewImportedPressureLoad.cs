@@ -31,7 +31,7 @@ namespace PrePoMax
         [CategoryAttribute("Magnitude")]
         [OrderedDisplayName(0, 10, "Import from file")]
         [DescriptionAttribute("Select the file from which the pressure results will be imported.")]
-        [EditorAttribute(typeof(FrdFileNameEditor), typeof(UITypeEditor))]
+        [EditorAttribute(typeof(FilteredFileNameEditor), typeof(UITypeEditor))]
         [Id(1, 3)]
         public string FileName
         {
@@ -96,7 +96,7 @@ namespace PrePoMax
             SetBase(_importedPressure, regionTypePropertyNamePairs);
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             //
-            FrdFileNameEditor.Filter = "OpenFOAM files|*.foam";
+            FilteredFileNameEditor.Filter = "OpenFOAM files|*.foam";
         }
 
 

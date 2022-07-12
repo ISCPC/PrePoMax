@@ -55,7 +55,7 @@ namespace PrePoMax
         [CategoryAttribute("Magnitude")]
         [OrderedDisplayName(1, 10, "Results file .frd")]
         [DescriptionAttribute("Results file name (.frd) without path.")]
-        [EditorAttribute(typeof(FrdFileNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        [EditorAttribute(typeof(FilteredFileNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [Id(2, 3)]
         public string FileName
         {
