@@ -76,7 +76,7 @@ namespace CaeResults
                         double[] sortedTimes = timeResultFolderNames.Keys.ToArray();
                         Array.Sort(sortedTimes);
                         //
-                        foreach (var sortedTime in sortedTimes)
+                        foreach (double sortedTime in sortedTimes)
                         {
                             resultFileNames = Directory.GetFiles(timeResultFolderNames[sortedTime]);
                             foreach (var resultFileName in resultFileNames)
@@ -103,6 +103,34 @@ namespace CaeResults
             }
             //
             return null;
+        }
+        static public Dictionary<string, string[]> GetTimeResultVariableNames(string fileName)
+        {
+            Dictionary<string, string[]> timeResultVariableNames = new Dictionary<string, string[]>();
+            //
+            if (fileName != null && File.Exists(fileName))
+            {
+                string[] resultFileNames;
+                HashSet<string> variableNamesHash = new HashSet<string>();
+                //
+                string baseFolder = Path.GetDirectoryName(fileName);
+                Dictionary<double, string> timeResultFolderNames = GerTimeResultFolderNames(baseFolder);
+                double[] sortedTimes = timeResultFolderNames.Keys.ToArray();
+                Array.Sort(sortedTimes);
+                //
+                foreach (double sortedTime in sortedTimes)
+                {
+                    variableNamesHash.Clear();
+                    resultFileNames = Directory.GetFiles(timeResultFolderNames[sortedTime]);
+                    foreach (var resultFileName in resultFileNames)
+                    {
+                        variableNamesHash.Add(Path.GetFileNameWithoutExtension(resultFileName));
+                    }
+                    timeResultVariableNames.Add(sortedTime.ToString(), variableNamesHash.ToArray());
+                }
+            }
+            //
+            return timeResultVariableNames;
         }
         // Mesh
         static private Dictionary<int, FeNode> GetNodes(string fileName, out Dictionary<int, int> nodeIdsLookUp, out int maxNodeId)

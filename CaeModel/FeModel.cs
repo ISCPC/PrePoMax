@@ -464,6 +464,10 @@ namespace CaeModel
             {
                 valid = (_mesh.Surfaces.TryGetValue(hpl.SurfaceName, out s) && s.Valid);
             }
+            else if (load is ImportedPressure ip)
+            {
+                valid = (_mesh.Surfaces.TryGetValue(ip.SurfaceName, out s) && s.Valid);
+            }
             else if (load is STLoad stl)
             {
                 valid = (_mesh.Surfaces.TryGetValue(stl.SurfaceName, out s) && s.Valid);

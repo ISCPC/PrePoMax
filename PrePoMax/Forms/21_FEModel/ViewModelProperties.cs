@@ -148,6 +148,8 @@ namespace PrePoMax.Forms
             //
             _dctd.RenameBooleanPropertyToOnOff(nameof(BdmRemeshing));
             //
+            FrdFileNameEditor.Filter = "Result files|*.frd";
+            //
             UpdateVisibility();
         }
 

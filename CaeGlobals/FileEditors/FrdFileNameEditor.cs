@@ -8,6 +8,9 @@ namespace CaeGlobals
 {
     public class FrdFileNameEditor : System.Windows.Forms.Design.FileNameEditor
     {
+        public static string Filter = "";
+
+
         public FrdFileNameEditor()
         {
         }
@@ -17,7 +20,7 @@ namespace CaeGlobals
         {
             base.InitializeDialog(openFileDialog);
             openFileDialog.Multiselect = false;
-            openFileDialog.Filter = "Result files|*.frd";
+            openFileDialog.Filter = Filter; // "Result files|*.frd";
         }
     }
 }
