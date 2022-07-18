@@ -9,11 +9,9 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
-    public class HydrostaticPressure : Load
+    public class HydrostaticPressure : VariablePressure
     {
         // Variables                                                                                                                
-        private string _surfaceName;
-        private RegionTypeEnum _regionType;
         private double[] _firstPointCoor;
         private double[] _secondPointCoor;
         private double _n1; // in coordinate form to compute the normal if value changes
@@ -25,9 +23,6 @@ namespace CaeModel
 
 
         // Properties                                                                                                               
-        public override string RegionName { get { return _surfaceName; } set { _surfaceName = value; } }
-        public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
-        public string SurfaceName { get { return _surfaceName; } set { _surfaceName = value; } }
         public double[] FirstPointCoor
         {
             get { return _firstPointCoor; }
@@ -86,11 +81,8 @@ namespace CaeModel
         public HydrostaticPressure(string name, string regionName, RegionTypeEnum regionType, double[] firstPointCoor,
                                    double[] secondPointCoor, double nx, double ny, double nz, double firstPointPressure,
                                    double secondPointPressure, bool twoD)
-            : base(name, twoD)
+            : base(name, regionName, regionType, twoD)
         {
-            _surfaceName = regionName;
-            RegionType = regionType;
-            //
             FirstPointCoor = firstPointCoor;           // account for 2D
             SecondPointCoor = secondPointCoor;         // account for 2D
             _n1 = nx;
@@ -135,7 +127,7 @@ namespace CaeModel
             //
             return true;
         }
-        public double GetPressureForPoint(double[] point)
+        public override double GetPressureForPoint(double[] point)
         {
             double d1 = -(_firstPointCoor[0] * _nDirection[0] + _firstPointCoor[1] * _nDirection[1] +
                 _firstPointCoor[2] * _nDirection[2]);

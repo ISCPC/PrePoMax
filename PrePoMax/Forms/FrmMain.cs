@@ -7843,8 +7843,55 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
-            
+            ImportedPressure pressure = (ImportedPressure)_controller.GetStep("Step-1").Loads["Imported_pressure-1"];
+            CaeResults.FeResults results = pressure.ImportPressure();
+            //
+            PartExchangeData pData = new PartExchangeData();
+            _controller.Model.Mesh.GetAllNodesAndCells(out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids,
+                                                       out pData.Cells.CellNodeIds, out pData.Cells.Types);
+            //
 
+
+            CaeResults.ResultsInterpolators.InterpolateScalarResults(pressure.PartExchangeData, pData);
+
+
+            //_vtk.InterpolateMeshData(pressure.PartExchangeData, ref pData);
+            //
+            Dictionary<int, int> nodeIdsLookUp = new Dictionary<int, int>();
+            for (int i = 0; i < pData.Nodes.Values.Length; i++) nodeIdsLookUp.Add(pData.Nodes.Ids[i], i);
+            CaeResults.FeResults outResults = new CaeResults.FeResults("");
+            outResults.SetMesh(_controller.Model.Mesh, nodeIdsLookUp);
+            //
+            CaeResults.FieldData fieldData = new CaeResults.FieldData("p");
+            fieldData.GlobalIncrementId = 1;
+            fieldData.Type = CaeResults.StepType.Static;
+            fieldData.Time = 1;
+            fieldData.MethodId = 1;
+            fieldData.StepId = 1;
+            fieldData.StepIncrementId = 1;
+            //
+            CaeResults.Field field = new CaeResults.Field("p");
+            field.AddComponent("VAL", pData.Nodes.Values);
+            outResults.AddFiled(fieldData, field);
+            //
+            _controller.SetResults(outResults);
+            //
+            if (_controller.Results != null && _controller.Results.Mesh != null)
+            {
+                // Reset the previous step and increment
+                SetAllStepAndIncrementIds();
+                // Set last increment
+                SetDefaultStepAndIncrementIds();
+                // Show the selection in the results tree
+                SelectFirstComponentOfFirstFieldOutput();
+            }
+            // Set the representation which also calls Draw
+            _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+            //
+            SetMenuAndToolStripVisibility();
+            
+            
+            
             //
             //if (timerTest.Enabled) timerTest.Stop();
             //else timerTest.Start();

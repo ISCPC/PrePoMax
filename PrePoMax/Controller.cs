@@ -638,62 +638,8 @@ namespace PrePoMax
                 MessageBoxes.ShowError("The results file does not exist or is empty.");
                 return;
             }
-            // Load results
-            _form.Clear3D();
-            ClearResults();
             //
-            _results = results;
-            // Check if the meshes are the same and rename the parts
-            if (_model.Mesh != null && _results.Mesh != null && _model.HashName == _results.HashName)
-            {
-                SuppressExplodedViews();
-                //
-                double similarity = _model.Mesh.IsEqual(_results.Mesh);
-                //
-                if (similarity > 0)
-                {
-                    if (similarity < 1)
-                    {
-                        if (MessageBox.Show("Some node coordinates in the result .frd file are different from " +
-                                            "the coordinates in the model mesh." + Environment.NewLine + Environment.NewLine +
-                                            "Apply model mesh properties (part names, geomery...) to the result mesh?",
-                                            "Warning",
-                                            MessageBoxButtons.YesNo,
-                                            MessageBoxIcon.Warning) == DialogResult.Yes) similarity = 1;
-                    }
-                    //
-                    if (similarity == 1)
-                    {
-                        _results.CopyPartsFromMesh(_model.Mesh);
-                        _results.CopyMeshitemsFromMesh(_model.Mesh);
-                    }
-                    else if (similarity == 2)
-                    {
-                        _results.Mesh.MergePartsBasedOnMesh(_model.Mesh, typeof(ResultPart));
-                    }
-                }
-                //
-                ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
-            }
-            // Model changed
-            _modelChanged = true;
-            // Open .cel file
-            string celFileName = Path.GetFileNameWithoutExtension(_results.FileName) + ".cel";
-            celFileName = Path.Combine(Path.GetDirectoryName(_results.FileName), celFileName);
-            if (File.Exists(celFileName)) OpenCel(celFileName, false);
-            // Open .dat file
-            if (readDatFile)
-            {
-                string datFileName = Path.GetFileNameWithoutExtension(_results.FileName) + ".dat";
-                datFileName = Path.Combine(Path.GetDirectoryName(_results.FileName), datFileName);
-                if (File.Exists(datFileName)) OpenDat(datFileName, false);
-            }
-            // Redraw
-            // Set the view but do not draw
-            _currentView = ViewGeometryModelResults.Results;
-            _form.SetCurrentView(_currentView);
-            // Regenerate tree
-            _form.RegenerateTree();
+            LoadResults(results, readDatFile);
         }
         private void OpenDat(string fileName, bool redraw = true)
         {
@@ -760,6 +706,7 @@ namespace PrePoMax
         private void OpenFoam(string fileName)
         {
             FeResults results = OpenFoamFileReader.Read(fileName);
+            if (results == null) throw new CaeException("The results file cannot be read.");
             // Load results
             _form.Clear3D();
             ClearResults();
@@ -799,6 +746,68 @@ namespace PrePoMax
             }
             // Model changed
             _modelChanged = true;
+            // Redraw
+            // Set the view but do not draw
+            _currentView = ViewGeometryModelResults.Results;
+            _form.SetCurrentView(_currentView);
+            // Regenerate tree
+            _form.RegenerateTree();
+        }
+        private void LoadResults(FeResults results, bool readDatFile)
+        {
+            // Load results
+            _form.Clear3D();
+            ClearResults();
+            //
+            _results = results;
+            // Check if the meshes are the same and rename the parts
+            if (_model.Mesh != null && _results.Mesh != null && _model.HashName == _results.HashName)
+            {
+                SuppressExplodedViews();
+                //
+                double similarity = _model.Mesh.IsEqual(_results.Mesh);
+                //
+                if (similarity > 0)
+                {
+                    if (similarity < 1)
+                    {
+                        if (MessageBox.Show("Some node coordinates in the result .frd file are different from " +
+                                            "the coordinates in the model mesh." + Environment.NewLine + Environment.NewLine +
+                                            "Apply model mesh properties (part names, geomery...) to the result mesh?",
+                                            "Warning",
+                                            MessageBoxButtons.YesNo,
+                                            MessageBoxIcon.Warning) == DialogResult.Yes) similarity = 1;
+                    }
+                    //
+                    if (similarity == 1)
+                    {
+                        _results.CopyPartsFromMesh(_model.Mesh);
+                        _results.CopyMeshitemsFromMesh(_model.Mesh);
+                    }
+                    else if (similarity == 2)
+                    {
+                        _results.Mesh.MergePartsBasedOnMesh(_model.Mesh, typeof(ResultPart));
+                    }
+                }
+                //
+                ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
+            }
+            // Model changed
+            _modelChanged = true;
+            // Open .cel file
+            if (_results.FileName != null && _results.FileName.Length > 0)
+            {
+                string celFileName = Path.GetFileNameWithoutExtension(_results.FileName) + ".cel";
+                celFileName = Path.Combine(Path.GetDirectoryName(_results.FileName), celFileName);
+                if (File.Exists(celFileName)) OpenCel(celFileName, false);
+            }
+            // Open .dat file
+            if (readDatFile)
+            {
+                string datFileName = Path.GetFileNameWithoutExtension(_results.FileName) + ".dat";
+                datFileName = Path.Combine(Path.GetDirectoryName(_results.FileName), datFileName);
+                if (File.Exists(datFileName)) OpenDat(datFileName, false);
+            }
             // Redraw
             // Set the view but do not draw
             _currentView = ViewGeometryModelResults.Results;
@@ -7543,6 +7552,14 @@ namespace PrePoMax
             //
             if (_currentView == ViewGeometryModelResults.Results) DrawResults(false);
         }
+        public void SetResults(FeResults results)
+        {
+            LoadResults(results, false);
+            // Check validity
+            CheckAndUpdateValidity();
+            // Get first component of the first field for the last increment in the last step
+            if (ResultsInitialized) _currentFieldData = _results.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
+        }
 
         #endregion #################################################################################################################
 
@@ -8909,17 +8926,17 @@ namespace PrePoMax
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             if (_currentView == ViewGeometryModelResults.Geometry && _model.Geometry != null)
             {
-                _model.Geometry.GetAllNodesAndCells(elementSet, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids,
+                _model.Geometry.GetSetNodesAndCells(elementSet, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids,
                                                     out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
             }
             else if (_currentView == ViewGeometryModelResults.Model && _model.Mesh != null)
             {
-                _model.Mesh.GetAllNodesAndCells(elementSet, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids,
+                _model.Mesh.GetSetNodesAndCells(elementSet, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids,
                                                 out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
             }
             else if(_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
             {
-                PartExchangeData actorResultData = _results.GetAllNodesCellsAndValues(elementSet, _currentFieldData);
+                PartExchangeData actorResultData = _results.GetSetNodesCellsAndValues(elementSet, _currentFieldData);
                 data = GetVtkData(actorResultData, null, null);
             }
             else throw new NotSupportedException();
@@ -9411,7 +9428,7 @@ namespace PrePoMax
             if (pickable)
             {
                 data.CellLocator = new PartExchangeData();
-                mesh.GetAllNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor,
+                mesh.GetSetNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor,
                                          out data.CellLocator.Cells.Ids, out data.CellLocator.Cells.CellNodeIds,
                                          out data.CellLocator.Cells.Types);
             }
@@ -9534,7 +9551,7 @@ namespace PrePoMax
             data.ActorRepresentation = GetRepresentation(part);
             // Get all nodes and elements for selection - renumbered
             data.CellLocator = new PartExchangeData();
-            mesh.GetAllNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor,
+            mesh.GetSetNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor,
                                      out data.CellLocator.Cells.Ids,
                                      out data.CellLocator.Cells.CellNodeIds,
                                      out data.CellLocator.Cells.Types);
@@ -12846,7 +12863,7 @@ namespace PrePoMax
                 modelEdgesResultData = _results.GetEdgesNodesAndCells(part, fieldData);
             }
             // Get all needed nodes and elements - renumbered               
-            PartExchangeData locatorResultData = _results.GetAllNodesCellsAndValues(part, fieldData);
+            PartExchangeData locatorResultData = _results.GetSetNodesCellsAndValues(part, fieldData);
             //
             vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
@@ -13146,7 +13163,7 @@ namespace PrePoMax
                 {
                     // Get all needed nodes and elements - renumbered
                     PartExchangeData locatorResultData =
-                        _results.GetAllNodesCellsAndValues(entry.Value, _currentFieldData);
+                        _results.GetSetNodesCellsAndValues(entry.Value, _currentFieldData);
                     // Get visualization nodes and renumbered elements  - to scale min nad max nodes coor
                     PartExchangeData actorResultData =
                         _results.GetVisualizationNodesCellsAndValues(entry.Value, _currentFieldData);

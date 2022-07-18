@@ -1186,7 +1186,7 @@ namespace CaeModel
                 }
             }
         }
-        public CLoad[] GetNodalLoadsFromHydrostaticPressure(HydrostaticPressure load)
+        public CLoad[] GetNodalLoadsFromVariablePressureLoad(VariablePressure load)
         {
             Dictionary<int, int> elementIdSectionId;
             Dictionary<int, double> sectionIdThickness = new Dictionary<int, double>();

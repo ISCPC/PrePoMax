@@ -182,6 +182,18 @@ namespace CaeResults
         public void SetMesh(FeMesh mesh, Dictionary<int, int> nodeIdsLookUp)
         {
             _mesh = mesh;
+            //
+            List<BasePart> parts = new List<BasePart>();
+            foreach (var entry in _mesh.Parts)
+            {
+                if (!(entry.Value is ResultPart)) parts.Add(entry.Value);
+            }
+            //
+            foreach (var part in parts)
+            {
+                _mesh.Parts.Replace(part.Name, part.Name, new ResultPart(part));
+            }
+            //
             InitializeUndeformedNodes();
             //
             _nodeIdsLookUp = nodeIdsLookUp;
@@ -1800,10 +1812,19 @@ namespace CaeResults
             values = GetValues(fieldData, nodeIds);
         }
         //
-        public PartExchangeData GetAllNodesCellsAndValues(FeGroup elementSet, FieldData fData)
+        public PartExchangeData GetAllNodesCellsAndValues(FieldData fData)
         {
             PartExchangeData pData = new PartExchangeData();
-            _mesh.GetAllNodesAndCells(elementSet, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids,
+            _mesh.GetAllNodesAndCells(out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids,
+                                      out pData.Cells.CellNodeIds, out pData.Cells.Types);
+            if (!fData.Valid) pData.Nodes.Values = null;
+            else pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
+            return pData;
+        }
+        public PartExchangeData GetSetNodesCellsAndValues(FeGroup elementSet, FieldData fData)
+        {
+            PartExchangeData pData = new PartExchangeData();
+            _mesh.GetSetNodesAndCells(elementSet, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids,
                                       out pData.Cells.CellNodeIds, out pData.Cells.Types);
             if (!fData.Valid) pData.Nodes.Values = null;
             else pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
@@ -1871,7 +1892,7 @@ namespace CaeResults
             }
             // Locator
             locatorResultData = new PartExchangeData();
-            _mesh.GetAllNodesAndCells(part, out locatorResultData.Nodes.Ids, out locatorResultData.Nodes.Coor, 
+            _mesh.GetSetNodesAndCells(part, out locatorResultData.Nodes.Ids, out locatorResultData.Nodes.Coor, 
                                       out locatorResultData.Cells.Ids, out locatorResultData.Cells.CellNodeIds,
                                       out locatorResultData.Cells.Types);
             // Values
@@ -1941,7 +1962,7 @@ namespace CaeResults
             // Edges
             if (modelEdges) modelEdgesResultData = GetEdgesNodesAndCells(part, fData);
             // Locator
-            locatorResultData = GetAllNodesCellsAndValues(part, fData);
+            locatorResultData = GetSetNodesCellsAndValues(part, fData);
             // Get all existing increments
             Dictionary<int, int[]> existingStepIncrementIds = GetExistingIncrementIds(fData.Name, fData.Component);
             // Count all existing increments
@@ -1975,7 +1996,7 @@ namespace CaeResults
                         modelEdgesResultData.NodesAnimation[count] = data.Nodes;
                     }
                     // Locator
-                    data = GetAllNodesCellsAndValues(part, tmpFieldData);
+                    data = GetSetNodesCellsAndValues(part, tmpFieldData);
                     locatorResultData.NodesAnimation[count] = data.Nodes;
                     //
                     count++;

@@ -974,43 +974,48 @@ namespace FileInOut.Output
             {
                 if (load is CLoad cl)
                 {
-                    CalCLoad cload = new CalCLoad(cl, referencePointsNodeIds);
-                    parent.AddKeyword(cload);
+                    CalCLoad cLoad = new CalCLoad(cl, referencePointsNodeIds);
+                    parent.AddKeyword(cLoad);
                 }
                 else if (load is MomentLoad ml)
                 {
-                    CalMomentLoad mload = new CalMomentLoad(ml, referencePointsNodeIds);
-                    parent.AddKeyword(mload);
+                    CalMomentLoad mLoad = new CalMomentLoad(ml, referencePointsNodeIds);
+                    parent.AddKeyword(mLoad);
                 }
                 else if (load is DLoad dl)
                 {
-                    CalDLoad dload = new CalDLoad(dl, model.Mesh.Surfaces[dl.SurfaceName]);
-                    parent.AddKeyword(dload);
+                    CalDLoad dLoad = new CalDLoad(dl, model.Mesh.Surfaces[dl.SurfaceName]);
+                    parent.AddKeyword(dLoad);
                 }
                 else if (load is HydrostaticPressure hpl)
                 {
-                    CalHydrostaticPressureLoad hpload = new CalHydrostaticPressureLoad(model, hpl);
-                    parent.AddKeyword(hpload);
+                    CalHydrostaticPressureLoad hpLoad = new CalHydrostaticPressureLoad(model, hpl);
+                    parent.AddKeyword(hpLoad);
+                }
+                else if (load is ImportedPressure ipl)
+                {
+                    CalImportedPressureLoad ipLoad = new CalImportedPressureLoad(model, ipl);
+                    parent.AddKeyword(ipLoad);
                 }
                 else if (load is STLoad stl)
                 {
-                    CalSTLoad stload = new CalSTLoad(model, stl);
-                    parent.AddKeyword(stload);
+                    CalSTLoad stLoad = new CalSTLoad(model, stl);
+                    parent.AddKeyword(stLoad);
                 }
                 else if (load is ShellEdgeLoad sel)
                 {
-                    CalShellEdgeLoad seload = new CalShellEdgeLoad(sel, model.Mesh.Surfaces[sel.SurfaceName]);
-                    parent.AddKeyword(seload);
+                    CalShellEdgeLoad seLoad = new CalShellEdgeLoad(sel, model.Mesh.Surfaces[sel.SurfaceName]);
+                    parent.AddKeyword(seLoad);
                 }
                 else if (load is GravityLoad gl)
                 {
-                    CalGravityLoad gload = new CalGravityLoad(gl);
-                    parent.AddKeyword(gload);
+                    CalGravityLoad gLoad = new CalGravityLoad(gl);
+                    parent.AddKeyword(gLoad);
                 }
                 else if (load is CentrifLoad cfl)
                 {
-                    CalCentrifLoad cload = new CalCentrifLoad(cfl);
-                    parent.AddKeyword(cload);
+                    CalCentrifLoad cLoad = new CalCentrifLoad(cfl);
+                    parent.AddKeyword(cLoad);
                 }
                 else if (load is PreTensionLoad ptl)
                 {

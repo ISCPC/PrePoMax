@@ -292,6 +292,18 @@ namespace CaeMesh
         {
             return new double[] { (MinX + MaxX) / 2, (MinY + MaxY) / 2, (MinZ + MaxZ) / 2 };
         }
+        public double GetXSize()
+        {
+            return MaxX - MinX;
+        }
+        public double GetYSize()
+        {
+            return MaxY - MinY;
+        }
+        public double GetZSize()
+        {
+            return MaxZ - MinZ;
+        }
         public double GetDiagonal()
         {
             return Math.Sqrt(Math.Pow(MaxX - MinX, 2) + Math.Pow(MaxY - MinY, 2) + Math.Pow(MaxZ - MinZ, 2));

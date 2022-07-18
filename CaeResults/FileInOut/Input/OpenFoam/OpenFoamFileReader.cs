@@ -104,6 +104,74 @@ namespace CaeResults
             //
             return null;
         }
+        static public FeResults Read(string fileName, double time, string variableName)
+        {
+            if (fileName != null && File.Exists(fileName))
+            {
+                string baseFolder = Path.GetDirectoryName(fileName);
+                string meshFolder = Path.Combine(baseFolder, "constant", "polyMesh");
+                if (Directory.Exists(meshFolder))
+                {
+                    string pointsFile = Path.Combine(meshFolder, "points");
+                    string boundaryFile = Path.Combine(meshFolder, "boundary");
+                    string facesFile = Path.Combine(meshFolder, "faces");
+                    string ownerFile = Path.Combine(meshFolder, "owner");
+                    //
+                    if (File.Exists(pointsFile) && File.Exists(boundaryFile) && File.Exists(facesFile) && File.Exists(ownerFile))
+                    {
+                        // Read mesh
+                        int maxNodeId;
+                        Dictionary<int, int> nodeIdsLookUp;
+                        Dictionary<int, FeNode> nodes = GetNodes(pointsFile, out nodeIdsLookUp, out maxNodeId);
+                        //
+                        Dictionary<int, HashSet<int>> faceIdNodeIds;
+                        HashSet<int> boundaryFaceIds = GetBoundaryFaceIds(boundaryFile);
+                        Dictionary<int, FeElement> elements = GetBoundariesAsTriangles(facesFile, boundaryFaceIds,
+                                                                                       out faceIdNodeIds);
+                        Dictionary<int, HashSet<int>> cellIdNodeIds = GetCellIdNodeIds(ownerFile, boundaryFaceIds, faceIdNodeIds);
+                        Dictionary<int, int> nodeIdCellCount = GetNodeIdCellCount(cellIdNodeIds);
+                        //
+                        FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Results);
+                        mesh.ResetPartsColor();
+                        // Read results
+                        FeResults result = new FeResults(fileName);
+                        result.SetMesh(mesh, nodeIdsLookUp);
+                        //
+                        int globalIncrementId = 1;
+                        int stepId = 1;
+                        FieldData fieldData;
+                        Field field;
+                        string[] resultFileNames;
+                        Dictionary<double, string> timeResultFolderNames = GerTimeResultFolderNames(baseFolder);
+                        //
+                        resultFileNames = Directory.GetFiles(timeResultFolderNames[time]);
+                        foreach (var resultFileName in resultFileNames)
+                        {
+                            try
+                            {
+                                if (Path.GetFileNameWithoutExtension(resultFileName) == variableName)
+                                {
+                                    GetField(resultFileName, time, globalIncrementId, stepId, maxNodeId, cellIdNodeIds,
+                                             nodeIdCellCount, out fieldData, out field);
+                                    //
+                                    if (field != null) result.AddFiled(fieldData, field);
+                                }
+                            }
+                            catch
+                            { }
+                            //
+                            globalIncrementId++;
+                        }
+                        //
+                        stepId++;
+                        //
+                        return result;
+                    }
+                }
+            }
+            //
+            return null;
+        }
         static public Dictionary<string, string[]> GetTimeResultVariableNames(string fileName)
         {
             Dictionary<string, string[]> timeResultVariableNames = new Dictionary<string, string[]>();

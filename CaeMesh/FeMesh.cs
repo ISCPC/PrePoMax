@@ -7115,7 +7115,24 @@ namespace CaeMesh
 
 
         // Cells 
-        public void GetAllNodesAndCells(FeGroup elementSet, out int[] nodeIds, out double[][] nodeCoor, out int[] cellIds,
+        public void GetAllNodesAndCells(out int[] nodeIds, out double[][] nodeCoor, out int[] cellIds,
+                                        out int[][] cells, out int[] cellTypes)
+        {
+            cellIds = _elements.Keys.ToArray();
+            cells = new int[cellIds.Length][];
+            cellTypes = new int[cellIds.Length];
+            int i = 0;
+            //
+            foreach (var entry in _elements)
+            {
+                cells[i] = entry.Value.GetVtkNodeIds();
+                cellTypes[i] = entry.Value.GetVtkCellType();
+                i++;
+            }
+            //
+            nodeIds = GetRenumberedNodesAndCells(out nodeCoor, ref cells);
+        }
+        public void GetSetNodesAndCells(FeGroup elementSet, out int[] nodeIds, out double[][] nodeCoor, out int[] cellIds,
                                         out int[][] cells, out int[] cellTypes)
         {
             cellIds = elementSet.Labels;
@@ -7123,39 +7140,24 @@ namespace CaeMesh
             cellTypes = new int[cellIds.Length];
             int i = 0;
             FeElement element;
-
-            System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-            watch.Start();
-
+            //
             if (elementSet is BasePart part)
             {
                 foreach (var elemId in part.Labels)
                 {
                     element = _elements[elemId];
-                    // copy the array because it will be renumbered
+                    // Copy the array because it will be renumbered
                     cells[i] = element.GetVtkNodeIds();
                     cellTypes[i] = element.GetVtkCellType();
                     i++;
                 }
-
-                //foreach (var entry in _elements)    // POSSIBLY SLOW
-                //{
-                //    element = entry.Value;
-                //    if (part.PartId == element.PartId)
-                //    {
-                //        // copy the array because it will be renumbered
-                //        cells[i] = element.GetVtkNodeIds();
-                //        cellTypes[i] = element.GetVtkCellType();
-                //        i++;
-                //    }
-                //}
             }
             else
             {
-                // get all cells and all node ids for elementSet
+                // Get all cells and all node ids for elementSet
                 for (i = 0; i < cellIds.Length; i++)
                 {
-                    // copy the array because it will be renumbered
+                    // Copy the array because it will be renumbered
                     element = _elements[cellIds[i]];
                     cells[i] = element.GetVtkNodeIds();
                     cellTypes[i] = element.GetVtkCellType();

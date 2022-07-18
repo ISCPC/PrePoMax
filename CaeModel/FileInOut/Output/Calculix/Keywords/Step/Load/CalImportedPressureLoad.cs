@@ -10,10 +10,10 @@ using CaeGlobals;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalHydrostaticPressureLoad : CalculixKeyword
+    internal class CalImportedPressureLoad : CalculixKeyword
     {
         // Variables                                                                                                                
-        private HydrostaticPressure _load;
+        private ImportedPressure _load;
         private CLoad[] _cLoads;
 
 
@@ -21,10 +21,11 @@ namespace FileInOut.Output.Calculix
 
 
         // Constructor                                                                                                              
-        public CalHydrostaticPressureLoad(FeModel model, HydrostaticPressure load)
+        public CalImportedPressureLoad(FeModel model, ImportedPressure load)
         {
             _load = load;
             //
+            _load.ImportPressure();
             _cLoads = model.GetNodalLoadsFromVariablePressureLoad(_load);
         }
 
