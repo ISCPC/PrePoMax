@@ -30,7 +30,7 @@ namespace PrePoMax
         //                                                                                                                          
         [Category("First point coordinates")]
         [OrderedDisplayName(0, 10, "By selection")]
-        [DescriptionAttribute("Use selection for the defenition of the first point.")]
+        [DescriptionAttribute("Use selection for the definition of the first point.")]
         [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 3)]
         public ItemSetData FirstPointItemSet
@@ -77,7 +77,7 @@ namespace PrePoMax
         //                                                                                                              
         [Category("Second point coordinates")]
         [OrderedDisplayName(0, 10, "By selection ")]    // must be a different name than for the first point !!!
-        [DescriptionAttribute("Use selection for the defenition of the second point.")]
+        [DescriptionAttribute("Use selection for the definition of the second point.")]
         [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 5)]
         public ItemSetData SecondPointItemSet
@@ -124,7 +124,7 @@ namespace PrePoMax
         //                                                                                                                          
         [Category("Pressure direction")]
         [OrderedDisplayName(0, 10, "By selection  ")]    // must be a different name than for the first point !!!
-        [DescriptionAttribute("Use selection for the defenition of the pressure direction.")]
+        [DescriptionAttribute("Use selection for the definition of the pressure direction.")]
         [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 7)]
         public ItemSetData PressureDirectionItemSet
