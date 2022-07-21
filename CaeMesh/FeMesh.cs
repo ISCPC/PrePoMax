@@ -6081,7 +6081,7 @@ namespace CaeMesh
                 if (!(onlyVisible && !partVisibilities[element.PartId])) nodeIds.UnionWith(element.NodeIds);
             }
             //
-            string nodeSetName = regionName + "_el";
+            string nodeSetName = _nodeSets.GetNextNumberedKey(regionName + "_el");
             FeNodeSet nodeSet = new FeNodeSet(nodeSetName, nodeIds.ToArray());
             UpdateNodeSetCenterOfGravity(nodeSet);
             return nodeSet;

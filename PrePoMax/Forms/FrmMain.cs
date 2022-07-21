@@ -7851,18 +7851,19 @@ namespace PrePoMax
                                                        out pData.Cells.CellNodeIds, out pData.Cells.Types);
             //
 
-
-            CaeResults.ResultsInterpolators.InterpolateScalarResults(pressure.PartExchangeData, pData);
+            float[] distances;
+            float[] values;
+            CaeResults.ResultsInterpolators.InterpolateScalarResults(pressure.PartExchangeData, pData, out distances, out values);
 
 
             //_vtk.InterpolateMeshData(pressure.PartExchangeData, ref pData);
             //
             Dictionary<int, int> nodeIdsLookUp = new Dictionary<int, int>();
-            for (int i = 0; i < pData.Nodes.Values.Length; i++) nodeIdsLookUp.Add(pData.Nodes.Ids[i], i);
+            for (int i = 0; i < pData.Nodes.Coor.Length; i++) nodeIdsLookUp.Add(pData.Nodes.Ids[i], i);
             CaeResults.FeResults outResults = new CaeResults.FeResults("");
             outResults.SetMesh(_controller.Model.Mesh, nodeIdsLookUp);
-            //
-            CaeResults.FieldData fieldData = new CaeResults.FieldData("p");
+            // Add distances
+            CaeResults.FieldData fieldData = new CaeResults.FieldData("Dist");
             fieldData.GlobalIncrementId = 1;
             fieldData.Type = CaeResults.StepType.Static;
             fieldData.Time = 1;
@@ -7870,8 +7871,15 @@ namespace PrePoMax
             fieldData.StepId = 1;
             fieldData.StepIncrementId = 1;
             //
-            CaeResults.Field field = new CaeResults.Field("p");
-            field.AddComponent("VAL", pData.Nodes.Values);
+            CaeResults.Field field = new CaeResults.Field("Dist");
+            field.AddComponent("VAL", distances);
+            outResults.AddFiled(fieldData, field);
+            // Add values
+            fieldData = new CaeResults.FieldData(fieldData);
+            fieldData.Name = "p";
+            //
+            field = new CaeResults.Field("p");
+            field.AddComponent("VAL", values);
             outResults.AddFiled(fieldData, field);
             //
             _controller.SetResults(outResults);
