@@ -238,7 +238,10 @@ namespace PrePoMax.Forms
             {
                 HighlightLoad();
             }
-            else if (_viewLoad is ViewHydrostaticPressureLoad vhpl && property == nameof(vhpl.SurfaceName))
+            else if (_viewLoad is ViewHydrostaticPressureLoad vhpl && 
+                (property == nameof(vhpl.SurfaceName) ||
+                 property == nameof(vhpl.X1) || property == nameof(vhpl.Y1) || property == nameof(vhpl.Z1) ||
+                 property == nameof(vhpl.X2) || property == nameof(vhpl.Y2) || property == nameof(vhpl.Z2)))
             {
                 HighlightLoad();
             }
@@ -260,7 +263,8 @@ namespace PrePoMax.Forms
                 HighlightLoad();
             }
             else if (_viewLoad is ViewCentrifLoad vcfl &&
-                     (property == nameof(vcfl.PartName) || property == nameof(vcfl.ElementSetName)))
+                     (property == nameof(vcfl.PartName) || property == nameof(vcfl.ElementSetName) ||
+                      property == nameof(vcfl.X) || property == nameof(vcfl.Y) || property == nameof(vcfl.Z)))
             {
                 HighlightLoad();
             }
