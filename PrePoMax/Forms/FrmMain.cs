@@ -7853,7 +7853,8 @@ namespace PrePoMax
 
             float[] distances;
             float[] values;
-            CaeResults.ResultsInterpolators.InterpolateScalarResults(pressure.PartExchangeData, pData, out distances, out values);
+            CaeResults.ResultsInterpolators.InterpolateScalarResultsFromTriangle(pressure.PartExchangeData,
+                pData, out distances, out values);
 
 
             //_vtk.InterpolateMeshData(pressure.PartExchangeData, ref pData);

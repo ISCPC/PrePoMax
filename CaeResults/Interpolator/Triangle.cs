@@ -85,12 +85,14 @@ namespace CaeResults
             // The closest point is in the triangle so project to the plane to find it
             return _triPlane.Project(p);
         }
+        
         public bool GetClosestPointTo(Vec3D p, double len2limit, out Vec3D closestPoint)
         {
             closestPoint = null;
             Vec3D v = p - _triPlane.Point;
             Vec3D d = _triPlane.Direction * Vec3D.DotProduct(v, _triPlane.Direction);
             double d2 = d.Len2;
+            //
             if (d2 >= len2limit) return false;
             else
             {
@@ -138,7 +140,42 @@ namespace CaeResults
                 // The closest point is in the triangle so project to the plane to find it
                 closestPoint = p - d;
             }
+            //
             return true;
+        }
+        public bool GetClosestVertexTo(Vec3D p, double len2limit, out Vec3D closestPoint)
+        {
+            closestPoint = null;
+            double da = (A - p).Len2;
+            double db = (B - p).Len2;
+            double dc = (C - p).Len2;
+            //
+            if (da <= db && da <= dc)
+            {
+                if (da < len2limit)
+                {
+                    closestPoint = A;
+                    return true;
+                }
+            }
+            else if (db <= da && db <= dc)
+            {
+                if (db < len2limit)
+                {
+                    closestPoint = B;
+                    return true;
+                }
+            }
+            else
+            {
+                if (dc < len2limit)
+                {
+                    closestPoint = C;
+                    return true;
+                }
+            }
+            //
+            return false;
         }
         public double InterpolateAt(Vec3D p)
         {
@@ -148,14 +185,14 @@ namespace CaeResults
             double ny = Math.Abs(TriNorm.Y);
             double nz = Math.Abs(TriNorm.Z);
             //
-            if (nx > ny && nx > nz)
+            if (nx >= ny && nx >= nz)
             {
                 g = -(A.Z * (p.Y - C.Y) + C.Z * (A.Y - p.Y) + p.Z * (C.Y - A.Y)) /
                      (A.Z * (C.Y - B.Y) + B.Z * (A.Y - C.Y) + C.Z * (B.Y - A.Y));
                 h = (A.Z * (p.Y - B.Y) + B.Z * (A.Y - p.Y) + p.Z * (B.Y - A.Y)) /
                     (A.Z * (C.Y - B.Y) + B.Z * (A.Y - C.Y) + C.Z * (B.Y - A.Y));
             }
-            else if (ny > nx && ny > nz)
+            else if (ny >= nx && ny >= nz)
             {
                 g = -(A.Z * (p.X - C.X) + C.Z * (A.X - p.X) + p.Z * (C.X - A.X)) /
                      (A.Z * (C.X - B.X) + B.Z * (A.X - C.X) + C.Z * (B.X - A.X));
@@ -169,11 +206,6 @@ namespace CaeResults
                 h = (A.X * (p.Y - B.Y) + B.X * (A.Y - p.Y) + p.X * (B.Y - A.Y)) /
                     (A.X * (C.Y - B.Y) + B.X * (A.Y - C.Y) + C.X * (B.Y - A.Y));
             }
-            //
-            double z = (1-g-h) * A.Z + g * B.Z + h * C.Z;
-            double delta = Math.Abs(p.Z - z);
-            //
-            if (delta > 1E-6) return -111;
             //
             return (1 - g - h) *_va + g * _vb + h * _vc;
         }
