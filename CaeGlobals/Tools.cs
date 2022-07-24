@@ -213,13 +213,13 @@ namespace CaeGlobals
             //
             return lines;
         }
-        // Read number of lines
-        private const char CR = '\r';
-        private const char LF = '\n';
-        private const char NULL = (char)0;
+        // Read number of lines        
         //
         [DebuggerStepThrough]
-        public static bool IsNullOrEmptyOrWhiteSpace(this string value) => string.IsNullOrWhiteSpace(value);
+        public static bool IsNullOrEmptyOrWhiteSpace(this string value)
+        {
+            return string.IsNullOrWhiteSpace(value);
+        }
         //
         [DebuggerStepThrough]
         public static T NotNull<T>(T value, string argName) where T : class
@@ -233,14 +233,18 @@ namespace CaeGlobals
         [DebuggerStepThrough]
         public static long CountLines(this Stream stream, Encoding encoding = default)
         {
+            const char CR = '\r';
+            const char LF = '\n';
+            const char NULL = (char)0;
+            //
             NotNull(stream, nameof(stream));
-
+            //
             var lineCount = 0L;
             var byteBuffer = new byte[1024 * 1024];
             var detectedEOL = NULL;
             var currentChar = NULL;
             int bytesRead;
-
+            //
             if (encoding is null || Equals(encoding, Encoding.ASCII) || Equals(encoding, Encoding.UTF8))
             {
                 while ((bytesRead = stream.Read(byteBuffer, 0, byteBuffer.Length)) > 0)
@@ -248,7 +252,7 @@ namespace CaeGlobals
                     for (var i = 0; i < bytesRead; i++)
                     {
                         currentChar = (char)byteBuffer[i];
-
+                        //
                         if (detectedEOL != NULL)
                         {
                             if (currentChar == detectedEOL)
@@ -267,15 +271,15 @@ namespace CaeGlobals
             else
             {
                 var charBuffer = new char[byteBuffer.Length];
-
+                //
                 while ((bytesRead = stream.Read(byteBuffer, 0, byteBuffer.Length)) > 0)
                 {
                     var charCount = encoding.GetChars(byteBuffer, 0, bytesRead, charBuffer, 0);
-
+                    //
                     for (var i = 0; i < charCount; i++)
                     {
                         currentChar = charBuffer[i];
-
+                        //
                         if (detectedEOL != NULL)
                         {
                             if (currentChar == detectedEOL)
@@ -291,12 +295,12 @@ namespace CaeGlobals
                     }
                 }
             }
-
+            //
             if (currentChar != LF && currentChar != CR && currentChar != NULL)
             {
                 lineCount++;
             }
-
+            //
             return lineCount;
         }
         // String
