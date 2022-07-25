@@ -8,142 +8,15 @@ using CaeGlobals;
 
 namespace CaeResults
 {
+    public enum InterpolatorEnum
+    {
+        ClosestNode,
+        ClosestPoint
+    }
     static public class ResultsInterpolators
     {
-        public static void InterpolateScalarResultsFromPoint(PartExchangeData source, PartExchangeData target,
-                                                                out float[] distances, out float[] values)
-        {
-            BoundingBox sourceBox = ComputeAllNodesBoundingBox(source);
-            double l = sourceBox.GetDiagonal() / 128;
-            //
-            int nx = (int)Math.Ceiling(sourceBox.GetXSize() / l);
-            int ny = (int)Math.Ceiling(sourceBox.GetYSize() / l);
-            int nz = (int)Math.Ceiling(sourceBox.GetZSize() / l);
-            int nxy = nx * ny;
-            double deltaX = sourceBox.GetXSize() / nx;
-            double deltaY = sourceBox.GetYSize() / ny;
-            double deltaZ = sourceBox.GetZSize() / nz;
-            //
-            BoundingBox[] cellBoxes = ComputeCellBoundingBoxes(source);
-            BoundingBox[] regionBoxes = SplitCellBoxesToRegions(cellBoxes, sourceBox, nx, ny, nz);
-            //
-            int i;
-            int j;
-            int k;
-            int mini;
-            int maxi;
-            int minj;
-            int maxj;
-            int mink;
-            int maxk;
-            double[] targetCoor;
-            double[] sourceCoor;
-            BoundingBox bb;
-            int num;
-            int delta;
-            double d;
-            double boxD;
-            double minD;
-            double bestValue;
-            int[] cell;
-            distances = new float[target.Nodes.Coor.Length];
-            values = new float[target.Nodes.Coor.Length];
-            //
-            for (int nId = 0; nId < target.Nodes.Coor.Length; nId++)
-            { 
-                targetCoor = target.Nodes.Coor[nId];
-                i = (int)Math.Floor((targetCoor[0] - sourceBox.MinX) / deltaX);
-                j = (int)Math.Floor((targetCoor[1] - sourceBox.MinY) / deltaY);
-                k = (int)Math.Floor((targetCoor[2] - sourceBox.MinZ) / deltaZ);
-                if (i < 0) i = 0;
-                else if (i >= nx) i = nx - 1;
-                if (j < 0) j = 0;
-                else if (j >= ny) j = ny - 1;
-                if (k < 0) k = 0;
-                else if (k >= nz) k = nz - 1;
-                bb = regionBoxes[k * nxy + j * nx + i];
-                //
-                mini = i;
-                maxi = i;
-                minj = j;
-                maxj = j;
-                mink = k;
-                maxk = k;
-                delta = 0;
-                num = ((Dictionary<int, BoundingBox>)bb.Tag).Count;
-                // Add next layer of regions
-                while (num == 0 || delta < 1)
-                {
-                    delta++;
-                    mini = i - delta;
-                    maxi = i + delta;
-                    minj = j - delta;
-                    maxj = j + delta;
-                    mink = k - delta;
-                    maxk = k + delta;
-                    if (mini < 0) mini = 0;
-                    if (maxi >= nx) maxi = nx - 1;
-                    if (minj < 0) minj = 0;
-                    if (maxj >= ny) maxj = ny - 1;
-                    if (mink < 0) mink = 0;
-                    if (maxk >= nz) maxk = nz - 1;
-                    for (int kk = mink; kk <= maxk; kk++)
-                    {
-                        for (int jj = minj; jj <= maxj; jj++)
-                        {
-                            for (int ii = mini; ii <= maxi; ii++)
-                            {
-                                bb = regionBoxes[kk * nxy + jj * nx + ii];
-                                num += ((Dictionary<int, BoundingBox>)bb.Tag).Count;
-                            }
-                        }
-                    }
-                }
-                //
-                minD = double.MaxValue;
-                bestValue = -1;
-                //
-                for (int kk = mink; kk <= maxk; kk++)
-                {
-                    for (int jj = minj; jj <= maxj; jj++)
-                    {
-                        for (int ii = mini; ii <= maxi; ii++)
-                        {
-                            bb = regionBoxes[kk * nxy + jj * nx + ii];
-                            if (((Dictionary<int, BoundingBox>)bb.Tag).Count == 0) continue;
-                            //
-                            foreach (var entry in (Dictionary<int, BoundingBox>)bb.Tag)
-                            {
-                                boxD = entry.Value.MaxOutsideDistance2(targetCoor);
-                                if ( boxD < minD)
-                                {
-                                    cell = source.Cells.CellNodeIds[entry.Key];
-                                    for (int id = 0; id < cell.Length; id++)
-                                    {
-                                        sourceCoor = source.Nodes.Coor[cell[id]];
-                                        d = (sourceCoor[0] - targetCoor[0]) * (sourceCoor[0] - targetCoor[0]) +
-                                            (sourceCoor[1] - targetCoor[1]) * (sourceCoor[1] - targetCoor[1]) +
-                                            (sourceCoor[2] - targetCoor[2]) * (sourceCoor[2] - targetCoor[2]);
-                                        //
-                                        if (d < minD)
-                                        {
-                                            minD = d;
-                                            bestValue = source.Nodes.Values[cell[id]];
-                                        }
-                                    }
-                                }
-                                
-                            }
-                        }
-                    }
-                }
-                //
-                distances[nId] = (float)Math.Sqrt(minD);
-                values[nId] = (float)bestValue;
-            }
-        }
-        public static void InterpolateScalarResultsFromTriangle(PartExchangeData source, PartExchangeData target,
-                                                                out float[] distances, out float[] values)
+        public static void InterpolateScalarResults(PartExchangeData source, PartExchangeData target, InterpolatorEnum interpolator,
+                                                    out float[] distances, out float[] values)
         {
             BoundingBox sourceBox = ComputeAllNodesBoundingBox(source);
             double l = sourceBox.GetDiagonal() / 128;
@@ -181,6 +54,7 @@ namespace CaeResults
             Vec3D bestPoint = new Vec3D();
             Triangle triangle;
             Triangle bestTriangle = null;
+            bool closer;
             distances = new float[target.Nodes.Coor.Length];
             values = new float[target.Nodes.Coor.Length];
             //
@@ -251,17 +125,26 @@ namespace CaeResults
                             {
                                 triangle = triangles[entry.Key];
                                 boxD = entry.Value.MaxOutsideDistance2(sourceCoor);
-                                if (boxD < minD && triangle.GetClosestVertexTo(sourcePoint, minD, out closestPoint))
+                                if (boxD < minD)
                                 {
-                                    d = (closestPoint - sourcePoint).Len2;
+                                    if (interpolator == InterpolatorEnum.ClosestNode)
+                                        closer = triangle.GetClosestNodeTo(sourcePoint, minD, out closestPoint);
+                                    else if (interpolator == InterpolatorEnum.ClosestPoint)
+                                        closer = triangle.GetClosestPointTo(sourcePoint, minD, out closestPoint);
+                                    else throw new NotSupportedException();
                                     //
-                                    if (d < minD)
+                                    if (closer)
                                     {
-                                        minD = d;
-                                        bestTriangle = triangle;
-                                        bestPoint.X = closestPoint.X;
-                                        bestPoint.Y = closestPoint.Y;
-                                        bestPoint.Z = closestPoint.Z;
+                                        d = (closestPoint - sourcePoint).Len2;
+                                        //
+                                        if (d < minD)
+                                        {
+                                            minD = d;
+                                            bestTriangle = triangle;
+                                            bestPoint.X = closestPoint.X;
+                                            bestPoint.Y = closestPoint.Y;
+                                            bestPoint.Z = closestPoint.Z;
+                                        }
                                     }
                                 }
                             }
@@ -269,8 +152,6 @@ namespace CaeResults
                     }
                 }
                 //
-                if (minD == 0)
-                    minD = 0;
                 distances[nId] = (float)Math.Sqrt(minD);
                 values[nId] = (float)bestTriangle.InterpolateAt(bestPoint);
             }

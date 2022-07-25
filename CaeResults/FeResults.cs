@@ -181,7 +181,7 @@ namespace CaeResults
         // Mesh                                     
         public void SetMesh(FeMesh mesh, Dictionary<int, int> nodeIdsLookUp)
         {
-            _mesh = mesh;
+            _mesh = new FeMesh(mesh, mesh.Parts.Keys.ToArray());
             //
             List<BasePart> parts = new List<BasePart>();
             foreach (var entry in _mesh.Parts)

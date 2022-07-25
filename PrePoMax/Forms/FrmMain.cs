@@ -7844,18 +7844,22 @@ namespace PrePoMax
         private void tsmiTest_Click(object sender, EventArgs e)
         {
             ImportedPressure pressure = (ImportedPressure)_controller.GetStep("Step-1").Loads["Imported_pressure-1"];
-            CaeResults.FeResults results = pressure.ImportPressure();
+            pressure.ImportPressure(_controller.Model.Mesh);
+            //CaeResults.FeResults results = pressure.GetResults();
             //
             PartExchangeData pData = new PartExchangeData();
             _controller.Model.Mesh.GetAllNodesAndCells(out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids,
                                                        out pData.Cells.CellNodeIds, out pData.Cells.Types);
             //
 
-            float[] distances;
-            float[] values;
-            CaeResults.ResultsInterpolators.InterpolateScalarResultsFromTriangle(pressure.PartExchangeData,
-                pData, out distances, out values);
+            float[] distances = new float[pData.Nodes.Coor.Length];
+            float[] values = new float[pData.Nodes.Coor.Length];
 
+            for (int i = 0; i < distances.Length; i++)
+            {
+                distances[i] = (float)pressure.GetDistanceForPoint(pData.Nodes.Coor[i]);
+                values[i] = (float)pressure.GetPressureForPoint(pData.Nodes.Coor[i]);
+            }
 
             //_vtk.InterpolateMeshData(pressure.PartExchangeData, ref pData);
             //

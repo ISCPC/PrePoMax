@@ -581,6 +581,18 @@ namespace CaeMesh
             }
             return similarity;
         }
+        public int GetNodesHash()
+        {
+            int hash = 0;
+            if (_nodes != null)
+            {
+                foreach (var entry in _nodes)
+                {
+                    hash ^= entry.Value.X.GetHashCode() ^ entry.Value.Y.GetHashCode() << 2 ^ entry.Value.Z.GetHashCode() >> 2;
+                }
+            }
+            return hash;
+        }
 
         // Bounding box
         public void UpdateMaxNodeAndElementIds()

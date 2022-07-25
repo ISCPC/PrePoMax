@@ -75,9 +75,19 @@ namespace PrePoMax
         }
         //
         [CategoryAttribute("Magnitude")]
-        [OrderedDisplayName(3, 10, "Scale factor")]
-        [DescriptionAttribute("Value of the pressure scale factor.")]
+        [OrderedDisplayName(3, 10, "Interpolator")]
+        [DescriptionAttribute("Select the interpolation type.")]
         [Id(4, 3)]
+        public CaeResults.InterpolatorEnum Interpolator
+        {
+            get { return _importedPressure.Interpolator; }
+            set { _importedPressure.Interpolator = value; }
+        }
+        ////
+        [CategoryAttribute("Magnitude")]
+        [OrderedDisplayName(4, 10, "Scale factor")]
+        [DescriptionAttribute("Value of the pressure scale factor.")]
+        [Id(5, 3)]
         public double ScaleFactor { get { return _importedPressure.ScaleFactor; } set { _importedPressure.ScaleFactor = value; } }
         //
         public override string AmplitudeName { get { return _importedPressure.AmplitudeName; } set { _importedPressure.AmplitudeName = value; } }

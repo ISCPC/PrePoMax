@@ -143,7 +143,7 @@ namespace CaeResults
             //
             return true;
         }
-        public bool GetClosestVertexTo(Vec3D p, double len2limit, out Vec3D closestPoint)
+        public bool GetClosestNodeTo(Vec3D p, double len2limit, out Vec3D closestPoint)
         {
             closestPoint = null;
             double da = (A - p).Len2;

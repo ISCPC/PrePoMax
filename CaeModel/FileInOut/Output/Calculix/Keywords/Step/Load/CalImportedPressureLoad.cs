@@ -25,7 +25,7 @@ namespace FileInOut.Output.Calculix
         {
             _load = load;
             //
-            _load.ImportPressure();
+            _load.ImportPressure(model.Mesh);
             _cLoads = model.GetNodalLoadsFromVariablePressureLoad(_load);
         }
 
