@@ -1422,7 +1422,7 @@ namespace PrePoMax
         public void SaveToPmx(string fileName)
         {
             try
-            {
+            {                
                 _savingFile = true;
                 //
                 PrepareForSavig(this);
@@ -1477,6 +1477,7 @@ namespace PrePoMax
                 File.Delete(tmpFileName);
                 // Settings
                 AddFileNameToRecent(fileName); // this line redraws the scene
+                //
                 ApplySettings(); // work folder and executable
                 //
                 _modelChanged = false;

@@ -1453,20 +1453,19 @@ namespace CaeResults
                         float[] values = fieldEntry.Value.GetComponentValues(fieldData.Component);
                         //
                         basePart = _mesh.Parts[partName];
-                        //
+                        // Initialize   
+                        nodesData.Values[0] = float.MaxValue;
+                        nodesData.Values[1] = -float.MaxValue;
                         if (_nodeIdsLookUp.TryGetValue(basePart.NodeLabels[0], out id) && id < values.Length)
                         {
-                                value = values[id];
-                                //
+                            value = values[id];
+                            if (!float.IsNaN(value))
+                            {
                                 nodesData.Values[0] = value;
-                                minId = basePart.NodeLabels[0];
                                 nodesData.Values[1] = value;
+                                minId = basePart.NodeLabels[0];
                                 maxId = basePart.NodeLabels[0];
-                        }
-                        else
-                        {
-                            nodesData.Values[0] = float.MaxValue;
-                            nodesData.Values[1] = -float.MaxValue;
+                            }
                         }
                         //
                         foreach (var nodeId in basePart.NodeLabels)
@@ -1474,15 +1473,18 @@ namespace CaeResults
                             if (_nodeIdsLookUp.TryGetValue(nodeId, out id) && id < values.Length)
                             {
                                 value = values[id];
-                                if (value < nodesData.Values[0])
+                                if (!float.IsNaN(value))
                                 {
-                                    nodesData.Values[0] = value;
-                                    minId = nodeId;
-                                }
-                                else if (value > nodesData.Values[1])
-                                {
-                                    nodesData.Values[1] = value;
-                                    maxId = nodeId;
+                                    if (value < nodesData.Values[0])
+                                    {
+                                        nodesData.Values[0] = value;
+                                        minId = nodeId;
+                                    }
+                                    else if (value > nodesData.Values[1])
+                                    {
+                                        nodesData.Values[1] = value;
+                                        maxId = nodeId;
+                                    }
                                 }
                             }
                         }

@@ -1363,9 +1363,6 @@ namespace PrePoMax
                 if (!_controller.ModelInitialized && !_controller.ResultsInitialized)
                     throw new CaeException("There is no model or results to save.");
                 //
-                if (sender == null) System.Diagnostics.Debug.WriteLine("null");
-                else System.Diagnostics.Debug.WriteLine(sender.ToString());
-                //
                 SetStateWorking(Globals.SavingText);
                 await Task.Run(() => _controller.Save());
             }
@@ -5545,26 +5542,29 @@ namespace PrePoMax
         }
         public void SelectResultsUnitSystem()
         {
-            try
+            InvokeIfRequired(() =>
             {
-                // Disable unit system selection during regenerate - check that the state is ready
-                if (tsslState.Text != Globals.RegeneratingText)
+                try
                 {
-                    UnitSystemType unitSystemType = _controller.Results.UnitSystem.UnitSystemType;
-                    //
-                    if (unitSystemType == UnitSystemType.Undefined)
+                    // Disable unit system selection during regenerate - check that the state is ready
+                    if (tsslState.Text != Globals.RegeneratingText)
                     {
-                        CloseAllForms();
-                        SetFormLoaction(_frmNewModel);
+                        UnitSystemType unitSystemType = _controller.Results.UnitSystem.UnitSystemType;
                         //
-                        if (_frmNewModel.PrepareForm("", "Results")) _frmNewModel.ShowDialog(this);
+                        if (unitSystemType == UnitSystemType.Undefined)
+                        {
+                            CloseAllForms();
+                            SetFormLoaction(_frmNewModel);
+                            //
+                            if (_frmNewModel.PrepareForm("", "Results")) _frmNewModel.ShowDialog(this);
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
+                catch (Exception ex)
+                {
+                    ExceptionTools.Show(this, ex);
+                }
+            });
         }
         public void UpdateUnitSystem(UnitSystem unitSystem)
         {
@@ -7886,7 +7886,8 @@ namespace PrePoMax
             field = new CaeResults.Field("p");
             field.AddComponent("VAL", values);
             outResults.AddFiled(fieldData, field);
-            //
+            // Unit system
+            outResults.UnitSystem = new UnitSystem(_controller.Model.UnitSystem.UnitSystemType);
             _controller.SetResults(outResults);
             //
             if (_controller.Results != null && _controller.Results.Mesh != null)

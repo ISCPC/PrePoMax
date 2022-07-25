@@ -4960,7 +4960,7 @@ namespace vtkControl
                 if (actor.UseSecondaryHighightColor) highlightColor = secondaryHighlightColor;
                 else highlightColor = primaryHighlightColor;
                 //
-                actor.GeometryProperty.SetColor(highlightColor.R / 255.0, highlightColor.G / 255.0, highlightColor.B / 255.0);
+                ApplySelectionFormatingToActor(actor);
             }
             RenderSceene();
         }
@@ -5147,8 +5147,10 @@ namespace vtkControl
                 }
                 else
                 {
-                    if (actor.MinNode != null && actor.MinNode.Value < minNode.Value) minNode = actor.MinNode;
-                    if (actor.MaxNode != null && actor.MaxNode.Value > maxNode.Value) maxNode = actor.MaxNode;
+                    if (actor.MinNode != null && !float.IsNaN(actor.MinNode.Value) && actor.MinNode.Value < minNode.Value)
+                        minNode = actor.MinNode;
+                    if (actor.MaxNode != null && !float.IsNaN(actor.MaxNode.Value) && actor.MaxNode.Value > maxNode.Value)
+                        maxNode = actor.MaxNode;
                 }
             }
             if (minNode == null || maxNode == null) return;
@@ -5177,6 +5179,9 @@ namespace vtkControl
             double[] actorRange = _lookupTable.GetTableRange();
             vtkLookupTable lookup = vtkLookupTable.New();
             lookup.DeepCopy(_lookupTable);
+            // Set NAN color as white
+            lookup.SetNanColor(1, 1, 1, 1);
+            //
             foreach (var entry in _actors)
             {
                 actor = entry.Value;

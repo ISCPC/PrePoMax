@@ -336,6 +336,7 @@ namespace PrePoMax.Forms
             else if (FELoad is ImportedPressure ip)
             {
                 if (!ip.IsProperlyDefined(out string error)) throw new CaeException(error);
+                ip.ImportPressure(_controller.Model.Mesh);
             }
             else if (FELoad is STLoad stl)
             {

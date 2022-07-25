@@ -581,7 +581,7 @@ namespace CaeMesh
             }
             return similarity;
         }
-        public int GetNodesHash()
+        public override int GetHashCode()
         {
             int hash = 0;
             if (_nodes != null)
@@ -4251,6 +4251,20 @@ namespace CaeMesh
             int partId = _elements[elementId].PartId;
             BasePart part = GetPartById(partId);
             return part.Labels.ToArray();
+        }
+        public int[] GetSurfaceElementIds(string surfaceName)
+        {
+            FeSurface surface;
+            HashSet<int> elementIds = new HashSet<int>();
+            //
+            if (_surfaces.TryGetValue(surfaceName, out surface))
+            {
+                foreach (var entry in surface.ElementFaces)
+                {
+                    elementIds.UnionWith(_elementSets[entry.Value].Labels);
+                }
+            }
+            return elementIds.ToArray();
         }
         public int GetCellFaceNodeIdClosestToPoint(double[] point, int[] cellFaceNodeIds)
         {

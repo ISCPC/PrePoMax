@@ -76,7 +76,8 @@ namespace PrePoMax
         //
         [CategoryAttribute("Magnitude")]
         [OrderedDisplayName(3, 10, "Interpolator")]
-        [DescriptionAttribute("Select the interpolation type.")]
+        [DescriptionAttribute("Select the interpolation type. The closest node method takes the value from the closest node " + 
+            "on the source mesh while the closest point method interpolates the closest three nodal values.")]
         [Id(4, 3)]
         public CaeResults.InterpolatorEnum Interpolator
         {
@@ -88,7 +89,7 @@ namespace PrePoMax
         [OrderedDisplayName(4, 10, "Scale factor")]
         [DescriptionAttribute("Value of the pressure scale factor.")]
         [Id(5, 3)]
-        public double ScaleFactor { get { return _importedPressure.ScaleFactor; } set { _importedPressure.ScaleFactor = value; } }
+        public float ScaleFactor { get { return _importedPressure.ScaleFactor; } set { _importedPressure.ScaleFactor = value; } }
         //
         public override string AmplitudeName { get { return _importedPressure.AmplitudeName; } set { _importedPressure.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _importedPressure.Color; } set { _importedPressure.Color = value; } }

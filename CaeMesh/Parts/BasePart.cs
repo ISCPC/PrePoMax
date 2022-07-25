@@ -23,7 +23,7 @@ namespace CaeMesh
         protected double[] _offset;
 
         [NonSerialized]
-        protected VisualizationData _visualizationCopy;
+        protected VisualizationData _visualizationCopy; // temp copy while saving
 
 
         // Properties                                                                                                               

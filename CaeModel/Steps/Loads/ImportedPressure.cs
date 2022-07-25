@@ -18,16 +18,18 @@ namespace CaeModel
         private string _pressureTime;
         private string _pressureVariableName;
         private InterpolatorEnum _interpolator;
-        private double _scaleFactor;
+        private float _scaleFactor;
+        [NonSerialized]
         private PartExchangeData _sourceData;
-        [NonSerialized] Dictionary<double[], float[]> _coorDistanceValue;
+        [NonSerialized]
+        private Dictionary<double[], float[]> _coorDistanceValue;
         //
         private FileInfo _oldFileInfo;
         private string _oldPressureTime;
         private string _oldPressureVariableName;
         private InterpolatorEnum _oldInterpolator;
-        private double _oldScaleFactor;
         private int _oldMeshNodesHash;
+        private int _oldElementSetHash;
 
 
         // Properties                                                                                                               
@@ -35,7 +37,7 @@ namespace CaeModel
         public string PressureTime { get { return _pressureTime; } set { _pressureTime = value; } }
         public string PressureVariableName { get { return _pressureVariableName; } set { _pressureVariableName = value; } }
         public InterpolatorEnum Interpolator { get { return _interpolator; } set { _interpolator = value; } }
-        public double ScaleFactor { get { return _scaleFactor; } set { _scaleFactor = value; } }
+        public float ScaleFactor { get { return _scaleFactor; } set { _scaleFactor = value; } }
         public PartExchangeData SourceData { get { return _sourceData; } set { _sourceData = value; } }
 
 
@@ -49,6 +51,14 @@ namespace CaeModel
             _interpolator = InterpolatorEnum.ClosestNode;
             _scaleFactor = 1;
             _sourceData = null;
+            _coorDistanceValue = null;
+            //
+            _oldFileInfo = null;
+            _oldPressureTime = null;
+            _oldPressureVariableName = null;
+            _oldInterpolator = InterpolatorEnum.ClosestNode;
+            _oldMeshNodesHash = 0;
+            _oldElementSetHash = 0;
         }
 
 
@@ -66,23 +76,35 @@ namespace CaeModel
         }
         public void ImportPressure(FeMesh targetMesh)
         {
-            bool update = false;
+            bool updateData = false;
+            bool updateInterpolation = false;
             FileInfo fileInfo = new FileInfo(_fileName);
-            int meshNodesHash = targetMesh.GetNodesHash();
+            int meshNodesHash = targetMesh.GetHashCode();
+            FeSurface surface = targetMesh.Surfaces[_surfaceName];
+            FeElementSet elementSet = new FeElementSet("surface", targetMesh.GetSurfaceElementIds(_surfaceName));
+            int elementSetHash = elementSet.GetHashCode();
             //
             if (fileInfo.Exists)
             {
-                if (_oldFileInfo == null) update = true;
+                if (_oldFileInfo == null) updateData = true;
+                else if (_sourceData == null) updateData = true;
                 //
-                else if (fileInfo.Name != _oldFileInfo.Name) update = true;
+                else if (fileInfo.Name != _oldFileInfo.Name) updateData = true;
                 // Files have the same name - check if newer
-                else if (fileInfo.LastWriteTimeUtc < _oldFileInfo.LastWriteTimeUtc) update = true;
+                else if (fileInfo.LastWriteTimeUtc < _oldFileInfo.LastWriteTimeUtc) updateData = true;
                 //
-                else if (_pressureTime != _oldPressureTime) update = true;
-                else if (_pressureVariableName != _oldPressureVariableName) update = true;
-                else if (_interpolator != _oldInterpolator) update = true;
-                else if (_scaleFactor != _oldScaleFactor) update = true;
-                else if (meshNodesHash != _oldMeshNodesHash) update = true;
+
+
+                //always update !!?!?!?
+
+
+                else if (_pressureTime != _oldPressureTime) updateData = true;
+                else if (_pressureVariableName != _oldPressureVariableName) updateData = true;
+                //
+                else if (_interpolator != _oldInterpolator) updateInterpolation = true;
+                else if (meshNodesHash != _oldMeshNodesHash) updateInterpolation = true;
+                else if (elementSetHash != _oldElementSetHash) updateInterpolation = true;
+                else if (_coorDistanceValue == null) updateInterpolation = true;
             }
             else
             {
@@ -93,14 +115,11 @@ namespace CaeModel
             //
             float[] distances;
             float[] values;
-            if (update)
+            if (updateData)
             {
                 _oldFileInfo = fileInfo;
                 _oldPressureTime = _pressureTime;
                 _oldPressureVariableName = _pressureVariableName;
-                _oldInterpolator = _interpolator;
-                _oldScaleFactor = _scaleFactor;
-                _oldMeshNodesHash = meshNodesHash;
                 // Get results
                 FeResults results = OpenFoamFileReader.Read(_fileName, double.Parse(_pressureTime), _pressureVariableName);
                 if (results == null) throw new CaeException("No pressure was imported.");
@@ -118,17 +137,21 @@ namespace CaeModel
                 pressureData.Component = componentNames[0];
                 // Get source part exchange data
                 _sourceData = results.GetAllNodesCellsAndValues(pressureData);
-                // Scale values
-                float scale = (float)_scaleFactor;
-                if (scale != 1)
-                {
-                    for (int i = 0; i < _sourceData.Nodes.Values.Length; i++) _sourceData.Nodes.Values[i] *= scale;
-                }
+            }
+            if (updateData || updateInterpolation)
+            {
+                _oldInterpolator = _interpolator;
+                _oldMeshNodesHash = meshNodesHash;
+                _oldElementSetHash = elementSetHash;
                 // Get target part exchange data
                 PartExchangeData targetData = new PartExchangeData();
-                targetMesh.GetAllNodesAndCells(out targetData.Nodes.Ids, out targetData.Nodes.Coor, out targetData.Cells.Ids,
-                                               out targetData.Cells.CellNodeIds, out targetData.Cells.Types);
+                
                 //
+                targetMesh.GetSetNodesAndCells(elementSet, out targetData.Nodes.Ids, out targetData.Nodes.Coor,
+                                               out targetData.Cells.Ids, out targetData.Cells.CellNodeIds,
+                                               out targetData.Cells.Types);
+                //targetMesh.GetAllNodesAndCells(out targetData.Nodes.Ids, out targetData.Nodes.Coor, out targetData.Cells.Ids,
+                //                               out targetData.Cells.CellNodeIds, out targetData.Cells.Types);
                 ResultsInterpolators.InterpolateScalarResults(_sourceData, targetData, _interpolator, out distances, out values);
                 //
                 CompareDoubleArray comparer = new CompareDoubleArray();
@@ -138,25 +161,19 @@ namespace CaeModel
                     _coorDistanceValue.Add(targetData.Nodes.Coor[i], new float[] { distances[i], values[i] });
                 }
             }
-            //
-            if (_coorDistanceValue == null || update)
-            {
-
-            }
-        }
-        private void Interpolate()
-        {
-
         }
         public double GetDistanceForPoint(double[] point)
         {
-            float[] distanceValue = _coorDistanceValue[point];
-            return distanceValue[0];
+            float[] distanceValue;
+            if (_coorDistanceValue.TryGetValue(point, out distanceValue)) return distanceValue[0];
+            else return float.NaN;
         }
         public override double GetPressureForPoint(double[] point)
         {
-            float[] distanceValue = _coorDistanceValue[point];
-            return distanceValue[1];
+            float[] distanceValue;
+            // Scale value
+            if (_coorDistanceValue.TryGetValue(point, out distanceValue)) return distanceValue[1] * _scaleFactor;
+            else return float.NaN;
         }
         
     }
