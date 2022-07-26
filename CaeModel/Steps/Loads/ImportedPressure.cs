@@ -80,7 +80,6 @@ namespace CaeModel
             bool updateInterpolation = false;
             FileInfo fileInfo = new FileInfo(_fileName);
             int meshNodesHash = targetMesh.GetHashCode();
-            FeSurface surface = targetMesh.Surfaces[_surfaceName];
             FeElementSet elementSet = new FeElementSet("surface", targetMesh.GetSurfaceElementIds(_surfaceName));
             int elementSetHash = elementSet.GetHashCode();
             //
