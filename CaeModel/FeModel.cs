@@ -1229,8 +1229,8 @@ namespace CaeModel
                     //
                     _mesh.GetElementFaceCenterAndNormal(elementId, entry.Key, out double[] faceCenter, out faceNormal,
                                                         out bool shellElement);
-                   A = element.GetArea(entry.Key, _mesh.Nodes);
-                    // Accounf for 2D area
+                    A = element.GetArea(entry.Key, _mesh.Nodes);
+                    // Account for 2D area when an edge is selected
                     if (element is FeElement2D element2D && entry.Key != FeFaceName.S1 && entry.Key != FeFaceName.S2)
                     {
                         sectionId = elementIdSectionId[elementId];
