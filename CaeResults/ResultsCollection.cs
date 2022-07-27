@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CaeGlobals;
 
 namespace CaeResults
 {
@@ -11,7 +12,7 @@ namespace CaeResults
     {
         // Variables                                                                                                                
         private FeResults _currentResult;
-        private Dictionary<string, FeResults> _results;
+        private OrderedDictionary<string, FeResults> _results;
 
 
         // Properties                                                                                                               
@@ -49,25 +50,37 @@ namespace CaeResults
                 if (allResults.CurrentResult != null) FeResults.ReadFromFile(allResults.CurrentResult, br, version);
             }
         }
+        //
         public void Clear()
         {
             _currentResult = null;
-            _results = new Dictionary<string, FeResults>();
+            _results = new OrderedDictionary<string, FeResults>();
         }
-        public bool Add(string name, FeResults result)
+        public string[] GetResultNames()
         {
-            if (_results.ContainsKey(name))
-            {
-                throw new NotSupportedException();
-                //return false;
-            }
-            else
-            {
-                _results.Add(name, result);
-                _currentResult = result;
-                return true;
-            }
+            return _results.Keys.ToArray();
         }
+        public string GetCurrentResultName()
+        {
+            foreach (var entry in _results)
+            {
+                if (entry.Value == _currentResult) return entry.Key;
+            }
+            return null;
+        }
+        public bool ContainsResult(string name)
+        {
+            return _results.ContainsKey(name);
+        }
+        
+        public void Add(string name, FeResults result)
+        {
+            if (_results.ContainsKey(name)) _results.Replace(name, name, result);
+            else _results.Add(name, result);
+            //
+            _currentResult = result;
+        }
+        
         public void Remove(string name)
         {
             _results.Remove(name);

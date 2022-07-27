@@ -30,6 +30,64 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
+            this.tsFile = new UserControls.ToolStripFocus();
+            this.tsbNew = new System.Windows.Forms.ToolStripButton();
+            this.tsbOpen = new System.Windows.Forms.ToolStripButton();
+            this.tsbImport = new System.Windows.Forms.ToolStripButton();
+            this.tsbSave = new System.Windows.Forms.ToolStripButton();
+            this.tsViews = new UserControls.ToolStripFocus();
+            this.tsbZoomToFit = new System.Windows.Forms.ToolStripButton();
+            this.toolStripViewSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsbFrontView = new System.Windows.Forms.ToolStripButton();
+            this.tsbBackView = new System.Windows.Forms.ToolStripButton();
+            this.tsbTopView = new System.Windows.Forms.ToolStripButton();
+            this.tsbBottomView = new System.Windows.Forms.ToolStripButton();
+            this.tsbLeftView = new System.Windows.Forms.ToolStripButton();
+            this.tsbRightView = new System.Windows.Forms.ToolStripButton();
+            this.tsbNormalView = new System.Windows.Forms.ToolStripButton();
+            this.tsbVerticalView = new System.Windows.Forms.ToolStripButton();
+            this.tsbIsometric = new System.Windows.Forms.ToolStripButton();
+            this.toolStripViewSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsbShowWireframeEdges = new System.Windows.Forms.ToolStripButton();
+            this.tsbShowElementEdges = new System.Windows.Forms.ToolStripButton();
+            this.tsbShowModelEdges = new System.Windows.Forms.ToolStripButton();
+            this.tsbShowNoEdges = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsbSectionView = new System.Windows.Forms.ToolStripButton();
+            this.tsbExplodedView = new System.Windows.Forms.ToolStripButton();
+            this.toolStripViewSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsbQuery = new System.Windows.Forms.ToolStripButton();
+            this.tsbRemoveAnnotations = new System.Windows.Forms.ToolStripButton();
+            this.toolStripViewSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsbShowAllParts = new System.Windows.Forms.ToolStripButton();
+            this.tsbHideAllParts = new System.Windows.Forms.ToolStripButton();
+            this.tsbInvertVisibleParts = new System.Windows.Forms.ToolStripButton();
+            this.tsModel = new UserControls.ToolStripFocus();
+            this.tslSymbols = new System.Windows.Forms.ToolStripLabel();
+            this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
+            this.tsDeformationFactor = new UserControls.ToolStripFocus();
+            this.tslResultName = new System.Windows.Forms.ToolStripLabel();
+            this.tscbResultName = new System.Windows.Forms.ToolStripComboBox();
+            this.tslDeformationVariable = new System.Windows.Forms.ToolStripLabel();
+            this.tscbDeformationVariable = new System.Windows.Forms.ToolStripComboBox();
+            this.tslDeformationType = new System.Windows.Forms.ToolStripLabel();
+            this.tscbDeformationType = new System.Windows.Forms.ToolStripComboBox();
+            this.tslDeformationFactor = new System.Windows.Forms.ToolStripLabel();
+            this.tstbDeformationFactor = new UserControls.NumericToolStripTextBox();
+            this.tsResults = new UserControls.ToolStripFocus();
+            this.tsbResultsUndeformed = new System.Windows.Forms.ToolStripButton();
+            this.tsbResultsDeformed = new System.Windows.Forms.ToolStripButton();
+            this.tsbResultsColorContours = new System.Windows.Forms.ToolStripButton();
+            this.toolStripResultsSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsbTransformation = new System.Windows.Forms.ToolStripButton();
+            this.toolStripResultsSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsbFirstStepIncrement = new System.Windows.Forms.ToolStripButton();
+            this.tsbPreviousStepIncrement = new System.Windows.Forms.ToolStripButton();
+            this.tslStepIncrement = new System.Windows.Forms.ToolStripLabel();
+            this.tscbStepAndIncrement = new System.Windows.Forms.ToolStripComboBox();
+            this.tsbNextStepIncrement = new System.Windows.Forms.ToolStripButton();
+            this.tsbLastStepIncrement = new System.Windows.Forms.ToolStripButton();
+            this.tsbAnimate = new System.Windows.Forms.ToolStripButton();
             this.menuStripMain = new UserControls.MenuStripFocus();
             this.tsmiFile = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiNew = new System.Windows.Forms.ToolStripMenuItem();
@@ -353,73 +411,21 @@
             this.tsslUnitSystem = new System.Windows.Forms.ToolStripStatusLabel();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.tsResults = new UserControls.ToolStripFocus();
-            this.tsbResultsUndeformed = new System.Windows.Forms.ToolStripButton();
-            this.tsbResultsDeformed = new System.Windows.Forms.ToolStripButton();
-            this.tsbResultsColorContours = new System.Windows.Forms.ToolStripButton();
-            this.toolStripResultsSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsbTransformation = new System.Windows.Forms.ToolStripButton();
-            this.toolStripResultsSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsbFirstStepIncrement = new System.Windows.Forms.ToolStripButton();
-            this.tsbPreviousStepIncrement = new System.Windows.Forms.ToolStripButton();
-            this.tslStepIncrement = new System.Windows.Forms.ToolStripLabel();
-            this.tscbStepAndIncrement = new System.Windows.Forms.ToolStripComboBox();
-            this.tsbNextStepIncrement = new System.Windows.Forms.ToolStripButton();
-            this.tsbLastStepIncrement = new System.Windows.Forms.ToolStripButton();
-            this.tsbAnimate = new System.Windows.Forms.ToolStripButton();
             this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.tbOutput = new System.Windows.Forms.TextBox();
-            this.tsFile = new UserControls.ToolStripFocus();
-            this.tsbNew = new System.Windows.Forms.ToolStripButton();
-            this.tsbOpen = new System.Windows.Forms.ToolStripButton();
-            this.tsbImport = new System.Windows.Forms.ToolStripButton();
-            this.tsbSave = new System.Windows.Forms.ToolStripButton();
-            this.tsViews = new UserControls.ToolStripFocus();
-            this.tsbZoomToFit = new System.Windows.Forms.ToolStripButton();
-            this.toolStripViewSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsbFrontView = new System.Windows.Forms.ToolStripButton();
-            this.tsbBackView = new System.Windows.Forms.ToolStripButton();
-            this.tsbTopView = new System.Windows.Forms.ToolStripButton();
-            this.tsbBottomView = new System.Windows.Forms.ToolStripButton();
-            this.tsbLeftView = new System.Windows.Forms.ToolStripButton();
-            this.tsbRightView = new System.Windows.Forms.ToolStripButton();
-            this.tsbNormalView = new System.Windows.Forms.ToolStripButton();
-            this.tsbVerticalView = new System.Windows.Forms.ToolStripButton();
-            this.tsbIsometric = new System.Windows.Forms.ToolStripButton();
-            this.toolStripViewSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsbShowWireframeEdges = new System.Windows.Forms.ToolStripButton();
-            this.tsbShowElementEdges = new System.Windows.Forms.ToolStripButton();
-            this.tsbShowModelEdges = new System.Windows.Forms.ToolStripButton();
-            this.tsbShowNoEdges = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsbSectionView = new System.Windows.Forms.ToolStripButton();
-            this.tsbExplodedView = new System.Windows.Forms.ToolStripButton();
-            this.toolStripViewSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsbQuery = new System.Windows.Forms.ToolStripButton();
-            this.tsbRemoveAnnotations = new System.Windows.Forms.ToolStripButton();
-            this.toolStripViewSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsbShowAllParts = new System.Windows.Forms.ToolStripButton();
-            this.tsbHideAllParts = new System.Windows.Forms.ToolStripButton();
-            this.tsbInvertVisibleParts = new System.Windows.Forms.ToolStripButton();
-            this.tsDeformationFactor = new UserControls.ToolStripFocus();
-            this.tslDeformationVariable = new System.Windows.Forms.ToolStripLabel();
-            this.tscbDeformationVariable = new System.Windows.Forms.ToolStripComboBox();
-            this.tslDeformationType = new System.Windows.Forms.ToolStripLabel();
-            this.tscbDeformationType = new System.Windows.Forms.ToolStripComboBox();
-            this.tslDeformationFactor = new System.Windows.Forms.ToolStripLabel();
-            this.tstbDeformationFactor = new UserControls.NumericToolStripTextBox();
-            this.tsModel = new UserControls.ToolStripFocus();
-            this.tslSymbols = new System.Windows.Forms.ToolStripLabel();
-            this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
+            this.tsFile.SuspendLayout();
+            this.tsViews.SuspendLayout();
+            this.tsModel.SuspendLayout();
+            this.tsDeformationFactor.SuspendLayout();
+            this.tsResults.SuspendLayout();
             this.menuStripMain.SuspendLayout();
             this.panelControl.SuspendLayout();
             this.cmsAnnotation.SuspendLayout();
             this.statusStripMain.SuspendLayout();
-            this.tsResults.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
@@ -430,11 +436,588 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
-            this.tsFile.SuspendLayout();
-            this.tsViews.SuspendLayout();
-            this.tsDeformationFactor.SuspendLayout();
-            this.tsModel.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // tsFile
+            // 
+            this.tsFile.BackColor = System.Drawing.SystemColors.Control;
+            this.tsFile.DisableMouseButtons = false;
+            this.tsFile.Dock = System.Windows.Forms.DockStyle.None;
+            this.tsFile.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsbNew,
+            this.tsbOpen,
+            this.tsbImport,
+            this.tsbSave});
+            this.tsFile.Location = new System.Drawing.Point(3, 50);
+            this.tsFile.Name = "tsFile";
+            this.tsFile.Size = new System.Drawing.Size(104, 25);
+            this.tsFile.TabIndex = 5;
+            this.tsFile.Text = "File";
+            // 
+            // tsbNew
+            // 
+            this.tsbNew.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbNew.Image = ((System.Drawing.Image)(resources.GetObject("tsbNew.Image")));
+            this.tsbNew.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbNew.Name = "tsbNew";
+            this.tsbNew.Size = new System.Drawing.Size(23, 22);
+            this.tsbNew.Text = "New model";
+            this.tsbNew.Click += new System.EventHandler(this.tsbNew_Click);
+            // 
+            // tsbOpen
+            // 
+            this.tsbOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbOpen.Image = ((System.Drawing.Image)(resources.GetObject("tsbOpen.Image")));
+            this.tsbOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbOpen.Name = "tsbOpen";
+            this.tsbOpen.Size = new System.Drawing.Size(23, 22);
+            this.tsbOpen.Text = "Open file";
+            this.tsbOpen.Click += new System.EventHandler(this.tsbOpen_Click);
+            // 
+            // tsbImport
+            // 
+            this.tsbImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbImport.Image = ((System.Drawing.Image)(resources.GetObject("tsbImport.Image")));
+            this.tsbImport.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbImport.Name = "tsbImport";
+            this.tsbImport.Size = new System.Drawing.Size(23, 22);
+            this.tsbImport.Text = "Import file";
+            this.tsbImport.ToolTipText = "Import file";
+            this.tsbImport.Click += new System.EventHandler(this.tsbImport_Click);
+            // 
+            // tsbSave
+            // 
+            this.tsbSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbSave.Image = ((System.Drawing.Image)(resources.GetObject("tsbSave.Image")));
+            this.tsbSave.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbSave.Name = "tsbSave";
+            this.tsbSave.Size = new System.Drawing.Size(23, 22);
+            this.tsbSave.Text = "Save to file";
+            this.tsbSave.Click += new System.EventHandler(this.tsbSave_Click);
+            // 
+            // tsViews
+            // 
+            this.tsViews.BackColor = System.Drawing.SystemColors.Control;
+            this.tsViews.DisableMouseButtons = false;
+            this.tsViews.Dock = System.Windows.Forms.DockStyle.None;
+            this.tsViews.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsbZoomToFit,
+            this.toolStripViewSeparator1,
+            this.tsbFrontView,
+            this.tsbBackView,
+            this.tsbTopView,
+            this.tsbBottomView,
+            this.tsbLeftView,
+            this.tsbRightView,
+            this.tsbNormalView,
+            this.tsbVerticalView,
+            this.tsbIsometric,
+            this.toolStripViewSeparator2,
+            this.tsbShowWireframeEdges,
+            this.tsbShowElementEdges,
+            this.tsbShowModelEdges,
+            this.tsbShowNoEdges,
+            this.toolStripSeparator1,
+            this.tsbSectionView,
+            this.tsbExplodedView,
+            this.toolStripViewSeparator3,
+            this.tsbQuery,
+            this.tsbRemoveAnnotations,
+            this.toolStripViewSeparator4,
+            this.tsbShowAllParts,
+            this.tsbHideAllParts,
+            this.tsbInvertVisibleParts});
+            this.tsViews.Location = new System.Drawing.Point(107, 50);
+            this.tsViews.Name = "tsViews";
+            this.tsViews.Size = new System.Drawing.Size(525, 25);
+            this.tsViews.TabIndex = 6;
+            this.tsViews.Text = "Views";
+            // 
+            // tsbZoomToFit
+            // 
+            this.tsbZoomToFit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbZoomToFit.Image = ((System.Drawing.Image)(resources.GetObject("tsbZoomToFit.Image")));
+            this.tsbZoomToFit.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbZoomToFit.Name = "tsbZoomToFit";
+            this.tsbZoomToFit.Size = new System.Drawing.Size(23, 22);
+            this.tsbZoomToFit.Text = "Zoom to fit";
+            this.tsbZoomToFit.Click += new System.EventHandler(this.tsbZoomToFit_Click);
+            // 
+            // toolStripViewSeparator1
+            // 
+            this.toolStripViewSeparator1.Name = "toolStripViewSeparator1";
+            this.toolStripViewSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsbFrontView
+            // 
+            this.tsbFrontView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbFrontView.Image = ((System.Drawing.Image)(resources.GetObject("tsbFrontView.Image")));
+            this.tsbFrontView.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbFrontView.Name = "tsbFrontView";
+            this.tsbFrontView.Size = new System.Drawing.Size(23, 22);
+            this.tsbFrontView.Text = "Front view";
+            this.tsbFrontView.Click += new System.EventHandler(this.tsbFrontView_Click);
+            // 
+            // tsbBackView
+            // 
+            this.tsbBackView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbBackView.Image = ((System.Drawing.Image)(resources.GetObject("tsbBackView.Image")));
+            this.tsbBackView.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbBackView.Name = "tsbBackView";
+            this.tsbBackView.Size = new System.Drawing.Size(23, 22);
+            this.tsbBackView.Text = "Back view";
+            this.tsbBackView.Click += new System.EventHandler(this.tsbBackView_Click);
+            // 
+            // tsbTopView
+            // 
+            this.tsbTopView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbTopView.Image = ((System.Drawing.Image)(resources.GetObject("tsbTopView.Image")));
+            this.tsbTopView.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbTopView.Name = "tsbTopView";
+            this.tsbTopView.Size = new System.Drawing.Size(23, 22);
+            this.tsbTopView.Text = "Top view";
+            this.tsbTopView.Click += new System.EventHandler(this.tsbTopView_Click);
+            // 
+            // tsbBottomView
+            // 
+            this.tsbBottomView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbBottomView.Image = ((System.Drawing.Image)(resources.GetObject("tsbBottomView.Image")));
+            this.tsbBottomView.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbBottomView.Name = "tsbBottomView";
+            this.tsbBottomView.Size = new System.Drawing.Size(23, 22);
+            this.tsbBottomView.Text = "Bottom view";
+            this.tsbBottomView.Click += new System.EventHandler(this.tsbBottomView_Click);
+            // 
+            // tsbLeftView
+            // 
+            this.tsbLeftView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbLeftView.Image = ((System.Drawing.Image)(resources.GetObject("tsbLeftView.Image")));
+            this.tsbLeftView.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbLeftView.Name = "tsbLeftView";
+            this.tsbLeftView.Size = new System.Drawing.Size(23, 22);
+            this.tsbLeftView.Text = "Left view";
+            this.tsbLeftView.Click += new System.EventHandler(this.tsbLeftView_Click);
+            // 
+            // tsbRightView
+            // 
+            this.tsbRightView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbRightView.Image = ((System.Drawing.Image)(resources.GetObject("tsbRightView.Image")));
+            this.tsbRightView.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbRightView.Name = "tsbRightView";
+            this.tsbRightView.Size = new System.Drawing.Size(23, 22);
+            this.tsbRightView.Text = "Right view";
+            this.tsbRightView.Click += new System.EventHandler(this.tsbRightView_Click);
+            // 
+            // tsbNormalView
+            // 
+            this.tsbNormalView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbNormalView.Image = ((System.Drawing.Image)(resources.GetObject("tsbNormalView.Image")));
+            this.tsbNormalView.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbNormalView.Name = "tsbNormalView";
+            this.tsbNormalView.Size = new System.Drawing.Size(23, 22);
+            this.tsbNormalView.Text = "Normal view";
+            this.tsbNormalView.Click += new System.EventHandler(this.tsbNormalView_Click);
+            // 
+            // tsbVerticalView
+            // 
+            this.tsbVerticalView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbVerticalView.Image = ((System.Drawing.Image)(resources.GetObject("tsbVerticalView.Image")));
+            this.tsbVerticalView.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbVerticalView.Name = "tsbVerticalView";
+            this.tsbVerticalView.Size = new System.Drawing.Size(23, 22);
+            this.tsbVerticalView.Text = "Vertical view";
+            this.tsbVerticalView.Click += new System.EventHandler(this.tsbVerticalView_Click);
+            // 
+            // tsbIsometric
+            // 
+            this.tsbIsometric.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbIsometric.Image = ((System.Drawing.Image)(resources.GetObject("tsbIsometric.Image")));
+            this.tsbIsometric.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbIsometric.Name = "tsbIsometric";
+            this.tsbIsometric.Size = new System.Drawing.Size(23, 22);
+            this.tsbIsometric.Text = "Isometric view";
+            this.tsbIsometric.Click += new System.EventHandler(this.tsbIsometric_Click);
+            // 
+            // toolStripViewSeparator2
+            // 
+            this.toolStripViewSeparator2.Name = "toolStripViewSeparator2";
+            this.toolStripViewSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsbShowWireframeEdges
+            // 
+            this.tsbShowWireframeEdges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbShowWireframeEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowWireframeEdges.Image")));
+            this.tsbShowWireframeEdges.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbShowWireframeEdges.Name = "tsbShowWireframeEdges";
+            this.tsbShowWireframeEdges.Size = new System.Drawing.Size(23, 22);
+            this.tsbShowWireframeEdges.Text = "Wireframe";
+            this.tsbShowWireframeEdges.Click += new System.EventHandler(this.tsbShowWireframeEdges_Click);
+            // 
+            // tsbShowElementEdges
+            // 
+            this.tsbShowElementEdges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbShowElementEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowElementEdges.Image")));
+            this.tsbShowElementEdges.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbShowElementEdges.Name = "tsbShowElementEdges";
+            this.tsbShowElementEdges.Size = new System.Drawing.Size(23, 22);
+            this.tsbShowElementEdges.Text = "Show element edges";
+            this.tsbShowElementEdges.Click += new System.EventHandler(this.tsbShowElementEdges_Click);
+            // 
+            // tsbShowModelEdges
+            // 
+            this.tsbShowModelEdges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbShowModelEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowModelEdges.Image")));
+            this.tsbShowModelEdges.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbShowModelEdges.Name = "tsbShowModelEdges";
+            this.tsbShowModelEdges.Size = new System.Drawing.Size(23, 22);
+            this.tsbShowModelEdges.Text = "Show model edges";
+            this.tsbShowModelEdges.Click += new System.EventHandler(this.tsbShowModelEdges_Click);
+            // 
+            // tsbShowNoEdges
+            // 
+            this.tsbShowNoEdges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbShowNoEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowNoEdges.Image")));
+            this.tsbShowNoEdges.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbShowNoEdges.Name = "tsbShowNoEdges";
+            this.tsbShowNoEdges.Size = new System.Drawing.Size(23, 22);
+            this.tsbShowNoEdges.Text = "No edges";
+            this.tsbShowNoEdges.Click += new System.EventHandler(this.tsbShowNoEdges_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsbSectionView
+            // 
+            this.tsbSectionView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbSectionView.Image = global::PrePoMax.Properties.Resources.SectionView;
+            this.tsbSectionView.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbSectionView.Name = "tsbSectionView";
+            this.tsbSectionView.Size = new System.Drawing.Size(23, 22);
+            this.tsbSectionView.Text = "Section view";
+            this.tsbSectionView.Click += new System.EventHandler(this.tsbSectionView_Click);
+            // 
+            // tsbExplodedView
+            // 
+            this.tsbExplodedView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbExplodedView.Image = global::PrePoMax.Properties.Resources.Explode;
+            this.tsbExplodedView.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbExplodedView.Name = "tsbExplodedView";
+            this.tsbExplodedView.Size = new System.Drawing.Size(23, 22);
+            this.tsbExplodedView.Text = "Exploded view";
+            this.tsbExplodedView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsbExplodedView_MouseUp);
+            // 
+            // toolStripViewSeparator3
+            // 
+            this.toolStripViewSeparator3.Name = "toolStripViewSeparator3";
+            this.toolStripViewSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsbQuery
+            // 
+            this.tsbQuery.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbQuery.Image = global::PrePoMax.Properties.Resources.Query;
+            this.tsbQuery.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbQuery.Name = "tsbQuery";
+            this.tsbQuery.Size = new System.Drawing.Size(23, 22);
+            this.tsbQuery.Text = "Query";
+            this.tsbQuery.Click += new System.EventHandler(this.tsbQuery_Click);
+            // 
+            // tsbRemoveAnnotations
+            // 
+            this.tsbRemoveAnnotations.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbRemoveAnnotations.Image = global::PrePoMax.Properties.Resources.Remove_annotations;
+            this.tsbRemoveAnnotations.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbRemoveAnnotations.Name = "tsbRemoveAnnotations";
+            this.tsbRemoveAnnotations.Size = new System.Drawing.Size(23, 22);
+            this.tsbRemoveAnnotations.Text = "Remove annotations";
+            this.tsbRemoveAnnotations.Click += new System.EventHandler(this.tsbRemoveAnnotations_Click);
+            // 
+            // toolStripViewSeparator4
+            // 
+            this.toolStripViewSeparator4.Name = "toolStripViewSeparator4";
+            this.toolStripViewSeparator4.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsbShowAllParts
+            // 
+            this.tsbShowAllParts.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbShowAllParts.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowAllParts.Image")));
+            this.tsbShowAllParts.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbShowAllParts.Name = "tsbShowAllParts";
+            this.tsbShowAllParts.Size = new System.Drawing.Size(23, 22);
+            this.tsbShowAllParts.Text = "Show all parts";
+            this.tsbShowAllParts.Click += new System.EventHandler(this.tsbShowAllParts_Click);
+            // 
+            // tsbHideAllParts
+            // 
+            this.tsbHideAllParts.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbHideAllParts.Image = global::PrePoMax.Properties.Resources.Hide;
+            this.tsbHideAllParts.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbHideAllParts.Name = "tsbHideAllParts";
+            this.tsbHideAllParts.Size = new System.Drawing.Size(23, 22);
+            this.tsbHideAllParts.Text = "Hide all parts";
+            this.tsbHideAllParts.Click += new System.EventHandler(this.tsbHideAllParts_Click);
+            // 
+            // tsbInvertVisibleParts
+            // 
+            this.tsbInvertVisibleParts.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbInvertVisibleParts.Image = global::PrePoMax.Properties.Resources.InvertHideShow;
+            this.tsbInvertVisibleParts.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbInvertVisibleParts.Name = "tsbInvertVisibleParts";
+            this.tsbInvertVisibleParts.Size = new System.Drawing.Size(23, 22);
+            this.tsbInvertVisibleParts.Text = "Invert visible parts";
+            this.tsbInvertVisibleParts.Click += new System.EventHandler(this.tsbInvertVisibleParts_Click);
+            // 
+            // tsModel
+            // 
+            this.tsModel.DisableMouseButtons = false;
+            this.tsModel.Dock = System.Windows.Forms.DockStyle.None;
+            this.tsModel.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tslSymbols,
+            this.tscbSymbolsForStep});
+            this.tsModel.Location = new System.Drawing.Point(3, 0);
+            this.tsModel.Name = "tsModel";
+            this.tsModel.Size = new System.Drawing.Size(187, 25);
+            this.tsModel.TabIndex = 9;
+            // 
+            // tslSymbols
+            // 
+            this.tslSymbols.Name = "tslSymbols";
+            this.tslSymbols.Size = new System.Drawing.Size(52, 22);
+            this.tslSymbols.Text = "Symbols";
+            // 
+            // tscbSymbolsForStep
+            // 
+            this.tscbSymbolsForStep.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tscbSymbolsForStep.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.tscbSymbolsForStep.Items.AddRange(new object[] {
+            "None"});
+            this.tscbSymbolsForStep.Name = "tscbSymbolsForStep";
+            this.tscbSymbolsForStep.Size = new System.Drawing.Size(121, 25);
+            this.tscbSymbolsForStep.ToolTipText = "Select how symbols are displayed.";
+            // 
+            // tsDeformationFactor
+            // 
+            this.tsDeformationFactor.BackColor = System.Drawing.SystemColors.Control;
+            this.tsDeformationFactor.DisableMouseButtons = false;
+            this.tsDeformationFactor.Dock = System.Windows.Forms.DockStyle.None;
+            this.tsDeformationFactor.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tslResultName,
+            this.tscbResultName,
+            this.tslDeformationVariable,
+            this.tscbDeformationVariable,
+            this.tslDeformationType,
+            this.tscbDeformationType,
+            this.tslDeformationFactor,
+            this.tstbDeformationFactor});
+            this.tsDeformationFactor.Location = new System.Drawing.Point(3, 25);
+            this.tsDeformationFactor.Name = "tsDeformationFactor";
+            this.tsDeformationFactor.Size = new System.Drawing.Size(622, 25);
+            this.tsDeformationFactor.TabIndex = 8;
+            // 
+            // tslResultName
+            // 
+            this.tslResultName.Name = "tslResultName";
+            this.tslResultName.Size = new System.Drawing.Size(39, 22);
+            this.tslResultName.Text = "Result";
+            // 
+            // tscbResultName
+            // 
+            this.tscbResultName.AutoToolTip = true;
+            this.tscbResultName.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tscbResultName.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.tscbResultName.Name = "tscbResultName";
+            this.tscbResultName.Size = new System.Drawing.Size(121, 25);
+            this.tscbResultName.DropDown += new System.EventHandler(this.tscbResultName_DropDown);
+            this.tscbResultName.SelectedIndexChanged += new System.EventHandler(this.tscbResultName_SelectedIndexChanged);
+            // 
+            // tslDeformationVariable
+            // 
+            this.tslDeformationVariable.Name = "tslDeformationVariable";
+            this.tslDeformationVariable.Size = new System.Drawing.Size(48, 22);
+            this.tslDeformationVariable.Text = "Variable";
+            // 
+            // tscbDeformationVariable
+            // 
+            this.tscbDeformationVariable.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tscbDeformationVariable.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.tscbDeformationVariable.Name = "tscbDeformationVariable";
+            this.tscbDeformationVariable.Size = new System.Drawing.Size(121, 25);
+            this.tscbDeformationVariable.ToolTipText = "Select the deformation variable";
+            this.tscbDeformationVariable.SelectedIndexChanged += new System.EventHandler(this.tscbDeformationVariable_SelectedIndexChanged);
+            // 
+            // tslDeformationType
+            // 
+            this.tslDeformationType.Name = "tslDeformationType";
+            this.tslDeformationType.Size = new System.Drawing.Size(31, 22);
+            this.tslDeformationType.Text = "Type";
+            // 
+            // tscbDeformationType
+            // 
+            this.tscbDeformationType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tscbDeformationType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.tscbDeformationType.Name = "tscbDeformationType";
+            this.tscbDeformationType.Size = new System.Drawing.Size(121, 25);
+            this.tscbDeformationType.ToolTipText = "Select the deformation type";
+            this.tscbDeformationType.SelectedIndexChanged += new System.EventHandler(this.tscbDeformationType_SelectedIndexChanged);
+            // 
+            // tslDeformationFactor
+            // 
+            this.tslDeformationFactor.Name = "tslDeformationFactor";
+            this.tslDeformationFactor.Size = new System.Drawing.Size(40, 22);
+            this.tslDeformationFactor.Text = "Factor";
+            // 
+            // tstbDeformationFactor
+            // 
+            this.tstbDeformationFactor.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.tstbDeformationFactor.Name = "tstbDeformationFactor";
+            this.tstbDeformationFactor.ShortcutsEnabled = false;
+            this.tstbDeformationFactor.Size = new System.Drawing.Size(50, 25);
+            this.tstbDeformationFactor.Text = "10";
+            this.tstbDeformationFactor.TextBoxTextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tstbDeformationFactor.ToolTipText = "Enter the deformation scale factor";
+            this.tstbDeformationFactor.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tstbDeformationFactor_KeyDown);
+            // 
+            // tsResults
+            // 
+            this.tsResults.BackColor = System.Drawing.SystemColors.Control;
+            this.tsResults.DisableMouseButtons = false;
+            this.tsResults.Dock = System.Windows.Forms.DockStyle.None;
+            this.tsResults.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsbResultsUndeformed,
+            this.tsbResultsDeformed,
+            this.tsbResultsColorContours,
+            this.toolStripResultsSeparator1,
+            this.tsbTransformation,
+            this.toolStripResultsSeparator2,
+            this.tsbFirstStepIncrement,
+            this.tsbPreviousStepIncrement,
+            this.tslStepIncrement,
+            this.tscbStepAndIncrement,
+            this.tsbNextStepIncrement,
+            this.tsbLastStepIncrement,
+            this.tsbAnimate});
+            this.tsResults.Location = new System.Drawing.Point(3, 75);
+            this.tsResults.Name = "tsResults";
+            this.tsResults.Size = new System.Drawing.Size(398, 25);
+            this.tsResults.TabIndex = 7;
+            this.tsResults.Text = "Results";
+            // 
+            // tsbResultsUndeformed
+            // 
+            this.tsbResultsUndeformed.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbResultsUndeformed.Image = ((System.Drawing.Image)(resources.GetObject("tsbResultsUndeformed.Image")));
+            this.tsbResultsUndeformed.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbResultsUndeformed.Name = "tsbResultsUndeformed";
+            this.tsbResultsUndeformed.Size = new System.Drawing.Size(23, 22);
+            this.tsbResultsUndeformed.Text = "Undeformed";
+            this.tsbResultsUndeformed.Click += new System.EventHandler(this.tsbResultsUndeformed_Click);
+            // 
+            // tsbResultsDeformed
+            // 
+            this.tsbResultsDeformed.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbResultsDeformed.Image = ((System.Drawing.Image)(resources.GetObject("tsbResultsDeformed.Image")));
+            this.tsbResultsDeformed.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbResultsDeformed.Name = "tsbResultsDeformed";
+            this.tsbResultsDeformed.Size = new System.Drawing.Size(23, 22);
+            this.tsbResultsDeformed.Text = "Deformed";
+            this.tsbResultsDeformed.Click += new System.EventHandler(this.tsbResultsDeformed_Click);
+            // 
+            // tsbResultsColorContours
+            // 
+            this.tsbResultsColorContours.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbResultsColorContours.Image = ((System.Drawing.Image)(resources.GetObject("tsbResultsColorContours.Image")));
+            this.tsbResultsColorContours.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbResultsColorContours.Name = "tsbResultsColorContours";
+            this.tsbResultsColorContours.Size = new System.Drawing.Size(23, 22);
+            this.tsbResultsColorContours.Text = "Deformed with color contours";
+            this.tsbResultsColorContours.Click += new System.EventHandler(this.tsbResultsColorContours_Click);
+            // 
+            // toolStripResultsSeparator1
+            // 
+            this.toolStripResultsSeparator1.Name = "toolStripResultsSeparator1";
+            this.toolStripResultsSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsbTransformation
+            // 
+            this.tsbTransformation.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbTransformation.Image = ((System.Drawing.Image)(resources.GetObject("tsbTransformation.Image")));
+            this.tsbTransformation.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbTransformation.Name = "tsbTransformation";
+            this.tsbTransformation.Size = new System.Drawing.Size(23, 22);
+            this.tsbTransformation.Text = "Transformation";
+            this.tsbTransformation.Click += new System.EventHandler(this.tsbTransformation_Click);
+            // 
+            // toolStripResultsSeparator2
+            // 
+            this.toolStripResultsSeparator2.Name = "toolStripResultsSeparator2";
+            this.toolStripResultsSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tsbFirstStepIncrement
+            // 
+            this.tsbFirstStepIncrement.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbFirstStepIncrement.Image = ((System.Drawing.Image)(resources.GetObject("tsbFirstStepIncrement.Image")));
+            this.tsbFirstStepIncrement.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbFirstStepIncrement.Name = "tsbFirstStepIncrement";
+            this.tsbFirstStepIncrement.Size = new System.Drawing.Size(23, 22);
+            this.tsbFirstStepIncrement.Text = "First increment";
+            this.tsbFirstStepIncrement.Click += new System.EventHandler(this.tsbFirstStepIncrement_Click);
+            // 
+            // tsbPreviousStepIncrement
+            // 
+            this.tsbPreviousStepIncrement.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbPreviousStepIncrement.Image = ((System.Drawing.Image)(resources.GetObject("tsbPreviousStepIncrement.Image")));
+            this.tsbPreviousStepIncrement.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbPreviousStepIncrement.Name = "tsbPreviousStepIncrement";
+            this.tsbPreviousStepIncrement.Size = new System.Drawing.Size(23, 22);
+            this.tsbPreviousStepIncrement.Text = "Previous increment";
+            this.tsbPreviousStepIncrement.ToolTipText = "Previous increment";
+            this.tsbPreviousStepIncrement.Click += new System.EventHandler(this.tsbPreviousStepIncrement_Click);
+            // 
+            // tslStepIncrement
+            // 
+            this.tslStepIncrement.Name = "tslStepIncrement";
+            this.tslStepIncrement.Size = new System.Drawing.Size(90, 22);
+            this.tslStepIncrement.Text = "Step, Increment";
+            // 
+            // tscbStepAndIncrement
+            // 
+            this.tscbStepAndIncrement.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tscbStepAndIncrement.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.tscbStepAndIncrement.Name = "tscbStepAndIncrement";
+            this.tscbStepAndIncrement.Size = new System.Drawing.Size(75, 25);
+            this.tscbStepAndIncrement.ToolTipText = "Select increment";
+            // 
+            // tsbNextStepIncrement
+            // 
+            this.tsbNextStepIncrement.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbNextStepIncrement.Image = ((System.Drawing.Image)(resources.GetObject("tsbNextStepIncrement.Image")));
+            this.tsbNextStepIncrement.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbNextStepIncrement.Name = "tsbNextStepIncrement";
+            this.tsbNextStepIncrement.Size = new System.Drawing.Size(23, 22);
+            this.tsbNextStepIncrement.Text = "Next increment";
+            this.tsbNextStepIncrement.ToolTipText = "Next increment";
+            this.tsbNextStepIncrement.Click += new System.EventHandler(this.tsbNextStepIncrement_Click);
+            // 
+            // tsbLastStepIncrement
+            // 
+            this.tsbLastStepIncrement.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbLastStepIncrement.Image = ((System.Drawing.Image)(resources.GetObject("tsbLastStepIncrement.Image")));
+            this.tsbLastStepIncrement.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbLastStepIncrement.Name = "tsbLastStepIncrement";
+            this.tsbLastStepIncrement.Size = new System.Drawing.Size(23, 22);
+            this.tsbLastStepIncrement.Text = "Last increment";
+            this.tsbLastStepIncrement.Click += new System.EventHandler(this.tsbLastStepIncrement_Click);
+            // 
+            // tsbAnimate
+            // 
+            this.tsbAnimate.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbAnimate.Image = ((System.Drawing.Image)(resources.GetObject("tsbAnimate.Image")));
+            this.tsbAnimate.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbAnimate.Name = "tsbAnimate";
+            this.tsbAnimate.Size = new System.Drawing.Size(23, 22);
+            this.tsbAnimate.Text = "Animate";
+            this.tsbAnimate.Click += new System.EventHandler(this.tsbAnimate_Click);
             // 
             // menuStripMain
             // 
@@ -2851,7 +3434,7 @@
             this.panelControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControl.Location = new System.Drawing.Point(0, 0);
             this.panelControl.Name = "panelControl";
-            this.panelControl.Size = new System.Drawing.Size(1229, 637);
+            this.panelControl.Size = new System.Drawing.Size(1229, 587);
             this.panelControl.TabIndex = 1;
             // 
             // aeAnnotationTextEditor
@@ -2977,147 +3560,6 @@
             // 
             this.openFileDialog.FileName = "openFileDialog";
             // 
-            // tsResults
-            // 
-            this.tsResults.BackColor = System.Drawing.SystemColors.Control;
-            this.tsResults.DisableMouseButtons = false;
-            this.tsResults.Dock = System.Windows.Forms.DockStyle.None;
-            this.tsResults.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsbResultsUndeformed,
-            this.tsbResultsDeformed,
-            this.tsbResultsColorContours,
-            this.toolStripResultsSeparator1,
-            this.tsbTransformation,
-            this.toolStripResultsSeparator2,
-            this.tsbFirstStepIncrement,
-            this.tsbPreviousStepIncrement,
-            this.tslStepIncrement,
-            this.tscbStepAndIncrement,
-            this.tsbNextStepIncrement,
-            this.tsbLastStepIncrement,
-            this.tsbAnimate});
-            this.tsResults.Location = new System.Drawing.Point(440, 25);
-            this.tsResults.Name = "tsResults";
-            this.tsResults.Size = new System.Drawing.Size(429, 25);
-            this.tsResults.TabIndex = 7;
-            this.tsResults.Text = "Results";
-            // 
-            // tsbResultsUndeformed
-            // 
-            this.tsbResultsUndeformed.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbResultsUndeformed.Image = ((System.Drawing.Image)(resources.GetObject("tsbResultsUndeformed.Image")));
-            this.tsbResultsUndeformed.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbResultsUndeformed.Name = "tsbResultsUndeformed";
-            this.tsbResultsUndeformed.Size = new System.Drawing.Size(23, 22);
-            this.tsbResultsUndeformed.Text = "Undeformed";
-            this.tsbResultsUndeformed.Click += new System.EventHandler(this.tsbResultsUndeformed_Click);
-            // 
-            // tsbResultsDeformed
-            // 
-            this.tsbResultsDeformed.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbResultsDeformed.Image = ((System.Drawing.Image)(resources.GetObject("tsbResultsDeformed.Image")));
-            this.tsbResultsDeformed.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbResultsDeformed.Name = "tsbResultsDeformed";
-            this.tsbResultsDeformed.Size = new System.Drawing.Size(23, 22);
-            this.tsbResultsDeformed.Text = "Deformed";
-            this.tsbResultsDeformed.Click += new System.EventHandler(this.tsbResultsDeformed_Click);
-            // 
-            // tsbResultsColorContours
-            // 
-            this.tsbResultsColorContours.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbResultsColorContours.Image = ((System.Drawing.Image)(resources.GetObject("tsbResultsColorContours.Image")));
-            this.tsbResultsColorContours.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbResultsColorContours.Name = "tsbResultsColorContours";
-            this.tsbResultsColorContours.Size = new System.Drawing.Size(23, 22);
-            this.tsbResultsColorContours.Text = "Deformed with color contours";
-            this.tsbResultsColorContours.Click += new System.EventHandler(this.tsbResultsColorContours_Click);
-            // 
-            // toolStripResultsSeparator1
-            // 
-            this.toolStripResultsSeparator1.Name = "toolStripResultsSeparator1";
-            this.toolStripResultsSeparator1.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsbTransformation
-            // 
-            this.tsbTransformation.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbTransformation.Image = ((System.Drawing.Image)(resources.GetObject("tsbTransformation.Image")));
-            this.tsbTransformation.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbTransformation.Name = "tsbTransformation";
-            this.tsbTransformation.Size = new System.Drawing.Size(23, 22);
-            this.tsbTransformation.Text = "Transformation";
-            this.tsbTransformation.Click += new System.EventHandler(this.tsbTransformation_Click);
-            // 
-            // toolStripResultsSeparator2
-            // 
-            this.toolStripResultsSeparator2.Name = "toolStripResultsSeparator2";
-            this.toolStripResultsSeparator2.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsbFirstStepIncrement
-            // 
-            this.tsbFirstStepIncrement.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbFirstStepIncrement.Image = ((System.Drawing.Image)(resources.GetObject("tsbFirstStepIncrement.Image")));
-            this.tsbFirstStepIncrement.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbFirstStepIncrement.Name = "tsbFirstStepIncrement";
-            this.tsbFirstStepIncrement.Size = new System.Drawing.Size(23, 22);
-            this.tsbFirstStepIncrement.Text = "First increment";
-            this.tsbFirstStepIncrement.Click += new System.EventHandler(this.tsbFirstStepIncrement_Click);
-            // 
-            // tsbPreviousStepIncrement
-            // 
-            this.tsbPreviousStepIncrement.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbPreviousStepIncrement.Image = ((System.Drawing.Image)(resources.GetObject("tsbPreviousStepIncrement.Image")));
-            this.tsbPreviousStepIncrement.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbPreviousStepIncrement.Name = "tsbPreviousStepIncrement";
-            this.tsbPreviousStepIncrement.Size = new System.Drawing.Size(23, 22);
-            this.tsbPreviousStepIncrement.Text = "Previous increment";
-            this.tsbPreviousStepIncrement.ToolTipText = "Previous increment";
-            this.tsbPreviousStepIncrement.Click += new System.EventHandler(this.tsbPreviousStepIncrement_Click);
-            // 
-            // tslStepIncrement
-            // 
-            this.tslStepIncrement.Name = "tslStepIncrement";
-            this.tslStepIncrement.Size = new System.Drawing.Size(90, 22);
-            this.tslStepIncrement.Text = "Step, Increment";
-            // 
-            // tscbStepAndIncrement
-            // 
-            this.tscbStepAndIncrement.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.tscbStepAndIncrement.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.tscbStepAndIncrement.Name = "tscbStepAndIncrement";
-            this.tscbStepAndIncrement.Size = new System.Drawing.Size(75, 25);
-            this.tscbStepAndIncrement.ToolTipText = "Select increment";
-            // 
-            // tsbNextStepIncrement
-            // 
-            this.tsbNextStepIncrement.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbNextStepIncrement.Image = ((System.Drawing.Image)(resources.GetObject("tsbNextStepIncrement.Image")));
-            this.tsbNextStepIncrement.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbNextStepIncrement.Name = "tsbNextStepIncrement";
-            this.tsbNextStepIncrement.Size = new System.Drawing.Size(23, 22);
-            this.tsbNextStepIncrement.Text = "Next increment";
-            this.tsbNextStepIncrement.ToolTipText = "Next increment";
-            this.tsbNextStepIncrement.Click += new System.EventHandler(this.tsbNextStepIncrement_Click);
-            // 
-            // tsbLastStepIncrement
-            // 
-            this.tsbLastStepIncrement.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbLastStepIncrement.Image = ((System.Drawing.Image)(resources.GetObject("tsbLastStepIncrement.Image")));
-            this.tsbLastStepIncrement.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbLastStepIncrement.Name = "tsbLastStepIncrement";
-            this.tsbLastStepIncrement.Size = new System.Drawing.Size(23, 22);
-            this.tsbLastStepIncrement.Text = "Last increment";
-            this.tsbLastStepIncrement.Click += new System.EventHandler(this.tsbLastStepIncrement_Click);
-            // 
-            // tsbAnimate
-            // 
-            this.tsbAnimate.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbAnimate.Image = ((System.Drawing.Image)(resources.GetObject("tsbAnimate.Image")));
-            this.tsbAnimate.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbAnimate.Name = "tsbAnimate";
-            this.tsbAnimate.Size = new System.Drawing.Size(23, 22);
-            this.tsbAnimate.Text = "Animate";
-            this.tsbAnimate.Click += new System.EventHandler(this.tsbAnimate_Click);
-            // 
             // toolStripContainer1
             // 
             this.toolStripContainer1.BottomToolStripPanelVisible = false;
@@ -3125,7 +3567,7 @@
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.Controls.Add(this.splitContainer1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1502, 747);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1502, 697);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.LeftToolStripPanelVisible = false;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 24);
@@ -3139,9 +3581,9 @@
             // 
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsFile);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsViews);
+            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsModel);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsDeformationFactor);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsResults);
-            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsModel);
             // 
             // splitContainer1
             // 
@@ -3155,7 +3597,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Panel2MinSize = 250;
-            this.splitContainer1.Size = new System.Drawing.Size(1502, 747);
+            this.splitContainer1.Size = new System.Drawing.Size(1502, 697);
             this.splitContainer1.SplitterDistance = 269;
             this.splitContainer1.TabIndex = 2;
             // 
@@ -3174,8 +3616,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.tbOutput);
-            this.splitContainer2.Size = new System.Drawing.Size(1229, 747);
-            this.splitContainer2.SplitterDistance = 637;
+            this.splitContainer2.Size = new System.Drawing.Size(1229, 697);
+            this.splitContainer2.SplitterDistance = 587;
             this.splitContainer2.TabIndex = 2;
             // 
             // tbOutput
@@ -3193,428 +3635,6 @@
             this.tbOutput.Size = new System.Drawing.Size(1229, 105);
             this.tbOutput.TabIndex = 0;
             this.tbOutput.Text = "Output text box";
-            // 
-            // tsFile
-            // 
-            this.tsFile.BackColor = System.Drawing.SystemColors.Control;
-            this.tsFile.DisableMouseButtons = false;
-            this.tsFile.Dock = System.Windows.Forms.DockStyle.None;
-            this.tsFile.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsbNew,
-            this.tsbOpen,
-            this.tsbImport,
-            this.tsbSave});
-            this.tsFile.Location = new System.Drawing.Point(3, 0);
-            this.tsFile.Name = "tsFile";
-            this.tsFile.Size = new System.Drawing.Size(104, 25);
-            this.tsFile.TabIndex = 5;
-            this.tsFile.Text = "File";
-            // 
-            // tsbNew
-            // 
-            this.tsbNew.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbNew.Image = ((System.Drawing.Image)(resources.GetObject("tsbNew.Image")));
-            this.tsbNew.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbNew.Name = "tsbNew";
-            this.tsbNew.Size = new System.Drawing.Size(23, 22);
-            this.tsbNew.Text = "New model";
-            this.tsbNew.Click += new System.EventHandler(this.tsbNew_Click);
-            // 
-            // tsbOpen
-            // 
-            this.tsbOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbOpen.Image = ((System.Drawing.Image)(resources.GetObject("tsbOpen.Image")));
-            this.tsbOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbOpen.Name = "tsbOpen";
-            this.tsbOpen.Size = new System.Drawing.Size(23, 22);
-            this.tsbOpen.Text = "Open file";
-            this.tsbOpen.Click += new System.EventHandler(this.tsbOpen_Click);
-            // 
-            // tsbImport
-            // 
-            this.tsbImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbImport.Image = ((System.Drawing.Image)(resources.GetObject("tsbImport.Image")));
-            this.tsbImport.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbImport.Name = "tsbImport";
-            this.tsbImport.Size = new System.Drawing.Size(23, 22);
-            this.tsbImport.Text = "Import file";
-            this.tsbImport.ToolTipText = "Import file";
-            this.tsbImport.Click += new System.EventHandler(this.tsbImport_Click);
-            // 
-            // tsbSave
-            // 
-            this.tsbSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbSave.Image = ((System.Drawing.Image)(resources.GetObject("tsbSave.Image")));
-            this.tsbSave.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbSave.Name = "tsbSave";
-            this.tsbSave.Size = new System.Drawing.Size(23, 22);
-            this.tsbSave.Text = "Save to file";
-            this.tsbSave.Click += new System.EventHandler(this.tsbSave_Click);
-            // 
-            // tsViews
-            // 
-            this.tsViews.BackColor = System.Drawing.SystemColors.Control;
-            this.tsViews.DisableMouseButtons = false;
-            this.tsViews.Dock = System.Windows.Forms.DockStyle.None;
-            this.tsViews.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsbZoomToFit,
-            this.toolStripViewSeparator1,
-            this.tsbFrontView,
-            this.tsbBackView,
-            this.tsbTopView,
-            this.tsbBottomView,
-            this.tsbLeftView,
-            this.tsbRightView,
-            this.tsbNormalView,
-            this.tsbVerticalView,
-            this.tsbIsometric,
-            this.toolStripViewSeparator2,
-            this.tsbShowWireframeEdges,
-            this.tsbShowElementEdges,
-            this.tsbShowModelEdges,
-            this.tsbShowNoEdges,
-            this.toolStripSeparator1,
-            this.tsbSectionView,
-            this.tsbExplodedView,
-            this.toolStripViewSeparator3,
-            this.tsbQuery,
-            this.tsbRemoveAnnotations,
-            this.toolStripViewSeparator4,
-            this.tsbShowAllParts,
-            this.tsbHideAllParts,
-            this.tsbInvertVisibleParts});
-            this.tsViews.Location = new System.Drawing.Point(107, 0);
-            this.tsViews.Name = "tsViews";
-            this.tsViews.Size = new System.Drawing.Size(525, 25);
-            this.tsViews.TabIndex = 6;
-            this.tsViews.Text = "Views";
-            // 
-            // tsbZoomToFit
-            // 
-            this.tsbZoomToFit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbZoomToFit.Image = ((System.Drawing.Image)(resources.GetObject("tsbZoomToFit.Image")));
-            this.tsbZoomToFit.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbZoomToFit.Name = "tsbZoomToFit";
-            this.tsbZoomToFit.Size = new System.Drawing.Size(23, 22);
-            this.tsbZoomToFit.Text = "Zoom to fit";
-            this.tsbZoomToFit.Click += new System.EventHandler(this.tsbZoomToFit_Click);
-            // 
-            // toolStripViewSeparator1
-            // 
-            this.toolStripViewSeparator1.Name = "toolStripViewSeparator1";
-            this.toolStripViewSeparator1.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsbFrontView
-            // 
-            this.tsbFrontView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbFrontView.Image = ((System.Drawing.Image)(resources.GetObject("tsbFrontView.Image")));
-            this.tsbFrontView.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbFrontView.Name = "tsbFrontView";
-            this.tsbFrontView.Size = new System.Drawing.Size(23, 22);
-            this.tsbFrontView.Text = "Front view";
-            this.tsbFrontView.Click += new System.EventHandler(this.tsbFrontView_Click);
-            // 
-            // tsbBackView
-            // 
-            this.tsbBackView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbBackView.Image = ((System.Drawing.Image)(resources.GetObject("tsbBackView.Image")));
-            this.tsbBackView.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbBackView.Name = "tsbBackView";
-            this.tsbBackView.Size = new System.Drawing.Size(23, 22);
-            this.tsbBackView.Text = "Back view";
-            this.tsbBackView.Click += new System.EventHandler(this.tsbBackView_Click);
-            // 
-            // tsbTopView
-            // 
-            this.tsbTopView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbTopView.Image = ((System.Drawing.Image)(resources.GetObject("tsbTopView.Image")));
-            this.tsbTopView.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbTopView.Name = "tsbTopView";
-            this.tsbTopView.Size = new System.Drawing.Size(23, 22);
-            this.tsbTopView.Text = "Top view";
-            this.tsbTopView.Click += new System.EventHandler(this.tsbTopView_Click);
-            // 
-            // tsbBottomView
-            // 
-            this.tsbBottomView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbBottomView.Image = ((System.Drawing.Image)(resources.GetObject("tsbBottomView.Image")));
-            this.tsbBottomView.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbBottomView.Name = "tsbBottomView";
-            this.tsbBottomView.Size = new System.Drawing.Size(23, 22);
-            this.tsbBottomView.Text = "Bottom view";
-            this.tsbBottomView.Click += new System.EventHandler(this.tsbBottomView_Click);
-            // 
-            // tsbLeftView
-            // 
-            this.tsbLeftView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbLeftView.Image = ((System.Drawing.Image)(resources.GetObject("tsbLeftView.Image")));
-            this.tsbLeftView.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbLeftView.Name = "tsbLeftView";
-            this.tsbLeftView.Size = new System.Drawing.Size(23, 22);
-            this.tsbLeftView.Text = "Left view";
-            this.tsbLeftView.Click += new System.EventHandler(this.tsbLeftView_Click);
-            // 
-            // tsbRightView
-            // 
-            this.tsbRightView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbRightView.Image = ((System.Drawing.Image)(resources.GetObject("tsbRightView.Image")));
-            this.tsbRightView.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbRightView.Name = "tsbRightView";
-            this.tsbRightView.Size = new System.Drawing.Size(23, 22);
-            this.tsbRightView.Text = "Right view";
-            this.tsbRightView.Click += new System.EventHandler(this.tsbRightView_Click);
-            // 
-            // tsbNormalView
-            // 
-            this.tsbNormalView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbNormalView.Image = ((System.Drawing.Image)(resources.GetObject("tsbNormalView.Image")));
-            this.tsbNormalView.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbNormalView.Name = "tsbNormalView";
-            this.tsbNormalView.Size = new System.Drawing.Size(23, 22);
-            this.tsbNormalView.Text = "Normal view";
-            this.tsbNormalView.Click += new System.EventHandler(this.tsbNormalView_Click);
-            // 
-            // tsbVerticalView
-            // 
-            this.tsbVerticalView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbVerticalView.Image = ((System.Drawing.Image)(resources.GetObject("tsbVerticalView.Image")));
-            this.tsbVerticalView.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbVerticalView.Name = "tsbVerticalView";
-            this.tsbVerticalView.Size = new System.Drawing.Size(23, 22);
-            this.tsbVerticalView.Text = "Vertical view";
-            this.tsbVerticalView.Click += new System.EventHandler(this.tsbVerticalView_Click);
-            // 
-            // tsbIsometric
-            // 
-            this.tsbIsometric.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbIsometric.Image = ((System.Drawing.Image)(resources.GetObject("tsbIsometric.Image")));
-            this.tsbIsometric.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbIsometric.Name = "tsbIsometric";
-            this.tsbIsometric.Size = new System.Drawing.Size(23, 22);
-            this.tsbIsometric.Text = "Isometric view";
-            this.tsbIsometric.Click += new System.EventHandler(this.tsbIsometric_Click);
-            // 
-            // toolStripViewSeparator2
-            // 
-            this.toolStripViewSeparator2.Name = "toolStripViewSeparator2";
-            this.toolStripViewSeparator2.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsbShowWireframeEdges
-            // 
-            this.tsbShowWireframeEdges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShowWireframeEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowWireframeEdges.Image")));
-            this.tsbShowWireframeEdges.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbShowWireframeEdges.Name = "tsbShowWireframeEdges";
-            this.tsbShowWireframeEdges.Size = new System.Drawing.Size(23, 22);
-            this.tsbShowWireframeEdges.Text = "Wireframe";
-            this.tsbShowWireframeEdges.Click += new System.EventHandler(this.tsbShowWireframeEdges_Click);
-            // 
-            // tsbShowElementEdges
-            // 
-            this.tsbShowElementEdges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShowElementEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowElementEdges.Image")));
-            this.tsbShowElementEdges.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbShowElementEdges.Name = "tsbShowElementEdges";
-            this.tsbShowElementEdges.Size = new System.Drawing.Size(23, 22);
-            this.tsbShowElementEdges.Text = "Show element edges";
-            this.tsbShowElementEdges.Click += new System.EventHandler(this.tsbShowElementEdges_Click);
-            // 
-            // tsbShowModelEdges
-            // 
-            this.tsbShowModelEdges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShowModelEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowModelEdges.Image")));
-            this.tsbShowModelEdges.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbShowModelEdges.Name = "tsbShowModelEdges";
-            this.tsbShowModelEdges.Size = new System.Drawing.Size(23, 22);
-            this.tsbShowModelEdges.Text = "Show model edges";
-            this.tsbShowModelEdges.Click += new System.EventHandler(this.tsbShowModelEdges_Click);
-            // 
-            // tsbShowNoEdges
-            // 
-            this.tsbShowNoEdges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShowNoEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowNoEdges.Image")));
-            this.tsbShowNoEdges.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbShowNoEdges.Name = "tsbShowNoEdges";
-            this.tsbShowNoEdges.Size = new System.Drawing.Size(23, 22);
-            this.tsbShowNoEdges.Text = "No edges";
-            this.tsbShowNoEdges.Click += new System.EventHandler(this.tsbShowNoEdges_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsbSectionView
-            // 
-            this.tsbSectionView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbSectionView.Image = global::PrePoMax.Properties.Resources.SectionView;
-            this.tsbSectionView.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbSectionView.Name = "tsbSectionView";
-            this.tsbSectionView.Size = new System.Drawing.Size(23, 22);
-            this.tsbSectionView.Text = "Section view";
-            this.tsbSectionView.Click += new System.EventHandler(this.tsbSectionView_Click);
-            // 
-            // tsbExplodedView
-            // 
-            this.tsbExplodedView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbExplodedView.Image = global::PrePoMax.Properties.Resources.Explode;
-            this.tsbExplodedView.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbExplodedView.Name = "tsbExplodedView";
-            this.tsbExplodedView.Size = new System.Drawing.Size(23, 22);
-            this.tsbExplodedView.Text = "Exploded view";
-            this.tsbExplodedView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsbExplodedView_MouseUp);
-            // 
-            // toolStripViewSeparator3
-            // 
-            this.toolStripViewSeparator3.Name = "toolStripViewSeparator3";
-            this.toolStripViewSeparator3.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsbQuery
-            // 
-            this.tsbQuery.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbQuery.Image = global::PrePoMax.Properties.Resources.Query;
-            this.tsbQuery.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbQuery.Name = "tsbQuery";
-            this.tsbQuery.Size = new System.Drawing.Size(23, 22);
-            this.tsbQuery.Text = "Query";
-            this.tsbQuery.Click += new System.EventHandler(this.tsbQuery_Click);
-            // 
-            // tsbRemoveAnnotations
-            // 
-            this.tsbRemoveAnnotations.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbRemoveAnnotations.Image = global::PrePoMax.Properties.Resources.Remove_annotations;
-            this.tsbRemoveAnnotations.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbRemoveAnnotations.Name = "tsbRemoveAnnotations";
-            this.tsbRemoveAnnotations.Size = new System.Drawing.Size(23, 22);
-            this.tsbRemoveAnnotations.Text = "Remove annotations";
-            this.tsbRemoveAnnotations.Click += new System.EventHandler(this.tsbRemoveAnnotations_Click);
-            // 
-            // toolStripViewSeparator4
-            // 
-            this.toolStripViewSeparator4.Name = "toolStripViewSeparator4";
-            this.toolStripViewSeparator4.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tsbShowAllParts
-            // 
-            this.tsbShowAllParts.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShowAllParts.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowAllParts.Image")));
-            this.tsbShowAllParts.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbShowAllParts.Name = "tsbShowAllParts";
-            this.tsbShowAllParts.Size = new System.Drawing.Size(23, 22);
-            this.tsbShowAllParts.Text = "Show all parts";
-            this.tsbShowAllParts.Click += new System.EventHandler(this.tsbShowAllParts_Click);
-            // 
-            // tsbHideAllParts
-            // 
-            this.tsbHideAllParts.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbHideAllParts.Image = global::PrePoMax.Properties.Resources.Hide;
-            this.tsbHideAllParts.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbHideAllParts.Name = "tsbHideAllParts";
-            this.tsbHideAllParts.Size = new System.Drawing.Size(23, 22);
-            this.tsbHideAllParts.Text = "Hide all parts";
-            this.tsbHideAllParts.Click += new System.EventHandler(this.tsbHideAllParts_Click);
-            // 
-            // tsbInvertVisibleParts
-            // 
-            this.tsbInvertVisibleParts.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbInvertVisibleParts.Image = global::PrePoMax.Properties.Resources.InvertHideShow;
-            this.tsbInvertVisibleParts.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbInvertVisibleParts.Name = "tsbInvertVisibleParts";
-            this.tsbInvertVisibleParts.Size = new System.Drawing.Size(23, 22);
-            this.tsbInvertVisibleParts.Text = "Invert visible parts";
-            this.tsbInvertVisibleParts.Click += new System.EventHandler(this.tsbInvertVisibleParts_Click);
-            // 
-            // tsDeformationFactor
-            // 
-            this.tsDeformationFactor.BackColor = System.Drawing.SystemColors.Control;
-            this.tsDeformationFactor.DisableMouseButtons = false;
-            this.tsDeformationFactor.Dock = System.Windows.Forms.DockStyle.None;
-            this.tsDeformationFactor.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tslDeformationVariable,
-            this.tscbDeformationVariable,
-            this.tslDeformationType,
-            this.tscbDeformationType,
-            this.tslDeformationFactor,
-            this.tstbDeformationFactor});
-            this.tsDeformationFactor.Location = new System.Drawing.Point(3, 25);
-            this.tsDeformationFactor.Name = "tsDeformationFactor";
-            this.tsDeformationFactor.Size = new System.Drawing.Size(429, 25);
-            this.tsDeformationFactor.TabIndex = 8;
-            // 
-            // tslDeformationVariable
-            // 
-            this.tslDeformationVariable.Name = "tslDeformationVariable";
-            this.tslDeformationVariable.Size = new System.Drawing.Size(48, 22);
-            this.tslDeformationVariable.Text = "Variable";
-            // 
-            // tscbDeformationVariable
-            // 
-            this.tscbDeformationVariable.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.tscbDeformationVariable.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.tscbDeformationVariable.Name = "tscbDeformationVariable";
-            this.tscbDeformationVariable.Size = new System.Drawing.Size(121, 25);
-            this.tscbDeformationVariable.ToolTipText = "Select the deformation variable";
-            this.tscbDeformationVariable.SelectedIndexChanged += new System.EventHandler(this.tscbDeformationVariable_SelectedIndexChanged);
-            // 
-            // tslDeformationType
-            // 
-            this.tslDeformationType.Name = "tslDeformationType";
-            this.tslDeformationType.Size = new System.Drawing.Size(31, 22);
-            this.tslDeformationType.Text = "Type";
-            // 
-            // tscbDeformationType
-            // 
-            this.tscbDeformationType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.tscbDeformationType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.tscbDeformationType.Name = "tscbDeformationType";
-            this.tscbDeformationType.Size = new System.Drawing.Size(121, 25);
-            this.tscbDeformationType.ToolTipText = "Select the deformation type";
-            this.tscbDeformationType.SelectedIndexChanged += new System.EventHandler(this.tscbDeformationType_SelectedIndexChanged);
-            // 
-            // tslDeformationFactor
-            // 
-            this.tslDeformationFactor.Name = "tslDeformationFactor";
-            this.tslDeformationFactor.Size = new System.Drawing.Size(40, 22);
-            this.tslDeformationFactor.Text = "Factor";
-            // 
-            // tstbDeformationFactor
-            // 
-            this.tstbDeformationFactor.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.tstbDeformationFactor.Name = "tstbDeformationFactor";
-            this.tstbDeformationFactor.ShortcutsEnabled = false;
-            this.tstbDeformationFactor.Size = new System.Drawing.Size(50, 25);
-            this.tstbDeformationFactor.Text = "10";
-            this.tstbDeformationFactor.TextBoxTextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tstbDeformationFactor.ToolTipText = "Enter the deformation scale factor";
-            this.tstbDeformationFactor.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tstbDeformationFactor_KeyDown);
-            // 
-            // tsModel
-            // 
-            this.tsModel.DisableMouseButtons = false;
-            this.tsModel.Dock = System.Windows.Forms.DockStyle.None;
-            this.tsModel.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tslSymbols,
-            this.tscbSymbolsForStep});
-            this.tsModel.Location = new System.Drawing.Point(633, 0);
-            this.tsModel.Name = "tsModel";
-            this.tsModel.Size = new System.Drawing.Size(187, 25);
-            this.tsModel.TabIndex = 9;
-            // 
-            // tslSymbols
-            // 
-            this.tslSymbols.Name = "tslSymbols";
-            this.tslSymbols.Size = new System.Drawing.Size(52, 22);
-            this.tslSymbols.Text = "Symbols";
-            // 
-            // tscbSymbolsForStep
-            // 
-            this.tscbSymbolsForStep.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.tscbSymbolsForStep.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.tscbSymbolsForStep.Items.AddRange(new object[] {
-            "None"});
-            this.tscbSymbolsForStep.Name = "tscbSymbolsForStep";
-            this.tscbSymbolsForStep.Size = new System.Drawing.Size(121, 25);
-            this.tscbSymbolsForStep.ToolTipText = "Select how symbols are displayed.";
             // 
             // timerTest
             // 
@@ -3643,14 +3663,22 @@
             this.Shown += new System.EventHandler(this.FrmMain_Shown);
             this.Move += new System.EventHandler(this.FrmMain_Move);
             this.Resize += new System.EventHandler(this.FrmMain_Resize);
+            this.tsFile.ResumeLayout(false);
+            this.tsFile.PerformLayout();
+            this.tsViews.ResumeLayout(false);
+            this.tsViews.PerformLayout();
+            this.tsModel.ResumeLayout(false);
+            this.tsModel.PerformLayout();
+            this.tsDeformationFactor.ResumeLayout(false);
+            this.tsDeformationFactor.PerformLayout();
+            this.tsResults.ResumeLayout(false);
+            this.tsResults.PerformLayout();
             this.menuStripMain.ResumeLayout(false);
             this.menuStripMain.PerformLayout();
             this.panelControl.ResumeLayout(false);
             this.cmsAnnotation.ResumeLayout(false);
             this.statusStripMain.ResumeLayout(false);
             this.statusStripMain.PerformLayout();
-            this.tsResults.ResumeLayout(false);
-            this.tsResults.PerformLayout();
             this.toolStripContainer1.ContentPanel.ResumeLayout(false);
             this.toolStripContainer1.TopToolStripPanel.ResumeLayout(false);
             this.toolStripContainer1.TopToolStripPanel.PerformLayout();
@@ -3664,25 +3692,22 @@
             this.splitContainer2.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
-            this.tsFile.ResumeLayout(false);
-            this.tsFile.PerformLayout();
-            this.tsViews.ResumeLayout(false);
-            this.tsViews.PerformLayout();
-            this.tsDeformationFactor.ResumeLayout(false);
-            this.tsDeformationFactor.PerformLayout();
-            this.tsModel.ResumeLayout(false);
-            this.tsModel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
-        
+
 
 
 
         #endregion
 
+        private UserControls.ToolStripFocus tsFile;
+        private UserControls.ToolStripFocus tsViews;
+        private UserControls.ToolStripFocus tsModel;
+        private UserControls.ToolStripFocus tsDeformationFactor;
+        private UserControls.ToolStripFocus tsResults;
         private UserControls.MenuStripFocus menuStripMain;
         private System.Windows.Forms.ToolStripMenuItem tsmiFile;
         private System.Windows.Forms.Panel panelControl;
@@ -3699,9 +3724,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiImportFile;
         private System.Windows.Forms.ToolStripMenuItem tsmiSaveAs;
         private System.Windows.Forms.ToolStripMenuItem tsmiView;
-        private UserControls.ToolStripFocus tsResults;
         private System.Windows.Forms.ToolStripContainer toolStripContainer1;
-        private UserControls.ToolStripFocus tsViews;
         private System.Windows.Forms.ToolStripButton tsbTopView;
         private System.Windows.Forms.ToolStripButton tsbFrontView;
         private System.Windows.Forms.ToolStripButton tsbBackView;
@@ -3719,7 +3742,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiLeftView;
         private System.Windows.Forms.ToolStripMenuItem tsmiRightView;
         private System.Windows.Forms.ToolStripMenuItem tsmiIsometricView;
-        private UserControls.ToolStripFocus tsFile;
         private System.Windows.Forms.ToolStripButton tsbNew;
         private System.Windows.Forms.ToolStripButton tsbOpen;
         private System.Windows.Forms.ToolStripButton tsbSave;
@@ -3728,7 +3750,6 @@
         private System.Windows.Forms.ToolStripButton tsbShowElementEdges;
         private System.Windows.Forms.ToolStripMenuItem tsmiShowElementEdges;
         private System.Windows.Forms.SplitContainer splitContainer1;
-        
         private System.Windows.Forms.ToolStripMenuItem tsmiPart;
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteParts;
         private System.Windows.Forms.ToolStripButton tsbImport;
@@ -4059,7 +4080,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEditAnnotation;
         private System.Windows.Forms.ToolStripMenuItem tsmiResetAnnotation;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerAnnotation2;
-        private UserControls.ToolStripFocus tsDeformationFactor;
         private System.Windows.Forms.ToolStripLabel tslDeformationVariable;
         private System.Windows.Forms.ToolStripComboBox tscbDeformationVariable;
         private System.Windows.Forms.ToolStripLabel tslDeformationType;
@@ -4068,7 +4088,8 @@
         private System.Windows.Forms.ToolStripLabel tslDeformationFactor;
         private System.Windows.Forms.ToolStripButton tsbQuery;
         private System.Windows.Forms.ToolStripButton tsbRemoveAnnotations;
-        private UserControls.ToolStripFocus tsModel;
+        private System.Windows.Forms.ToolStripLabel tslResultName;
+        private System.Windows.Forms.ToolStripComboBox tscbResultName;
     }
 }
 

@@ -196,7 +196,8 @@ namespace PrePoMax
         // Annotations
         public AnnotationContainer Annotations { get { return _annotations; } }
         // Results
-        public FeResults Results { get { return _allResults.CurrentResult; } }        
+        public ResultsCollection AllResults { get { return _allResults; } }
+        public FeResults CurrentResult { get { return _allResults.CurrentResult; } }
         public ViewResultsType ViewResultsType
         {
             get { return _viewResultsType; }
@@ -369,7 +370,7 @@ namespace PrePoMax
             {
                 if (controller.Model != null) FeMesh.PrepareForSavig(controller.Model.Geometry);
                 if (controller.Model != null) FeMesh.PrepareForSavig(controller.Model.Mesh);
-                if (controller.Results != null) FeMesh.PrepareForSavig(controller.Results.Mesh);
+                if (controller.CurrentResult != null) FeMesh.PrepareForSavig(controller.CurrentResult.Mesh);
             }
         }
         public static void ResetAfterSavig(Controller controller)
@@ -378,7 +379,7 @@ namespace PrePoMax
             {
                 if (controller.Model != null) FeMesh.ResetAfterSavig(controller.Model.Geometry);
                 if (controller.Model != null) FeMesh.ResetAfterSavig(controller.Model.Mesh);
-                if (controller.Results != null) FeMesh.ResetAfterSavig(controller.Results.Mesh);
+                if (controller.CurrentResult != null) FeMesh.ResetAfterSavig(controller.CurrentResult.Mesh);
             }
         }
 
@@ -737,7 +738,7 @@ namespace PrePoMax
         {
             // Load results
             _form.Clear3D();
-            ClearResults();
+            if (_allResults.Count == 0) ClearResults();
             //
             _allResults.Add(results.FileName, results);
             // Check if the meshes are the same and rename the parts
@@ -8858,7 +8859,7 @@ namespace PrePoMax
             }
             else
             {
-                Results.GetNodesAndValues(_currentFieldData, nodeIds, out data.Geometry.Nodes.Coor,
+                CurrentResult.GetNodesAndValues(_currentFieldData, nodeIds, out data.Geometry.Nodes.Coor,
                                           out data.Geometry.Nodes.Values);
             }
             //
