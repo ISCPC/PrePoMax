@@ -96,7 +96,8 @@
     <Compile Include="Interpolator\Triangle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FieldOutput\Field.cs" />
-    <Compile Include="Interpolator\ResultsInterpolators.cs" />
+    <Compile Include="Interpolator\ResultsInterpolator.cs" />
+    <Compile Include="ResultsCollection.cs" />
     <Compile Include="Transformations\CircularPattern.cs" />
     <Compile Include="Transformations\LinearPattern.cs" />
     <Compile Include="Transformations\Symmetry.cs" />

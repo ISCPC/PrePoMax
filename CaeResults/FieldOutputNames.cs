@@ -37,6 +37,9 @@ namespace CaeResults
         public const string WearDepth = "WEAR_DEPTH";
         public const string MeshDeformation = "MESH_DEF";
         public const string DispDeformationDepth = "DISP_DEF_DEPTH";
+        // Imported pressure
+        public const string Distance = "DISTANCE";
+        public const string Imported = "IMPORTED";
         //
         public const string Error = "ERROR";
     }
@@ -93,6 +96,12 @@ namespace CaeResults
         public const string H1 = "H1";
         public const string H2 = "H2";
         public const string H3 = "H3";
+        // Imported pressure
+        public const string D1 = "D1";
+        public const string D2 = "D2";
+        public const string D3 = "D3";
+        public const string PRESS = "PRESS";
+
         //
         //public const string UH1 = "UH1";
         //public const string UH2 = "UH2";

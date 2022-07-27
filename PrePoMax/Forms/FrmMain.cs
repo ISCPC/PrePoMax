@@ -7844,47 +7844,72 @@ namespace PrePoMax
         private void tsmiTest_Click(object sender, EventArgs e)
         {
             ImportedPressure pressure = (ImportedPressure)_controller.GetStep("Step-1").Loads["Imported_pressure-1"];
-            pressure.ImportPressure(_controller.Model.Mesh);
-            //CaeResults.FeResults results = pressure.GetResults();
+            pressure.ImportPressure();
             //
-            PartExchangeData pData = new PartExchangeData();
-            _controller.Model.Mesh.GetAllNodesAndCells(out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids,
-                                                       out pData.Cells.CellNodeIds, out pData.Cells.Types);
+            PartExchangeData allData = new PartExchangeData();
+            _controller.Model.Mesh.GetAllNodesAndCells(out allData.Nodes.Ids, out allData.Nodes.Coor, out allData.Cells.Ids,
+                                                       out allData.Cells.CellNodeIds, out allData.Cells.Types);
             //
-
-            float[] distances = new float[pData.Nodes.Coor.Length];
-            float[] values = new float[pData.Nodes.Coor.Length];
-
-            for (int i = 0; i < distances.Length; i++)
+            FeSurface surface = _controller.Model.Mesh.Surfaces[pressure.SurfaceName];
+            FeNodeSet nodeSet = _controller.Model.Mesh.NodeSets[surface.NodeSetName];
+            HashSet<int> nodeIds = new HashSet<int>(nodeSet.Labels);
+            //
+            double[] distance;
+            double value;
+            float[] distancesAll = new float[allData.Nodes.Coor.Length];
+            float[] distances1 = new float[allData.Nodes.Coor.Length];
+            float[] distances2 = new float[allData.Nodes.Coor.Length];
+            float[] distances3 = new float[allData.Nodes.Coor.Length];
+            float[] values = new float[allData.Nodes.Coor.Length];
+            //
+            for (int i = 0; i < values.Length; i++)
             {
-                distances[i] = (float)pressure.GetDistanceForPoint(pData.Nodes.Coor[i]);
-                values[i] = (float)pressure.GetPressureForPoint(pData.Nodes.Coor[i]);
+                if (nodeIds.Contains(allData.Nodes.Ids[i]))
+                {
+                    pressure.GetPressureAndDistanceForPoint(allData.Nodes.Coor[i], out distance, out value);
+                    distances1[i] = (float)distance[0];
+                    distances2[i] = (float)distance[1];
+                    distances3[i] = (float)distance[2];
+                    distancesAll[i] = (float)Math.Sqrt(distance[0] * distance[0] +
+                                                       distance[1] * distance[1] +
+                                                       distance[2] * distance[2]);
+                    values[i] = (float)value;
+                }
+                else
+                {
+                    distances1[i] = float.NaN;
+                    distances2[i] = float.NaN;
+                    distances3[i] = float.NaN;
+                    distancesAll[i] = float.NaN;
+                    values[i] = float.NaN;
+                }
             }
-
-            //_vtk.InterpolateMeshData(pressure.PartExchangeData, ref pData);
             //
             Dictionary<int, int> nodeIdsLookUp = new Dictionary<int, int>();
-            for (int i = 0; i < pData.Nodes.Coor.Length; i++) nodeIdsLookUp.Add(pData.Nodes.Ids[i], i);
+            for (int i = 0; i < allData.Nodes.Coor.Length; i++) nodeIdsLookUp.Add(allData.Nodes.Ids[i], i);
             CaeResults.FeResults outResults = new CaeResults.FeResults("");
             outResults.SetMesh(_controller.Model.Mesh, nodeIdsLookUp);
             // Add distances
-            CaeResults.FieldData fieldData = new CaeResults.FieldData("Dist");
+            CaeResults.FieldData fieldData = new CaeResults.FieldData(CaeResults.FOFieldNames.Distance);
             fieldData.GlobalIncrementId = 1;
             fieldData.Type = CaeResults.StepType.Static;
             fieldData.Time = 1;
             fieldData.MethodId = 1;
             fieldData.StepId = 1;
             fieldData.StepIncrementId = 1;
-            //
-            CaeResults.Field field = new CaeResults.Field("Dist");
-            field.AddComponent("VAL", distances);
+            // Distances
+            CaeResults.Field field = new CaeResults.Field(fieldData.Name);
+            field.AddComponent(CaeResults.FOComponentNames.All, distancesAll);
+            field.AddComponent(CaeResults.FOComponentNames.D1, distances1);
+            field.AddComponent(CaeResults.FOComponentNames.D2, distances2);
+            field.AddComponent(CaeResults.FOComponentNames.D3, distances3);
             outResults.AddFiled(fieldData, field);
             // Add values
             fieldData = new CaeResults.FieldData(fieldData);
-            fieldData.Name = "p";
+            fieldData.Name = CaeResults.FOFieldNames.Imported;
             //
-            field = new CaeResults.Field("p");
-            field.AddComponent("VAL", values);
+            field = new CaeResults.Field(fieldData.Name);
+            field.AddComponent(CaeResults.FOComponentNames.PRESS, values);
             outResults.AddFiled(fieldData, field);
             // Unit system
             outResults.UnitSystem = new UnitSystem(_controller.Model.UnitSystem.UnitSystemType);

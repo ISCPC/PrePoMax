@@ -649,11 +649,13 @@ namespace CaeResults
                         unitAbbreviation = "";
                         break;
                     case FOFieldNames.Disp:
+                    case FOFieldNames.Distance: // Imported pressure
                         unitConverter = new StringLengthConverter();
                         unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
                         break;
                     case FOFieldNames.Stress:
                     case FOFieldNames.ZZStr:
+                    case FOFieldNames.Imported: // Imported pressure
                         unitConverter = new StringPressureConverter();
                         unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
                         break;
@@ -696,7 +698,7 @@ namespace CaeResults
                             }
                         }
                         break;
-                    // WEAR
+                    // Wear
                     case FOFieldNames.SlidingDistance:
                     case FOFieldNames.SurfaceNormal:
                     case FOFieldNames.WearDepth:
@@ -732,9 +734,7 @@ namespace CaeResults
                         unitAbbreviation = "/";
                         break;
                     default:
-                        // OpenFOAM
-                        if (componentName.StartsWith("VAL")) { }
-                        else if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
+                        if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
                         //
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "?";

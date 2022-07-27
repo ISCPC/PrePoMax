@@ -16,26 +16,41 @@ namespace CaeResults
         [StandardValue("ClosestPoint", DisplayName = "Closest point")]
         ClosestPoint
     }
-    static public class ResultsInterpolators
+    public class ResultsInterpolator
     {
-        public static void InterpolateScalarResults(PartExchangeData source, PartExchangeData target, InterpolatorEnum interpolator,
-                                                    out float[] distances, out float[] values)
+        // Variables                                                                                                                
+        private int _nx;
+        private int _ny;
+        private int _nz;
+        private int _nxy;
+        private double _deltaX;
+        private double _deltaY;
+        private double _deltaZ;
+        private BoundingBox _sourceBox;
+        private BoundingBox[] _regionBoxes;
+        private Triangle[] _triangles;
+
+
+        // Constructor                                                                                                              
+        public ResultsInterpolator(PartExchangeData source)
         {
-            BoundingBox sourceBox = ComputeAllNodesBoundingBox(source);
-            double l = sourceBox.GetDiagonal() / 128;
+            _sourceBox = ComputeAllNodesBoundingBox(source);
+            double l = _sourceBox.GetDiagonal() / 128;
             //
-            int nx = (int)Math.Ceiling(sourceBox.GetXSize() / l);
-            int ny = (int)Math.Ceiling(sourceBox.GetYSize() / l);
-            int nz = (int)Math.Ceiling(sourceBox.GetZSize() / l);
-            int nxy = nx * ny;
-            double deltaX = sourceBox.GetXSize() / nx;
-            double deltaY = sourceBox.GetYSize() / ny;
-            double deltaZ = sourceBox.GetZSize() / nz;
+            _nx = (int)Math.Ceiling(_sourceBox.GetXSize() / l);
+            _ny = (int)Math.Ceiling(_sourceBox.GetYSize() / l);
+            _nz = (int)Math.Ceiling(_sourceBox.GetZSize() / l);
+            _nxy = _nx * _ny;
+            _deltaX = _sourceBox.GetXSize() / _nx;
+            _deltaY = _sourceBox.GetYSize() / _ny;
+            _deltaZ = _sourceBox.GetZSize() / _nz;
             //
             BoundingBox[] cellBoxes = ComputeCellBoundingBoxes(source);
-            BoundingBox[] regionBoxes = SplitCellBoxesToRegions(cellBoxes, sourceBox, nx, ny, nz);
-            Triangle[] triangles = TriangularCellsToTriangles(source);
-            //
+            _regionBoxes = SplitCellBoxesToRegions(cellBoxes, _sourceBox, _nx, _ny, _nz);
+            _triangles = TriangularCellsToTriangles(source);
+        }
+        public void InterpolateAt(double[] point, InterpolatorEnum interpolator, out double[] distance, out double value)
+        {
             int i;
             int j;
             int k;
@@ -58,106 +73,101 @@ namespace CaeResults
             Triangle triangle;
             Triangle bestTriangle = null;
             bool closer;
-            distances = new float[target.Nodes.Coor.Length];
-            values = new float[target.Nodes.Coor.Length];
             //
-            for (int nId = 0; nId < target.Nodes.Coor.Length; nId++)
+            sourceCoor = point;
+            sourcePoint = new Vec3D(sourceCoor);
+            i = (int)Math.Floor((sourceCoor[0] - _sourceBox.MinX) / _deltaX);
+            j = (int)Math.Floor((sourceCoor[1] - _sourceBox.MinY) / _deltaY);
+            k = (int)Math.Floor((sourceCoor[2] - _sourceBox.MinZ) / _deltaZ);
+            if (i < 0) i = 0;
+            else if (i >= _nx) i = _nx - 1;
+            if (j < 0) j = 0;
+            else if (j >= _ny) j = _ny - 1;
+            if (k < 0) k = 0;
+            else if (k >= _nz) k = _nz - 1;
+            bb = _regionBoxes[k * _nxy + j * _nx + i];
+            //
+            mini = i;
+            maxi = i;
+            minj = j;
+            maxj = j;
+            mink = k;
+            maxk = k;
+            delta = 0;
+            num = ((Dictionary<int, BoundingBox>)bb.Tag).Count;
+            // Add next layer of regions
+            while (num == 0 || delta < 1)
             {
-                sourceCoor = target.Nodes.Coor[nId];
-                sourcePoint = new Vec3D(sourceCoor);
-                i = (int)Math.Floor((sourceCoor[0] - sourceBox.MinX) / deltaX);
-                j = (int)Math.Floor((sourceCoor[1] - sourceBox.MinY) / deltaY);
-                k = (int)Math.Floor((sourceCoor[2] - sourceBox.MinZ) / deltaZ);
-                if (i < 0) i = 0;
-                else if (i >= nx) i = nx - 1;
-                if (j < 0) j = 0;
-                else if (j >= ny) j = ny - 1;
-                if (k < 0) k = 0;
-                else if (k >= nz) k = nz - 1;
-                bb = regionBoxes[k * nxy + j * nx + i];
-                //
-                mini = i;
-                maxi = i;
-                minj = j;
-                maxj = j;
-                mink = k;
-                maxk = k;
-                delta = 0;
-                num = ((Dictionary<int, BoundingBox>)bb.Tag).Count;
-                // Add next layer of regions
-                while (num == 0 || delta < 1)
-                {
-                    delta++;
-                    mini = i - delta;
-                    maxi = i + delta;
-                    minj = j - delta;
-                    maxj = j + delta;
-                    mink = k - delta;
-                    maxk = k + delta;
-                    if (mini < 0) mini = 0;
-                    if (maxi >= nx) maxi = nx - 1;
-                    if (minj < 0) minj = 0;
-                    if (maxj >= ny) maxj = ny - 1;
-                    if (mink < 0) mink = 0;
-                    if (maxk >= nz) maxk = nz - 1;
-                    for (int kk = mink; kk <= maxk; kk++)
-                    {
-                        for (int jj = minj; jj <= maxj; jj++)
-                        {
-                            for (int ii = mini; ii <= maxi; ii++)
-                            {
-                                bb = regionBoxes[kk * nxy + jj * nx + ii];
-                                num += ((Dictionary<int, BoundingBox>)bb.Tag).Count;
-                            }
-                        }
-                    }
-                }
-                //
-                minD = double.MaxValue;
-                //
+                delta++;
+                mini = i - delta;
+                maxi = i + delta;
+                minj = j - delta;
+                maxj = j + delta;
+                mink = k - delta;
+                maxk = k + delta;
+                if (mini < 0) mini = 0;
+                if (maxi >= _nx) maxi = _nx - 1;
+                if (minj < 0) minj = 0;
+                if (maxj >= _ny) maxj = _ny - 1;
+                if (mink < 0) mink = 0;
+                if (maxk >= _nz) maxk = _nz - 1;
                 for (int kk = mink; kk <= maxk; kk++)
                 {
                     for (int jj = minj; jj <= maxj; jj++)
                     {
                         for (int ii = mini; ii <= maxi; ii++)
                         {
-                            bb = regionBoxes[kk * nxy + jj * nx + ii];
-                            if (((Dictionary<int, BoundingBox>)bb.Tag).Count == 0) continue;
-                            //
-                            foreach (var entry in (Dictionary<int, BoundingBox>)bb.Tag)
+                            bb = _regionBoxes[kk * _nxy + jj * _nx + ii];
+                            num += ((Dictionary<int, BoundingBox>)bb.Tag).Count;
+                        }
+                    }
+                }
+            }
+            //
+            minD = double.MaxValue;
+            //
+            for (int kk = mink; kk <= maxk; kk++)
+            {
+                for (int jj = minj; jj <= maxj; jj++)
+                {
+                    for (int ii = mini; ii <= maxi; ii++)
+                    {
+                        bb = _regionBoxes[kk * _nxy + jj * _nx + ii];
+                        if (((Dictionary<int, BoundingBox>)bb.Tag).Count == 0) continue;
+                        //
+                        foreach (var entry in (Dictionary<int, BoundingBox>)bb.Tag)
+                        {
+                            triangle = _triangles[entry.Key];
+                            boxD = entry.Value.MaxOutsideDistance2(sourceCoor);
+                            if (boxD < minD)
                             {
-                                triangle = triangles[entry.Key];
-                                boxD = entry.Value.MaxOutsideDistance2(sourceCoor);
-                                if (boxD < minD)
+                                if (interpolator == InterpolatorEnum.ClosestNode)
+                                    closer = triangle.GetClosestNodeTo(sourcePoint, minD, out closestPoint);
+                                else if (interpolator == InterpolatorEnum.ClosestPoint)
+                                    closer = triangle.GetClosestPointTo(sourcePoint, minD, out closestPoint);
+                                else throw new NotSupportedException();
+                                //
+                                if (closer)
                                 {
-                                    if (interpolator == InterpolatorEnum.ClosestNode)
-                                        closer = triangle.GetClosestNodeTo(sourcePoint, minD, out closestPoint);
-                                    else if (interpolator == InterpolatorEnum.ClosestPoint)
-                                        closer = triangle.GetClosestPointTo(sourcePoint, minD, out closestPoint);
-                                    else throw new NotSupportedException();
+                                    d = (closestPoint - sourcePoint).Len2;
                                     //
-                                    if (closer)
+                                    if (d < minD)
                                     {
-                                        d = (closestPoint - sourcePoint).Len2;
-                                        //
-                                        if (d < minD)
-                                        {
-                                            minD = d;
-                                            bestTriangle = triangle;
-                                            bestPoint.X = closestPoint.X;
-                                            bestPoint.Y = closestPoint.Y;
-                                            bestPoint.Z = closestPoint.Z;
-                                        }
+                                        minD = d;
+                                        bestTriangle = triangle;
+                                        bestPoint.X = closestPoint.X;
+                                        bestPoint.Y = closestPoint.Y;
+                                        bestPoint.Z = closestPoint.Z;
                                     }
                                 }
                             }
                         }
                     }
                 }
-                //
-                distances[nId] = (float)Math.Sqrt(minD);
-                values[nId] = (float)bestTriangle.InterpolateAt(bestPoint);
             }
+            //
+            distance = (bestPoint - sourcePoint).Coor;
+            value = (float)bestTriangle.InterpolateAt(bestPoint);
         }
         //
         private static BoundingBox ComputeAllNodesBoundingBox(PartExchangeData pData)
@@ -271,25 +281,6 @@ namespace CaeResults
                                             pData.Nodes.Values[cell[1]],
                                             pData.Nodes.Values[cell[2]]);
             }
-            //
-            return triangles;
-        }
-        private static Triangle[] TriangularCellsToTrianglesParallel(PartExchangeData pData)
-        {
-            // This is slower
-            Triangle[] triangles = new Triangle[pData.Cells.CellNodeIds.Length];
-            //
-            Parallel.For(0, triangles.Length, i =>
-            {
-                int[] cell = pData.Cells.CellNodeIds[i];
-                if (cell.Length != 3) throw new NotSupportedException();
-                triangles[i] = new Triangle(pData.Nodes.Coor[cell[0]],
-                                            pData.Nodes.Coor[cell[1]],
-                                            pData.Nodes.Coor[cell[2]],
-                                            pData.Nodes.Values[cell[0]],
-                                            pData.Nodes.Values[cell[1]],
-                                            pData.Nodes.Values[cell[2]]);
-            });
             //
             return triangles;
         }

@@ -81,8 +81,8 @@ namespace PrePoMax
         [Id(4, 3)]
         public CaeResults.InterpolatorEnum Interpolator
         {
-            get { return _importedPressure.Interpolator; }
-            set { _importedPressure.Interpolator = value; }
+            get { return _importedPressure.InterpolatorType; }
+            set { _importedPressure.InterpolatorType = value; }
         }
         ////
         [CategoryAttribute("Magnitude")]
