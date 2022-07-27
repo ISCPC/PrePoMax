@@ -345,11 +345,6 @@ namespace vtkControl
             _renderWindow.SetCurrentCursor(0);  // Default
         }
         //
-        private void EditArrowWidget(vtkMaxTextWithArrowWidget widget)
-        {
-            MouseEventArgs mouseEventArgs = new MouseEventArgs(MouseButtons.Left, 2, 0, 0, 1);
-            Form_WidgetPicked(mouseEventArgs, Keys.None, widget.GetName(), widget.GetRectangle());
-        }
         private void widget_DoubleClicked(object sender)
         {
             if (sender is vtkMaxColorBarWidget) Form_ShowColorBarSettings?.Invoke();
@@ -1780,10 +1775,6 @@ namespace vtkControl
             //timer.Interval = 10 * 1000;
             //timer.Enabled = true;
         }
-        private void _style_KeyboardKeyPressEvent(Keys obj)
-        {
-            throw new NotImplementedException();
-        }
         private void InitializeScalarBar()
         {
             // Lookup table
@@ -1917,97 +1908,6 @@ namespace vtkControl
             actor.Diffuse = 0.4;
         }
         //
-        private void PrepareActorLookupTable_(double scalarRangeMin, double scalarRangeMax)
-        {
-            double min = scalarRangeMin;
-            double max = scalarRangeMax;
-            double minSpectrumValue = min;
-            double maxSpectrumValue = max;
-            bool addMinColor = false;
-            bool addMaxColor = false;
-            //
-            vtkColorTransferFunction ctf = GetColorTransferFunction();
-            // Determine the need for min max color
-            if (_colorSpectrum.MinMaxType == vtkColorSpectrumMinMaxType.Manual)
-            {
-                min = Math.Min(scalarRangeMin, _colorSpectrum.MinUserValue);
-                max = Math.Max(scalarRangeMax, _colorSpectrum.MaxUserValue);
-                //
-                if (_colorSpectrum.MinUserValue > min && max != min)
-                {
-                    addMinColor = true;
-                    minSpectrumValue = _colorSpectrum.MinUserValue;
-                }
-                if (_colorSpectrum.MaxUserValue < max && max != min)
-                {
-                    addMaxColor = true;
-                    maxSpectrumValue = _colorSpectrum.MaxUserValue;
-                }
-            }
-            //
-            double[] color;
-            double delta;
-            _lookupTable = vtkLookupTable.New(); // this is a fix for a _lookupTable.DeepCopy later on
-            //
-            if (addMinColor || addMaxColor)
-            {
-                int numMinColors = 0;
-                int numMaxColors = 0;
-                delta = (maxSpectrumValue - minSpectrumValue) / _colorSpectrum.NumberOfColors;
-                //
-                if (addMinColor)
-                {
-                    numMinColors = (int)Math.Ceiling((_colorSpectrum.MinUserValue - min) / delta);
-                    min = _colorSpectrum.MinUserValue - numMinColors * delta;
-                    //
-                }
-                if (addMaxColor)
-                {
-                    numMaxColors = (int)Math.Ceiling((max - _colorSpectrum.MaxUserValue) / delta);
-                    max = _colorSpectrum.MaxUserValue + numMaxColors * delta;
-                }
-                int numOfAllColors = _colorSpectrum.NumberOfColors + numMinColors + numMaxColors;
-                //
-                _lookupTable.SetTableRange(min, max);
-                _lookupTable.SetNumberOfColors(numOfAllColors);
-                // Below range color
-                int count = 0;
-                for (int i = 0; i < numMinColors; i++)
-                {
-                    _lookupTable.SetTableValue(count++, _colorSpectrum.MinColor.R / 256.0,
-                                                        _colorSpectrum.MinColor.G / 256.0,
-                                                        _colorSpectrum.MinColor.B / 256.0, 1.0);        //R,G,B,A
-                }
-                // Between range color
-                double rangeDelta = 1.0 / (_colorSpectrum.NumberOfColors - 1);
-                for (int i = 0; i < _colorSpectrum.NumberOfColors; i++)
-                {
-                    color = ctf.GetColor(i * rangeDelta);
-                    _lookupTable.SetTableValue(count++, color[0], color[1], color[2], 1.0);             //R,G,B,A
-                }
-                // Above range color
-                if (addMaxColor)
-                {
-                    for (int i = 0; i < numMaxColors; i++)
-                    {
-                        _lookupTable.SetTableValue(count++, _colorSpectrum.MaxColor.R / 256.0,
-                                                            _colorSpectrum.MaxColor.G / 256.0,
-                                                            _colorSpectrum.MaxColor.B / 256.0, 1.0);    //R,G,B,A
-                    }
-                }
-            }
-            else
-            {
-                _lookupTable.SetTableRange(min, max);
-                _lookupTable.SetNumberOfColors(_colorSpectrum.NumberOfColors);
-                delta = 1.0 / (_lookupTable.GetNumberOfColors() - 1);
-                for (int i = 0; i < _lookupTable.GetNumberOfColors(); i++)
-                {
-                    color = ctf.GetColor(i * delta);
-                    _lookupTable.SetTableValue(i, color[0], color[1], color[2], 1.0);                   //R,G,B,A
-                }
-            }
-        }
         private void PrepareActorLookupTable(double scalarRangeMin, double scalarRangeMax)
         {
             double min = scalarRangeMin;
@@ -2241,43 +2141,7 @@ namespace vtkControl
             //
             return ctf;
         }
-        private void ReverseLookupTable(vtkLookupTable lookupTable)
-        {
-            long n = lookupTable.GetNumberOfColors();
-            vtkUnsignedCharArray table = lookupTable.GetTable();
-            byte[][] color = new byte[n][];
-
-            //color[i][0] ... R
-            //color[i][1] ... G
-            //color[i][2] ... B
-            //color[i][3] ... A
-
-            for (int i = 0; i < n; i++)
-            {
-                color[i] = new byte[4];
-                for (int j = 0; j < 4; j++)
-                {
-                    color[i][j] = table.GetValue(4 * i + j);
-                }
-            }
-
-            for (int i = 0; i < n; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    table.SetValue(4 * i + j, color[n - 1 - i][j]);
-                }
-            }
-
-            lookupTable.SetTable(table);
-
-            //t = lookupTable.anno  etNumberOfAnnotatedValues() - 1;
-            //for (vtkIdType i = t; i >= 0; --i)
-            //{
-            //    lutr.SetAnnotation(t - i, lut.GetAnnotation(i));
-            //}
-        }
-
+        //
         private void ApplyEdgesVisibilityAndBackfaceCulling()
         {
             // Visibility functions must use vtkMaxActor.Visible property to determine visibility
@@ -2622,71 +2486,85 @@ namespace vtkControl
         //
         private void ResetCamera()
         {
+            double delta1;
+            double delta2 = double.MaxValue;
+            double[] b1 = _renderer.ComputeVisiblePropBounds();
+            double[] b2;
+            //
             if (_overlayActors.Count > 0)
             {
-                double[] b1 = _renderer.ComputeVisiblePropBounds();
-                double[] b2 = _overlayRenderer.ComputeVisiblePropBounds();
-                
-                //double[] b3 = new double[] { Math.Min(b1[0], b2[0]), Math.Max(b1[1], b2[1]),
-                //                             Math.Min(b1[2], b2[2]), Math.Max(b1[3], b2[3]),
-                //                             Math.Min(b1[4], b2[4]), Math.Max(b1[5], b2[5])};
-                //
-                //_renderer.ResetCamera(b3[0], b3[1], b3[2], b3[3], b3[4], b3[5]);
-
-                //bool left, right, bottom, top;
-                //left = b2[0] < b1[0];
-                //right = b2[1] > b1[1];
-                //bottom = b2[2] < b1[2];
-                //top = b2[4] > b1[4];
-
-                int wFactor = 0;
-                int hFactor = 0;
-
-                //if (left) wFactor++;
-                //if (right) wFactor++;
-                //if (bottom) hFactor++;
-                //if (top) hFactor++;
-
-                // simple solution
-                wFactor = 2;
-                hFactor = 2;
-
-                double w = Width - wFactor * _maxSymbolSize;
-                double h = Height - hFactor * _maxSymbolSize;
-                double zoomW = Width / w;
-                double zoomH = Height / h;
-
-                double mid;
-                double l;
-
-                // width
-                mid = (b1[0] + b1[1]) / 2;
-                l = b1[1] - b1[0];
-                //if (wFactor == 1)
-                //{
-                //    if (left) mid += l * (1 - zoomW) / 2;
-                //    if (right) mid -= l * (1 - zoomW) / 2;
-                //}
-                l *= zoomW;
-                b1[0] = mid - l / 2;
-                b1[1] = mid + l / 2;
-
-                // height
-                mid = (b1[2] + b1[3]) / 2;
-                l = b1[3] - b1[2];
-                //if (hFactor == 1)
-                //{
-                //    if (bottom) mid += l * (1 - zoomH) / 2;
-                //    if (top) mid -= l * (1 - zoomH) / 2;
-                //}
-                l *= zoomH;
-                b1[2] = mid - l / 2;
-                b1[3] = mid + l / 2;
-
-                _renderer.ResetCamera(b1[0], b1[1], b1[2], b1[3], b1[4], b1[5]);
+                while (true)
+                {
+                    ////double[] b2 = _overlayRenderer.ComputeVisiblePropBounds();
+                    ////double[] b3 = new double[] { Math.Min(b1[0], b2[0]), Math.Max(b1[1], b2[1]),
+                    ////                             Math.Min(b1[2], b2[2]), Math.Max(b1[3], b2[3]),
+                    ////                             Math.Min(b1[4], b2[4]), Math.Max(b1[5], b2[5])};
+                    ////
+                    ////_renderer.ResetCamera(b3[0], b3[1], b3[2], b3[3], b3[4], b3[5]);
+                    ////
+                    ////bool left, right, bottom, top;
+                    ////left = b2[0] < b1[0];
+                    ////right = b2[1] > b1[1];
+                    ////bottom = b2[2] < b1[2];
+                    ////top = b2[4] > b1[4];
+                    ////
+                    //int wFactor = 0;
+                    //int hFactor = 0;
+                    ////
+                    ////if (left) wFactor++;
+                    ////if (right) wFactor++;
+                    ////if (bottom) hFactor++;
+                    ////if (top) hFactor++;
+                    ////
+                    //// Simple solution
+                    //wFactor = 2;
+                    //hFactor = 2;
+                    ////
+                    //double w = Width - wFactor * _maxSymbolSize;
+                    //double h = Height - hFactor * _maxSymbolSize;
+                    //double zoomW = Width / w;
+                    //double zoomH = Height / h;
+                    ////
+                    //double mid;
+                    //double l;
+                    //// Width
+                    //mid = (b1[0] + b1[1]) / 2;
+                    //l = b1[1] - b1[0];
+                    ////if (wFactor == 1)
+                    ////{
+                    ////    if (left) mid += l * (1 - zoomW) / 2;
+                    ////    if (right) mid -= l * (1 - zoomW) / 2;
+                    ////}
+                    //l *= zoomW;
+                    //b1[0] = mid - l / 2;
+                    //b1[1] = mid + l / 2;
+                    //// Height
+                    //mid = (b1[2] + b1[3]) / 2;
+                    //l = b1[3] - b1[2];
+                    ////if (hFactor == 1)
+                    ////{
+                    ////    if (bottom) mid += l * (1 - zoomH) / 2;
+                    ////    if (top) mid -= l * (1 - zoomH) / 2;
+                    ////}
+                    //l *= zoomH;
+                    //b1[2] = mid - l / 2;
+                    //b1[3] = mid + l / 2;
+                    ////
+                    //_renderer.ResetCamera(b1[0], b1[1], b1[2], b1[3], b1[4], b1[5]);
+                    //
+                    _renderer.ResetCamera();
+                    b2 = _renderer.ComputeVisiblePropBounds();
+                    delta1 = Math.Abs(b1[0] - b2[0]);
+                    if (Math.Abs(delta1 - delta2) < 1E-6) break;
+                    else
+                    {
+                        b1 = b2.ToArray();
+                        delta2 = delta1;
+                    }
+                }
             }
             else _renderer.ResetCamera();
-
+            //
             _style.ResetClippingRange();
         }
         //
@@ -5082,7 +4960,7 @@ namespace vtkControl
                 if (actor.UseSecondaryHighightColor) highlightColor = secondaryHighlightColor;
                 else highlightColor = primaryHighlightColor;
                 //
-                actor.GeometryProperty.SetColor(highlightColor.R / 255.0, highlightColor.G / 255.0, highlightColor.B / 255.0);
+                ApplySelectionFormatingToActor(actor);
             }
             RenderSceene();
         }
@@ -5269,8 +5147,10 @@ namespace vtkControl
                 }
                 else
                 {
-                    if (actor.MinNode != null && actor.MinNode.Value < minNode.Value) minNode = actor.MinNode;
-                    if (actor.MaxNode != null && actor.MaxNode.Value > maxNode.Value) maxNode = actor.MaxNode;
+                    if (actor.MinNode != null && !float.IsNaN(actor.MinNode.Value) && actor.MinNode.Value < minNode.Value)
+                        minNode = actor.MinNode;
+                    if (actor.MaxNode != null && !float.IsNaN(actor.MaxNode.Value) && actor.MaxNode.Value > maxNode.Value)
+                        maxNode = actor.MaxNode;
                 }
             }
             if (minNode == null || maxNode == null) return;
@@ -5299,6 +5179,9 @@ namespace vtkControl
             double[] actorRange = _lookupTable.GetTableRange();
             vtkLookupTable lookup = vtkLookupTable.New();
             lookup.DeepCopy(_lookupTable);
+            // Set NAN color as white
+            lookup.SetNanColor(1, 1, 1, 1);
+            //
             foreach (var entry in _actors)
             {
                 actor = entry.Value;
@@ -6017,6 +5900,12 @@ namespace vtkControl
         {
             foreach (var entry in _arrowWidgets) entry.Value.VisibilityOff();
         }
+        //
+        private void EditArrowWidget(vtkMaxTextWithArrowWidget widget)
+        {
+            MouseEventArgs mouseEventArgs = new MouseEventArgs(MouseButtons.Left, 2, 0, 0, 1);
+            Form_WidgetPicked(mouseEventArgs, Keys.None, widget.GetName(), widget.GetRectangle());
+        }
         #endregion #################################################################################################################
 
         public void SwithchLights()
@@ -6041,6 +5930,28 @@ namespace vtkControl
             RenderSceene();
         }
 
+        public void InterpolateMeshData(PartExchangeData source, ref PartExchangeData input)
+        {
+            vtkMaxActorData vtkSourceData = new vtkMaxActorData();
+            vtkSourceData.Geometry = source;
+            vtkMaxActor vtkSourceActor = new vtkMaxActor(vtkSourceData);
+            //
+            vtkMaxActorData vtkInputData = new vtkMaxActorData();
+            vtkInputData.Geometry = input;
+            vtkMaxActor vtkInputActor = new vtkMaxActor(vtkInputData);
+            //
+            vtkProbeFilter probeFilter = new vtkProbeFilter();
+            probeFilter.SetSource(vtkSourceActor.Geometry.GetMapper().GetInput());
+            probeFilter.SetInput(vtkInputActor.Geometry.GetMapper().GetInput());
+            probeFilter.Update();
+            //
+            vtkDataArray scalars = probeFilter.GetOutput().GetPointData().GetScalars(Globals.ScalarArrayName);
+            input.Nodes.Values = new float[scalars.GetNumberOfTuples()];
+            for (int i = 0; i < scalars.GetNumberOfTuples(); i++)
+            {
+                input.Nodes.Values[i] = (float)scalars.GetTuple1(i);
+            }
+        }
 
         public bool ContainsActor(string actorName)
         {
@@ -6114,11 +6025,10 @@ namespace vtkControl
         // Render
         private void RenderSceene()
         {
-            if (_renderingOn)
-                this.Invalidate();
+            if (_renderingOn) this.Invalidate();
         }
 
-
+        // Tools
         public void CropPartWithCylinder(string partName, double r, string fileName)
         {
             vtkMaxActor actor = _actors[partName];
@@ -6141,17 +6051,7 @@ namespace vtkControl
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+        // Test
         public void AddTetrahedronFaces(double[][] nodes, int[][] tetrahedrons, Color color, int faceId, vtkRendererLayer layer)
         {
             // Create the points

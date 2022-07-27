@@ -48,20 +48,10 @@ namespace CaeResults
         {
             if (fileName != null && File.Exists(fileName))
             {
-                List<string> lines = new List<string>();
+                string[] lines = Tools.GetLinesFromFile(fileName);
+                if (lines == null) return null;
                 //
-                if (!Tools.WaitForFileToUnlock(fileName, 5000)) return null;
-
-                using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                using (StreamReader streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 4096))
-                {
-                    while (!streamReader.EndOfStream) lines.Add(streamReader.ReadLine()); // faster than streamReader.ReadToEnd().Split ...
-                    //
-                    streamReader.Close();
-                    fileStream.Close();
-                }
-                //
-                List<string[]> dataSets = GetDataSets(lines.ToArray());
+                List<string[]> dataSets = GetDataSets(lines);
                 //
                 string setID;
                 Dictionary<int, FeNode> nodes = null;

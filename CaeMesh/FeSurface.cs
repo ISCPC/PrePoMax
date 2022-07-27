@@ -142,6 +142,6 @@ namespace CaeMesh
         {
             _elementFaces = null;
             _area = 0;
-        }
+        }        
     }
 }

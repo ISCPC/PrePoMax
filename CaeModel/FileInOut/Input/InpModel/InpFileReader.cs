@@ -510,6 +510,7 @@ namespace FileInOut.Input
                         // LINEAR ELEMENTS                                                                                          
                         // Linear triangle element
                         case "S3":
+                        case "S3R":
                         case "M3D3":
                         case "CPS3":
                         case "CPE3":
@@ -1283,7 +1284,8 @@ namespace FileInOut.Input
                 //
                 if (dataSet.Length == 2)
                 {
-                    double thickness = double.Parse(dataSet[1]);
+                    record1 = dataSet[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    double thickness = double.Parse(record1[0]);
                     //
                     string name = sections.GetNextNumberedKey("Section");
                     ShellSection section = new ShellSection(name, materialName, regionName, RegionTypeEnum.ElementSetName,
@@ -1551,12 +1553,16 @@ namespace FileInOut.Input
                 // If the second line exists the incrementation is Direct or Automatic
                 if (!staticStep.Direct) staticStep.IncrementationType = IncrementationTypeEnum.Automatic;
                 //
-                record2 = dataSet[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                record2 = dataSet[1].Split(_splitterComma, StringSplitOptions.None); // must be none
                 //
-                if (record2.Length > 0) staticStep.InitialTimeIncrement = double.Parse(record2[0]);
-                if (record2.Length > 1) staticStep.TimePeriod = double.Parse(record2[1]);
-                if (record2.Length > 2) staticStep.MinTimeIncrement = double.Parse(record2[2]);
-                if (record2.Length > 3) staticStep.MaxTimeIncrement = double.Parse(record2[3]);
+                if (record2.Length > 0 && record2[0].Trim().Length > 0)
+                    staticStep.InitialTimeIncrement = double.Parse(record2[0]);
+                if (record2.Length > 1 && record2[1].Trim().Length > 0)
+                    staticStep.TimePeriod = double.Parse(record2[1]);
+                if (record2.Length > 2 && record2[2].Trim().Length > 0)
+                    staticStep.MinTimeIncrement = double.Parse(record2[2]);
+                if (record2.Length > 3 && record2[3].Trim().Length > 0)
+                    staticStep.MaxTimeIncrement = double.Parse(record2[3]);
             }
             //
             return staticStep;

@@ -894,7 +894,7 @@ namespace CaeResults
                             prinMidArray = new double[values[0].Length];
                             prinMinArray = new double[values[0].Length];
                             //
-                            for (int i = 0; i < values.Length; i++)
+                            for (int i = 0; i < values[0].Length; i++)
                             {
                                 e11 = values[0][i];
                                 e22 = values[1][i];

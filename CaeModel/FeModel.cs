@@ -464,6 +464,10 @@ namespace CaeModel
             {
                 valid = (_mesh.Surfaces.TryGetValue(hpl.SurfaceName, out s) && s.Valid);
             }
+            else if (load is ImportedPressure ip)
+            {
+                valid = (_mesh.Surfaces.TryGetValue(ip.SurfaceName, out s) && s.Valid);
+            }
             else if (load is STLoad stl)
             {
                 valid = (_mesh.Surfaces.TryGetValue(stl.SurfaceName, out s) && s.Valid);
@@ -1182,7 +1186,7 @@ namespace CaeModel
                 }
             }
         }
-        public CLoad[] GetNodalLoadsFromHydrostaticPressure(HydrostaticPressure load)
+        public CLoad[] GetNodalLoadsFromVariablePressureLoad(VariablePressure load)
         {
             Dictionary<int, int> elementIdSectionId;
             Dictionary<int, double> sectionIdThickness = new Dictionary<int, double>();

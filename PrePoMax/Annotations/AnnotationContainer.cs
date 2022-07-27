@@ -255,7 +255,7 @@ namespace PrePoMax
             FeMesh mesh;
             if (view == ViewGeometryModelResults.Geometry) mesh = AnnotationBase.Controller.Model.Geometry;
             else if (view == ViewGeometryModelResults.Model) mesh = AnnotationBase.Controller.Model.Mesh;
-            else if (view == ViewGeometryModelResults.Results) mesh = AnnotationBase.Controller.Results.Mesh;
+            else if (view == ViewGeometryModelResults.Results) mesh = AnnotationBase.Controller.CurrentResult.Mesh;
             else throw new NotSupportedException();
             //
             Dictionary<string, AnnotationBase> annotations;
@@ -281,7 +281,7 @@ namespace PrePoMax
             FeMesh mesh;
             if (view == ViewGeometryModelResults.Geometry) mesh = AnnotationBase.Controller.Model.Geometry;
             else if (view == ViewGeometryModelResults.Model) mesh = AnnotationBase.Controller.Model.Mesh;
-            else if (view == ViewGeometryModelResults.Results) mesh = AnnotationBase.Controller.Results.Mesh;
+            else if (view == ViewGeometryModelResults.Results) mesh = AnnotationBase.Controller.CurrentResult.Mesh;
             else throw new NotSupportedException();
             //
             BasePart part;

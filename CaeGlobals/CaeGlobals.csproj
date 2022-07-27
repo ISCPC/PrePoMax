@@ -91,7 +91,7 @@
     </Compile>
     <Compile Include="ExceptionTools.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="FrdFileNameEditor.cs" />
+    <Compile Include="Editors\FilteredFileNameEditor.cs" />
     <Compile Include="IMasterSlaveMultiRegion.cs" />
     <Compile Include="IMultiRegion.cs" />
     <Compile Include="KeyboardHook.cs" />
@@ -180,6 +180,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
