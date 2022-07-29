@@ -67,7 +67,7 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.tsDeformationFactor = new UserControls.ToolStripFocus();
             this.tslResultName = new System.Windows.Forms.ToolStripLabel();
-            this.tscbResultName = new System.Windows.Forms.ToolStripComboBox();
+            this.tscbResultNames = new System.Windows.Forms.ToolStripComboBox();
             this.tslDeformationVariable = new System.Windows.Forms.ToolStripLabel();
             this.tscbDeformationVariable = new System.Windows.Forms.ToolStripComboBox();
             this.tslDeformationType = new System.Windows.Forms.ToolStripLabel();
@@ -803,7 +803,7 @@
             this.tsDeformationFactor.Dock = System.Windows.Forms.DockStyle.None;
             this.tsDeformationFactor.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tslResultName,
-            this.tscbResultName,
+            this.tscbResultNames,
             this.tslDeformationVariable,
             this.tscbDeformationVariable,
             this.tslDeformationType,
@@ -821,15 +821,15 @@
             this.tslResultName.Size = new System.Drawing.Size(39, 22);
             this.tslResultName.Text = "Result";
             // 
-            // tscbResultName
+            // tscbResultNames
             // 
-            this.tscbResultName.AutoToolTip = true;
-            this.tscbResultName.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.tscbResultName.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.tscbResultName.Name = "tscbResultName";
-            this.tscbResultName.Size = new System.Drawing.Size(121, 25);
-            this.tscbResultName.DropDown += new System.EventHandler(this.tscbResultName_DropDown);
-            this.tscbResultName.SelectedIndexChanged += new System.EventHandler(this.tscbResultName_SelectedIndexChanged);
+            this.tscbResultNames.AutoToolTip = true;
+            this.tscbResultNames.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tscbResultNames.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.tscbResultNames.Name = "tscbResultNames";
+            this.tscbResultNames.Size = new System.Drawing.Size(121, 25);
+            this.tscbResultNames.DropDown += new System.EventHandler(this.tscbResultNames_DropDown);
+            this.tscbResultNames.SelectedIndexChanged += new System.EventHandler(this.tscbResultNames_SelectedIndexChanged);
             // 
             // tslDeformationVariable
             // 
@@ -3579,10 +3579,10 @@
             // 
             // toolStripContainer1.TopToolStripPanel
             // 
-            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsFile);
-            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsViews);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsModel);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsDeformationFactor);
+            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsFile);
+            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsViews);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsResults);
             // 
             // splitContainer1
@@ -4089,7 +4089,7 @@
         private System.Windows.Forms.ToolStripButton tsbQuery;
         private System.Windows.Forms.ToolStripButton tsbRemoveAnnotations;
         private System.Windows.Forms.ToolStripLabel tslResultName;
-        private System.Windows.Forms.ToolStripComboBox tscbResultName;
+        private System.Windows.Forms.ToolStripComboBox tscbResultNames;
     }
 }
 

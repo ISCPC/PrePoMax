@@ -45,9 +45,12 @@ namespace CaeResults
             //
             if (numResults > 0)
             {
-                resultsName = br.ReadString();
-                allResults.SetCurrentResult(resultsName);
-                if (allResults.CurrentResult != null) FeResults.ReadFromFile(allResults.CurrentResult, br, version);
+                for (int i = 0; i < numResults; i++)
+                {
+                    resultsName = br.ReadString();
+                    allResults.SetCurrentResult(resultsName);
+                    if (allResults.CurrentResult != null) FeResults.ReadFromFile(allResults.CurrentResult, br, version);
+                }
             }
         }
         //

@@ -6572,15 +6572,17 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Deformation toolbar  ###############################################################################################
-        private void tscbResultName_SelectedIndexChanged(object sender, EventArgs e)
+        private void tscbResultNames_SelectedIndexChanged(object sender, EventArgs e)
         {
             try
             {
                 string currentResultName = _controller.AllResults.GetCurrentResultName();
-                string newResultName = tscbResultName.SelectedItem.ToString();
+                string newResultName = tscbResultNames.SelectedItem.ToString();
                 if (newResultName != currentResultName)
                 {
                     _controller.AllResults.SetCurrentResult(newResultName);
+                    //
+                    _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
                     // Regenerate tree
                     RegenerateTree();
                     // Reset the previous step and increment
@@ -6590,24 +6592,24 @@ namespace PrePoMax
                     // Show the selection in the results tree
                     SelectFirstComponentOfFirstFieldOutput();
                     //
-                    _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+                    //_controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
                 }
                 this.ActiveControl = null;
             }
             catch
             { }
         }
-        private void tscbResultName_DropDown(object sender, EventArgs e)
+        private void tscbResultNames_DropDown(object sender, EventArgs e)
         {
-            using (System.Drawing.Graphics graphics = CreateGraphics())
+            using (Graphics graphics = CreateGraphics())
             {
                 int maxWidth = 0;
-                foreach (object obj in tscbResultName.Items)
+                foreach (object obj in tscbResultNames.Items)
                 {
-                    SizeF area = graphics.MeasureString(obj.ToString(), tscbResultName.Font);
+                    SizeF area = graphics.MeasureString(obj.ToString(), tscbResultNames.Font);
                     maxWidth = Math.Max((int)area.Width, maxWidth);
                 }
-                tscbResultName.DropDownWidth = maxWidth;
+                tscbResultNames.DropDownWidth = maxWidth;
             }
         }
         private void tscbDeformationVariable_SelectedIndexChanged(object sender, EventArgs e)
@@ -7020,6 +7022,7 @@ namespace PrePoMax
         {
             InvokeIfRequired(() =>
             {
+                tscbResultNames.Items.Clear();
                 tscbStepAndIncrement.Items.Clear();
                 _modelTree.ClearResults();
                 //
@@ -7356,11 +7359,11 @@ namespace PrePoMax
         {
             InvokeIfRequired(() =>
             {
-                tscbResultName.Items.Clear();
-                foreach (var name in _controller.AllResults.GetResultNames()) tscbResultName.Items.Add(name);
+                tscbResultNames.Items.Clear();
+                foreach (var name in _controller.AllResults.GetResultNames()) tscbResultNames.Items.Add(name);
                 //
                 string currentResultName = _controller.AllResults.GetCurrentResultName();
-                if (currentResultName != null) tscbResultName.SelectedItem = currentResultName;
+                if (currentResultName != null) tscbResultNames.SelectedItem = currentResultName;
             });
         }
         public void SetFieldData(string name, string component, int stepId, int stepIncrementId)
