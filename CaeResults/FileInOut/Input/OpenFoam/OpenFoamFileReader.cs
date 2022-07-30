@@ -16,6 +16,25 @@ namespace CaeResults
         VolScalarField,
         VolVectorField
     }
+    public enum OpenFoamFormatType
+    {
+        Unknown,
+        Ascii,
+        Binary
+    }
+    public class OpenFoamHeader
+    {
+        public string Version;
+        public OpenFoamFormatType FormatType;
+        public OpenFoamFieldType FieldType;
+
+        public OpenFoamHeader()
+        {
+            Version = null;
+            FormatType = OpenFoamFormatType.Unknown;
+            FieldType = OpenFoamFieldType.Unknown;
+        }
+    }
 
     public static class OpenFoamFileReader
     {
@@ -47,19 +66,30 @@ namespace CaeResults
                     string facesFile = Path.Combine(meshFolder, "faces");
                     string ownerFile = Path.Combine(meshFolder, "owner");
                     //
+                    OpenFoamHeader header;
+                    string error = "Binary format of OpenFOAM data is not supported.";
                     if (File.Exists(pointsFile) && File.Exists(boundaryFile) && File.Exists(facesFile)  && File.Exists(ownerFile))
                     {
+                        // Check for binary
+                        header = GetHeaderFromFile(pointsFile);
+                        if (header.FormatType == OpenFoamFormatType.Binary) throw new CaeException(error);
+                        header = GetHeaderFromFile(boundaryFile);
+                        if (header.FormatType == OpenFoamFormatType.Binary) throw new CaeException(error);
+                        header = GetHeaderFromFile(facesFile);
+                        if (header.FormatType == OpenFoamFormatType.Binary) throw new CaeException(error);
+                        header = GetHeaderFromFile(ownerFile);
+                        if (header.FormatType == OpenFoamFormatType.Binary) throw new CaeException(error);
                         // Read mesh
-                        int maxNodeId;
-                        Dictionary<int, int> nodeIdsLookUp;
-                        Dictionary<int, FeNode> nodes = GetNodes(pointsFile, out nodeIdsLookUp, out maxNodeId);
-                        //
                         Dictionary<int, HashSet<int>> faceIdNodeIds;
+                        HashSet<int> allFaceNodeIds;
                         HashSet<int> boundaryFaceIds = GetBoundaryFaceIds(boundaryFile);
                         Dictionary<int, FeElement> elements = GetBoundariesAsTriangles(facesFile, boundaryFaceIds,
-                                                                                       out faceIdNodeIds);
+                                                                                       out faceIdNodeIds, out allFaceNodeIds);
                         Dictionary<int, HashSet<int>> cellIdNodeIds = GetCellIdNodeIds(ownerFile, boundaryFaceIds, faceIdNodeIds);
                         Dictionary<int, int> nodeIdCellCount = GetNodeIdCellCount(cellIdNodeIds);
+                        //
+                        Dictionary<int, int> nodeIdsLookUp;
+                        Dictionary<int, FeNode> nodes = GetNodes(pointsFile, allFaceNodeIds, out nodeIdsLookUp);
                         //
                         FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Results);
                         mesh.ResetPartsColor();
@@ -83,8 +113,8 @@ namespace CaeResults
                             {
                                 try
                                 {
-                                    GetField(resultFileName, sortedTime, globalIncrementId, stepId, maxNodeId, cellIdNodeIds,
-                                         nodeIdCellCount, out fieldData, out field);
+                                    GetField(resultFileName, sortedTime, globalIncrementId, stepId, cellIdNodeIds,
+                                             nodeIdsLookUp, nodeIdCellCount, out fieldData, out field);
                                     //
                                     if (field != null) result.AddFiled(fieldData, field);
                                 }
@@ -112,24 +142,24 @@ namespace CaeResults
                 string meshFolder = Path.Combine(baseFolder, "constant", "polyMesh");
                 if (Directory.Exists(meshFolder))
                 {
-                    string pointsFile = Path.Combine(meshFolder, "points");
-                    string boundaryFile = Path.Combine(meshFolder, "boundary");
-                    string facesFile = Path.Combine(meshFolder, "faces");
-                    string ownerFile = Path.Combine(meshFolder, "owner");
+                    string pointsFile = Path.Combine(meshFolder, "points");         // coordinates of the mehs nodes
+                    string boundaryFile = Path.Combine(meshFolder, "boundary");     // names and face ids of boundary faces
+                    string facesFile = Path.Combine(meshFolder, "faces");           // topology of the faces
+                    string ownerFile = Path.Combine(meshFolder, "owner");           // face ids 
                     //
                     if (File.Exists(pointsFile) && File.Exists(boundaryFile) && File.Exists(facesFile) && File.Exists(ownerFile))
                     {
                         // Read mesh
-                        int maxNodeId;
-                        Dictionary<int, int> nodeIdsLookUp;
-                        Dictionary<int, FeNode> nodes = GetNodes(pointsFile, out nodeIdsLookUp, out maxNodeId);
-                        //
                         Dictionary<int, HashSet<int>> faceIdNodeIds;
+                        HashSet<int> allFaceNodeIds;
                         HashSet<int> boundaryFaceIds = GetBoundaryFaceIds(boundaryFile);
                         Dictionary<int, FeElement> elements = GetBoundariesAsTriangles(facesFile, boundaryFaceIds,
-                                                                                       out faceIdNodeIds);
+                                                                                       out faceIdNodeIds, out allFaceNodeIds);
                         Dictionary<int, HashSet<int>> cellIdNodeIds = GetCellIdNodeIds(ownerFile, boundaryFaceIds, faceIdNodeIds);
                         Dictionary<int, int> nodeIdCellCount = GetNodeIdCellCount(cellIdNodeIds);
+                        //
+                        Dictionary<int, int> nodeIdsLookUp;
+                        Dictionary<int, FeNode> nodes = GetNodes(pointsFile, allFaceNodeIds, out nodeIdsLookUp);
                         //
                         FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Results);
                         mesh.ResetPartsColor();
@@ -151,8 +181,8 @@ namespace CaeResults
                             {
                                 if (Path.GetFileNameWithoutExtension(resultFileName) == variableName)
                                 {
-                                    GetField(resultFileName, time, globalIncrementId, stepId, maxNodeId, cellIdNodeIds,
-                                             nodeIdCellCount, out fieldData, out field);
+                                    GetField(resultFileName, time, globalIncrementId, stepId, cellIdNodeIds,
+                                             nodeIdsLookUp, nodeIdCellCount, out fieldData, out field);
                                     //
                                     if (field != null) result.AddFiled(fieldData, field);
                                 }
@@ -201,13 +231,52 @@ namespace CaeResults
             return timeResultVariableNames;
         }
         // Mesh
-        static private Dictionary<int, FeNode> GetNodes(string fileName, out Dictionary<int, int> nodeIdsLookUp, out int maxNodeId)
+        static private OpenFoamHeader GetHeaderFromFile(string fileName)
+        {
+            bool foamFile = false;
+            bool endBracket = false;
+            string line;
+            List<string> lines = new List<string>();
+            OpenFoamHeader header = null;
+            //
+            if (!Tools.WaitForFileToUnlock(fileName, 5000)) return null;
+            //
+            using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (StreamReader streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 16 * 4096))
+            {
+                while (!streamReader.EndOfStream)
+                {
+                    line = streamReader.ReadLine().Trim().ToUpper();
+                    lines.Add(line);
+                    //
+                    if (line.StartsWith("FOAMFILE")) foamFile = true;
+                    if (line.StartsWith("}")) endBracket = true;
+                    //
+                    if (lines.Count > 15 && !foamFile) break;
+                    if (endBracket)
+                    {
+                        int lineId = 0;
+                        //
+                        string[] linesArr = SkipCommentsAndEmptyLines(lines.ToArray());
+                        header = GetFoamHeader(linesArr, ref lineId);
+                        break;
+                    }
+                }
+                //
+                streamReader.Close();
+                fileStream.Close();
+            }
+            //
+            return header;
+        }
+        static private Dictionary<int, FeNode> GetNodes(string fileName, HashSet<int> allFaceNodeIds, 
+                                                        out Dictionary<int, int> nodeIdsLookUp)
         {
             string[] lines = Tools.GetLinesFromFile(fileName);
             //
             int lineId = 0;
             lines = SkipCommentsAndEmptyLines(lines);
-            SkipFoamFile(lines, ref lineId);
+            GetFoamHeader(lines, ref lineId);
             //
             string[] tmp;
             string[] splitter = new string[] { "(", ",", " ", ")" };
@@ -219,24 +288,23 @@ namespace CaeResults
             numOfNodes = int.Parse(lines[lineId++]);
             // Skip bracket
             if (lines[lineId].StartsWith("(")) lineId++;
-            maxNodeId = 0;
             //
             for (int i = 0; i < numOfNodes; i++)
             {
-                tmp = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-                if (tmp.Length == 3)
+                if (allFaceNodeIds.Contains(i))
                 {
-                    node = new FeNode(i, double.Parse(tmp[0]), double.Parse(tmp[1]), double.Parse(tmp[2]));
-                    nodes.Add(i, node);
-                    nodeIdsLookUp.Add(i, i);
-                    //
-                    if (i > maxNodeId) maxNodeId = i;
+                    tmp = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                    if (tmp.Length == 3)
+                    {
+                        node = new FeNode(i, double.Parse(tmp[0]), double.Parse(tmp[1]), double.Parse(tmp[2]));
+                        nodes.Add(i, node);
+                        nodeIdsLookUp.Add(i, nodeIdsLookUp.Count);
+                    }
+                    else throw new NotSupportedException();
                 }
-                else throw new NotSupportedException();
                 //
                 lineId++;
             }
-            maxNodeId++;    // add 1 to accoutn for node id 0
             //
             return nodes;
         }
@@ -246,7 +314,7 @@ namespace CaeResults
             //
             int lineId = 0;
             lines = SkipCommentsAndEmptyLines(lines);
-            SkipFoamFile(lines, ref lineId);
+            GetFoamHeader(lines, ref lineId);
             //
             int numOfBoundaries;
             string line;
@@ -305,13 +373,15 @@ namespace CaeResults
             return boundaryFaceIds;
         }
         static private Dictionary<int, FeElement> GetBoundariesAsTriangles(string fileName, HashSet<int> boundaryFaceIds,
-                                                                           out Dictionary<int, HashSet<int>> faceIdNodeIds)
+                                                                           out Dictionary<int, HashSet<int>> faceIdNodeIds,
+                                                                           out HashSet<int> allFaceNodeIds)
         {
+            // Read only faces on the boundary
             string[] lines = Tools.GetLinesFromFile(fileName);
             //
             int lineId = 0;
             lines = SkipCommentsAndEmptyLines(lines);
-            SkipFoamFile(lines, ref lineId);
+            GetFoamHeader(lines, ref lineId);
             //
             string[] tmp;
             string[] splitter = new string[] { "(", ",", " ", ")" };
@@ -329,6 +399,8 @@ namespace CaeResults
             //
             HashSet<int> faceNodeIdsHash;
             faceIdNodeIds = new Dictionary<int, HashSet<int>>();
+            allFaceNodeIds = new HashSet<int>();
+            //
             for (int i = 0; i < numOfFaces; i++)
             {
                 if (boundaryFaceIds.Contains(i))
@@ -351,6 +423,7 @@ namespace CaeResults
                             //
                             faceNodeIdsHash = new HashSet<int>(faceNodeIds);
                             faceIdNodeIds.Add(i, faceNodeIdsHash);
+                            allFaceNodeIds.UnionWith(faceNodeIdsHash);
                         }
                         else throw new NotSupportedException();
                     }
@@ -364,11 +437,12 @@ namespace CaeResults
         static private Dictionary<int, HashSet<int>> GetCellIdNodeIds(string fileName, HashSet<int> boundaryFaceIds,
                                                                       Dictionary<int, HashSet<int>> faceIdNodeIds)
         {
+            // Use only faces on the boundary
             string[] lines = Tools.GetLinesFromFile(fileName);
             //
             int lineId = 0;
             lines = SkipCommentsAndEmptyLines(lines);
-            SkipFoamFile(lines, ref lineId);
+            GetFoamHeader(lines, ref lineId);
             //
             int cellId;
             int numOfCells;
@@ -425,7 +499,8 @@ namespace CaeResults
             return timeResultFolderNames;
         }
         static private void GetField(string fileName, double time, int globalIncrementId, int stepId,
-                                     int maxNodeId, Dictionary<int, HashSet<int>> cellIdNodeIds,
+                                     Dictionary<int, HashSet<int>> cellIdNodeIds,
+                                     Dictionary<int, int> nodeIdsLookUp,
                                      Dictionary<int, int> nodeIdCellCount,
                                      out FieldData fieldData, out Field field)
         {
@@ -443,9 +518,9 @@ namespace CaeResults
             //
             int lineId = 0;
             lines = SkipCommentsAndEmptyLines(lines);
-            OpenFoamFieldType fieldType = SkipFoamFile(lines, ref lineId);
+            OpenFoamHeader header = GetFoamHeader(lines, ref lineId);
             // This field types are not supported
-            if (fieldType == OpenFoamFieldType.Unknown || fieldType == OpenFoamFieldType.SurfaceScalarField) return;
+            if (header.FieldType == OpenFoamFieldType.Unknown || header.FieldType == OpenFoamFieldType.SurfaceScalarField) return;
             //
             string[] tmp;
             string[] splitter = new string[] { "(", ",", " ", ")" };
@@ -466,7 +541,7 @@ namespace CaeResults
             for (int i = 0; i < numOfComponents; i++) cellValues[i] = new float[numOfCells];
             //
             string line;
-            if (fieldType == OpenFoamFieldType.VolScalarField)
+            if (header.FieldType == OpenFoamFieldType.VolScalarField)
             {
                 for (int i = 0; i < numOfCells; i++)
                 {
@@ -475,7 +550,7 @@ namespace CaeResults
                     lineId++;
                 }
             }
-            else if (fieldType == OpenFoamFieldType.VolVectorField)
+            else if (header.FieldType == OpenFoamFieldType.VolVectorField)
             {
                 for (int i = 0; i < numOfCells; i++)
                 {
@@ -486,19 +561,22 @@ namespace CaeResults
             }
             // Get sum of nodal values
             float[][] nodeValues = new float[numOfComponents][];
-            for (int i = 0; i < numOfComponents; i++) nodeValues[i] = new float[maxNodeId];
+            for (int i = 0; i < numOfComponents; i++) nodeValues[i] = new float[nodeIdsLookUp.Count];
             //
+            int localNodeId;
             foreach (var entry in cellIdNodeIds)
             {
                 foreach (var nodeId in entry.Value)
                 {
-                    for (int j = 0; j < numOfComponents; j++) nodeValues[j][nodeId] += cellValues[j][entry.Key];
+                    localNodeId = nodeIdsLookUp[nodeId];
+                    for (int i = 0; i < numOfComponents; i++) nodeValues[i][localNodeId] += cellValues[i][entry.Key];
                 }
             }
             // Average nodal values
             foreach (var entry in nodeIdCellCount)
             {
-                for (int j = 0; j < numOfComponents; j++) nodeValues[j][entry.Key] /= entry.Value;
+                localNodeId = nodeIdsLookUp[entry.Key];
+                for (int i = 0; i < numOfComponents; i++) nodeValues[i][localNodeId] /= entry.Value;
             }
             //
             field = new Field(fieldData.Name);
@@ -527,12 +605,21 @@ namespace CaeResults
             //
             return dataLines.ToArray();
         }
-        static private OpenFoamFieldType SkipFoamFile(string[] lines, ref int lineId)
+        static private OpenFoamHeader GetFoamHeader(string[] lines, ref int lineId)
         {
+            //FoamFile
+            //{
+            //    version     2.0;
+            //    format binary;
+            //    arch        "LSB;label=32;scalar=64";
+            //    class vectorField;
+            //    location    "constant/polyMesh";
+            //    object points;
+            //}
             string line;
             string[] tmp;
             string[] splitter = new string[] { " ", ";" };
-            OpenFoamFieldType fieldType = OpenFoamFieldType.Unknown;
+            OpenFoamHeader header = new OpenFoamHeader();
             //
             line = lines[lineId].ToUpper();
             //
@@ -541,7 +628,30 @@ namespace CaeResults
                 while (!line.StartsWith("}"))
                 {
                     //All lines are trimmed: class volScalarField;
-                    if (line.StartsWith("CLASS"))
+                    if (line.StartsWith("VERSION"))
+                    {
+                        tmp = line.Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                        if (tmp.Length == 2) header.Version = tmp[1];
+                    }
+                    else if (line.StartsWith("FORMAT"))
+                    {
+                        tmp = line.Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                        if (tmp.Length == 2)
+                        {
+                            switch (tmp[1])
+                            {
+                                case "ASCII":
+                                    header.FormatType = OpenFoamFormatType.Ascii;
+                                    break;
+                                case "BINARY":
+                                    header.FormatType = OpenFoamFormatType.Binary;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    else if (line.StartsWith("CLASS"))
                     {
                         tmp = line.Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                         if (tmp.Length == 2)
@@ -549,13 +659,13 @@ namespace CaeResults
                             switch (tmp[1])
                             {
                                 case "SURFACESCALARFIELD":
-                                    fieldType = OpenFoamFieldType.SurfaceScalarField;
+                                    header.FieldType = OpenFoamFieldType.SurfaceScalarField;
                                     break;
                                 case "VOLSCALARFIELD":
-                                    fieldType = OpenFoamFieldType.VolScalarField;
+                                    header.FieldType = OpenFoamFieldType.VolScalarField;
                                     break;
                                 case "VOLVECTORFIELD":
-                                    fieldType = OpenFoamFieldType.VolVectorField;
+                                    header.FieldType = OpenFoamFieldType.VolVectorField;
                                     break;
                                 default:
                                     break;
@@ -568,7 +678,7 @@ namespace CaeResults
             }
             lineId++;
             //
-            return fieldType;
+            return header;
         }
     }
 }

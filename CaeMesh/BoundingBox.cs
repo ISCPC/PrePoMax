@@ -344,6 +344,52 @@ namespace CaeMesh
             //
             return dist;
         }
+        public bool IsMaxOutsideDistance2SmallerThan(double[] coor, double limit)
+        {
+            double d;
+            double dist = 0;
+            //
+            if (coor[0] < MinX)
+            {
+                d = MinX - coor[0];
+                dist = d * d;
+                if (dist >= limit) return false;
+            }
+            else if (coor[0] > MaxX)
+            {
+                d = coor[0] - MaxX;
+                dist = d * d;
+                if (dist >= limit) return false;
+            }
+            //
+            if (coor[1] < MinY)
+            {
+                d = MinY - coor[1];
+                dist += d * d;
+                if (dist >= limit) return false;
+            }
+            else if (coor[1] > MaxY)
+            {
+                d = coor[1] - MaxY;
+                dist += d * d;
+                if (dist >= limit) return false;
+            }
+            //
+            if (coor[2] < MinZ)
+            {
+                d = MinZ - coor[2];
+                dist += d * d;
+                if (dist >= limit) return false;
+            }
+            else if (coor[2] > MaxZ)
+            {
+                d = coor[2] - MaxZ;
+                dist += d * d;
+                if (dist >= limit) return false;
+            }
+            //
+            return true;
+        }
         //
         public double[] GetCenter()
         {

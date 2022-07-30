@@ -478,8 +478,9 @@ namespace CaeResults
                                 deformedNode = new FeNode(node.Id, node.X + offset[0], node.Y + offset[1], node.Z + offset[2]);
                             // Geometry parts
                             else deformedNode = node;
-                            //
-                            deformedNodes.Add(deformedNode.Id, deformedNode);
+                            // Check for merged nodes as in compound parts
+                            if (!deformedNodes.ContainsKey(deformedNode.Id))
+                                deformedNodes.Add(deformedNode.Id, deformedNode);
                         }
                     }
                 }
@@ -735,7 +736,7 @@ namespace CaeResults
                         break;
                     default:
                         // OpenFOAM
-                        if (componentName.ToUpper() == "VAL") { }
+                        if (componentName.ToUpper().StartsWith("VAL")) { }
                         else if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
                         //
                         unitConverter = new DoubleConverter();
@@ -1458,6 +1459,7 @@ namespace CaeResults
                         // Initialize   
                         nodesData.Values[0] = float.MaxValue;
                         nodesData.Values[1] = -float.MaxValue;
+                        // Get first value
                         if (_nodeIdsLookUp.TryGetValue(basePart.NodeLabels[0], out id) && id < values.Length)
                         {
                             value = values[id];
@@ -1465,9 +1467,9 @@ namespace CaeResults
                             {
                                 nodesData.Values[0] = value;
                                 nodesData.Values[1] = value;
-                                minId = basePart.NodeLabels[0];
-                                maxId = basePart.NodeLabels[0];
                             }
+                            minId = basePart.NodeLabels[0];
+                            maxId = basePart.NodeLabels[0];
                         }
                         //
                         foreach (var nodeId in basePart.NodeLabels)
@@ -1500,15 +1502,23 @@ namespace CaeResults
                             nodesData.Values[0] = nodesData.Values[1];
                             nodesData.Values[1] = tmpD;
                         }
-                        //
+                        // Ids
                         nodesData.Ids[0] = minId;
                         nodesData.Ids[1] = maxId;
-                        //
+                        // Coordinates
                         nodesData.Coor[0] = _mesh.Nodes[minId].Coor;
                         nodesData.Coor[1] = _mesh.Nodes[maxId].Coor;
-                        //
-                        nodesData.Values[0] *= relativeScale;
-                        nodesData.Values[1] *= relativeScale;
+                        // Values
+                        if (minId == maxId) // all values are NaN
+                        {
+                            nodesData.Values[0] = 0;
+                            nodesData.Values[1] = 0;
+                        }
+                        else
+                        {
+                            nodesData.Values[0] *= relativeScale;
+                            nodesData.Values[1] *= relativeScale;
+                        }
                         //
                         break;
                     }

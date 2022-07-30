@@ -7196,14 +7196,13 @@ namespace CaeMesh
         {
             cellIds = part.Visualization.CellIds.ToArray();
             int[][] visualizationCells = part.Visualization.Cells;
-
+            //
             List<int> nodeIdsList = new List<int>();
             List<double[]> nodeCoorList = new List<double[]>();
             List<int> cellIdsList = new List<int>();
             List<int[]> cellsList = new List<int[]>();
             List<int> cellTypesList = new List<int>();
             int visualizationCellId;
-
             // Create visualization for each visualization face
             if (part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell)
             {
@@ -7212,13 +7211,13 @@ namespace CaeMesh
                     cellIds = new int[part.Visualization.CellIdsByFace[i].Length];
                     cells = new int[part.Visualization.CellIdsByFace[i].Length][];
                     cellTypes = new int[part.Visualization.CellIdsByFace[i].Length];
-
+                    //
                     for (int j = 0; j < part.Visualization.CellIdsByFace[i].Length; j++)
                     {
                         visualizationCellId = part.Visualization.CellIdsByFace[i][j];
                         cellIds[j] = part.Visualization.CellIds[visualizationCellId];
                         cells[j] = visualizationCells[visualizationCellId].ToArray(); // node ids in cells will be renumbered
-
+                        //
                         if (cells[j].Length == 3) cellTypes[j] = (int)vtkCellType.VTK_TRIANGLE;
                         else if (cells[j].Length == 4) cellTypes[j] = (int)vtkCellType.VTK_QUAD;
                         else if (cells[j].Length == 6) cellTypes[j] = (int)vtkCellType.VTK_QUADRATIC_TRIANGLE;
@@ -7226,14 +7225,14 @@ namespace CaeMesh
                         else throw new NotSupportedException();
                     }
                     nodeIds = GetRenumberedNodesAndCells(nodeIdsList.Count, out nodeCoor, ref cells);
-
+                    //
                     nodeIdsList.AddRange(nodeIds);
                     nodeCoorList.AddRange(nodeCoor);
                     cellIdsList.AddRange(cellIds);
                     cellsList.AddRange(cells);
                     cellTypesList.AddRange(cellTypes);
                 }
-
+                //
                 nodeIds = nodeIdsList.ToArray();
                 nodeCoor = nodeCoorList.ToArray();
                 cellIds = cellIdsList.ToArray();
@@ -7245,7 +7244,7 @@ namespace CaeMesh
                 cellIds = part.Visualization.CellIds.ToArray();
                 cells = new int[visualizationCells.Length][];
                 cellTypes = new int[visualizationCells.Length];
-
+                //
                 for (int i = 0; i < visualizationCells.Length; i++)
                 {
                     cells[i] = visualizationCells[i].ToArray();
@@ -7254,15 +7253,13 @@ namespace CaeMesh
                     else if (cells[i].Length == 3) cellTypes[i] = (int)vtkCellType.VTK_QUADRATIC_EDGE;
                     else throw new NotSupportedException();
                 }
-
+                //
                 nodeIds = GetRenumberedNodesAndCells(out nodeCoor, ref cells);
             }
             else
             {
                 throw new NotSupportedException();
             }
-
-
         }
         public void GetNodesAndCellsForModelEdges(FeGroup elementSet, out int[] nodeIds, out double[][] nodeCoor,
                                                   out int[][] cells, out int[] cellTypes)
@@ -7323,42 +7320,42 @@ namespace CaeMesh
         }
         private int[] GetSortedUniqueIds(int[][] cells)
         {
-            int maxId = -1;
-            for (int i = 0; i < cells.Length; i++)
-            {
-                for (int j = 0; j < cells[i].Length; j++)
-                {
-                    if (cells[i][j] > maxId) maxId = cells[i][j];
-                }
-            }
-            maxId++;        // add 1
-            //
+            //int maxId = -1;
+            //for (int i = 0; i < cells.Length; i++)
+            //{
+            //    for (int j = 0; j < cells[i].Length; j++)
+            //    {
+            //        if (cells[i][j] > maxId) maxId = cells[i][j];
+            //    }
+            //}
+            //maxId++;        // add 1
+            ////
             int[] nodeIds;
-            int count = 0;
-            int twoGig = 2147483591;
-            if (maxId < twoGig)
-            {
-                byte[] idArray = new byte[maxId];
-                for (int i = 0; i < cells.Length; i++)
-                {
-                    for (int j = 0; j < cells[i].Length; j++)
-                    {
-                        if (idArray[cells[i][j]] == 0)
-                        {
-                            idArray[cells[i][j]] = 1;
-                            count++;
-                        }
-                    }
-                }
-                //
-                nodeIds = new int[count];
-                count = 0;
-                for (int i = 0; i < idArray.Length; i++)
-                {
-                    if (idArray[i] == 1) nodeIds[count++] = i;
-                }
-            }
-            else
+            //int count = 0;
+            //int twoGig = 2147483591;
+            //if (maxId < twoGig)
+            //{
+            //    byte[] idArray = new byte[maxId];
+            //    for (int i = 0; i < cells.Length; i++)
+            //    {
+            //        for (int j = 0; j < cells[i].Length; j++)
+            //        {
+            //            if (idArray[cells[i][j]] == 0)
+            //            {
+            //                idArray[cells[i][j]] = 1;
+            //                count++;
+            //            }
+            //        }
+            //    }
+            //    //
+            //    nodeIds = new int[count];
+            //    count = 0;
+            //    for (int i = 0; i < idArray.Length; i++)
+            //    {
+            //        if (idArray[i] == 1) nodeIds[count++] = i;
+            //    }
+            //}
+            //else
             {
                 HashSet<int> nodeIdsHash = new HashSet<int>();
                 // Get all cells and all nodes ids for elementSet

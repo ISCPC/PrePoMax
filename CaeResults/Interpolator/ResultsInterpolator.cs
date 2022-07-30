@@ -27,7 +27,7 @@ namespace CaeResults
         private double _deltaY;
         private double _deltaZ;
         private BoundingBox _sourceBox;
-        private BoundingBox[] _regionBoxes;
+        private BoundingBox[] _regionBoxes;     // Tag of each bounding box contains dictionary<triangleId, boundingBox>
         private Triangle[] _triangles;
 
 
@@ -48,6 +48,17 @@ namespace CaeResults
             BoundingBox[] cellBoxes = ComputeCellBoundingBoxes(source);
             _regionBoxes = SplitCellBoxesToRegions(cellBoxes, _sourceBox, _nx, _ny, _nz);
             _triangles = TriangularCellsToTriangles(source);
+            //
+            int max = 0;
+            int num = 0;
+            double average = 0;
+            foreach (var boundingBox in _regionBoxes)
+            {
+                num = ((Dictionary<int, BoundingBox>)boundingBox.Tag).Count;
+                if (num > max) max = num;
+                average += num;
+            }
+            average /= _regionBoxes.Length;
         }
         public void InterpolateAt(double[] point, InterpolatorEnum interpolator, out double[] distance, out double value)
         {
@@ -61,11 +72,12 @@ namespace CaeResults
             int mink;
             int maxk;
             double[] sourceCoor;
+            int index;
             BoundingBox bb;
+            Dictionary<int, BoundingBox> regions = new Dictionary<int, BoundingBox>();
             int num;
             int delta;
             double d;
-            double boxD;
             double minD;
             Vec3D sourcePoint;
             Vec3D closestPoint;
@@ -85,7 +97,9 @@ namespace CaeResults
             else if (j >= _ny) j = _ny - 1;
             if (k < 0) k = 0;
             else if (k >= _nz) k = _nz - 1;
-            bb = _regionBoxes[k * _nxy + j * _nx + i];
+            index = k * _nxy + j * _nx + i;
+            bb = _regionBoxes[index];
+            regions.Add(index, bb);
             //
             mini = i;
             maxi = i;
@@ -117,48 +131,14 @@ namespace CaeResults
                     {
                         for (int ii = mini; ii <= maxi; ii++)
                         {
-                            bb = _regionBoxes[kk * _nxy + jj * _nx + ii];
-                            num += ((Dictionary<int, BoundingBox>)bb.Tag).Count;
-                        }
-                    }
-                }
-            }
-            //
-            minD = double.MaxValue;
-            //
-            for (int kk = mink; kk <= maxk; kk++)
-            {
-                for (int jj = minj; jj <= maxj; jj++)
-                {
-                    for (int ii = mini; ii <= maxi; ii++)
-                    {
-                        bb = _regionBoxes[kk * _nxy + jj * _nx + ii];
-                        if (((Dictionary<int, BoundingBox>)bb.Tag).Count == 0) continue;
-                        //
-                        foreach (var entry in (Dictionary<int, BoundingBox>)bb.Tag)
-                        {
-                            triangle = _triangles[entry.Key];
-                            boxD = entry.Value.MaxOutsideDistance2(sourceCoor);
-                            if (boxD < minD)
+                            index = kk * _nxy + jj * _nx + ii;
+                            if (!regions.ContainsKey(index))
                             {
-                                if (interpolator == InterpolatorEnum.ClosestNode)
-                                    closer = triangle.GetClosestNodeTo(sourcePoint, minD, out closestPoint);
-                                else if (interpolator == InterpolatorEnum.ClosestPoint)
-                                    closer = triangle.GetClosestPointTo(sourcePoint, minD, out closestPoint);
-                                else throw new NotSupportedException();
-                                //
-                                if (closer)
+                                bb = _regionBoxes[index];
+                                if (((Dictionary<int, BoundingBox>)bb.Tag).Count > 0)
                                 {
-                                    d = (closestPoint - sourcePoint).Len2;
-                                    //
-                                    if (d < minD)
-                                    {
-                                        minD = d;
-                                        bestTriangle = triangle;
-                                        bestPoint.X = closestPoint.X;
-                                        bestPoint.Y = closestPoint.Y;
-                                        bestPoint.Z = closestPoint.Z;
-                                    }
+                                    regions.Add(index, bb);
+                                    num += ((Dictionary<int, BoundingBox>)bb.Tag).Count;
                                 }
                             }
                         }
@@ -166,8 +146,86 @@ namespace CaeResults
                 }
             }
             //
+            minD = double.MaxValue;
+            //
+            foreach (var regionEntry in regions)
+            {
+                if (regionEntry.Value.IsMaxOutsideDistance2SmallerThan(sourceCoor, minD))
+                {
+                    foreach (var entry in (Dictionary<int, BoundingBox>)regionEntry.Value.Tag)
+                    {
+                        triangle = _triangles[entry.Key];
+                        if (entry.Value.IsMaxOutsideDistance2SmallerThan(sourceCoor, minD))
+                        {
+                            if (interpolator == InterpolatorEnum.ClosestNode)
+                                closer = triangle.GetClosestNodeTo(sourcePoint, minD, out closestPoint);
+                            else if (interpolator == InterpolatorEnum.ClosestPoint)
+                                closer = triangle.GetClosestPointTo(sourcePoint, minD, out closestPoint);
+                            else throw new NotSupportedException();
+                            //
+                            if (closer)
+                            {
+                                d = (closestPoint - sourcePoint).Len2;
+                                //
+                                if (d < minD)
+                                {
+                                    minD = d;
+                                    bestTriangle = triangle;
+                                    bestPoint.X = closestPoint.X;
+                                    bestPoint.Y = closestPoint.Y;
+                                    bestPoint.Z = closestPoint.Z;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            //
+            //for (int kk = mink; kk <= maxk; kk++)
+            //{
+            //    for (int jj = minj; jj <= maxj; jj++)
+            //    {
+            //        for (int ii = mini; ii <= maxi; ii++)
+            //        {
+            //            bb = _regionBoxes[kk * _nxy + jj * _nx + ii];
+            //            //
+            //            foreach (var entry in (Dictionary<int, BoundingBox>)bb.Tag)
+            //            {
+            //                triangle = _triangles[entry.Key];
+            //                if (entry.Value.IsMaxOutsideDistance2SmallerThan(sourceCoor, minD))
+            //                {
+            //                    if (interpolator == InterpolatorEnum.ClosestNode)
+            //                        closer = triangle.GetClosestNodeTo(sourcePoint, minD, out closestPoint);
+            //                    else if (interpolator == InterpolatorEnum.ClosestPoint)
+            //                        closer = triangle.GetClosestPointTo(sourcePoint, minD, out closestPoint);
+            //                    else throw new NotSupportedException();
+            //                    //
+            //                    if (closer)
+            //                    {
+            //                        d = (closestPoint - sourcePoint).Len2;
+            //                        //
+            //                        if (d < minD)
+            //                        {
+            //                            minD = d;
+            //                            bestTriangle = triangle;
+            //                            bestPoint.X = closestPoint.X;
+            //                            bestPoint.Y = closestPoint.Y;
+            //                            bestPoint.Z = closestPoint.Z;
+            //                        }
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
+            //
             distance = (bestPoint - sourcePoint).Coor;
-            value = (float)bestTriangle.InterpolateAt(bestPoint);
+            value = bestTriangle.InterpolateAt(bestPoint);
+            if (double.IsNaN(value))
+            {
+                value = value;
+                value = bestTriangle.InterpolateAt(bestPoint);
+            }
         }
         //
         private static BoundingBox ComputeAllNodesBoundingBox(PartExchangeData pData)

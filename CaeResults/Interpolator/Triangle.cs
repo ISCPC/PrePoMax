@@ -179,6 +179,10 @@ namespace CaeResults
         }
         public double InterpolateAt(Vec3D p)
         {
+            if (p.X == A.X && p.Y == A.Y && p.Z == A.Z) return _va;
+            else if (p.X == B.X && p.Y == B.Y && p.Z == B.Z) return _vb;
+            else if (p.X == C.X && p.Y == C.Y && p.Z == C.Z) return _vc;
+            //
             double g;
             double h;
             double nx = Math.Abs(TriNorm.X);

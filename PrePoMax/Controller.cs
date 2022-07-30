@@ -13171,7 +13171,6 @@ namespace PrePoMax
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) RemoveSectionView();
             //
-            float scale = GetScale();
             foreach (var entry in _allResults.CurrentResult.Mesh.Parts)
             {
                 if (entry.Value is ResultPart)
@@ -13179,7 +13178,7 @@ namespace PrePoMax
                     // Get all needed nodes and elements - renumbered
                     PartExchangeData locatorResultData =
                         _allResults.CurrentResult.GetSetNodesCellsAndValues(entry.Value, _currentFieldData);
-                    // Get visualization nodes and renumbered elements  - to scale min nad max nodes coor
+                    // Get visualization nodes and renumbered elements - to scale min nad max nodes coor
                     PartExchangeData actorResultData =
                         _allResults.CurrentResult.GetVisualizationNodesCellsAndValues(entry.Value, _currentFieldData);
                     //
