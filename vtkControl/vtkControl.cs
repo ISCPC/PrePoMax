@@ -2491,7 +2491,7 @@ namespace vtkControl
             double[] b1 = _renderer.ComputeVisiblePropBounds();
             double[] b2;
             //
-            if (_overlayActors.Count > 0)
+            //if (_overlayActors.Count > 0)
             {
                 while (true)
                 {
@@ -2563,7 +2563,7 @@ namespace vtkControl
                     }
                 }
             }
-            else _renderer.ResetCamera();
+            //else _renderer.ResetCamera();
             //
             _style.ResetClippingRange();
         }

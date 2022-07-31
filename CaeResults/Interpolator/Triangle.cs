@@ -13,6 +13,7 @@ namespace CaeResults
     public class Triangle
     {
         // Variables                                                                                                                
+        public readonly int Id;
         public readonly Edge3 EdgeAb;
         public readonly Edge3 EdgeBc;
         public readonly Edge3 EdgeCa;
@@ -37,12 +38,13 @@ namespace CaeResults
 
 
         // Constructors                                                                                                             
-        public Triangle(double[] a, double[] b, double[] c, double va, double vb, double vc)
-            : this(new Vec3D(a), new Vec3D(b), new Vec3D(c), va, vb, vc)
+        public Triangle(int id, double[] a, double[] b, double[] c, double va, double vb, double vc)
+            : this(id, new Vec3D(a), new Vec3D(b), new Vec3D(c), va, vb, vc)
         {
         }
-        public Triangle(Vec3D a, Vec3D b, Vec3D c, double va, double vb, double vc)
+        public Triangle(int id, Vec3D a, Vec3D b, Vec3D c, double va, double vb, double vc)
         {
+            Id = id;
             EdgeAb = new Edge3(a, b);
             EdgeBc = new Edge3(b, c);
             EdgeCa = new Edge3(c, a);
@@ -85,7 +87,6 @@ namespace CaeResults
             // The closest point is in the triangle so project to the plane to find it
             return _triPlane.Project(p);
         }
-        
         public bool GetClosestPointTo(Vec3D p, double len2limit, out Vec3D closestPoint)
         {
             closestPoint = null;

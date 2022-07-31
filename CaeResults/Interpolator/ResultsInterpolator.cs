@@ -27,8 +27,10 @@ namespace CaeResults
         private double _deltaY;
         private double _deltaZ;
         private BoundingBox _sourceBox;
+        private BoundingBox[] _cellBoxes;
         private BoundingBox[] _regionBoxes;     // Tag of each bounding box contains dictionary<triangleId, boundingBox>
         private Triangle[] _triangles;
+        private Octree.BoundsOctree<Triangle> _trianglesOctree;
 
 
         // Constructor                                                                                                              
@@ -45,20 +47,21 @@ namespace CaeResults
             _deltaY = _sourceBox.GetYSize() / _ny;
             _deltaZ = _sourceBox.GetZSize() / _nz;
             //
-            BoundingBox[] cellBoxes = ComputeCellBoundingBoxes(source);
-            _regionBoxes = SplitCellBoxesToRegions(cellBoxes, _sourceBox, _nx, _ny, _nz);
+            _cellBoxes = ComputeCellBoundingBoxes(source);
+            _regionBoxes = SplitCellBoxesToRegions(_cellBoxes, _sourceBox, _nx, _ny, _nz);
             _triangles = TriangularCellsToTriangles(source);
+            //_trianglesOctree = GenerateOctree(source, _cellBoxes, _sourceBox);
             //
-            int max = 0;
-            int num = 0;
-            double average = 0;
-            foreach (var boundingBox in _regionBoxes)
-            {
-                num = ((Dictionary<int, BoundingBox>)boundingBox.Tag).Count;
-                if (num > max) max = num;
-                average += num;
-            }
-            average /= _regionBoxes.Length;
+            //int max = 0;
+            //int num = 0;
+            //double average = 0;
+            //foreach (var boundingBox in _regionBoxes)
+            //{
+            //    num = ((Dictionary<int, BoundingBox>)boundingBox.Tag).Count;
+            //    if (num > max) max = num;
+            //    average += num;
+            //}
+            //average /= _regionBoxes.Length;
         }
         public void InterpolateAt(double[] point, InterpolatorEnum interpolator, out double[] distance, out double value)
         {
@@ -221,11 +224,53 @@ namespace CaeResults
             //
             distance = (bestPoint - sourcePoint).Coor;
             value = bestTriangle.InterpolateAt(bestPoint);
-            if (double.IsNaN(value))
+        }
+
+        public void InterpolateAt2(double[] point, InterpolatorEnum interpolator, out double[] distance, out double value)
+        {
+            double size = _sourceBox.GetDiagonal() * 1E-4;
+            Octree.Point centerP = new Octree.Point(point);
+            Octree.Point sizeP = new Octree.Point(size, size, size);
+            Octree.BoundingBox tbb = new Octree.BoundingBox(centerP, sizeP);
+            List<Triangle> colliding = new List<Triangle>();
+            _trianglesOctree.GetColliding(colliding, tbb);
+            //
+            bool closer;
+            double d;
+            double minD = double.MaxValue;
+            Triangle bestTriangle = colliding[0];
+            Vec3D sourcePoint = new Vec3D(point);
+            Vec3D closestPoint;
+            Vec3D bestPoint = new Vec3D();
+            //
+            foreach (var triangle in colliding)
             {
-                value = value;
-                value = bestTriangle.InterpolateAt(bestPoint);
+                if (_cellBoxes[triangle.Id].IsMaxOutsideDistance2SmallerThan(point, minD))
+                {
+                    if (interpolator == InterpolatorEnum.ClosestNode)
+                        closer = triangle.GetClosestNodeTo(sourcePoint, minD, out closestPoint);
+                    else if (interpolator == InterpolatorEnum.ClosestPoint)
+                        closer = triangle.GetClosestPointTo(sourcePoint, minD, out closestPoint);
+                    else throw new NotSupportedException();
+                    //
+                    if (closer)
+                    {
+                        d = (closestPoint - sourcePoint).Len2;
+                        //
+                        if (d < minD)
+                        {
+                            minD = d;
+                            bestTriangle = triangle;
+                            bestPoint.X = closestPoint.X;
+                            bestPoint.Y = closestPoint.Y;
+                            bestPoint.Z = closestPoint.Z;
+                        }
+                    }
+                }
             }
+            //
+            distance = (bestPoint - sourcePoint).Coor;
+            value = bestTriangle.InterpolateAt(bestPoint);
         }
         //
         private static BoundingBox ComputeAllNodesBoundingBox(PartExchangeData pData)
@@ -332,7 +377,7 @@ namespace CaeResults
             {
                 cell = pData.Cells.CellNodeIds[i];
                 if (cell.Length != 3) throw new NotSupportedException();
-                triangles[i] = new Triangle(pData.Nodes.Coor[cell[0]],
+                triangles[i] = new Triangle(i, pData.Nodes.Coor[cell[0]],
                                             pData.Nodes.Coor[cell[1]],
                                             pData.Nodes.Coor[cell[2]],
                                             pData.Nodes.Values[cell[0]],
@@ -342,12 +387,43 @@ namespace CaeResults
             //
             return triangles;
         }
+        private static Octree.BoundsOctree<Triangle> GenerateOctree(PartExchangeData pData, BoundingBox[] cellBoxes,
+                                                                    BoundingBox cellBoxesBox)
+        {
+            double size = cellBoxesBox.GetDiagonal();
+            double minSize = size * 1E-2;
+            Octree.Point centerP = new Octree.Point(cellBoxesBox.GetCenter());
+            Octree.BoundsOctree<Triangle> trianglesOctree = new Octree.BoundsOctree<Triangle>(size, centerP, minSize, 1);
+            //
+            int[] cell;
+            Octree.Point sizeP;
+            Triangle triangle;
+            Octree.BoundingBox tbb;
+            for (int i = 0; i < pData.Cells.CellNodeIds.Length; i++)
+            {
+                cell = pData.Cells.CellNodeIds[i];
+                if (cell.Length != 3) throw new NotSupportedException();
+                triangle = new Triangle(i, pData.Nodes.Coor[cell[0]],
+                                        pData.Nodes.Coor[cell[1]],
+                                        pData.Nodes.Coor[cell[2]],
+                                        pData.Nodes.Values[cell[0]],
+                                        pData.Nodes.Values[cell[1]],
+                                        pData.Nodes.Values[cell[2]]);
+                //
+                centerP = new Octree.Point(cellBoxes[i].GetCenter());
+                sizeP = new Octree.Point(cellBoxes[i].GetXSize(), cellBoxes[i].GetYSize(), cellBoxes[i].GetZSize());
+                tbb = new Octree.BoundingBox(centerP, sizeP);
+                trianglesOctree.Add(triangle, tbb);
+            }
+            //
+            return trianglesOctree;
+        }
         //
         public static void ClosestPointToShouldWork()
         {
             var r = new Random(0);
             double next() => r.NextDouble() * 5 - 1;
-            var t = new Triangle(new Vec3D(0, 0, 0), new Vec3D(3.5, 2, 0), new Vec3D(3, 0.0, 0), 0, 0, 0);
+            var t = new Triangle(0, new Vec3D(0, 0, 0), new Vec3D(3.5, 2, 0), new Vec3D(3, 0.0, 0), 0, 0, 0);
             //
             var hash = new Vec3D(0, 0, 0);
             for (int i = 0; i < 800; i++)

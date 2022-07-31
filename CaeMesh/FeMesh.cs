@@ -4828,7 +4828,6 @@ namespace CaeMesh
                                 }
                                 else
                                 {
-                                    // This is used to draw the shell edge face as an triangle !!!
                                     if (shellFrontFace) vtkCellId = 1;
                                     else vtkCellId = 0;
                                     globalVisualizationFaceIds.Add(10 * elementId + vtkCellId);

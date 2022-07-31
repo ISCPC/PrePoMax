@@ -4613,7 +4613,8 @@ namespace PrePoMax
                         if (node is SelectionNodeMouse snm)
                         {
                             _selection.SelectItem = elementSet.CreationData.SelectItem;
-                            geometryIds.AddRange(GetIdsFromSelectionNodeMouse(snm, true));
+                            int[] ids = GetIdsFromSelectionNodeMouse(snm, true);
+                            if (ids != null) geometryIds.AddRange(ids);
                         }
                         else if (node is SelectionNodeIds sni) geometryIds.AddRange(sni.ItemIds);
                     }
@@ -8690,7 +8691,14 @@ namespace PrePoMax
             {
                 nodeIds = GetNodeIdsFromFrustum(planeParameters, selectionPartNames, selectBy);
                 elementIds = GetElementIdsFromFrustum(planeParameters, selectionPartNames, selectBy);
-                ids = DisplayedMesh.GetVisualizationFaceIds(nodeIds, elementIds, false, true, true);
+                int[] frontIds = DisplayedMesh.GetVisualizationFaceIds(nodeIds, elementIds, false, true, false); // select back face
+                ids = new int[2 * frontIds.Length];
+                // Add front faces to selection
+                for (int i = 0; i < frontIds.Length; i++)
+                {
+                    ids[i] = frontIds[i];                           // back faces: 10 * elementId + 0
+                    ids[frontIds.Length + i] = frontIds[i] + 1;     // front faces: 10 * elementId + 1
+                }
             }
             else if (selectBy == vtkSelectBy.Part)
             {
@@ -12737,7 +12745,8 @@ namespace PrePoMax
             int[][] cells;
             ElementFaceType[] elementFaceTypes = null;
             // QuerySurface from frmQuery
-            if (ids.Length == 1 && DisplayedMesh.IsThisIdGeometryId(ids[0])) cells = GetSurfaceCellsByGeometryId(ids, out elementFaceTypes);
+            if (ids.Length == 1 && DisplayedMesh.IsThisIdGeometryId(ids[0]))
+                cells = GetSurfaceCellsByGeometryId(ids, out elementFaceTypes);
             else cells = GetSurfaceCellsByFaceIds(ids, out elementFaceTypes);
             //
             HighlightSurface(cells, elementFaceTypes, useSecondaryHighlightColor);
