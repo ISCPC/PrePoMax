@@ -2660,16 +2660,10 @@ namespace PrePoMax
                 {
                     stateSet = true;
                     //
-                    await Task.Run(() =>
+                    if (partNames != null && partNames.Length > 0)
                     {
-                        if (partNames != null && partNames.Length > 0)
-                        {
-                            foreach (var partName in partNames)
-                            {
-                                _controller.ScaleGeometryPartsCommand(partNames, scaleCenter, scaleFactors, copy);
-                            }
-                        }
-                    });
+                        await Task.Run(() => _controller.ScaleGeometryPartsCommand(partNames, scaleCenter, scaleFactors, copy));
+                    }
                 }
                 else MessageBoxes.ShowWarning("Another task is already running.");
             }
