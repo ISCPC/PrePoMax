@@ -173,6 +173,8 @@ namespace CaeResults
                         Field field;
                         string[] resultFileNames;
                         Dictionary<double, string> timeResultFolderNames = GerTimeResultFolderNames(baseFolder);
+                        if (!timeResultFolderNames.ContainsKey(time))
+                            throw new CaeException("The selected OpenFOAM folder does not contain results for time: " + time + ".");
                         //
                         resultFileNames = Directory.GetFiles(timeResultFolderNames[time]);
                         foreach (var resultFileName in resultFileNames)

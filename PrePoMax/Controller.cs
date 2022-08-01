@@ -1192,7 +1192,7 @@ namespace PrePoMax
             UpdateAfterImport(".brep");
         }
         //
-        public string[] ImportBrepPartFile(string brepFileName, int timeOut = 1000 * 3600, bool showError = true)
+        public string[] ImportBrepPartFile(string brepFileName, bool showError = true)
         {
             CalculixSettings calculixSettings = _settings.Calculix;
             //
@@ -2531,13 +2531,12 @@ namespace PrePoMax
         private bool ReplacePartGeometryFromFile(GeometryPart part, string fileName)
         {
             int count = 0;
-            int timeOut = 1000 * 10;
             string[] importedFileNames = null;
             string extension = Path.GetExtension(fileName);
             //
             while (importedFileNames == null && count < 5)  // Check for timeout
             {
-                if (extension == ".brep") importedFileNames = ImportBrepPartFile(fileName, timeOut, false);
+                if (extension == ".brep") importedFileNames = ImportBrepPartFile(fileName, false);
                 else if (extension == ".stl") importedFileNames = _model.ImportGeometryFromStlFile(fileName);
                 else throw new NotSupportedException();
                 count++;

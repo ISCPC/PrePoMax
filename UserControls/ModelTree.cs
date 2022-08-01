@@ -228,7 +228,7 @@ namespace UserControls
         public event Action<string[]> CreateCompoundPart;
         public event Action<string[]> SwapPartGeometries;
         public event Action<string[]> MeshingParametersEvent;
-        public event Action<string[]> PreviewEdgeMesh;
+        public event Func<string[], MeshingParameters, FeMeshRefinement, Task> PreviewEdgeMesh;
         public event Action<string[]> CreateMeshEvent;
         public event Action<string[]> CopyGeometryToResultsEvent;
         public event Action EditCalculixKeywords;
@@ -1109,7 +1109,7 @@ namespace UserControls
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiPreviewEdgeMesh_Click(object sender, EventArgs e)
+        async private void tsmiPreviewEdgeMesh_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1118,7 +1118,7 @@ namespace UserControls
                 {
                     if (node.Tag != null) names.Add(((NamedClass)node.Tag).Name);
                 }
-                if (names.Count > 0) PreviewEdgeMesh?.Invoke(names.ToArray());
+                if (names.Count > 0) await PreviewEdgeMesh?.Invoke(names.ToArray(), null, null);
             }
             catch (Exception ex)
             {

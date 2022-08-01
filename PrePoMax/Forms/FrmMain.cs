@@ -223,7 +223,7 @@ namespace PrePoMax
                 _modelTree.CreateCompoundPart += CreateAndImportCompoundPart;
                 _modelTree.SwapPartGeometries += SwapPartGeometries;
                 _modelTree.MeshingParametersEvent += GetSetMeshingParameters;
-                _modelTree.PreviewEdgeMesh += PreviewEdgeMeshes;
+                _modelTree.PreviewEdgeMesh += PreviewEdgeMeshesAsync;
                 _modelTree.CreateMeshEvent += CreatePartMeshes;
                 _modelTree.CopyGeometryToResultsEvent += CopyGeometryPartsToResults;
                 _modelTree.EditCalculixKeywords += EditCalculiXKeywords;
@@ -302,9 +302,11 @@ namespace PrePoMax
                 //
                 _frmMeshingParameters = new FrmMeshingParameters(_controller);
                 _frmMeshingParameters.UpdateHighlightFromTree = UpdateHighlightFromTree;
+                _frmMeshingParameters.PreviewEdgeMeshesAsync = PreviewEdgeMeshesAsync;
                 AddFormToAllForms(_frmMeshingParameters);
                 //
                 _frmMeshRefinement = new FrmMeshRefinement(_controller);
+                _frmMeshRefinement.PreviewEdgeMeshesAsync = PreviewEdgeMeshesAsync;
                 AddFormToAllForms(_frmMeshRefinement);
                 //
                 _frmModelProperties = new FrmModelProperties(_controller);
@@ -323,6 +325,7 @@ namespace PrePoMax
                 AddFormToAllForms(_frmTranslate);
                 //
                 _frmScale = new FrmScale(_controller);
+                _frmScale.ScaleGeometryPartsAsync = ScaleGeometryPartsAsync;
                 AddFormToAllForms(_frmScale);
                 //
                 _frmRotate = new FrmRotate(_controller);
@@ -2648,6 +2651,37 @@ namespace PrePoMax
             //
             ShowForm(_frmScale, "Scale parts: " + partNames.ToShortString(), null);
         }
+        public async Task ScaleGeometryPartsAsync(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
+        {
+            bool stateSet = false;
+            try
+            {
+                if (SetStateWorking(Globals.TransformingText))
+                {
+                    stateSet = true;
+                    //
+                    await Task.Run(() =>
+                    {
+                        if (partNames != null && partNames.Length > 0)
+                        {
+                            foreach (var partName in partNames)
+                            {
+                                _controller.ScaleGeometryPartsCommand(partNames, scaleCenter, scaleFactors, copy);
+                            }
+                        }
+                    });
+                }
+                else MessageBoxes.ShowWarning("Another task is already running.");
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                if (stateSet) SetStateReady(Globals.TransformingText);
+            }
+        }
         // End Transform
         private void CopyGeometryPartsToResults(string[] partNames)
         {
@@ -3070,16 +3104,35 @@ namespace PrePoMax
         }
         private async void PreviewEdgeMeshes(string[] partNames)
         {
+            await PreviewEdgeMeshesAsync(partNames, null, null);
+        }
+        private async Task PreviewEdgeMeshesAsync(string[] partNames, MeshingParameters meshingParameters,
+                                                  FeMeshRefinement meshRefinement)
+        {
+            bool stateSet = false;
             try
             {
-                foreach (var partName in partNames)
+                if (SetStateWorking(Globals.PreviewText))
                 {
-                    await Task.Run(() => _controller.PreviewEdgeMesh(partName, null, null));
+                    stateSet = true;
+                    //
+                    await Task.Run(() =>
+                    {
+                        foreach (var partName in partNames)
+                        {
+                            _controller.PreviewEdgeMesh(partName, meshingParameters, meshRefinement);
+                        }
+                    });
                 }
+                else MessageBoxes.ShowWarning("Another task is already running.");
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                if (stateSet) SetStateReady(Globals.PreviewText);
             }
         }
         //

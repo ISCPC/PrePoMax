@@ -52,9 +52,29 @@ namespace CaeModel
         public bool IsProperlyDefined(out string error)
         {
             error = "";
-            if (!System.IO.File.Exists(_fileName))
+            if (!File.Exists(_fileName))
             {
                 error = "The selected file does not exist.";
+                return false;
+            }
+            Dictionary<string, string[]> timeResultVariableNames = OpenFoamFileReader.GetTimeResultVariableNames(_fileName);
+            if (timeResultVariableNames.Count == 0)
+            {
+                error = "The selected OpenFOAM folder does not contain results.";
+                return false;
+            }
+            string[] variables;
+            if (timeResultVariableNames.TryGetValue(_pressureTime, out variables))
+            {
+                if (!variables.Contains(_pressureVariableName))
+                {
+                    error = "The selected OpenFOAM folder does not contain results for variable: " + _pressureVariableName + ".";
+                    return false;
+                }
+            }
+            else
+            {
+                error = "The selected OpenFOAM folder does not contain results for time: " + _pressureTime + ".";
                 return false;
             }
             //
