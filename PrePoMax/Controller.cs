@@ -2227,18 +2227,27 @@ namespace PrePoMax
             // Scale
             GeometryPart geometryPart;
             string brepFileName;
+            List<string> stlFileNames = new List<string>();
             //
             foreach (var partName in partNames)
             {
                 geometryPart = (GeometryPart)_model.Geometry.Parts[partName];
-                brepFileName = ScaleGeometryPart(geometryPart, scaleCenter, scaleFactors);
-                //
-                if (brepFileName != null)
+                if (geometryPart.CADFileData != null)
                 {
-                    if (copy) ImportBrepPartFile(brepFileName);
-                    else ReplacePartGeometryFromFile(geometryPart, brepFileName);
+                    brepFileName = ScaleGeometryPart(geometryPart, scaleCenter, scaleFactors);
+                    //
+                    if (brepFileName != null)
+                    {
+                        if (copy) ImportBrepPartFile(brepFileName);
+                        else ReplacePartGeometryFromFile(geometryPart, brepFileName);
+                    }
+                    else ClearAllSelection();
                 }
-                else ClearAllSelection();
+                else stlFileNames.Add(partName);
+            }
+            if (stlFileNames.Count > 0)
+            {
+                MessageBoxes.ShowWarning("Geometry parts imported from .stl files cannot be scaled.");
             }
         }
         private string ScaleGeometryPart(GeometryPart part, double[] scaleCenter, double[] scaleFactors)
