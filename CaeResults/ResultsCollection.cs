@@ -23,11 +23,27 @@ namespace CaeResults
         //  Constructors                                                                                                            
         public ResultsCollection()
         {
+            _results = new OrderedDictionary<string, FeResults>();
+            //
             Clear();
         }
 
 
         // Metods
+        public static void PrepareForSavig(ResultsCollection resultsCollection)
+        {
+            foreach (var entry in resultsCollection._results)
+            {
+                if (entry.Value != null) CaeMesh.FeMesh.PrepareForSavig(entry.Value.Mesh);
+            }
+        }
+        public static void ResetAfterSavig(ResultsCollection resultsCollection)
+        {
+            foreach (var entry in resultsCollection._results)
+            {
+                if (entry.Value != null) CaeMesh.FeMesh.ResetAfterSavig(entry.Value.Mesh);
+            }
+        }
         public static void WriteToFile(ResultsCollection allResults, System.IO.BinaryWriter bw)
         {
             bw.Write(allResults.Count);
@@ -57,7 +73,7 @@ namespace CaeResults
         public void Clear()
         {
             _currentResult = null;
-            _results = new OrderedDictionary<string, FeResults>();
+            _results.Clear();
         }
         public string[] GetResultNames()
         {
@@ -84,15 +100,38 @@ namespace CaeResults
             _currentResult = result;
         }
         
-        public void Remove(string name)
-        {
-            _results.Remove(name);
-        }
+        
         public void SetCurrentResult(string name)
         {
             _results.TryGetValue(name, out _currentResult);
         }
-        
-        
+        public void RemoveCurrentResult()
+        {
+            if (_results.Count == 0) { }
+            else if (_results.Count == 1) Clear();
+            else if (_currentResult != null)
+            {
+                int count = 0;
+                string name = null;
+                foreach (var entry in _results)
+                {
+                    if (entry.Value == _currentResult)
+                    {
+                        name = entry.Key;
+                        break;
+                    }
+                    //
+                    count++;
+                }
+                //
+                if (name != null) _results.Remove(name);
+                //
+                string[] remainingNames = _results.Keys.ToArray();
+                if (count >= remainingNames.Length) count = remainingNames.Length - 1;
+                SetCurrentResult(remainingNames[count]);
+            }
+        }
+
+
     }
 }

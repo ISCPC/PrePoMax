@@ -370,7 +370,7 @@ namespace PrePoMax
             {
                 if (controller.Model != null) FeMesh.PrepareForSavig(controller.Model.Geometry);
                 if (controller.Model != null) FeMesh.PrepareForSavig(controller.Model.Mesh);
-                if (controller.CurrentResult != null) FeMesh.PrepareForSavig(controller.CurrentResult.Mesh);
+                if (controller.CurrentResult != null) ResultsCollection.PrepareForSavig(controller._allResults);
             }
         }
         public static void ResetAfterSavig(Controller controller)
@@ -379,7 +379,7 @@ namespace PrePoMax
             {
                 if (controller.Model != null) FeMesh.ResetAfterSavig(controller.Model.Geometry);
                 if (controller.Model != null) FeMesh.ResetAfterSavig(controller.Model.Mesh);
-                if (controller.CurrentResult != null) FeMesh.ResetAfterSavig(controller.CurrentResult.Mesh);
+                if (controller.CurrentResult != null) ResultsCollection.ResetAfterSavig(controller._allResults);
             }
         }
 
@@ -7580,6 +7580,10 @@ namespace PrePoMax
             // Get first component of the first field for the last increment in the last step
             if (ResultsInitialized)
                 _currentFieldData = _allResults.CurrentResult.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
+        }
+        public void CloseCurrentResult()
+        {
+            _allResults.RemoveCurrentResult();
         }
 
         #endregion #################################################################################################################

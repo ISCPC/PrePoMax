@@ -622,9 +622,12 @@ namespace CaeJob
         {
             try
             {
-                if (psi.EnvironmentVariables.ContainsKey(environmentVariable.Name)) psi.EnvironmentVariables.Remove(environmentVariable.Name);
-                psi.EnvironmentVariables.Add(environmentVariable.Name, environmentVariable.Value);
-                if (!psi.EnvironmentVariables.ContainsKey(environmentVariable.Name)) throw new Exception();
+                if (environmentVariable.Active)
+                {
+                    if (psi.EnvironmentVariables.ContainsKey(environmentVariable.Name)) psi.EnvironmentVariables.Remove(environmentVariable.Name);
+                    psi.EnvironmentVariables.Add(environmentVariable.Name, environmentVariable.Value);
+                    if (!psi.EnvironmentVariables.ContainsKey(environmentVariable.Name)) throw new Exception();
+                }
             }
             catch
             {

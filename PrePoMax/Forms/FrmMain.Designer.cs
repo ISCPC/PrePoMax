@@ -110,7 +110,7 @@
             this.tsmiExportToDeformedInp = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiExportToDeformedStl = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerFile3 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiCloseResults = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCloseAllResults = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiExit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiUndo = new System.Windows.Forms.ToolStripMenuItem();
@@ -417,6 +417,7 @@
             this.tbOutput = new System.Windows.Forms.TextBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
+            this.tsmiCloseCurrentResult = new System.Windows.Forms.ToolStripMenuItem();
             this.tsFile.SuspendLayout();
             this.tsViews.SuspendLayout();
             this.tsModel.SuspendLayout();
@@ -812,7 +813,7 @@
             this.tstbDeformationFactor});
             this.tsDeformationFactor.Location = new System.Drawing.Point(3, 25);
             this.tsDeformationFactor.Name = "tsDeformationFactor";
-            this.tsDeformationFactor.Size = new System.Drawing.Size(622, 25);
+            this.tsDeformationFactor.Size = new System.Drawing.Size(591, 25);
             this.tsDeformationFactor.TabIndex = 8;
             // 
             // tslResultName
@@ -1056,7 +1057,8 @@
             this.tsmiDividerFile2,
             this.tsmiExport,
             this.tsmiDividerFile3,
-            this.tsmiCloseResults,
+            this.tsmiCloseCurrentResult,
+            this.tsmiCloseAllResults,
             this.tsmiExit});
             this.tsmiFile.Name = "tsmiFile";
             this.tsmiFile.Size = new System.Drawing.Size(37, 20);
@@ -1210,12 +1212,12 @@
             this.tsmiDividerFile3.Name = "tsmiDividerFile3";
             this.tsmiDividerFile3.Size = new System.Drawing.Size(216, 6);
             // 
-            // tsmiCloseResults
+            // tsmiCloseAllResults
             // 
-            this.tsmiCloseResults.Name = "tsmiCloseResults";
-            this.tsmiCloseResults.Size = new System.Drawing.Size(219, 22);
-            this.tsmiCloseResults.Text = "Close Results";
-            this.tsmiCloseResults.Click += new System.EventHandler(this.tsmiCloseResults_Click);
+            this.tsmiCloseAllResults.Name = "tsmiCloseAllResults";
+            this.tsmiCloseAllResults.Size = new System.Drawing.Size(219, 22);
+            this.tsmiCloseAllResults.Text = "Close All Results";
+            this.tsmiCloseAllResults.Click += new System.EventHandler(this.tsmiCloseAllResults_Click);
             // 
             // tsmiExit
             // 
@@ -3643,6 +3645,13 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
+            // tsmiCloseCurrentResult
+            // 
+            this.tsmiCloseCurrentResult.Name = "tsmiCloseCurrentResult";
+            this.tsmiCloseCurrentResult.Size = new System.Drawing.Size(219, 22);
+            this.tsmiCloseCurrentResult.Text = "Close Current Result";
+            this.tsmiCloseCurrentResult.Click += new System.EventHandler(this.tsmiCloseCurrentResult_Click);
+            // 
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -3807,7 +3816,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiMonitorAnalysis;
         private System.Windows.Forms.ToolStripMenuItem tsmiKillAnalysis;
         private System.Windows.Forms.ToolStripMenuItem tsmiResultsAnalysis;
-        private System.Windows.Forms.ToolStripMenuItem tsmiCloseResults;
+        private System.Windows.Forms.ToolStripMenuItem tsmiCloseAllResults;
         private System.Windows.Forms.ToolStripMenuItem tsmiExportToAbaqus;
         private System.Windows.Forms.ToolStripButton tsbVerticalView;
         private System.Windows.Forms.ToolStripMenuItem tsmiVerticalView;
@@ -4089,6 +4098,7 @@
         private System.Windows.Forms.ToolStripButton tsbRemoveAnnotations;
         private System.Windows.Forms.ToolStripLabel tslResultName;
         private System.Windows.Forms.ToolStripComboBox tscbResultNames;
+        private System.Windows.Forms.ToolStripMenuItem tsmiCloseCurrentResult;
     }
 }
 

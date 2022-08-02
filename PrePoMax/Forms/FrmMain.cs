@@ -1297,7 +1297,7 @@ namespace PrePoMax
                 }
                 else if ((extension == ".frd" || extension == ".foam") && _controller.AllResults.ContainsResult(fileName))
                 {
-                    if (MessageBoxes.ShowWarningQuestion("OK to overwrite the current results?") != DialogResult.OK)
+                    if (MessageBoxes.ShowWarningQuestion("OK to reopen the existing results?") != DialogResult.OK)
                         return false;
                 }
             }
@@ -1760,11 +1760,35 @@ namespace PrePoMax
             }
         }
         //
-        private void tsmiCloseResults_Click(object sender, EventArgs e)
+        private void tsmiCloseCurrentResult_Click(object sender, EventArgs e)
         {
-            _controller.ClearResults(); // calls this.ClearResults();
-            //
-            if (_controller.CurrentView == ViewGeometryModelResults.Results) Clear3D();
+            try
+            {
+                if (_controller.AllResults.Count <= 1) tsmiCloseAllResults_Click(null, null);
+                else
+                {
+                    _controller.CloseCurrentResult();
+                    SetResultNames();
+                    if (tscbResultNames.SelectedItem != null) SetResult(tscbResultNames.SelectedItem.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiCloseAllResults_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _controller.ClearResults(); // calls this.ClearResults();
+                //
+                if (_controller.CurrentView == ViewGeometryModelResults.Results) Clear3D();
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
         }
         private void tsmiExit_Click(object sender, EventArgs e)
         {
@@ -6629,37 +6653,106 @@ namespace PrePoMax
                 string newResultName = tscbResultNames.SelectedItem.ToString();
                 if (newResultName != currentResultName)
                 {
-                    // Clear
-                    Clear3D();
-                    _controller.RemoveExplodedView(false);
-                    // Set results
-                    _controller.AllResults.SetCurrentResult(newResultName);
-                    // Regenerate tree
-                    RegenerateTree();
-                    // Get first component of the first field for the last increment in the last step
-                    if (_controller.ResultsInitialized) _controller.CurrentFieldData =
-                            _controller.AllResults.CurrentResult.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
-                    //
-                    if (_controller.CurrentResult != null && _controller.CurrentResult.Mesh != null)
-                    {
-                        // Reset the previous step and increment
-                        SetAllStepAndIncrementIds();
-                        // Set last increment
-                        SetDefaultStepAndIncrementIds();
-                        // Show the selection in the results tree
-                        //return;
-                        SelectFirstComponentOfFirstFieldOutput();
-                        //
-                        _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
-                        //
-                        tsmiZoomToFit_Click(null, null);    // different results have different views
-                    }
+                    SetResult(newResultName);
                 }
                 this.ActiveControl = null;
             }
-            catch
-            { }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
         }      
+        private void tscbDeformationVariable_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                _controller.Redraw();
+                this.ActiveControl = null;
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tscbDeformationType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                // Enable scale factor text box
+                UpdateScaleFactorTextBoxState();
+                //
+                _controller.Redraw();
+                this.ActiveControl = null;
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tstbDeformationFactor_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    _controller.Redraw();
+                    this.ActiveControl = null;
+                    // No beep
+                    e.SuppressKeyPress = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        //
+        public void SetResultNames()
+        {
+            InvokeIfRequired(() =>
+            {
+                tscbResultNames.Items.Clear();
+                string[] allResultNames = _controller.AllResults.GetResultNames();
+                if (allResultNames != null && allResultNames.Length > 0)
+                {
+                    foreach (var name in allResultNames) tscbResultNames.Items.Add(name);
+                    // Drop down width
+                    int maxWidth = GetMaxStringWidth(allResultNames, tscbResultNames.Font);
+                    tscbResultNames.DropDownWidth = maxWidth;
+                    //
+                    string currentResultName = _controller.AllResults.GetCurrentResultName();
+                    if (currentResultName != null) tscbResultNames.SelectedItem = currentResultName;
+                }
+            });
+        }
+        private void SetResult(string resultName)
+        {
+            // Clear
+            Clear3D();
+            //_controller.RemoveExplodedView(false);
+            // Set results
+            _controller.AllResults.SetCurrentResult(resultName);
+            // Regenerate tree
+            RegenerateTree();
+            // Get first component of the first field for the last increment in the last step
+            if (_controller.ResultsInitialized) _controller.CurrentFieldData =
+                    _controller.AllResults.CurrentResult.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
+            //
+            if (_controller.CurrentResult != null && _controller.CurrentResult.Mesh != null)
+            {
+                // Reset the previous step and increment
+                SetAllStepAndIncrementIds();
+                // Set last increment
+                SetDefaultStepAndIncrementIds();
+                // Show the selection in the results tree
+                //return;
+                SelectFirstComponentOfFirstFieldOutput();
+                //
+                _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+                                                                              //
+                //tsmiZoomToFit_Click(null, null);    // different results have different views
+            }
+        }
         private void ResizeResultNamesComboBox()
         {
             string[] allResultNames = new string[] { tscbResultNames.SelectedItem.ToString() };
@@ -6684,44 +6777,6 @@ namespace PrePoMax
                 }
             }
             return maxWidth;
-        }
-        private void tscbDeformationVariable_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                _controller.Redraw();
-                this.ActiveControl = null;
-            }
-            catch
-            { }
-        }
-        private void tscbDeformationType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                // Enable scale factor text box
-                UpdateScaleFactorTextBoxState();
-                //
-                _controller.Redraw();
-                this.ActiveControl = null;
-            }
-            catch
-            { }
-        }
-        private void tstbDeformationFactor_KeyDown(object sender, KeyEventArgs e)
-        {
-            try
-            {
-                if (e.KeyCode == Keys.Enter)
-                {
-                    _controller.Redraw();
-                    this.ActiveControl = null;
-                    // No beep
-                    e.SuppressKeyPress = true;
-                }
-            }
-            catch
-            { }
         }
         private void InitializeDeformationComboBoxes()
         {
@@ -7429,21 +7484,7 @@ namespace PrePoMax
 
         #region Results  ###########################################################################################################
         // Results
-        public void SetResultNames()
-        {
-            InvokeIfRequired(() =>
-            {
-                tscbResultNames.Items.Clear();
-                string[] allResultNames = _controller.AllResults.GetResultNames();
-                foreach (var name in allResultNames) tscbResultNames.Items.Add(name);
-                // Drop down width
-                int maxWidth = GetMaxStringWidth(allResultNames, tscbResultNames.Font);
-                tscbResultNames.DropDownWidth = maxWidth;
-                //
-                string currentResultName = _controller.AllResults.GetCurrentResultName();
-                if (currentResultName != null) tscbResultNames.SelectedItem = currentResultName;
-            });
-        }
+        
         public void SetFieldData(string name, string component, int stepId, int stepIncrementId)
         {
             CaeResults.FieldData fieldData = new CaeResults.FieldData(name, component, stepId, stepIncrementId);
