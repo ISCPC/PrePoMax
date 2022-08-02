@@ -2629,7 +2629,7 @@ namespace CaeMesh
                 if (_elementSets.TryGetValue(elementSetNames[i], out elementSet))
                 {
                     newPartNames.Add(elementSetNames[i]);
-
+                    //
                     foreach (var elementId in elementSet.Labels)
                     {
                         element = _elements[elementId];
@@ -2683,7 +2683,7 @@ namespace CaeMesh
                 //
                 modifiedParts[count++] = newBasePart;
             }
-            // Create new parts and remove element sets
+            // Create new parts
             count = 0;
             newParts = new BasePart[newPartNames.Count];
             string[] allMeshNames;
@@ -2703,7 +2703,8 @@ namespace CaeMesh
                 // Check name
                 newBasePart.Name = "From_" + newPartName;
                 allMeshNames = GetAllMeshEntityNames();
-                if (allMeshNames.Contains(newBasePart.Name)) newBasePart.Name = allMeshNames.GetNextNumberedKey(newPartName);
+                if (allMeshNames.Contains(newBasePart.Name))
+                    newBasePart.Name = allMeshNames.GetNextNumberedKey(newBasePart.Name);
                 //
                 newBasePart.PartId = maxPartId + count;
                 SetPartColorFromColorTable(newBasePart);
@@ -2712,9 +2713,9 @@ namespace CaeMesh
                 newParts[count++] = newBasePart;
                 // Keep existing edges
                 ConvertLineFeElementsToEdges(edgeElements, new string[] { newBasePart.Name });
-                //
-                _elementSets.Remove(newBasePart.Name);
             }
+            // Remove element sets
+            for (int i = 0; i < elementSetNames.Length; i++) _elementSets.Remove(elementSetNames[i]);
             // Update bounding boxes
             ComputeBoundingBox();
         }

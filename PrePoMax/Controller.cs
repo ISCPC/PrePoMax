@@ -2224,11 +2224,12 @@ namespace PrePoMax
         // Sub menu Transform
         public void ScaleGeometryParts(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
         {
+            if (IsExplodedViewActive()) throw new CaeException("The scaling can only be done when the exploded view is turned off.");
             // Scale
             GeometryPart geometryPart;
             string brepFileName;
             List<string> stlFileNames = new List<string>();
-            //
+            // Scale CAD models
             foreach (var partName in partNames)
             {
                 geometryPart = (GeometryPart)_model.Geometry.Parts[partName];
@@ -2245,10 +2246,22 @@ namespace PrePoMax
                 }
                 else stlFileNames.Add(partName);
             }
+            // Scale stl models
             if (stlFileNames.Count > 0)
             {
-                MessageBoxes.ShowWarning("Geometry parts imported from .stl files cannot be scaled.");
+                string[] scaledPartNames = _model.Geometry.ScaleParts(stlFileNames.ToArray(), scaleCenter, scaleFactors, copy,
+                                                                      _model.GetReservedPartNames());
+                if (copy)
+                {
+                    foreach (var scaledPartName in scaledPartNames)
+                    {
+                        _form.AddTreeNode(ViewGeometryModelResults.Geometry, _model.Geometry.Parts[scaledPartName], null);
+                    }
+                }
+                //
+                DrawGeometry(false);
             }
+            
         }
         private string ScaleGeometryPart(GeometryPart part, double[] scaleCenter, double[] scaleFactors)
         {
@@ -4074,6 +4087,8 @@ namespace PrePoMax
         }
         public void ScaleModelParts(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
         {
+            if (IsExplodedViewActive()) throw new CaeException("The scaling can only be done when the exploded view is turned off.");
+            //
             if (!copy) ChangeAllSelectionsToIdSelections(partNames);
             //
             string[] scaledPartNames = _model.Mesh.ScaleParts(partNames, scaleCenter, scaleFactors, copy,
@@ -4516,7 +4531,7 @@ namespace PrePoMax
             BasePart[] newParts;
             //
             ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
-            RemoveExplodedView(false);
+            RemoveExplodedView(false);  // cannot suppress exploded view since new parts are created
             _model.Mesh.CreatePartsFromElementSets(elementSetNames, out modifiedParts, out newParts);
             ApplyExplodedView(parameters, null, false);
             // Remove annotations

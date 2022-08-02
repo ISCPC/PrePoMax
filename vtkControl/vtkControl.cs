@@ -1412,7 +1412,7 @@ namespace vtkControl
             IntPtr x = Marshal.AllocHGlobal(3 * 8);
             Marshal.Copy(point, 0, x, 3);
             //
-            IntPtr closestPoint = Marshal.AllocHGlobal(3 * 8);
+            IntPtr closestPoint = Marshal.AllocHGlobal(3 * 8);            
             //
             int globalCellId = -1;
             double minDist = double.MaxValue;
@@ -1420,6 +1420,7 @@ namespace vtkControl
             int subId = -1;
             double distance2 = -1;
             double[] pointOut = new double[3];
+            double[] tmp = new double[3];
             vtkCellLocator locator;
             //
             foreach (var entry in _actors)
@@ -1438,7 +1439,8 @@ namespace vtkControl
                     if (locator != null)
                     {
                         locator.FindClosestPoint(x, closestPoint, ref localCellId, ref subId, ref distance2);
-                        if (distance2 < minDist)
+                        // Error: distance2 can be -1 if something in locator is not properly defined
+                        if (distance2 >= 0 && distance2 < minDist)
                         {
                             minDist = distance2;
                             cellLocator = locator;
@@ -5977,6 +5979,18 @@ namespace vtkControl
             {
                 if (selectionActor.Geometry == actor || selectionActor.ElementEdges == actor || selectionActor.ModelEdges == actor)
                     return selectionActor;
+            }
+            //
+            return null;
+        }
+        private vtkMaxActor GetMaxActor(vtkActor actor)
+        {
+            if (actor == null) return null;
+            //
+            foreach (var entry in _actors)
+            {
+                if (entry.Value.Geometry == actor || entry.Value.ElementEdges == actor || entry.Value.ModelEdges == actor)
+                    return entry.Value;
             }
             //
             return null;
