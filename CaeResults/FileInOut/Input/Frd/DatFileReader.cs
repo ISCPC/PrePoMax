@@ -42,18 +42,7 @@ namespace CaeResults
         {
             if (fileName != null && File.Exists(fileName))
             {
-                List<string> lines = new List<string>();
-                //
-                if (!Tools.WaitForFileToUnlock(fileName, 5000)) return null;
-                //
-                using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                using (StreamReader streamReader = new StreamReader(fileStream))
-                {
-                    while (!streamReader.EndOfStream) lines.Add(streamReader.ReadLine()); // faster than streamReader.ReadToEnd().Split ...
-                    //
-                    streamReader.Close();
-                    fileStream.Close();
-                }
+                string[] lines = Tools.GetLinesFromFile(fileName);
                 //
                 List<string> dataSetNames = new List<string>();
                 // Nodal                                                                
@@ -95,7 +84,7 @@ namespace CaeResults
                 //                                                                      
                 Dictionary<string, string> repairedSetNames = new Dictionary<string, string>();
                 //
-                List<string[]> dataSetLinesList = SplitToDataSetLinesList(dataSetNames, lines.ToArray(), repairedSetNames);
+                List<string[]> dataSetLinesList = SplitToDataSetLinesList(dataSetNames, lines, repairedSetNames);
                 Repair(dataSetLinesList, dataSetNames);
                 //
                 DatDataSet dataSet;
@@ -133,6 +122,8 @@ namespace CaeResults
             string theName;
             for (int i = 0; i < lines.Length; i++)
             {
+                if (lines[i].Length == 0) continue;
+                //
                 theName = null;
                 foreach (var name in dataSetNames)
                 {
@@ -195,7 +186,7 @@ namespace CaeResults
             string[] dataSet;
             List<string[]> repairedDataSets = new List<string[]>();
             //
-            if (lines.Length != 8) return repairedDataSets;
+            if (lines.Length != 9) return repairedDataSets;
             //
             string[] tmp = lines[0].Split(new string[] { "slave set", "master set", "and time"}, 
                                           StringSplitOptions.RemoveEmptyEntries);
