@@ -828,7 +828,6 @@
             this.tscbResultNames.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.tscbResultNames.Name = "tscbResultNames";
             this.tscbResultNames.Size = new System.Drawing.Size(121, 25);
-            this.tscbResultNames.DropDown += new System.EventHandler(this.tscbResultNames_DropDown);
             this.tscbResultNames.SelectedIndexChanged += new System.EventHandler(this.tscbResultNames_SelectedIndexChanged);
             // 
             // tslDeformationVariable

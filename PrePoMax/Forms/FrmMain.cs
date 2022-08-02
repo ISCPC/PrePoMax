@@ -6623,41 +6623,67 @@ namespace PrePoMax
         {
             try
             {
+                ResizeResultNamesComboBox();    // must be here
+                //
                 string currentResultName = _controller.AllResults.GetCurrentResultName();
                 string newResultName = tscbResultNames.SelectedItem.ToString();
                 if (newResultName != currentResultName)
                 {
+                    // Clear
+                    Clear3D();
+                    _controller.RemoveExplodedView(false);
+                    // Set results
                     _controller.AllResults.SetCurrentResult(newResultName);
-                    //
-                    _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
                     // Regenerate tree
                     RegenerateTree();
-                    // Reset the previous step and increment
-                    SetAllStepAndIncrementIds();
-                    // Set last increment
-                    SetDefaultStepAndIncrementIds();
-                    // Show the selection in the results tree
-                    SelectFirstComponentOfFirstFieldOutput();
+                    // Get first component of the first field for the last increment in the last step
+                    if (_controller.ResultsInitialized) _controller.CurrentFieldData =
+                            _controller.AllResults.CurrentResult.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
                     //
-                    //_controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+                    if (_controller.CurrentResult != null && _controller.CurrentResult.Mesh != null)
+                    {
+                        // Reset the previous step and increment
+                        SetAllStepAndIncrementIds();
+                        // Set last increment
+                        SetDefaultStepAndIncrementIds();
+                        // Show the selection in the results tree
+                        //return;
+                        SelectFirstComponentOfFirstFieldOutput();
+                        //
+                        _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+                        //
+                        tsmiZoomToFit_Click(null, null);    // different results have different views
+                    }
                 }
                 this.ActiveControl = null;
             }
             catch
             { }
-        }
-        private void tscbResultNames_DropDown(object sender, EventArgs e)
+        }      
+        private void ResizeResultNamesComboBox()
         {
+            string[] allResultNames = new string[] { tscbResultNames.SelectedItem.ToString() };
+            int currentWidth = GetMaxStringWidth(allResultNames, tscbResultNames.Font);
+            // Control width
+            currentWidth += 20; // to account for the drop down arrow
+            if (currentWidth < 125) currentWidth = 125;
+            else if (currentWidth > 500) currentWidth = 500;
+            tscbResultNames.Size = new Size(currentWidth, tscbResultNames.Height);
+            //
+            Application.DoEvents();
+        }
+        private int GetMaxStringWidth(IEnumerable<string> items, Font font)
+        {
+            int maxWidth = 0;
             using (Graphics graphics = CreateGraphics())
             {
-                int maxWidth = 0;
-                foreach (object obj in tscbResultNames.Items)
+                foreach (string item in items)
                 {
-                    SizeF area = graphics.MeasureString(obj.ToString(), tscbResultNames.Font);
+                    SizeF area = graphics.MeasureString(item, font);
                     maxWidth = Math.Max((int)area.Width, maxWidth);
                 }
-                tscbResultNames.DropDownWidth = maxWidth;
             }
+            return maxWidth;
         }
         private void tscbDeformationVariable_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -7070,6 +7096,7 @@ namespace PrePoMax
             InvokeIfRequired(() =>
             {
                 tscbResultNames.Items.Clear();
+                tscbResultNames.Size = new Size(125, tscbResultNames.Height);
                 tscbStepAndIncrement.Items.Clear();
                 _modelTree.ClearResults();
                 //
@@ -7407,7 +7434,11 @@ namespace PrePoMax
             InvokeIfRequired(() =>
             {
                 tscbResultNames.Items.Clear();
-                foreach (var name in _controller.AllResults.GetResultNames()) tscbResultNames.Items.Add(name);
+                string[] allResultNames = _controller.AllResults.GetResultNames();
+                foreach (var name in allResultNames) tscbResultNames.Items.Add(name);
+                // Drop down width
+                int maxWidth = GetMaxStringWidth(allResultNames, tscbResultNames.Font);
+                tscbResultNames.DropDownWidth = maxWidth;
                 //
                 string currentResultName = _controller.AllResults.GetCurrentResultName();
                 if (currentResultName != null) tscbResultNames.SelectedItem = currentResultName;
@@ -7986,8 +8017,8 @@ namespace PrePoMax
             //
             Dictionary<int, int> nodeIdsLookUp = new Dictionary<int, int>();
             for (int i = 0; i < allData.Nodes.Coor.Length; i++) nodeIdsLookUp.Add(allData.Nodes.Ids[i], i);
-            CaeResults.FeResults outResults = new CaeResults.FeResults("Model");
-            outResults.FileName = "Model";
+            CaeResults.FeResults outResults = new CaeResults.FeResults("Imported_pressure-1");
+            //outResults.FileName = "Imported_pressure-1";
             outResults.SetMesh(_controller.Model.Mesh, nodeIdsLookUp);
             // Add distances
             CaeResults.FieldData fieldData = new CaeResults.FieldData(CaeResults.FOFieldNames.Distance);

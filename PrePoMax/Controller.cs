@@ -554,7 +554,7 @@ namespace PrePoMax
             CheckAndUpdateValidity();
             // Get first component of the first field for the last increment in the last step
             if (ResultsInitialized)
-                _currentFieldData = _allResults.CurrentResult.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
+                CurrentFieldData = _allResults.CurrentResult.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
             //
             UpdateExplodedView(false);
             // Settings
