@@ -108,6 +108,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collections\ExplodedViewsCollection.cs" />
     <Compile Include="Collections\TransformationsCollection.cs" />
     <Compile Include="Command\0000_File\CSaveToPmx.cs" />
     <Compile Include="Command\0000_File\CImportFile.cs" />

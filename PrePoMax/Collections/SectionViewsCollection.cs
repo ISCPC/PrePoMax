@@ -14,7 +14,7 @@ namespace PrePoMax
         private Octree.Plane _geometrySectionViewPlane;
         private Octree.Plane _modelSectionViewPlane;
         private Dictionary<string, Octree.Plane> _allResultsSectionViewPlane;
-        private Octree.Plane _plane;
+
 
         // Properties                                                                                                               
         public string CurrentResultName { get { return _controller.AllResults.GetCurrentResultName(); } }
@@ -41,15 +41,15 @@ namespace PrePoMax
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
                 string name = CurrentResultName;
-                if (name != null && _allResultsSectionViewPlane.TryGetValue(name, out _plane)) return _plane;
+                if (name != null && _allResultsSectionViewPlane.TryGetValue(name, out Octree.Plane plane)) return plane;
                 else return null;
             }
             else throw new NotSupportedException();
         }
         public void SetCurrentSectionViewPlane(double[] point, double[] normal)
         {
-            _plane = new Octree.Plane(point, normal);
-            SetCurrentSectionViewPlane(_plane);
+            Octree.Plane plane = new Octree.Plane(point, normal);
+            SetCurrentSectionViewPlane(plane);
         }
         public void SetCurrentSectionViewPlane(Octree.Plane plane)
         {
@@ -69,8 +69,8 @@ namespace PrePoMax
         }
         public void SetCurrentPointAndNormal(double[] point, double[] normal)
         {
-            _plane = GetCurrentSectionViewPlane();
-            if (_plane != null) _plane.SetPointAndNormal(point, normal);
+            Octree.Plane plane = GetCurrentSectionViewPlane();
+            if (plane != null) plane.SetPointAndNormal(point, normal);
         }
         // Clear
         public void ClearModelSectionViews()

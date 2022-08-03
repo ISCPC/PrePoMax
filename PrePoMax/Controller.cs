@@ -33,7 +33,7 @@ namespace PrePoMax
         [NonSerialized] protected ViewGeometryModelResults _currentView;
         [NonSerialized] protected string _drawSymbolsForStep;
         [NonSerialized] protected SectionViewsCollection _sectionViews;
-        [NonSerialized] protected Dictionary<ViewGeometryModelResults, ExplodedViewParameters> _explodedViewParameters;
+        [NonSerialized] protected ExplodedViewsCollection _explodedViews;
         [NonSerialized] protected AnnotateWithColorEnum _annotateWithColor;
         // Selection
         [NonSerialized] protected vtkSelectBy _selectBy;
@@ -146,11 +146,11 @@ namespace PrePoMax
         }
         public bool IsExplodedViewActive()
         {
-            return _explodedViewParameters[_currentView].ScaleFactor != -1;
+            return _explodedViews.IsExplodedViewActive();
         }
         public ExplodedViewParameters GetCurrentExplodedViewParameters()
         {
-            return _explodedViewParameters[_currentView];
+            return _explodedViews.GetCurrentExplodedViewParameters();
         }
         public AnnotateWithColorEnum AnnotateWithColor
         {
@@ -336,10 +336,7 @@ namespace PrePoMax
             // Section view
             _sectionViews = new SectionViewsCollection(this);
             // Exploded view
-            _explodedViewParameters = new Dictionary<ViewGeometryModelResults, ExplodedViewParameters>();
-            _explodedViewParameters.Add(ViewGeometryModelResults.Geometry, new ExplodedViewParameters());
-            _explodedViewParameters.Add(ViewGeometryModelResults.Model, new ExplodedViewParameters());
-            _explodedViewParameters.Add(ViewGeometryModelResults.Results, new ExplodedViewParameters());
+            _explodedViews = new ExplodedViewsCollection(this);
             // Selection
             _selection = new Selection();
             // Annotations
@@ -463,8 +460,7 @@ namespace PrePoMax
             // Section view
             _sectionViews.ClearModelSectionViews();
             // Exploded view
-            _explodedViewParameters[ViewGeometryModelResults.Geometry] = new ExplodedViewParameters();
-            _explodedViewParameters[ViewGeometryModelResults.Model] = new ExplodedViewParameters();
+            _explodedViews.ClearModelExplodedViews();
             //
             _model = new FeModel("Model-1");
             SetNewModelProperties(_model.Properties.ModelSpace, _model.UnitSystem.UnitSystemType);   // update widgets
@@ -481,7 +477,7 @@ namespace PrePoMax
             // Section view
             _sectionViews.ClearAllResultsSectionViews();
             // Exploded view
-            _explodedViewParameters[ViewGeometryModelResults.Results] = new ExplodedViewParameters();
+            _explodedViews.ClearAllResultsExplodedViews();
             // Annotations
             _annotations.RemoveAllResultArrowAnnotations();
             //
@@ -1814,7 +1810,7 @@ namespace PrePoMax
             FeMesh mesh = DisplayedMesh;
             if (mesh == null) return;
             //
-            _explodedViewParameters[CurrentView] = parameters;
+            _explodedViews.SetCurrentExplodedViewParameters(parameters);
             //
             mesh.RemoveExplodedView();
             //
@@ -1829,18 +1825,23 @@ namespace PrePoMax
         }
         public void SuppressExplodedViews(string[] partNames = null)
         {
-            if (_model.Geometry != null && _explodedViewParameters[ViewGeometryModelResults.Geometry].ScaleFactor != -1)
+            if (_model.Geometry != null && _explodedViews.IsGeometryExplodedViewActive())
             {
                 _model.Geometry.SuppressExploededView(partNames);
             }
-            if (_model.Mesh != null && _explodedViewParameters[ViewGeometryModelResults.Model].ScaleFactor != -1)
+            if (_model.Mesh != null && _explodedViews.IsModelExplodedViewActive())
             {
                 _model.Mesh.SuppressExploededView(partNames);
             }
-            if (_allResults.CurrentResult != null && _allResults.CurrentResult.Mesh != null && 
-                _explodedViewParameters[ViewGeometryModelResults.Results].ScaleFactor != -1)
+            FeResults result;
+            string[] resultNames = _allResults.GetResultNames();
+            for (int i = 0; i < resultNames.Length; i++)
             {
-                _allResults.CurrentResult.Mesh.SuppressExploededView(partNames);
+                result = _allResults.GetResult(resultNames[i]);
+                if (result != null && result.Mesh != null && _explodedViews.IsResultExplodedViewActive(resultNames[i]))
+                {
+                    result.Mesh.SuppressExploededView(partNames);
+                }
             }
         }
         public void ResumeExplodedViews(bool update)
@@ -1848,15 +1849,24 @@ namespace PrePoMax
             bool updateG = false;
             bool updateM = false;
             bool updateR = false;
+            bool updateCR = false;
             //
             if (_model.Geometry != null) updateG = _model.Geometry.ResumeExploededView();
             if (_model.Mesh != null) updateM = _model.Mesh.ResumeExploededView();
-            if (_allResults.CurrentResult != null && _allResults.CurrentResult.Mesh != null)
-                updateR = _allResults.CurrentResult.Mesh.ResumeExploededView();
+            //
+            FeResults result;
+            string[] resultNames = _allResults.GetResultNames();
+            for (int i = 0; i < resultNames.Length; i++)
+            {
+                result = _allResults.GetResult(resultNames[i]);
+                if (result != null && result.Mesh != null)
+                    updateR = result.Mesh.ResumeExploededView();
+                if (result == _allResults.CurrentResult && updateR) updateCR = true;
+            }
             //
             if ((_currentView == ViewGeometryModelResults.Geometry && updateG) ||
                 (_currentView == ViewGeometryModelResults.Model && updateM) ||
-                (_currentView == ViewGeometryModelResults.Results && updateR))
+                (_currentView == ViewGeometryModelResults.Results && updateCR))
             {
                 if (update) Redraw();
             }
@@ -1866,7 +1876,7 @@ namespace PrePoMax
             FeMesh mesh = DisplayedMesh;
             if (mesh == null) return;
             //
-            ExplodedViewParameters parameters = _explodedViewParameters[CurrentView];
+            ExplodedViewParameters parameters = _explodedViews.GetCurrentExplodedViewParameters();
             if (parameters.ScaleFactor != -1)
             {
                 mesh.RemoveExplodedView();
@@ -1894,7 +1904,7 @@ namespace PrePoMax
             // Deactivate exploded view
             if (IsExplodedViewActive())
             {
-                ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
+                ExplodedViewParameters parameters = _explodedViews.GetCurrentExplodedViewParameters().DeepClone();
                 Dictionary<string, double[]> partOffsets = RemoveExplodedView(true);   // Highlight
                 _form.Clear3DSelection();
                 PreviewExplodedView(parameters, false, partOffsets);
@@ -1910,7 +1920,7 @@ namespace PrePoMax
                 if (mesh != null && mesh.Parts.Count > 1)
                 {
                     _form.Clear3DSelection();
-                    ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
+                    ExplodedViewParameters parameters = _explodedViews.GetCurrentExplodedViewParameters().DeepClone();
                     parameters.ScaleFactor = 0.5;
                     PreviewExplodedView(parameters, animate);
                     ApplyExplodedView(parameters);  // Highlight
@@ -1938,9 +1948,9 @@ namespace PrePoMax
                 //
                 _form.RemovePreviewedExplodedView(partNames);
                 //
-                if (_explodedViewParameters[CurrentView].ScaleFactor != -1)
+                if (_explodedViews.IsExplodedViewActive())
                 {
-                    _explodedViewParameters[CurrentView].ScaleFactor = -1;
+                    _explodedViews.RemoveCurrentExplodedView();
                     //
                     partOffsets = mesh.RemoveExplodedView(partNames);
                     //
@@ -3088,7 +3098,7 @@ namespace PrePoMax
             //
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, FileInOut.Input.ElementsToImport.All, false);
             // Exploded view
-            if (part.CADFileData != null && GetCurrentExplodedViewParameters().ScaleFactor != -1)
+            if (part.CADFileData != null && IsExplodedViewActive())
             {
                 Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
                 foreach (var entry in mesh.Parts) partOffsets.Add(entry.Key, part.Offset);
@@ -4136,7 +4146,7 @@ namespace PrePoMax
             MeshPart newMeshPart;
             string[] mergedParts;
             //
-            ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
+            ExplodedViewParameters parameters = _explodedViews.GetCurrentExplodedViewParameters().DeepClone();
             RemoveExplodedView(false);
             // Remove annotations
             _annotations.RemoveCurrentArrowAnnotationsByParts(partNames, ViewGeometryModelResults.Model);
@@ -4533,7 +4543,7 @@ namespace PrePoMax
             BasePart[] modifiedParts;
             BasePart[] newParts;
             //
-            ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
+            ExplodedViewParameters parameters = _explodedViews.GetCurrentExplodedViewParameters().DeepClone();
             RemoveExplodedView(false);  // cannot suppress exploded view since new parts are created
             _model.Mesh.CreatePartsFromElementSets(elementSetNames, out modifiedParts, out newParts);
             ApplyExplodedView(parameters, null, false);
@@ -7603,7 +7613,7 @@ namespace PrePoMax
             // Section view
             _sectionViews.RemoveCurrentSectionView();
             // Exploded view
-
+            _explodedViews.RemoveCurrentExplodedView();
             // Annotations
             _annotations.RemoveCurrentResultArrowAnnotations();
             // Transformations
@@ -7751,7 +7761,7 @@ namespace PrePoMax
             ResultPart newResultPart;
             ViewGeometryModelResults view = ViewGeometryModelResults.Results;
             //
-            ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
+            ExplodedViewParameters parameters = _explodedViews.GetCurrentExplodedViewParameters().DeepClone();
             RemoveExplodedView(false);
             // Remove annotations
             _annotations.RemoveCurrentArrowAnnotationsByParts(partNames, view);

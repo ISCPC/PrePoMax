@@ -87,6 +87,12 @@ namespace CaeResults
             }
             return null;
         }
+        public FeResults GetResult(string name)
+        {
+            FeResults result;
+            _results.TryGetValue(name, out result);
+            return result;
+        }
         public bool ContainsResult(string name)
         {
             return _results.ContainsKey(name);
