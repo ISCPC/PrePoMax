@@ -7602,6 +7602,8 @@ namespace PrePoMax
         {
             // Section view
             _sectionViews.RemoveCurrentSectionView();
+            // Exploded view
+
             // Annotations
             _annotations.RemoveCurrentResultArrowAnnotations();
             // Transformations
@@ -13336,6 +13338,19 @@ namespace PrePoMax
                 node.X = coor[0][0];
                 node.Y = coor[0][1];
                 node.Z = coor[0][2];
+                // Exploded view
+                if (IsExplodedViewActive())
+                {
+                    int[] partIds = _allResults.CurrentResult.Mesh.GetPartIdsByNodeIds(new int[] { nodeId });
+                    if (partIds != null && partIds.Length == 1)
+                    {
+                        BasePart part = _allResults.CurrentResult.Mesh.GetPartById(partIds[0]);
+                        node.X += part.Offset[0];
+                        node.Y += part.Offset[1];
+                        node.Z += part.Offset[2];
+                    }
+                }
+                //
                 return node;
             }
             return new FeNode();
@@ -13356,6 +13371,23 @@ namespace PrePoMax
                 //
                 FeNode[] nodes = new FeNode[nodeIds.Length];
                 for (int i = 0; i < nodes.Length; i++) nodes[i] = new FeNode(nodeIds[i], coor[i]);
+                // Exploded view
+                if (IsExplodedViewActive())
+                {
+                    int[] partIds = _allResults.CurrentResult.Mesh.GetPartIdsByNodeIds(nodeIds);
+                    if (partIds != null && partIds.Length == 1)
+                    {
+                        BasePart part = _allResults.CurrentResult.Mesh.GetPartById(partIds[0]);
+                        for (int i = 0; i < nodes.Length; i++)
+                        {
+                            nodes[i].X += part.Offset[0];
+                            nodes[i].Y += part.Offset[1];
+                            nodes[i].Z += part.Offset[2];
+                        }
+                    }
+                    else throw new NotSupportedException();
+                }
+                //
                 return nodes;
             }
             return new FeNode[0];

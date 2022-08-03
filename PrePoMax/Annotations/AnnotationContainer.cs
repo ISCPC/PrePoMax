@@ -185,6 +185,8 @@ namespace PrePoMax
         }
         public void SuppressCurrentAnnotations()
         {
+            RemoveCurrentMeasureAnnotation();   // measure annotations cannot be suppressed
+            //
             foreach (var entry in GetCurrentAnnotations()) entry.Value.Visible = false;
             //
             DrawAnnotations();
