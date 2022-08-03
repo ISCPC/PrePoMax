@@ -1207,6 +1207,7 @@ namespace PrePoMax
                 //                      Buttons                                                         
                 tsbSectionView.Checked = _controller.IsSectionViewActive();
                 tsbExplodedView.Checked = _controller.IsExplodedViewActive();
+                tsbTransformation.Checked = _controller.AreTransformationsActive();
                 //
                 _vtk.Visible = vtkVisible;
             });
@@ -7261,7 +7262,7 @@ namespace PrePoMax
         {
             InvokeIfRequired(() => { tsbExplodedView.Checked = status; });
         }
-        // Transforms
+        // Transformations
         public void AddSymmetry(int symmetryPlane, double[] symmetryPoint)
         {
             InvokeIfRequired(_vtk.AddSymmetry, symmetryPlane, symmetryPoint);
@@ -7274,9 +7275,13 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.AddCircularPattern, axisPoint, axisNormal, angle, numOfItems);
         }
-        public void ApplyTransforms()
+        public void ApplyTransformations()
         {
             InvokeIfRequired(_vtk.ApplyTransforms);
+        }
+        public void SetTransformationsStatus(bool status)
+        {
+            InvokeIfRequired(() => { tsbTransformation.Checked = status; });
         }
         //
         public void Add3DNodes(vtkControl.vtkMaxActorData actorData)

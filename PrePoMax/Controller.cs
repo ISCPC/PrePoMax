@@ -44,7 +44,7 @@ namespace PrePoMax
         // Results
         [NonSerialized] protected ViewResultsType _viewResultsType;
         [NonSerialized] protected FieldData _currentFieldData;
-        [NonSerialized] protected List<Transformation> _transformations;
+        [NonSerialized] protected TransformationsCollection _transformations;
         // Errors
         [NonSerialized] protected List<string> _errors;
         //
@@ -237,6 +237,10 @@ namespace PrePoMax
         {
             return _allResults.CurrentResult.GetFieldUnitAbbrevation(CurrentFieldData.Name, CurrentFieldData.Component);
         }
+        public bool AreTransformationsActive()
+        {
+            return _transformations.AreTransformationsActive();
+        }
         // Errors
         public int GetNumberOfErrors()
         {
@@ -338,9 +342,12 @@ namespace PrePoMax
             _explodedViewParameters.Add(ViewGeometryModelResults.Results, new ExplodedViewParameters());
             // Selection
             _selection = new Selection();
+            // Annotations
+            _annotations = new AnnotationContainer(this);
             // Results
             _allResults = new ResultsCollection();  // must be first
             ViewResultsType = ViewResultsType.ColorContours;
+            _transformations = new TransformationsCollection(this);
             // Errors - must be here before Clear
             _errors = new List<string>();
             // History
@@ -349,8 +356,6 @@ namespace PrePoMax
             _commands.ModelChanged_ResetJobStatus = ResetAllJobStatus;
             _commands.EnableDisableUndoRedo += _commands_CommandExecuted;
             _commands.OnEnableDisableUndoRedo();
-            // Annotations
-            _annotations = new AnnotationContainer(this);
             // Clear
             Clear();
             // Settings - must follow Clear to load the Opened file name
@@ -7562,13 +7567,27 @@ namespace PrePoMax
 
         public List<Transformation> GetTransformations()
         {
-            return _transformations;
+            return _transformations.GetCurrentTransformations();
         }
         public void SetTransformations(List<Transformation> transformations)
         {
-            _transformations = transformations;
+            _transformations.SetCurrentTransformations(transformations);
             //
-            if (_currentView == ViewGeometryModelResults.Results) DrawResults(false);
+            if (_currentView == ViewGeometryModelResults.Results)
+            {
+                _form.SetTransformationsStatus(_transformations.AreTransformationsActive());
+                DrawResults(false);
+            }
+        }
+        public void RemoveCurrentTransformations(bool update)
+        {
+            _transformations.RemoveCurrentTransformations();
+            //
+            if (update && _currentView == ViewGeometryModelResults.Results)
+            {
+                _form.SetTransformationsStatus(_transformations.AreTransformationsActive());
+                DrawResults(false);
+            }
         }
         public void SetResults(FeResults results)
         {
@@ -7585,6 +7604,9 @@ namespace PrePoMax
             _sectionViews.RemoveCurrentSectionView();
             // Annotations
             _annotations.RemoveCurrentResultArrowAnnotations();
+            // Transformations
+            _transformations.RemoveCurrentTransformations();
+            // Results
             _allResults.RemoveCurrentResult();
             //
             _modelChanged = true;
@@ -13263,9 +13285,10 @@ namespace PrePoMax
         }        
         private void ApplyTransformation()
         {
-            if (_transformations != null && _transformations.Count >= 1)
+            List<Transformation> transformations = _transformations.GetCurrentTransformations();
+            if (transformations != null && transformations.Count >= 1)
             {
-                foreach (var transformation in _transformations)
+                foreach (var transformation in transformations)
                 {
                     if (transformation is Symmetry sym)
                     {
@@ -13281,7 +13304,7 @@ namespace PrePoMax
                     }
                     else throw new NotSupportedException();
                 }
-                _form.ApplyTransforms();
+                _form.ApplyTransformations();
             }
         }
         //
