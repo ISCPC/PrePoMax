@@ -32,7 +32,7 @@ namespace PrePoMax
         // View
         [NonSerialized] protected ViewGeometryModelResults _currentView;
         [NonSerialized] protected string _drawSymbolsForStep;
-        [NonSerialized] protected Dictionary<ViewGeometryModelResults, Octree.Plane> _sectionViewPlanes;
+        [NonSerialized] protected SectionViewsCollection _sectionViews;
         [NonSerialized] protected Dictionary<ViewGeometryModelResults, ExplodedViewParameters> _explodedViewParameters;
         [NonSerialized] protected AnnotateWithColorEnum _annotateWithColor;
         // Selection
@@ -138,11 +138,11 @@ namespace PrePoMax
         //
         public bool IsSectionViewActive()
         {
-            return _sectionViewPlanes[_currentView] != null;
+            return _sectionViews.IsSectionViewActive();
         }
         public Octree.Plane GetSectionViewPlane()
         {
-            return _sectionViewPlanes[_currentView];
+            return _sectionViews.GetCurrentSectionViewPlane();
         }
         public bool IsExplodedViewActive()
         {
@@ -330,10 +330,7 @@ namespace PrePoMax
             // Jobs
             _jobs = new OrderedDictionary<string, AnalysisJob>();
             // Section view
-            _sectionViewPlanes = new Dictionary<ViewGeometryModelResults, Octree.Plane>();
-            _sectionViewPlanes.Add(ViewGeometryModelResults.Geometry, null);
-            _sectionViewPlanes.Add(ViewGeometryModelResults.Model, null);
-            _sectionViewPlanes.Add(ViewGeometryModelResults.Results, null);
+            _sectionViews = new SectionViewsCollection(this);
             // Exploded view
             _explodedViewParameters = new Dictionary<ViewGeometryModelResults, ExplodedViewParameters>();
             _explodedViewParameters.Add(ViewGeometryModelResults.Geometry, new ExplodedViewParameters());
@@ -459,8 +456,7 @@ namespace PrePoMax
         public void ClearModel()
         {
             // Section view
-            _sectionViewPlanes[ViewGeometryModelResults.Geometry] = null;
-            _sectionViewPlanes[ViewGeometryModelResults.Model] = null;
+            _sectionViews.ClearModelSectionViews();
             // Exploded view
             _explodedViewParameters[ViewGeometryModelResults.Geometry] = new ExplodedViewParameters();
             _explodedViewParameters[ViewGeometryModelResults.Model] = new ExplodedViewParameters();
@@ -478,9 +474,11 @@ namespace PrePoMax
         public void ClearResults()
         {
             // Section view
-            _sectionViewPlanes[ViewGeometryModelResults.Results] = null;
+            _sectionViews.ClearAllResultsSectionViews();
             // Exploded view
             _explodedViewParameters[ViewGeometryModelResults.Results] = new ExplodedViewParameters();
+            // Annotations
+            _annotations.RemoveAllResultArrowAnnotations();
             //
             if (_allResults.Count > 0)
             {
@@ -1765,17 +1763,17 @@ namespace PrePoMax
         // Section view
         public void ApplySectionView(double[] point, double[] normal)
         {
-            _sectionViewPlanes[_currentView] = new Octree.Plane(point, normal);
+            _sectionViews.SetCurrentSectionViewPlane(point, normal);
             _form.ApplySectionView(point, normal);
         }
         public void UpdateSectionView(double[] point, double[] normal)
         {
-            _sectionViewPlanes[_currentView].SetPointAndNormal(point, normal);
+            _sectionViews.SetCurrentPointAndNormal(point, normal);
             _form.UpdateSectionView(point, normal);
         }
         public void RemoveSectionView()
         {
-            _sectionViewPlanes[_currentView] = null;
+            _sectionViews.RemoveCurrentSectionView();
             _form.RemoveSectionView();
         }        
         //
@@ -7581,9 +7579,15 @@ namespace PrePoMax
             if (ResultsInitialized)
                 _currentFieldData = _allResults.CurrentResult.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
         }
-        public void CloseCurrentResult()
+        public void RemoveCurrentResult()
         {
+            // Section view
+            _sectionViews.RemoveCurrentSectionView();
+            // Annotations
+            _annotations.RemoveCurrentResultArrowAnnotations();
             _allResults.RemoveCurrentResult();
+            //
+            _modelChanged = true;
         }
 
         #endregion #################################################################################################################
@@ -9401,7 +9405,7 @@ namespace PrePoMax
                             AnnotateWithColorLegend();
                             _annotations.DrawAnnotations();
                             //
-                            Octree.Plane plane = _sectionViewPlanes[_currentView];
+                            Octree.Plane plane = _sectionViews.GetCurrentSectionViewPlane();
                             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
                         }
                         UpdateHighlight();
@@ -9515,7 +9519,7 @@ namespace PrePoMax
                                 DrawSymbols();
                                 _annotations.DrawAnnotations();
                                 //
-                                Octree.Plane plane = _sectionViewPlanes[_currentView];
+                                Octree.Plane plane = _sectionViews.GetCurrentSectionViewPlane();
                                 if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
                             }
                             catch { }
@@ -9921,7 +9925,7 @@ namespace PrePoMax
                             if (_currentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
                             DrawSymbols();
                             //
-                            Octree.Plane plane = _sectionViewPlanes[_currentView];
+                            Octree.Plane plane = _sectionViews.GetCurrentSectionViewPlane();
                             if (plane != null)
                             {
                                 RemoveSectionView();
@@ -12827,7 +12831,7 @@ namespace PrePoMax
                     // Annotations
                     _annotations.DrawAnnotations();
                     // Section view
-                    Octree.Plane plane = _sectionViewPlanes[_currentView];
+                    Octree.Plane plane = _sectionViews.GetCurrentSectionViewPlane();
                     if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
                     //
                     UpdateHighlight();
@@ -12981,7 +12985,7 @@ namespace PrePoMax
             // Annotations
             _annotations.DrawAnnotations(true);
             // Section view
-            Octree.Plane plane = _sectionViewPlanes[_currentView];
+            Octree.Plane plane = _sectionViews.GetCurrentSectionViewPlane();
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
             // Animation field data
             float[] time = new float[numFrames];
@@ -13059,7 +13063,7 @@ namespace PrePoMax
             // Annotations
             _annotations.DrawAnnotations(true);
             // Section view
-            Octree.Plane plane = _sectionViewPlanes[_currentView];
+            Octree.Plane plane = _sectionViews.GetCurrentSectionViewPlane();
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
             // Animation field data
             var existingIncrements =
@@ -13204,7 +13208,7 @@ namespace PrePoMax
             // Settings                                                              
             SetPostLegendAndStatusBlockSettings();
             //
-            Octree.Plane plane = _sectionViewPlanes[_currentView];
+            Octree.Plane plane = _sectionViews.GetCurrentSectionViewPlane();
             if (plane != null) RemoveSectionView();
             //
             foreach (var entry in _allResults.CurrentResult.Mesh.Parts)

@@ -18,7 +18,10 @@ namespace PrePoMax
         //
         private Dictionary<string, AnnotationBase> _geometryAnnotations;
         private Dictionary<string, AnnotationBase> _modelAnnotations;
-        private Dictionary<string, AnnotationBase> _resultsAnnotations;
+        private Dictionary<string, Dictionary<string, AnnotationBase>> _allResultsAnnotations;
+
+        // Properties                                                                                                               
+        public string CurrentResultName { get { return AnnotationBase.Controller.AllResults.GetCurrentResultName(); } }
 
 
         // Constructors                                                                                                             
@@ -28,7 +31,7 @@ namespace PrePoMax
             //
             _geometryAnnotations = new Dictionary<string, AnnotationBase>();
             _modelAnnotations = new Dictionary<string, AnnotationBase>();
-            _resultsAnnotations = new Dictionary<string, AnnotationBase>();
+            _allResultsAnnotations = new Dictionary<string, Dictionary<string, AnnotationBase>>();
         }
         public AnnotationContainer(AnnotationContainer annotationContainer, Controller controller)
         {
@@ -38,13 +41,15 @@ namespace PrePoMax
             {
                 _geometryAnnotations = new Dictionary<string, AnnotationBase>();
                 _modelAnnotations = new Dictionary<string, AnnotationBase>();
-                _resultsAnnotations = new Dictionary<string, AnnotationBase>();
+                _allResultsAnnotations = new Dictionary<string, Dictionary<string, AnnotationBase>>();
             }
             else
             {
                 _geometryAnnotations = annotationContainer._geometryAnnotations;
                 _modelAnnotations = annotationContainer._modelAnnotations;
-                _resultsAnnotations = annotationContainer._resultsAnnotations;
+                _allResultsAnnotations = annotationContainer._allResultsAnnotations;
+                if (_allResultsAnnotations == null)
+                    _allResultsAnnotations = new Dictionary<string, Dictionary<string, AnnotationBase>>(); // compatibility v1.3.4
             }
         }
 
@@ -74,7 +79,7 @@ namespace PrePoMax
             List<string> allNames = new List<string>();
             allNames.AddRange(_geometryAnnotations.Keys);
             allNames.AddRange(_modelAnnotations.Keys);
-            allNames.AddRange(_resultsAnnotations.Keys);
+            foreach (var entry in _allResultsAnnotations) allNames.AddRange(entry.Value.Keys);
             return allNames.ToArray();
         }
         //
@@ -117,13 +122,18 @@ namespace PrePoMax
         }
         public Dictionary<string, AnnotationBase> GetCurrentAnnotations()
         {
-            return GetAnnotations(AnnotationBase.Controller.CurrentView);
+            return GetAnnotations(AnnotationBase.Controller.CurrentView, CurrentResultName);
         }
-        public Dictionary<string, AnnotationBase> GetAnnotations(ViewGeometryModelResults view)
+        public Dictionary<string, AnnotationBase> GetAnnotations(ViewGeometryModelResults view, string resultName)
         {
             if (view == ViewGeometryModelResults.Geometry) return _geometryAnnotations;
             else if (view == ViewGeometryModelResults.Model) return _modelAnnotations;
-            else if (view == ViewGeometryModelResults.Results) return _resultsAnnotations;
+            else if (view == ViewGeometryModelResults.Results && resultName != null)
+            {
+                if (!_allResultsAnnotations.ContainsKey(resultName))
+                    _allResultsAnnotations.Add(resultName, new Dictionary<string, AnnotationBase>());
+                return _allResultsAnnotations[resultName];
+            }
             else throw new NotSupportedException();
         }
         //
@@ -264,7 +274,7 @@ namespace PrePoMax
             {
                 foreach (var part in parts) partIds.Add(part.PartId);
                 //
-                annotations = GetAnnotations(view);
+                annotations = GetAnnotations(view, CurrentResultName);
                 List<AnnotationBase> annotationsToRemove = new List<AnnotationBase>();
                 foreach (var entry in annotations)
                 {
@@ -301,11 +311,29 @@ namespace PrePoMax
             //
             AnnotationBase.Controller.ModelChanged = true;
         }
+        public void RemoveCurrentResultArrowAnnotations()
+        {
+            Dictionary<string, AnnotationBase> resultAnnotations;
+            if (_allResultsAnnotations.TryGetValue(CurrentResultName, out resultAnnotations))
+            {
+                AnnotationBase.Controller.Form.RemoveArrowWidgets(resultAnnotations.Keys.ToArray());
+                //
+                _allResultsAnnotations.Remove(CurrentResultName);
+                //
+                AnnotationBase.Controller.ModelChanged = true;
+            }
+        }
+        public void RemoveAllResultArrowAnnotations()
+        {
+            _allResultsAnnotations.Clear();
+            //
+            AnnotationBase.Controller.ModelChanged = true;
+        }
         public void RemoveAllArrowAnnotations()
         {
             _geometryAnnotations.Clear();
             _modelAnnotations.Clear();
-            _resultsAnnotations.Clear();
+            _allResultsAnnotations.Clear();
             //
             AnnotationBase.Controller.ModelChanged = true;
         }

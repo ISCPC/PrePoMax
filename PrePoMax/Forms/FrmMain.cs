@@ -1767,7 +1767,7 @@ namespace PrePoMax
                 if (_controller.AllResults.Count <= 1) tsmiCloseAllResults_Click(null, null);
                 else
                 {
-                    _controller.CloseCurrentResult();
+                    _controller.RemoveCurrentResult();
                     SetResultNames();
                     if (tscbResultNames.SelectedItem != null) SetResult(tscbResultNames.SelectedItem.ToString());
                 }
@@ -6749,7 +6749,8 @@ namespace PrePoMax
                 SelectFirstComponentOfFirstFieldOutput();
                 //
                 _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
-                                                                              //
+                //
+                SetMenuAndToolStripVisibility();
                 //tsmiZoomToFit_Click(null, null);    // different results have different views
             }
         }

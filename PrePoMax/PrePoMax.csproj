@@ -581,6 +581,7 @@
     <Compile Include="Globals.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SectionViewsCollection.cs" />
     <Compile Include="Selection\ItemSet\ItemSetData.cs">
       <SubType>Code</SubType>
     </Compile>
