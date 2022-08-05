@@ -4293,7 +4293,7 @@ namespace PrePoMax
             //
             _model.Mesh.NodeSets.Replace(oldNodeSetName, nodeSet.Name, nodeSet);
             //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldNodeSetName, nodeSet, null);
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldNodeSetName, nodeSet, null, feModelUpdate);
             //
             UpdateSurfacesBasedOnNodeSet(nodeSet.Name);
             UpdateReferencePointsBasedOnNodeSet(nodeSet.Name);
@@ -4363,13 +4363,11 @@ namespace PrePoMax
                     if (entry.Value.CreationData != null && entry.Value.CreationData.IsGeometryBased())
                         geomNodeSets.Add(entry.Value);
                 }
-                if (geomNodeSets.Count > 0)
+                //
+                foreach (FeNodeSet nodeSet in geomNodeSets)
                 {
-                    foreach (FeNodeSet nodeSet in geomNodeSets)
-                    {
-                        nodeSet.Valid = true;
-                        ReplaceNodeSet(nodeSet.Name, nodeSet, feModelUpdate);
-                    }
+                    nodeSet.Valid = true;
+                    ReplaceNodeSet(nodeSet.Name, nodeSet, feModelUpdate);
                 }
             }
         }
@@ -4609,7 +4607,7 @@ namespace PrePoMax
         private void UpdateElementSetsBasedOnGeometry(bool feModelUpdate)
         {
             // Use list not to throw collection moddified exception
-            List<CaeMesh.FeElementSet> geomElementSets = new List<FeElementSet>();
+            List<FeElementSet> geomElementSets = new List<FeElementSet>();
             if (_model != null && _model.Mesh != null)
             {
                 foreach (var entry in _model.Mesh.ElementSets)
@@ -4617,13 +4615,11 @@ namespace PrePoMax
                     if (entry.Value.CreationData != null && entry.Value.CreationData.IsGeometryBased())
                         geomElementSets.Add(entry.Value);
                 }
-                if (geomElementSets.Count > 0)
+                //
+                foreach (FeElementSet elementSet in geomElementSets)
                 {
-                    foreach (FeElementSet elementSet in geomElementSets)
-                    {
-                        elementSet.Valid = true;
-                        ReplaceElementSet(elementSet.Name, elementSet, feModelUpdate);
-                    }
+                    elementSet.Valid = true;
+                    ReplaceElementSet(elementSet.Name, elementSet, feModelUpdate);
                 }
             }
         }
@@ -4795,7 +4791,7 @@ namespace PrePoMax
             keys.Insert(index, surface.Name);
             _model.Mesh.Surfaces.SortKeysAs(keys);
             //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSurfaceName, surface, null);
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSurfaceName, surface, null, feModelUpdate);
             //
             UpdateReferencePointsBasedOnSurface(surface.Name);
             //
@@ -4864,8 +4860,8 @@ namespace PrePoMax
         }
         private void UpdateSurfacesBasedOnGeometry(bool feModelUpdate)
         {
-            // use list not to throw collection moddified exception
-            List<CaeMesh.FeSurface> geomSurfaces = new List<FeSurface>();
+            // Use list not to throw collection moddified exception
+            List<FeSurface> geomSurfaces = new List<FeSurface>();
             if (_model != null && _model.Mesh != null)
             {
                 foreach (var entry in _model.Mesh.Surfaces)
@@ -4873,13 +4869,11 @@ namespace PrePoMax
                     if (entry.Value.CreationData != null && entry.Value.CreationData.IsGeometryBased())
                         geomSurfaces.Add(entry.Value);
                 }
-                if (geomSurfaces.Count > 0)
+                //
+                foreach (FeSurface surface in geomSurfaces)
                 {
-                    foreach (FeSurface surface in geomSurfaces)
-                    {
-                        surface.Valid = true;
-                        ReplaceSurface(surface.Name, surface, feModelUpdate);
-                    }
+                    surface.Valid = true;
+                    ReplaceSurface(surface.Name, surface, feModelUpdate);
                 }
             }
         }

@@ -3625,7 +3625,7 @@ namespace CaeMesh
         }
         public void RenumberElements(int startId = 0)
         {
-            Dictionary<int, int> newIds = new Dictionary<int, int>();
+            Dictionary<int, int> oldIdnewId = new Dictionary<int, int>();
             Dictionary<int, FeElement> renumberedElements = new Dictionary<int, FeElement>();
             int oldId;
             int newId = startId;
@@ -3636,7 +3636,7 @@ namespace CaeMesh
                 newElement = entry.Value;
                 oldId = entry.Key;
                 //
-                newIds.Add(oldId, newId);
+                oldIdnewId.Add(oldId, newId);
                 newElement.Id = newId;
                 renumberedElements.Add(newId, newElement);
                 //
@@ -3653,7 +3653,7 @@ namespace CaeMesh
                 //
                 for (int i = 0; i < elementSet.Labels.Length; i++)
                 {
-                    elementSet.Labels[i] = newIds[elementSet.Labels[i]];
+                    elementSet.Labels[i] = oldIdnewId[elementSet.Labels[i]];
                 }
                 // Renumber selection
                 if (elementSet.CreationData != null)
@@ -3664,9 +3664,26 @@ namespace CaeMesh
                         {
                             for (int i = 0; i < snids.ItemIds.Length; i++)
                             {
-                                snids.ItemIds[i] = newIds[snids.ItemIds[i]];
+                                snids.ItemIds[i] = oldIdnewId[snids.ItemIds[i]];
                             }
                         }
+                    }
+                }
+            }
+            // Renumebr surface faceIds
+            int faceId;
+            FeSurface surface;
+            foreach (var entry in _surfaces)
+            {
+                surface = entry.Value;
+                if (surface.FaceIds != null)
+                {
+                    for (int i = 0; i < surface.FaceIds.Length; i++)
+                    {
+                        faceId = surface.FaceIds[i] % 10;
+                        oldId = surface.FaceIds[i] / 10;
+                        newId = oldIdnewId[oldId];
+                        surface.FaceIds[i] = newId * 10 + faceId;
                     }
                 }
             }
@@ -3677,10 +3694,10 @@ namespace CaeMesh
                 part = entry.Value;
                 for (int i = 0; i < part.Labels.Length; i++)
                 {
-                    part.Labels[i] = newIds[part.Labels[i]];
+                    part.Labels[i] = oldIdnewId[part.Labels[i]];
                 }
                 // Renumber 3D part's visualization cells
-                part.RenumberVisualizationElements(newIds);
+                part.RenumberVisualizationElements(oldIdnewId);
             }
         }
         public void RenumberParts(int startId = 0)

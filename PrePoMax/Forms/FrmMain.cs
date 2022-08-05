@@ -119,7 +119,7 @@ namespace PrePoMax
                 }
                 //
                 SetMenuAndToolStripVisibility();
-                //
+                // This calls the saved action
                 _edgeVisibilities[_controller.CurrentView](null, null);
                 //
                 this.ActiveControl = null;
