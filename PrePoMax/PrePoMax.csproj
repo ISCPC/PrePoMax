@@ -109,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collections\ExplodedViewsCollection.cs" />
+    <Compile Include="Collections\EdgesVisibilitiesCollection.cs" />
     <Compile Include="Collections\TransformationsCollection.cs" />
     <Compile Include="Command\0000_File\CSaveToPmx.cs" />
     <Compile Include="Command\0000_File\CImportFile.cs" />
@@ -862,6 +863,10 @@
     <None Include="Icons\Tools\Query.ico" />
     <None Include="Icons\Tools\Clear_query.ico" />
     <None Include="Icons\Tools\Remove_annotations.ico" />
+    <None Include="Icons\Results\Undeformed_Wireframe.ico" />
+    <None Include="Icons\Results\Undeformed_Solid.ico" />
+    <None Include="Icons\Step\Field_output.ico" />
+    <None Include="Icons\Step\History_output.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

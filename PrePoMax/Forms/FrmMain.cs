@@ -30,7 +30,6 @@ namespace PrePoMax
         private Controller _controller;
         private string[] _args;
         private string[] outputLines;
-        private Dictionary<ViewGeometryModelResults, Action<object, EventArgs>> _edgeVisibilities; // save display style
         private AdvisorControl _advisorControl;
         private KeyboardHook _keyboardHook;
         //
@@ -120,9 +119,24 @@ namespace PrePoMax
                 //
                 SetMenuAndToolStripVisibility();
                 // This calls the saved action
-                _edgeVisibilities[_controller.CurrentView](null, null);
+                SetCurrentEdgesVisibilities(_controller.CurrentEdgesVisibility);    // highlights selected buttons
                 //
                 this.ActiveControl = null;
+            });
+        }
+        public void SetCurrentEdgesVisibilities(vtkControl.vtkEdgesVisibility edgesVisibility)
+        {
+            InvokeIfRequired(() =>
+            {
+                // Highlight selected buttons
+                tsbShowWireframeEdges.Checked = edgesVisibility == vtkControl.vtkEdgesVisibility.Wireframe;
+                tsbShowElementEdges.Checked = edgesVisibility == vtkControl.vtkEdgesVisibility.ElementEdges;
+                tsbShowModelEdges.Checked = edgesVisibility == vtkControl.vtkEdgesVisibility.ModelEdges;
+                tsbShowNoEdges.Checked = edgesVisibility == vtkControl.vtkEdgesVisibility.NoEdges;
+                //
+                _vtk.EdgesVisibility = edgesVisibility;
+                //
+                UpdateHighlight();
             });
         }
         public bool ScreenUpdating { get { return _modelTree.ScreenUpdating; } set { _modelTree.ScreenUpdating = value; } }
@@ -163,10 +177,6 @@ namespace PrePoMax
             _controller = null;
             _modelTree = null;
             _args = args;
-            _edgeVisibilities = new Dictionary<ViewGeometryModelResults, Action<object, EventArgs>>();
-            _edgeVisibilities.Add(ViewGeometryModelResults.Geometry, tsmiShowModelEdges_Click);
-            _edgeVisibilities.Add(ViewGeometryModelResults.Model, tsmiShowElementEdges_Click);
-            _edgeVisibilities.Add(ViewGeometryModelResults.Results, tsmiShowElementEdges_Click);
             //
             MessageBoxes.ParentForm = this;
         }
@@ -2043,9 +2053,7 @@ namespace PrePoMax
         {
             try
             {
-                _edgeVisibilities[_controller.CurrentView] = tsmiShowWireframeEdges_Click;
-                //
-                SetEdgesVisibility(vtkControl.vtkEdgesVisibility.Wireframe);
+                _controller.CurrentEdgesVisibility = vtkControl.vtkEdgesVisibility.Wireframe;
             }
             catch { }
         }
@@ -2053,9 +2061,7 @@ namespace PrePoMax
         {
             try
             {
-                _edgeVisibilities[_controller.CurrentView] = tsmiShowElementEdges_Click;
-                //
-                SetEdgesVisibility(vtkControl.vtkEdgesVisibility.ElementEdges);
+                _controller.CurrentEdgesVisibility = vtkControl.vtkEdgesVisibility.ElementEdges;
             }
             catch { }
         }
@@ -2063,9 +2069,7 @@ namespace PrePoMax
         {
             try
             {
-                _edgeVisibilities[_controller.CurrentView] = tsmiShowModelEdges_Click;
-                //
-                SetEdgesVisibility(vtkControl.vtkEdgesVisibility.ModelEdges);
+                _controller.CurrentEdgesVisibility = vtkControl.vtkEdgesVisibility.ModelEdges;
             }
             catch { }
         }
@@ -2073,23 +2077,9 @@ namespace PrePoMax
         {
             try
             {
-                _edgeVisibilities[_controller.CurrentView] = tsmiShowNoEdges_Click;
-                //
-                SetEdgesVisibility(vtkControl.vtkEdgesVisibility.NoEdges);
+                _controller.CurrentEdgesVisibility = vtkControl.vtkEdgesVisibility.NoEdges;
             }
             catch { }
-        }
-        private void SetEdgesVisibility(vtkControl.vtkEdgesVisibility edgesVisibility)
-        {
-            _vtk.EdgesVisibility = edgesVisibility;
-            //
-            UpdateHighlight();
-
-            //if (_controller.Selection != null && _controller.Selection.Nodes.Count > 0)
-            //    _controller.HighlightSelection();
-            //else if (_frmSelectItemSet != null && !_frmSelectItemSet.Visible)   // null for the initiation
-            //    // if everything is deselectd in _frmSelectItemSet do not highlight from tree
-            //    _modelTree.UpdateHighlight();
         }
         //
         private void tsmiSectionView_Click(object sender, EventArgs e)
@@ -6753,6 +6743,7 @@ namespace PrePoMax
                 //
                 SetMenuAndToolStripVisibility();
                 //tsmiZoomToFit_Click(null, null);    // different results have different views
+                SetCurrentEdgesVisibilities(_controller.CurrentEdgesVisibility);
             }
         }
         private void ResizeResultNamesComboBox()
@@ -6850,6 +6841,21 @@ namespace PrePoMax
         }
         private void tsbResultsColorContours_Click(object sender, EventArgs e)
         {
+            _controller.SetUndeformedModelType(UndeformedModelTypeEnum.None);
+            //
+            tsmiResultsColorContours_Click(null, null);
+        }
+        private void tsbResultsUndeformedWireframe_Click(object sender, EventArgs e)
+        {
+            _controller.SetUndeformedModelType(UndeformedModelTypeEnum.WireframeBody);
+            //
+            tsmiResultsColorContours_Click(null, null);
+        }
+
+        private void tsbResultsUndeformedSolid_Click(object sender, EventArgs e)
+        {
+            _controller.SetUndeformedModelType(UndeformedModelTypeEnum.SolidBody);
+            //
             tsmiResultsColorContours_Click(null, null);
         }
         private void tsbTransformation_Click(object sender, EventArgs e)
@@ -8243,6 +8249,6 @@ namespace PrePoMax
             }
         }
 
-        
+       
     }
 }

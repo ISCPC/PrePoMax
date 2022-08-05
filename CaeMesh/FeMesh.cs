@@ -6,21 +6,16 @@ using System.Threading.Tasks;
 using CaeGlobals;
 using System.Runtime.Serialization;
 
-
 namespace CaeMesh
 {
     [Serializable]
     public class FeMesh : ISerializable
     {
         // Variables                                                                                                                
-        [NonSerialized]
-        private Dictionary<int, FeNode> _nodes;
-        [NonSerialized]
-        private Dictionary<int, FeElement> _elements;
-        [NonSerialized]
-        private Octree.PointOctree<int> _octree;
-        [NonSerialized]
-        private Dictionary<string, double[]> _partOffsets;
+        [NonSerialized] private Dictionary<int, FeNode> _nodes;
+        [NonSerialized] private Dictionary<int, FeElement> _elements;
+        [NonSerialized] private Octree.PointOctree<int> _octree;
+        [NonSerialized] private Dictionary<string, double[]> _partOffsets;
 
         private MeshRepresentation _meshRepresentation;                         //ISerializable
         private OrderedDictionary<string, FeMeshRefinement> _meshRefinements;   //ISerializable

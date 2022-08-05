@@ -103,6 +103,16 @@ namespace PrePoMax.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap Color_contours1 {
+            get {
+                object obj = ResourceManager.GetObject("Color_contours1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap Constraints {
             get {
                 object obj = ResourceManager.GetObject("Constraints", resourceCulture);
@@ -193,6 +203,16 @@ namespace PrePoMax.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap Field_output {
+            get {
+                object obj = ResourceManager.GetObject("Field_output", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap First {
             get {
                 object obj = ResourceManager.GetObject("First", resourceCulture);
@@ -206,6 +226,16 @@ namespace PrePoMax.Properties {
         public static System.Drawing.Bitmap Hide {
             get {
                 object obj = ResourceManager.GetObject("Hide", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap History_output {
+            get {
+                object obj = ResourceManager.GetObject("History_output", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -466,6 +496,26 @@ namespace PrePoMax.Properties {
         public static System.Drawing.Bitmap Undeformed {
             get {
                 object obj = ResourceManager.GetObject("Undeformed", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap Undeformed_Solid {
+            get {
+                object obj = ResourceManager.GetObject("Undeformed_Solid", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap Undeformed_Wireframe {
+            get {
+                object obj = ResourceManager.GetObject("Undeformed_Wireframe", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

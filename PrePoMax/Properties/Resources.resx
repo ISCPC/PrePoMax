@@ -130,14 +130,17 @@
   <data name="Stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Stop.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Right_arrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Common\Right_arrow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Color_contours1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Results\Color_contours.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Down_arrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Down_arrow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Show" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Show.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Transformations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Results\Transformations.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="NoResult" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Analysis\NoResult.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -154,11 +157,17 @@
   <data name="Defined_field" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Step\Defined_field.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Remove_annotations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Tools\Remove_annotations.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Load" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Step\Load.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Animate_backwards" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Animate_backwards.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Undeformed_Solid" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Results\Undeformed_Solid.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Up_arrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Up_arrow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -187,11 +196,11 @@
   <data name="Cut" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Cut.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Last" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Results\Last.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Left_arrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Left_arrow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="InvertHideShow" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Common\InvertHideShow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="SymbolsOff" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\View\SymbolsOff.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -199,8 +208,8 @@
   <data name="Hide" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Hide.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Warning" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Analysis\Warning.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Last" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Results\Last.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="SymbolsOn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\View\SymbolsOn.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -211,17 +220,23 @@
   <data name="Next" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Next.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Undeformed_Wireframe" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Results\Undeformed_Wireframe.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Bc" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Step\Bc.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Transformations" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Results\Transformations.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Right_arrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Common\Right_arrow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="InvertHideShow" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Common\InvertHideShow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Warning" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Analysis\Warning.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Undeformed" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Undeformed.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Field_output" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Step\Field_output.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Constraints" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Constraints\Constraints.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -244,7 +259,7 @@
   <data name="Color_contours" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Color_contours.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Remove_annotations" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Tools\Remove_annotations.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="History_output" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Step\History_output.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

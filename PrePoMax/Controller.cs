@@ -31,10 +31,11 @@ namespace PrePoMax
         [NonSerialized] protected bool _animating;
         // View
         [NonSerialized] protected ViewGeometryModelResults _currentView;
-        [NonSerialized] protected string _drawSymbolsForStep;
+        [NonSerialized] protected EdgesVisibilitiesCollection _edgesVisibilities;
         [NonSerialized] protected SectionViewsCollection _sectionViews;
         [NonSerialized] protected ExplodedViewsCollection _explodedViews;
         [NonSerialized] protected AnnotateWithColorEnum _annotateWithColor;
+        [NonSerialized] protected string _drawSymbolsForStep;
         // Selection
         [NonSerialized] protected vtkSelectBy _selectBy;
         [NonSerialized] protected double _selectAngle;
@@ -80,7 +81,7 @@ namespace PrePoMax
                 catch
                 { }
             }
-        }
+        }        
         public OrderedDictionary<string, AnalysisJob> Jobs { get { return _jobs; } }
         // States
         public bool ModelInitialized
@@ -122,20 +123,20 @@ namespace PrePoMax
                 }
             }
         }
-        public void DrawSymbolsForStep(string stepName, bool updateHighlight)
+        public vtkControl.vtkEdgesVisibility CurrentEdgesVisibility
         {
-            if (stepName != _drawSymbolsForStep)
+            get { return _edgesVisibilities.GetCurrentEdgesVisibility(); }
+            set
             {
-                _drawSymbolsForStep = stepName;
-                // Prevent the symbols from showing up first at: File open -> Regenerate tree
-                if (!_form.IsStateOpening()) RedrawSymbols(updateHighlight);
+                if (_edgesVisibilities.GetCurrentEdgesVisibility() != value)
+                {
+                    _edgesVisibilities.SetCurrentEdgesVisibility(value);
+                    _form.SetCurrentEdgesVisibilities(value);
+                }
             }
         }
-        public string GetDrawSymbolsForStep()
-        {
-            return _drawSymbolsForStep;
-        }
-        //
+        
+        // Section view
         public bool IsSectionViewActive()
         {
             return _sectionViews.IsSectionViewActive();
@@ -144,6 +145,7 @@ namespace PrePoMax
         {
             return _sectionViews.GetCurrentSectionViewPlane();
         }
+        // Exploded view
         public bool IsExplodedViewActive()
         {
             return _explodedViews.IsExplodedViewActive();
@@ -152,6 +154,7 @@ namespace PrePoMax
         {
             return _explodedViews.GetCurrentExplodedViewParameters();
         }
+        // Annotate
         public AnnotateWithColorEnum AnnotateWithColor
         {
             get { return _annotateWithColor; } 
@@ -165,6 +168,22 @@ namespace PrePoMax
                 //
                 Redraw();
             }
+        }
+        // Annotations
+        public AnnotationContainer Annotations { get { return _annotations; } }
+        // Symbols
+        public void DrawSymbolsForStep(string stepName, bool updateHighlight)
+        {
+            if (stepName != _drawSymbolsForStep)
+            {
+                _drawSymbolsForStep = stepName;
+                // Prevent the symbols from showing up first at: File open -> Regenerate tree
+                if (!_form.IsStateOpening()) RedrawSymbols(updateHighlight);
+            }
+        }
+        public string GetDrawSymbolsForStep()
+        {
+            return _drawSymbolsForStep;
         }
         // Selection
         public vtkSelectItem SelectItem
@@ -193,8 +212,6 @@ namespace PrePoMax
         }
         public double SelectAngle { get { return _selectAngle; } set { _selectAngle = value; } }
         public Selection Selection { get { return _selection; } set { _selection = value; } }
-        // Annotations
-        public AnnotationContainer Annotations { get { return _annotations; } }
         // Results
         public ResultsCollection AllResults { get { return _allResults; } }
         public FeResults CurrentResult { get { return _allResults.CurrentResult; } }
@@ -204,7 +221,7 @@ namespace PrePoMax
             set
             {
                 _viewResultsType = value;
-                // This is used by the model tree to show hide the Deformed and Color contour context menu lines
+                // This is used by the model tree to show/hide the Deformed and Color contour context menu lines
                 ResultPart.Undeformed = _viewResultsType == ViewResultsType.Undeformed;
                 //
                 if (_allResults.CurrentResult != null && _allResults.CurrentResult.Mesh != null)
@@ -333,14 +350,16 @@ namespace PrePoMax
             _form.Controller = this;
             // Jobs
             _jobs = new OrderedDictionary<string, AnalysisJob>();
+            // Edges visibilitires
+            _edgesVisibilities = new EdgesVisibilitiesCollection(this);
             // Section view
             _sectionViews = new SectionViewsCollection(this);
             // Exploded view
             _explodedViews = new ExplodedViewsCollection(this);
-            // Selection
-            _selection = new Selection();
             // Annotations
             _annotations = new AnnotationContainer(this);
+            // Selection
+            _selection = new Selection();
             // Results
             _allResults = new ResultsCollection();  // must be first
             ViewResultsType = ViewResultsType.ColorContours;
@@ -7197,6 +7216,11 @@ namespace PrePoMax
             _form.UpdateUnitSystem(_allResults.CurrentResult.UnitSystem); // model and results units systems can be different
         }
         //
+        public void SetUndeformedModelType(UndeformedModelTypeEnum undeformedModelType)
+        {
+            _settings.Post.UndeformedModelType = undeformedModelType;
+        }
+        //
         public void ApplySettings()
         {
             // Called on property Settings Set when the user changes the setting values
@@ -7604,6 +7628,8 @@ namespace PrePoMax
         }
         public void RemoveCurrentResult()
         {
+            // Edges visibility
+            _edgesVisibilities.RemoveCurrentResultEdgesVisibility();
             // Section view
             _sectionViews.RemoveCurrentSectionView();
             // Exploded view
