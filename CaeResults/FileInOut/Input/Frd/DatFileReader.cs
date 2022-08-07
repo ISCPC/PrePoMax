@@ -42,7 +42,7 @@ namespace CaeResults
         {
             if (fileName != null && File.Exists(fileName))
             {
-                string[] lines = Tools.GetLinesFromFile(fileName);
+                string[] lines = Tools.ReadAllLines(fileName);
                 //
                 List<string> dataSetNames = new List<string>();
                 // Nodal                                                                

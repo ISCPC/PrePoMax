@@ -114,7 +114,7 @@ namespace CaeResults
                                 try
                                 {
                                     GetField(resultFileName, sortedTime, globalIncrementId, stepId, cellIdNodeIds,
-                                             nodeIdsLookUp, nodeIdCellCount, out fieldData, out field);
+                                             nodeIdsLookUp, nodeIdCellCount, out fieldData, out field);                                    
                                     //
                                     if (field != null) result.AddFiled(fieldData, field);
                                 }
@@ -185,7 +185,14 @@ namespace CaeResults
                                 {
                                     GetField(resultFileName, time, globalIncrementId, stepId, cellIdNodeIds,
                                              nodeIdsLookUp, nodeIdCellCount, out fieldData, out field);
-                                    //
+                                    // Test
+                                    //double[] coor;
+                                    //float[] values = field.GetComponentValues("VAL");
+                                    //foreach (var entry in mesh.Nodes)
+                                    //{
+                                    //    coor = entry.Value.Coor;
+                                    //    values[nodeIdsLookUp[entry.Key]] = 2 - (float)coor[2];
+                                    //}
                                     if (field != null) result.AddFiled(fieldData, field);
                                 }
                             }
@@ -274,7 +281,7 @@ namespace CaeResults
         static private Dictionary<int, FeNode> GetNodes(string fileName, HashSet<int> allFaceNodeIds, 
                                                         out Dictionary<int, int> nodeIdsLookUp)
         {
-            string[] lines = Tools.GetLinesFromFile(fileName);
+            string[] lines = Tools.ReadAllLines(fileName);
             //
             int lineId = 0;
             lines = SkipCommentsAndEmptyLines(lines);
@@ -312,7 +319,7 @@ namespace CaeResults
         }
         static private HashSet<int> GetBoundaryFaceIds(string fileName)
         {
-            string[] lines = Tools.GetLinesFromFile(fileName);
+            string[] lines = Tools.ReadAllLines(fileName);
             //
             int lineId = 0;
             lines = SkipCommentsAndEmptyLines(lines);
@@ -379,7 +386,7 @@ namespace CaeResults
                                                                            out HashSet<int> allFaceNodeIds)
         {
             // Read only faces on the boundary
-            string[] lines = Tools.GetLinesFromFile(fileName);
+            string[] lines = Tools.ReadAllLines(fileName);
             //
             int lineId = 0;
             lines = SkipCommentsAndEmptyLines(lines);
@@ -440,7 +447,7 @@ namespace CaeResults
                                                                       Dictionary<int, HashSet<int>> faceIdNodeIds)
         {
             // Use only faces on the boundary
-            string[] lines = Tools.GetLinesFromFile(fileName);
+            string[] lines = Tools.ReadAllLines(fileName);
             //
             int lineId = 0;
             lines = SkipCommentsAndEmptyLines(lines);
@@ -516,7 +523,7 @@ namespace CaeResults
             //
             field = null;
             // Read file
-            string[] lines = Tools.GetLinesFromFile(fileName);
+            string[] lines = Tools.ReadAllLines(fileName);
             //
             int lineId = 0;
             lines = SkipCommentsAndEmptyLines(lines);

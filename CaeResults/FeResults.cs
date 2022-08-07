@@ -1453,6 +1453,7 @@ namespace CaeResults
                         int id;
                         float value;
                         BasePart basePart;
+                        bool firstNaN = true;
                         float[] values = fieldEntry.Value.GetComponentValues(fieldData.Component);
                         //
                         basePart = _mesh.Parts[partName];
@@ -1465,6 +1466,7 @@ namespace CaeResults
                             value = values[id];
                             if (!float.IsNaN(value))
                             {
+                                firstNaN = false;
                                 nodesData.Values[0] = value;
                                 nodesData.Values[1] = value;
                             }
@@ -1509,7 +1511,7 @@ namespace CaeResults
                         nodesData.Coor[0] = _mesh.Nodes[minId].Coor;
                         nodesData.Coor[1] = _mesh.Nodes[maxId].Coor;
                         // Values
-                        if (minId == maxId) // all values are NaN
+                        if (firstNaN && minId == maxId) // all values are NaN
                         {
                             nodesData.Values[0] = 0;
                             nodesData.Values[1] = 0;

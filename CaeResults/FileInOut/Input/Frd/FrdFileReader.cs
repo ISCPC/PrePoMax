@@ -48,7 +48,7 @@ namespace CaeResults
         {
             if (fileName != null && File.Exists(fileName))
             {
-                string[] lines = Tools.GetLinesFromFile(fileName);
+                string[] lines = Tools.ReadAllLines(fileName);
                 if (lines == null) return null;
                 //
                 List<string[]> dataSets = GetDataSets(lines);
@@ -320,7 +320,7 @@ namespace CaeResults
                 record1 = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                 id = int.Parse(record1[1]);
                 feDescriptorId = (FrdFeDescriptorId)int.Parse(record1[2]);
-                materialID = int.Parse(record1[4]);
+                //materialID = int.Parse(record1[4]);
                 //
                 switch (feDescriptorId)
                 {

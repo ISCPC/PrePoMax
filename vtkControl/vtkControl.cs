@@ -1728,7 +1728,7 @@ namespace vtkControl
             _scaleWidget = new vtkMaxScaleWidget();
             _scaleWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
             _scaleWidget.SetWidth(400);
-            _scaleWidget.SetHorizontallyRelativePosition(435, 0);
+            _scaleWidget.SetHorizontallyRelativePosition(320, 0);
             _scaleWidget.SetBorderColor(0, 0, 0);
             _scaleWidget.SetTextProperty(CreateNewTextProperty());
             _scaleWidget.SetPadding(5);

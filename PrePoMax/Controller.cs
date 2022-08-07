@@ -6925,6 +6925,29 @@ namespace PrePoMax
                     AddLoad(nextStepName, load);
             }
         }
+        public void PreviewLoad(string stepName, string loadName)
+        {
+            Load load = GetStep(stepName).Loads[loadName];
+            if (load != null)
+            {
+                FeResults results;
+                if (load is DLoad dl)
+                {
+                    results = dl.GetPreview(_model.Mesh, stepName + "_" + load, _model.UnitSystem.UnitSystemType);
+                }
+                else if (load is ImportedPressure ip)
+                {
+                    results = ip.GetPreview(_model.Mesh, stepName + "_" + load, _model.UnitSystem.UnitSystemType);
+                }
+                else if (load is HydrostaticPressure hp)
+                {
+                    results = hp.GetPreview(_model.Mesh, stepName + "_" + load, _model.UnitSystem.UnitSystemType);
+                }
+                else throw new NotSupportedException();
+                //
+                SetResults(results);
+            }
+        }
         public void HideLoads(string stepName, string[] loadNames)
         {
             foreach (var name in loadNames)

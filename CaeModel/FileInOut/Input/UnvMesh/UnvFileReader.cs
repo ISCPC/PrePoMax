@@ -22,7 +22,7 @@ namespace FileInOut.Input
         {
             if (fileName != null && File.Exists(fileName))
             {
-                string[] lines = File.ReadAllLines(fileName);
+                string[] lines = CaeGlobals.Tools.ReadAllLines(fileName);
                 //
                 List<List<string>> dataSets = GetDataSets(lines);
                 //

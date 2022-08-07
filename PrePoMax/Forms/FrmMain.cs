@@ -230,6 +230,7 @@ namespace PrePoMax
                 _modelTree.QueryEvent += ModelTree_Query;
                 _modelTree.DuplicateEvent += ModelTree_DuplicateEvent;
                 _modelTree.PropagateEvent += ModelTree_PropagateEvent;
+                _modelTree.PreviewEvent += ModelTree_PreviewEvent;
                 _modelTree.CreateCompoundPart += CreateAndImportCompoundPart;
                 _modelTree.SwapPartGeometries += SwapPartGeometries;
                 _modelTree.MeshingParametersEvent += GetSetMeshingParameters;
@@ -882,6 +883,19 @@ namespace PrePoMax
                 ApplyActionOnItemsInStep<BoundaryCondition>(items, stepNames, PropagateBoundaryCondition);
                 ApplyActionOnItemsInStep<Load>(items, stepNames, PropagateLoad);
                 ApplyActionOnItemsInStep<DefinedField>(items, stepNames, PropagateDefinedField);
+            }
+            else if (_controller.CurrentView == ViewGeometryModelResults.Results)
+            {
+            }
+        }
+        private void ModelTree_PreviewEvent(NamedClass[] items, string[] stepNames)
+        {
+            if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
+            {
+            }
+            else if (_controller.CurrentView == ViewGeometryModelResults.Model)
+            {
+                ApplyActionOnItemsInStep<Load>(items, stepNames, PreviewLoad);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
@@ -5121,6 +5135,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiPreviewLoad_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndPreviewLoad);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiHideLoad_Click(object sender, EventArgs e)
         {
             try
@@ -5162,6 +5187,10 @@ namespace PrePoMax
         private void SelectAndPropagateLoad(string stepName)
         {
             SelectOneEntityInStep("Loads", _controller.GetStepLoads(stepName), stepName, PropagateLoad);
+        }
+        private void SelectAndPreviewLoad(string stepName)
+        {
+            SelectOneEntityInStep("Loads", _controller.GetStepLoads(stepName), stepName, PreviewLoad);
         }
         private void SelectAndHideLoads(string stepName)
         {
@@ -5222,6 +5251,25 @@ namespace PrePoMax
                                                      + "?") == DialogResult.Cancel) propagate = false;
             }
             if (propagate) _controller.PropagateLoadCommand(stepName, loadName);
+        }
+        private void PreviewLoad(string stepName, string loadName)
+        {
+            _controller.PreviewLoad(stepName, loadName);
+            //
+            if (_controller.CurrentResult != null && _controller.CurrentResult.Mesh != null)
+            {
+                SetResultNames();
+                // Reset the previous step and increment
+                SetAllStepAndIncrementIds();
+                // Set last increment
+                SetDefaultStepAndIncrementIds();
+                // Show the selection in the results tree
+                SelectFirstComponentOfFirstFieldOutput();
+            }
+            // Set the representation which also calls Draw
+            _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+            //
+            SetMenuAndToolStripVisibility();
         }
         private void HideLoads(string stepName, string[] loadNames)
         {

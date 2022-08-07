@@ -190,7 +190,7 @@ namespace CaeGlobals
             }
             return true;
         }
-        public static string[] GetLinesFromFile(string fileName)
+        public static string[] ReadAllLines(string fileName)
         {
             long count;
             string[] lines = null;

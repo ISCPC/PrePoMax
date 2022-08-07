@@ -122,6 +122,80 @@ namespace CaeModel
                 _interpolator = new ResultsInterpolator(results.GetAllNodesCellsAndValues(pressureData));
             }
         }
+        public FeResults GetPreview(FeMesh targetMesh, string resultName, UnitSystemType unitSystemType)
+        {
+            ImportPressure();
+            //
+            PartExchangeData allData = new PartExchangeData();
+            targetMesh.GetAllNodesAndCells(out allData.Nodes.Ids, out allData.Nodes.Coor, out allData.Cells.Ids,
+                                           out allData.Cells.CellNodeIds, out allData.Cells.Types);
+            //
+            FeSurface surface = targetMesh.Surfaces[_surfaceName];
+            FeNodeSet nodeSet = targetMesh.NodeSets[surface.NodeSetName];
+            HashSet<int> nodeIds = new HashSet<int>(nodeSet.Labels);
+            //
+            double[] distance;
+            double value;
+            float[] distancesAll = new float[allData.Nodes.Coor.Length];
+            float[] distances1 = new float[allData.Nodes.Coor.Length];
+            float[] distances2 = new float[allData.Nodes.Coor.Length];
+            float[] distances3 = new float[allData.Nodes.Coor.Length];
+            float[] values = new float[allData.Nodes.Coor.Length];
+            //
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (nodeIds.Contains(allData.Nodes.Ids[i]))
+                {
+                    GetPressureAndDistanceForPoint(allData.Nodes.Coor[i], out distance, out value);
+                    distances1[i] = (float)distance[0];
+                    distances2[i] = (float)distance[1];
+                    distances3[i] = (float)distance[2];
+                    distancesAll[i] = (float)Math.Sqrt(distance[0] * distance[0] +
+                                                       distance[1] * distance[1] +
+                                                       distance[2] * distance[2]);
+                    values[i] = (float)value;
+                }
+                else
+                {
+                    distances1[i] = float.NaN;
+                    distances2[i] = float.NaN;
+                    distances3[i] = float.NaN;
+                    distancesAll[i] = float.NaN;
+                    values[i] = float.NaN;
+                }
+            }
+            //
+            Dictionary<int, int> nodeIdsLookUp = new Dictionary<int, int>();
+            for (int i = 0; i < allData.Nodes.Coor.Length; i++) nodeIdsLookUp.Add(allData.Nodes.Ids[i], i);
+            FeResults results = new FeResults(resultName);
+            results.SetMesh(targetMesh, nodeIdsLookUp);
+            // Add distances
+            FieldData fieldData = new FieldData(FOFieldNames.Distance);
+            fieldData.GlobalIncrementId = 1;
+            fieldData.Type = StepType.Static;
+            fieldData.Time = 1;
+            fieldData.MethodId = 1;
+            fieldData.StepId = 1;
+            fieldData.StepIncrementId = 1;
+            // Distances
+            Field field = new Field(fieldData.Name);
+            field.AddComponent(FOComponentNames.All, distancesAll);
+            field.AddComponent(FOComponentNames.D1, distances1);
+            field.AddComponent(FOComponentNames.D2, distances2);
+            field.AddComponent(FOComponentNames.D3, distances3);
+            results.AddFiled(fieldData, field);
+            // Add values
+            fieldData = new FieldData(fieldData);
+            fieldData.Name = FOFieldNames.Imported;
+            //
+            field = new Field(fieldData.Name);
+            field.AddComponent(FOComponentNames.PRESS, values);
+            results.AddFiled(fieldData, field);
+            // Unit system
+            results.UnitSystem = new UnitSystem(unitSystemType);
+            //
+            return results;
+        }
         public void GetPressureAndDistanceForPoint(double[] point, out double[] distance, out double value)
         {
             _interpolator.InterpolateAt(point, _interpolatorType, out distance, out value);

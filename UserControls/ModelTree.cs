@@ -28,6 +28,7 @@ namespace UserControls
         public int Query;
         public int Duplicate;
         public int Propagate;
+        public int Preview;
         //
         public int CompoundPart;
         public int SwapParts;
@@ -225,6 +226,7 @@ namespace UserControls
         public event Action QueryEvent;
         public event Action<NamedClass[]> DuplicateEvent;
         public event Action<NamedClass[], string[]> PropagateEvent;
+        public event Action<NamedClass[], string[]> PreviewEvent;
         public event Action<string[]> CreateCompoundPart;
         public event Action<string[]> SwapPartGeometries;
         public event Action<string[]> MeshingParametersEvent;
@@ -426,6 +428,10 @@ namespace UserControls
             visible = menuFields.Propagate == n;
             tsmiPropagate.Visible = visible;
             oneAboveVisible |= visible;
+            // Preview
+            visible = menuFields.Preview == n;
+            tsmiPreview.Visible = visible;
+            oneAboveVisible |= visible;
             //Geometry                                              
             visible = menuFields.CompoundPart == n && n > 1;
             tsmiSpaceCompoundPart.Visible = visible && oneAboveVisible;
@@ -582,6 +588,8 @@ namespace UserControls
             if (item != null && CanDuplicate(node)) menuFields.Duplicate++;
             //Propagate
             if (item != null && CanPropagate(node)) menuFields.Propagate++;
+            //Propagate
+            if (item != null && CanPreview(node)) menuFields.Preview++;
             // Geometry part - Geometry
             if (item != null && item is GeometryPart && GetActiveTree() == cltvGeometry)
             {
@@ -921,6 +929,38 @@ namespace UserControls
                     RenderingOff?.Invoke();
                     PropagateEvent?.Invoke(items.ToArray(), stepNames.ToArray());
                     RenderingOn?.Invoke();
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiPreview_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string stepName;
+                List<NamedClass> items = new List<NamedClass>();
+                List<string> stepNames = new List<string>();
+                //
+                foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
+                {
+                    if (selectedNode.Tag == null) continue;
+                    //
+                    stepName = null;
+                    if (selectedNode.Parent != null && selectedNode.Parent.Parent != null && selectedNode.Parent.Parent.Tag is Step)
+                        stepName = selectedNode.Parent.Parent.Text;
+                    //
+                    if (stepNames == null) continue;
+                    //
+                    items.Add((NamedClass)selectedNode.Tag);
+                    stepNames.Add(stepName);
+                }
+                //
+                if (items.Count > 0)
+                {
+                    PreviewEvent?.Invoke(items.ToArray(), stepNames.ToArray());
                 }
             }
             catch (Exception ex)
@@ -2717,6 +2757,13 @@ namespace UserControls
             else if (node.Tag is DefinedField) return true;
             else return false;
         }
+        private bool CanPreview(TreeNode node)
+        {
+            if (node.Tag is DLoad) return true;
+            else if (node.Tag is HydrostaticPressure) return true;
+            else if (node.Tag is ImportedPressure) return true;
+            else return false;
+        }
         private bool CanSearchContactPairs(TreeNode node)
         {
             if (node == _constraints) return true;
@@ -2778,7 +2825,5 @@ namespace UserControls
                 cmsTree.Show(control, x, y);
             }
         }
-
-       
     }
 }

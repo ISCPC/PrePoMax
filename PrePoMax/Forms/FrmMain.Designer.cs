@@ -345,6 +345,7 @@
             this.tsmiLoad = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateLoad = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditLoad = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiPreviewLoad = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiPropagateLoad = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerLoad1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiHideLoad = new System.Windows.Forms.ToolStripMenuItem();
@@ -461,7 +462,7 @@
             // tsbNew
             // 
             this.tsbNew.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbNew.Image = ((System.Drawing.Image)(resources.GetObject("tsbNew.Image")));
+            this.tsbNew.Image = global::PrePoMax.Properties.Resources.New;
             this.tsbNew.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbNew.Name = "tsbNew";
             this.tsbNew.Size = new System.Drawing.Size(23, 22);
@@ -471,7 +472,7 @@
             // tsbOpen
             // 
             this.tsbOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbOpen.Image = ((System.Drawing.Image)(resources.GetObject("tsbOpen.Image")));
+            this.tsbOpen.Image = global::PrePoMax.Properties.Resources.Open;
             this.tsbOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbOpen.Name = "tsbOpen";
             this.tsbOpen.Size = new System.Drawing.Size(23, 22);
@@ -481,7 +482,7 @@
             // tsbImport
             // 
             this.tsbImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbImport.Image = ((System.Drawing.Image)(resources.GetObject("tsbImport.Image")));
+            this.tsbImport.Image = global::PrePoMax.Properties.Resources.Import;
             this.tsbImport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbImport.Name = "tsbImport";
             this.tsbImport.Size = new System.Drawing.Size(23, 22);
@@ -492,7 +493,7 @@
             // tsbSave
             // 
             this.tsbSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbSave.Image = ((System.Drawing.Image)(resources.GetObject("tsbSave.Image")));
+            this.tsbSave.Image = global::PrePoMax.Properties.Resources.Save;
             this.tsbSave.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbSave.Name = "tsbSave";
             this.tsbSave.Size = new System.Drawing.Size(23, 22);
@@ -540,7 +541,7 @@
             // tsbZoomToFit
             // 
             this.tsbZoomToFit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbZoomToFit.Image = ((System.Drawing.Image)(resources.GetObject("tsbZoomToFit.Image")));
+            this.tsbZoomToFit.Image = global::PrePoMax.Properties.Resources.ZoomToFit;
             this.tsbZoomToFit.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbZoomToFit.Name = "tsbZoomToFit";
             this.tsbZoomToFit.Size = new System.Drawing.Size(23, 22);
@@ -555,7 +556,7 @@
             // tsbFrontView
             // 
             this.tsbFrontView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbFrontView.Image = ((System.Drawing.Image)(resources.GetObject("tsbFrontView.Image")));
+            this.tsbFrontView.Image = global::PrePoMax.Properties.Resources.Front;
             this.tsbFrontView.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbFrontView.Name = "tsbFrontView";
             this.tsbFrontView.Size = new System.Drawing.Size(23, 22);
@@ -565,7 +566,7 @@
             // tsbBackView
             // 
             this.tsbBackView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbBackView.Image = ((System.Drawing.Image)(resources.GetObject("tsbBackView.Image")));
+            this.tsbBackView.Image = global::PrePoMax.Properties.Resources.Back;
             this.tsbBackView.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbBackView.Name = "tsbBackView";
             this.tsbBackView.Size = new System.Drawing.Size(23, 22);
@@ -575,7 +576,7 @@
             // tsbTopView
             // 
             this.tsbTopView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbTopView.Image = ((System.Drawing.Image)(resources.GetObject("tsbTopView.Image")));
+            this.tsbTopView.Image = global::PrePoMax.Properties.Resources.Top;
             this.tsbTopView.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbTopView.Name = "tsbTopView";
             this.tsbTopView.Size = new System.Drawing.Size(23, 22);
@@ -585,7 +586,7 @@
             // tsbBottomView
             // 
             this.tsbBottomView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbBottomView.Image = ((System.Drawing.Image)(resources.GetObject("tsbBottomView.Image")));
+            this.tsbBottomView.Image = global::PrePoMax.Properties.Resources.Bottom;
             this.tsbBottomView.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbBottomView.Name = "tsbBottomView";
             this.tsbBottomView.Size = new System.Drawing.Size(23, 22);
@@ -595,7 +596,7 @@
             // tsbLeftView
             // 
             this.tsbLeftView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbLeftView.Image = ((System.Drawing.Image)(resources.GetObject("tsbLeftView.Image")));
+            this.tsbLeftView.Image = global::PrePoMax.Properties.Resources.Left;
             this.tsbLeftView.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbLeftView.Name = "tsbLeftView";
             this.tsbLeftView.Size = new System.Drawing.Size(23, 22);
@@ -605,7 +606,7 @@
             // tsbRightView
             // 
             this.tsbRightView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbRightView.Image = ((System.Drawing.Image)(resources.GetObject("tsbRightView.Image")));
+            this.tsbRightView.Image = global::PrePoMax.Properties.Resources.Right;
             this.tsbRightView.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbRightView.Name = "tsbRightView";
             this.tsbRightView.Size = new System.Drawing.Size(23, 22);
@@ -615,7 +616,7 @@
             // tsbNormalView
             // 
             this.tsbNormalView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbNormalView.Image = ((System.Drawing.Image)(resources.GetObject("tsbNormalView.Image")));
+            this.tsbNormalView.Image = global::PrePoMax.Properties.Resources.Normal;
             this.tsbNormalView.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbNormalView.Name = "tsbNormalView";
             this.tsbNormalView.Size = new System.Drawing.Size(23, 22);
@@ -625,7 +626,7 @@
             // tsbVerticalView
             // 
             this.tsbVerticalView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbVerticalView.Image = ((System.Drawing.Image)(resources.GetObject("tsbVerticalView.Image")));
+            this.tsbVerticalView.Image = global::PrePoMax.Properties.Resources.Vertical;
             this.tsbVerticalView.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbVerticalView.Name = "tsbVerticalView";
             this.tsbVerticalView.Size = new System.Drawing.Size(23, 22);
@@ -635,7 +636,7 @@
             // tsbIsometric
             // 
             this.tsbIsometric.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbIsometric.Image = ((System.Drawing.Image)(resources.GetObject("tsbIsometric.Image")));
+            this.tsbIsometric.Image = global::PrePoMax.Properties.Resources.Isometric;
             this.tsbIsometric.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbIsometric.Name = "tsbIsometric";
             this.tsbIsometric.Size = new System.Drawing.Size(23, 22);
@@ -650,7 +651,7 @@
             // tsbShowWireframeEdges
             // 
             this.tsbShowWireframeEdges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShowWireframeEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowWireframeEdges.Image")));
+            this.tsbShowWireframeEdges.Image = global::PrePoMax.Properties.Resources.Wireframe;
             this.tsbShowWireframeEdges.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbShowWireframeEdges.Name = "tsbShowWireframeEdges";
             this.tsbShowWireframeEdges.Size = new System.Drawing.Size(23, 22);
@@ -660,7 +661,7 @@
             // tsbShowElementEdges
             // 
             this.tsbShowElementEdges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShowElementEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowElementEdges.Image")));
+            this.tsbShowElementEdges.Image = global::PrePoMax.Properties.Resources.ElementEdges;
             this.tsbShowElementEdges.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbShowElementEdges.Name = "tsbShowElementEdges";
             this.tsbShowElementEdges.Size = new System.Drawing.Size(23, 22);
@@ -670,7 +671,7 @@
             // tsbShowModelEdges
             // 
             this.tsbShowModelEdges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShowModelEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowModelEdges.Image")));
+            this.tsbShowModelEdges.Image = global::PrePoMax.Properties.Resources.ModelEdges;
             this.tsbShowModelEdges.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbShowModelEdges.Name = "tsbShowModelEdges";
             this.tsbShowModelEdges.Size = new System.Drawing.Size(23, 22);
@@ -680,7 +681,7 @@
             // tsbShowNoEdges
             // 
             this.tsbShowNoEdges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShowNoEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowNoEdges.Image")));
+            this.tsbShowNoEdges.Image = global::PrePoMax.Properties.Resources.NoEdges;
             this.tsbShowNoEdges.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbShowNoEdges.Name = "tsbShowNoEdges";
             this.tsbShowNoEdges.Size = new System.Drawing.Size(23, 22);
@@ -745,7 +746,7 @@
             // tsbShowAllParts
             // 
             this.tsbShowAllParts.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShowAllParts.Image = ((System.Drawing.Image)(resources.GetObject("tsbShowAllParts.Image")));
+            this.tsbShowAllParts.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsbShowAllParts.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbShowAllParts.Name = "tsbShowAllParts";
             this.tsbShowAllParts.Size = new System.Drawing.Size(23, 22);
@@ -905,14 +906,14 @@
             this.toolStripSeparator2});
             this.tsResults.Location = new System.Drawing.Point(3, 75);
             this.tsResults.Name = "tsResults";
-            this.tsResults.Size = new System.Drawing.Size(481, 25);
+            this.tsResults.Size = new System.Drawing.Size(450, 25);
             this.tsResults.TabIndex = 7;
             this.tsResults.Text = "Results";
             // 
             // tsbResultsUndeformed
             // 
             this.tsbResultsUndeformed.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbResultsUndeformed.Image = ((System.Drawing.Image)(resources.GetObject("tsbResultsUndeformed.Image")));
+            this.tsbResultsUndeformed.Image = global::PrePoMax.Properties.Resources.Undeformed;
             this.tsbResultsUndeformed.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbResultsUndeformed.Name = "tsbResultsUndeformed";
             this.tsbResultsUndeformed.Size = new System.Drawing.Size(23, 22);
@@ -967,7 +968,7 @@
             // tsbTransformation
             // 
             this.tsbTransformation.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbTransformation.Image = ((System.Drawing.Image)(resources.GetObject("tsbTransformation.Image")));
+            this.tsbTransformation.Image = global::PrePoMax.Properties.Resources.Transformations;
             this.tsbTransformation.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbTransformation.Name = "tsbTransformation";
             this.tsbTransformation.Size = new System.Drawing.Size(23, 22);
@@ -982,7 +983,7 @@
             // tsbFirstStepIncrement
             // 
             this.tsbFirstStepIncrement.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbFirstStepIncrement.Image = ((System.Drawing.Image)(resources.GetObject("tsbFirstStepIncrement.Image")));
+            this.tsbFirstStepIncrement.Image = global::PrePoMax.Properties.Resources.First;
             this.tsbFirstStepIncrement.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbFirstStepIncrement.Name = "tsbFirstStepIncrement";
             this.tsbFirstStepIncrement.Size = new System.Drawing.Size(23, 22);
@@ -992,7 +993,7 @@
             // tsbPreviousStepIncrement
             // 
             this.tsbPreviousStepIncrement.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbPreviousStepIncrement.Image = ((System.Drawing.Image)(resources.GetObject("tsbPreviousStepIncrement.Image")));
+            this.tsbPreviousStepIncrement.Image = global::PrePoMax.Properties.Resources.Previous;
             this.tsbPreviousStepIncrement.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbPreviousStepIncrement.Name = "tsbPreviousStepIncrement";
             this.tsbPreviousStepIncrement.Size = new System.Drawing.Size(23, 22);
@@ -1017,7 +1018,7 @@
             // tsbNextStepIncrement
             // 
             this.tsbNextStepIncrement.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbNextStepIncrement.Image = ((System.Drawing.Image)(resources.GetObject("tsbNextStepIncrement.Image")));
+            this.tsbNextStepIncrement.Image = global::PrePoMax.Properties.Resources.Next;
             this.tsbNextStepIncrement.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbNextStepIncrement.Name = "tsbNextStepIncrement";
             this.tsbNextStepIncrement.Size = new System.Drawing.Size(23, 22);
@@ -1028,7 +1029,7 @@
             // tsbLastStepIncrement
             // 
             this.tsbLastStepIncrement.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbLastStepIncrement.Image = ((System.Drawing.Image)(resources.GetObject("tsbLastStepIncrement.Image")));
+            this.tsbLastStepIncrement.Image = global::PrePoMax.Properties.Resources.Last;
             this.tsbLastStepIncrement.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbLastStepIncrement.Name = "tsbLastStepIncrement";
             this.tsbLastStepIncrement.Size = new System.Drawing.Size(23, 22);
@@ -1038,7 +1039,7 @@
             // tsbAnimate
             // 
             this.tsbAnimate.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbAnimate.Image = ((System.Drawing.Image)(resources.GetObject("tsbAnimate.Image")));
+            this.tsbAnimate.Image = global::PrePoMax.Properties.Resources.Animate;
             this.tsbAnimate.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbAnimate.Name = "tsbAnimate";
             this.tsbAnimate.Size = new System.Drawing.Size(23, 22);
@@ -1071,7 +1072,7 @@
             this.tsmiHelp});
             this.menuStripMain.Location = new System.Drawing.Point(0, 0);
             this.menuStripMain.Name = "menuStripMain";
-            this.menuStripMain.Size = new System.Drawing.Size(1064, 24);
+            this.menuStripMain.Size = new System.Drawing.Size(1264, 24);
             this.menuStripMain.TabIndex = 0;
             this.menuStripMain.Text = "menuStripMain";
             // 
@@ -1097,7 +1098,7 @@
             // 
             // tsmiNew
             // 
-            this.tsmiNew.Image = ((System.Drawing.Image)(resources.GetObject("tsmiNew.Image")));
+            this.tsmiNew.Image = global::PrePoMax.Properties.Resources.New;
             this.tsmiNew.Name = "tsmiNew";
             this.tsmiNew.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
             this.tsmiNew.Size = new System.Drawing.Size(219, 22);
@@ -1106,7 +1107,7 @@
             // 
             // tsmiOpen
             // 
-            this.tsmiOpen.Image = ((System.Drawing.Image)(resources.GetObject("tsmiOpen.Image")));
+            this.tsmiOpen.Image = global::PrePoMax.Properties.Resources.Open;
             this.tsmiOpen.Name = "tsmiOpen";
             this.tsmiOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
             this.tsmiOpen.Size = new System.Drawing.Size(219, 22);
@@ -1121,7 +1122,7 @@
             // 
             // tsmiImportFile
             // 
-            this.tsmiImportFile.Image = ((System.Drawing.Image)(resources.GetObject("tsmiImportFile.Image")));
+            this.tsmiImportFile.Image = global::PrePoMax.Properties.Resources.Import;
             this.tsmiImportFile.Name = "tsmiImportFile";
             this.tsmiImportFile.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.I)));
             this.tsmiImportFile.Size = new System.Drawing.Size(219, 22);
@@ -1135,7 +1136,7 @@
             // 
             // tsmiSave
             // 
-            this.tsmiSave.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSave.Image")));
+            this.tsmiSave.Image = global::PrePoMax.Properties.Resources.Save;
             this.tsmiSave.Name = "tsmiSave";
             this.tsmiSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
             this.tsmiSave.Size = new System.Drawing.Size(219, 22);
@@ -1167,7 +1168,7 @@
             this.tsmiDividerExport2,
             this.tsmiExportToDeformedInp,
             this.tsmiExportToDeformedStl});
-            this.tsmiExport.Image = ((System.Drawing.Image)(resources.GetObject("tsmiExport.Image")));
+            this.tsmiExport.Image = global::PrePoMax.Properties.Resources.Export;
             this.tsmiExport.Name = "tsmiExport";
             this.tsmiExport.Size = new System.Drawing.Size(219, 22);
             this.tsmiExport.Text = "Export";
@@ -1371,7 +1372,7 @@
             // 
             // tsmiFrontView
             // 
-            this.tsmiFrontView.Image = ((System.Drawing.Image)(resources.GetObject("tsmiFrontView.Image")));
+            this.tsmiFrontView.Image = global::PrePoMax.Properties.Resources.Front;
             this.tsmiFrontView.Name = "tsmiFrontView";
             this.tsmiFrontView.Size = new System.Drawing.Size(151, 22);
             this.tsmiFrontView.Text = "Front View";
@@ -1379,7 +1380,7 @@
             // 
             // tsmiBackView
             // 
-            this.tsmiBackView.Image = ((System.Drawing.Image)(resources.GetObject("tsmiBackView.Image")));
+            this.tsmiBackView.Image = global::PrePoMax.Properties.Resources.Back;
             this.tsmiBackView.Name = "tsmiBackView";
             this.tsmiBackView.Size = new System.Drawing.Size(151, 22);
             this.tsmiBackView.Text = "Back View";
@@ -1387,7 +1388,7 @@
             // 
             // tsmiTopView
             // 
-            this.tsmiTopView.Image = ((System.Drawing.Image)(resources.GetObject("tsmiTopView.Image")));
+            this.tsmiTopView.Image = global::PrePoMax.Properties.Resources.Top;
             this.tsmiTopView.Name = "tsmiTopView";
             this.tsmiTopView.Size = new System.Drawing.Size(151, 22);
             this.tsmiTopView.Text = "Top View";
@@ -1395,7 +1396,7 @@
             // 
             // tsmiBottomView
             // 
-            this.tsmiBottomView.Image = ((System.Drawing.Image)(resources.GetObject("tsmiBottomView.Image")));
+            this.tsmiBottomView.Image = global::PrePoMax.Properties.Resources.Bottom;
             this.tsmiBottomView.Name = "tsmiBottomView";
             this.tsmiBottomView.Size = new System.Drawing.Size(151, 22);
             this.tsmiBottomView.Text = "Bottom View";
@@ -1403,7 +1404,7 @@
             // 
             // tsmiLeftView
             // 
-            this.tsmiLeftView.Image = ((System.Drawing.Image)(resources.GetObject("tsmiLeftView.Image")));
+            this.tsmiLeftView.Image = global::PrePoMax.Properties.Resources.Left;
             this.tsmiLeftView.Name = "tsmiLeftView";
             this.tsmiLeftView.Size = new System.Drawing.Size(151, 22);
             this.tsmiLeftView.Text = "Left View";
@@ -1411,7 +1412,7 @@
             // 
             // tsmiRightView
             // 
-            this.tsmiRightView.Image = ((System.Drawing.Image)(resources.GetObject("tsmiRightView.Image")));
+            this.tsmiRightView.Image = global::PrePoMax.Properties.Resources.Right;
             this.tsmiRightView.Name = "tsmiRightView";
             this.tsmiRightView.Size = new System.Drawing.Size(151, 22);
             this.tsmiRightView.Text = "Right View";
@@ -1419,7 +1420,7 @@
             // 
             // tsmiNormalView
             // 
-            this.tsmiNormalView.Image = ((System.Drawing.Image)(resources.GetObject("tsmiNormalView.Image")));
+            this.tsmiNormalView.Image = global::PrePoMax.Properties.Resources.Normal;
             this.tsmiNormalView.Name = "tsmiNormalView";
             this.tsmiNormalView.Size = new System.Drawing.Size(151, 22);
             this.tsmiNormalView.Text = "Normal View";
@@ -1427,7 +1428,7 @@
             // 
             // tsmiVerticalView
             // 
-            this.tsmiVerticalView.Image = ((System.Drawing.Image)(resources.GetObject("tsmiVerticalView.Image")));
+            this.tsmiVerticalView.Image = global::PrePoMax.Properties.Resources.Vertical;
             this.tsmiVerticalView.Name = "tsmiVerticalView";
             this.tsmiVerticalView.Size = new System.Drawing.Size(151, 22);
             this.tsmiVerticalView.Text = "Vertical View";
@@ -1435,7 +1436,7 @@
             // 
             // tsmiIsometricView
             // 
-            this.tsmiIsometricView.Image = ((System.Drawing.Image)(resources.GetObject("tsmiIsometricView.Image")));
+            this.tsmiIsometricView.Image = global::PrePoMax.Properties.Resources.Isometric;
             this.tsmiIsometricView.Name = "tsmiIsometricView";
             this.tsmiIsometricView.Size = new System.Drawing.Size(151, 22);
             this.tsmiIsometricView.Text = "Isometric View";
@@ -1443,7 +1444,7 @@
             // 
             // tsmiZoomToFit
             // 
-            this.tsmiZoomToFit.Image = ((System.Drawing.Image)(resources.GetObject("tsmiZoomToFit.Image")));
+            this.tsmiZoomToFit.Image = global::PrePoMax.Properties.Resources.ZoomToFit;
             this.tsmiZoomToFit.Name = "tsmiZoomToFit";
             this.tsmiZoomToFit.Size = new System.Drawing.Size(239, 22);
             this.tsmiZoomToFit.Text = "Zoom to Fit";
@@ -1456,7 +1457,7 @@
             // 
             // tsmiShowWireframeEdges
             // 
-            this.tsmiShowWireframeEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowWireframeEdges.Image")));
+            this.tsmiShowWireframeEdges.Image = global::PrePoMax.Properties.Resources.Wireframe;
             this.tsmiShowWireframeEdges.Name = "tsmiShowWireframeEdges";
             this.tsmiShowWireframeEdges.Size = new System.Drawing.Size(239, 22);
             this.tsmiShowWireframeEdges.Text = "Wireframe";
@@ -1464,7 +1465,7 @@
             // 
             // tsmiShowElementEdges
             // 
-            this.tsmiShowElementEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowElementEdges.Image")));
+            this.tsmiShowElementEdges.Image = global::PrePoMax.Properties.Resources.ElementEdges;
             this.tsmiShowElementEdges.Name = "tsmiShowElementEdges";
             this.tsmiShowElementEdges.Size = new System.Drawing.Size(239, 22);
             this.tsmiShowElementEdges.Text = "Show Element Edges";
@@ -1472,7 +1473,7 @@
             // 
             // tsmiShowModelEdges
             // 
-            this.tsmiShowModelEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowModelEdges.Image")));
+            this.tsmiShowModelEdges.Image = global::PrePoMax.Properties.Resources.ModelEdges;
             this.tsmiShowModelEdges.Name = "tsmiShowModelEdges";
             this.tsmiShowModelEdges.Size = new System.Drawing.Size(239, 22);
             this.tsmiShowModelEdges.Text = "Show Model Edges";
@@ -1480,7 +1481,7 @@
             // 
             // tsmiShowNoEdges
             // 
-            this.tsmiShowNoEdges.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowNoEdges.Image")));
+            this.tsmiShowNoEdges.Image = global::PrePoMax.Properties.Resources.NoEdges;
             this.tsmiShowNoEdges.Name = "tsmiShowNoEdges";
             this.tsmiShowNoEdges.Size = new System.Drawing.Size(239, 22);
             this.tsmiShowNoEdges.Text = "No Edges";
@@ -1514,7 +1515,7 @@
             // 
             // tsmiShowAllParts
             // 
-            this.tsmiShowAllParts.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowAllParts.Image")));
+            this.tsmiShowAllParts.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsmiShowAllParts.Name = "tsmiShowAllParts";
             this.tsmiShowAllParts.Size = new System.Drawing.Size(239, 22);
             this.tsmiShowAllParts.Text = "Show All";
@@ -1543,7 +1544,7 @@
             // 
             // tsmiResultsUndeformed
             // 
-            this.tsmiResultsUndeformed.Image = ((System.Drawing.Image)(resources.GetObject("tsmiResultsUndeformed.Image")));
+            this.tsmiResultsUndeformed.Image = global::PrePoMax.Properties.Resources.Undeformed;
             this.tsmiResultsUndeformed.Name = "tsmiResultsUndeformed";
             this.tsmiResultsUndeformed.Size = new System.Drawing.Size(239, 22);
             this.tsmiResultsUndeformed.Text = "Undeformed";
@@ -1551,7 +1552,7 @@
             // 
             // tsmiResultsDeformed
             // 
-            this.tsmiResultsDeformed.Image = ((System.Drawing.Image)(resources.GetObject("tsmiResultsDeformed.Image")));
+            this.tsmiResultsDeformed.Image = global::PrePoMax.Properties.Resources.Deformed;
             this.tsmiResultsDeformed.Name = "tsmiResultsDeformed";
             this.tsmiResultsDeformed.Size = new System.Drawing.Size(239, 22);
             this.tsmiResultsDeformed.Text = "Deformed";
@@ -1559,7 +1560,7 @@
             // 
             // tsmiResultsColorContours
             // 
-            this.tsmiResultsColorContours.Image = ((System.Drawing.Image)(resources.GetObject("tsmiResultsColorContours.Image")));
+            this.tsmiResultsColorContours.Image = global::PrePoMax.Properties.Resources.Color_contours;
             this.tsmiResultsColorContours.Name = "tsmiResultsColorContours";
             this.tsmiResultsColorContours.Size = new System.Drawing.Size(239, 22);
             this.tsmiResultsColorContours.Text = "Deformed With Color Contours";
@@ -1752,7 +1753,7 @@
             // 
             // tsmiHideGeometryParts
             // 
-            this.tsmiHideGeometryParts.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHideGeometryParts.Image")));
+            this.tsmiHideGeometryParts.Image = global::PrePoMax.Properties.Resources.Hide;
             this.tsmiHideGeometryParts.Name = "tsmiHideGeometryParts";
             this.tsmiHideGeometryParts.Size = new System.Drawing.Size(211, 22);
             this.tsmiHideGeometryParts.Text = "Hide";
@@ -1760,7 +1761,7 @@
             // 
             // tsmiShowGeometryParts
             // 
-            this.tsmiShowGeometryParts.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowGeometryParts.Image")));
+            this.tsmiShowGeometryParts.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsmiShowGeometryParts.Name = "tsmiShowGeometryParts";
             this.tsmiShowGeometryParts.Size = new System.Drawing.Size(211, 22);
             this.tsmiShowGeometryParts.Text = "Show";
@@ -1768,7 +1769,7 @@
             // 
             // tsmiShowOnlyGeometryParts
             // 
-            this.tsmiShowOnlyGeometryParts.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowOnlyGeometryParts.Image")));
+            this.tsmiShowOnlyGeometryParts.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsmiShowOnlyGeometryParts.Name = "tsmiShowOnlyGeometryParts";
             this.tsmiShowOnlyGeometryParts.Size = new System.Drawing.Size(211, 22);
             this.tsmiShowOnlyGeometryParts.Text = "Show Only";
@@ -1926,7 +1927,7 @@
             this.tsmiEditMeshRefinement,
             this.tsmiDividerMeshRefinement1,
             this.tsmiDeleteMeshRefinement});
-            this.tsmiMeshRefinement.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMeshRefinement.Image")));
+            this.tsmiMeshRefinement.Image = global::PrePoMax.Properties.Resources.Mesh_refinement;
             this.tsmiMeshRefinement.Name = "tsmiMeshRefinement";
             this.tsmiMeshRefinement.Size = new System.Drawing.Size(182, 22);
             this.tsmiMeshRefinement.Text = "Mesh Refinement";
@@ -2091,7 +2092,7 @@
             this.tsmiSetTransparencyForParts,
             this.tsmiDividerPart3,
             this.tsmiDeleteParts});
-            this.tsmiPart.Image = ((System.Drawing.Image)(resources.GetObject("tsmiPart.Image")));
+            this.tsmiPart.Image = global::PrePoMax.Properties.Resources.Part;
             this.tsmiPart.Name = "tsmiPart";
             this.tsmiPart.Size = new System.Drawing.Size(194, 22);
             this.tsmiPart.Text = "Part";
@@ -2197,7 +2198,7 @@
             this.tsmiDuplicateNodeSet,
             this.tsmiDividerNodeSet1,
             this.tsmiDeleteNodeSet});
-            this.tsmiNodeSet.Image = ((System.Drawing.Image)(resources.GetObject("tsmiNodeSet.Image")));
+            this.tsmiNodeSet.Image = global::PrePoMax.Properties.Resources.Node_set;
             this.tsmiNodeSet.Name = "tsmiNodeSet";
             this.tsmiNodeSet.Size = new System.Drawing.Size(194, 22);
             this.tsmiNodeSet.Text = "Node set";
@@ -2244,7 +2245,7 @@
             this.tsmiConvertElementSetsToMeshParts,
             this.tsmiDividerElementSet1,
             this.tsmiDeleteElementSet});
-            this.tsmiElementSet.Image = ((System.Drawing.Image)(resources.GetObject("tsmiElementSet.Image")));
+            this.tsmiElementSet.Image = global::PrePoMax.Properties.Resources.Element_set;
             this.tsmiElementSet.Name = "tsmiElementSet";
             this.tsmiElementSet.Size = new System.Drawing.Size(194, 22);
             this.tsmiElementSet.Text = "Element set";
@@ -2296,7 +2297,7 @@
             this.tsmiEditSurface,
             this.tsmiDividerSurface1,
             this.tsmiDeleteSurface});
-            this.tsmiSurface.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSurface.Image")));
+            this.tsmiSurface.Image = global::PrePoMax.Properties.Resources.Surface;
             this.tsmiSurface.Name = "tsmiSurface";
             this.tsmiSurface.Size = new System.Drawing.Size(194, 22);
             this.tsmiSurface.Text = "Surface";
@@ -2334,7 +2335,7 @@
             this.tsmiEditRP,
             this.tsmiRP,
             this.tsmiDeleteRP});
-            this.tsmiReferencePointTool.Image = ((System.Drawing.Image)(resources.GetObject("tsmiReferencePointTool.Image")));
+            this.tsmiReferencePointTool.Image = global::PrePoMax.Properties.Resources.Reference_point;
             this.tsmiReferencePointTool.Name = "tsmiReferencePointTool";
             this.tsmiReferencePointTool.Size = new System.Drawing.Size(194, 22);
             this.tsmiReferencePointTool.Text = "Reference point";
@@ -2386,7 +2387,7 @@
             this.tsmiExportMaterial,
             this.tsmiDividerMaterial2,
             this.tsmiDeleteMaterial});
-            this.tsmiMaterial.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMaterial.Image")));
+            this.tsmiMaterial.Image = global::PrePoMax.Properties.Resources.Material;
             this.tsmiMaterial.Name = "tsmiMaterial";
             this.tsmiMaterial.Size = new System.Drawing.Size(156, 22);
             this.tsmiMaterial.Text = "Material";
@@ -2445,7 +2446,7 @@
             // 
             // tsmiMaterialLibrary
             // 
-            this.tsmiMaterialLibrary.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMaterialLibrary.Image")));
+            this.tsmiMaterialLibrary.Image = global::PrePoMax.Properties.Resources.Library;
             this.tsmiMaterialLibrary.Name = "tsmiMaterialLibrary";
             this.tsmiMaterialLibrary.Size = new System.Drawing.Size(156, 22);
             this.tsmiMaterialLibrary.Text = "Material Library";
@@ -2458,7 +2459,7 @@
             this.tsmiEditSection,
             this.tsmiDividerSection1,
             this.tsmiDelete});
-            this.tsmiSection.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSection.Image")));
+            this.tsmiSection.Image = global::PrePoMax.Properties.Resources.Section;
             this.tsmiSection.Name = "tsmiSection";
             this.tsmiSection.Size = new System.Drawing.Size(156, 22);
             this.tsmiSection.Text = "Section";
@@ -2513,7 +2514,7 @@
             this.tsmiShowConstraint,
             this.tsmiDividerConstraint3,
             this.tsmiDeleteConstraint});
-            this.tsmiConstraint.Image = ((System.Drawing.Image)(resources.GetObject("tsmiConstraint.Image")));
+            this.tsmiConstraint.Image = global::PrePoMax.Properties.Resources.Constraints;
             this.tsmiConstraint.Name = "tsmiConstraint";
             this.tsmiConstraint.Size = new System.Drawing.Size(182, 22);
             this.tsmiConstraint.Text = "Constraint";
@@ -2558,7 +2559,7 @@
             // 
             // tsmiHideConstraint
             // 
-            this.tsmiHideConstraint.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHideConstraint.Image")));
+            this.tsmiHideConstraint.Image = global::PrePoMax.Properties.Resources.Hide;
             this.tsmiHideConstraint.Name = "tsmiHideConstraint";
             this.tsmiHideConstraint.Size = new System.Drawing.Size(195, 22);
             this.tsmiHideConstraint.Text = "Hide";
@@ -2566,7 +2567,7 @@
             // 
             // tsmiShowConstraint
             // 
-            this.tsmiShowConstraint.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowConstraint.Image")));
+            this.tsmiShowConstraint.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsmiShowConstraint.Name = "tsmiShowConstraint";
             this.tsmiShowConstraint.Size = new System.Drawing.Size(195, 22);
             this.tsmiShowConstraint.Text = "Show";
@@ -2589,7 +2590,7 @@
             this.tsmiContact.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiSurfaceInteraction,
             this.contactPairToolStripMenuItem});
-            this.tsmiContact.Image = ((System.Drawing.Image)(resources.GetObject("tsmiContact.Image")));
+            this.tsmiContact.Image = global::PrePoMax.Properties.Resources.Contact;
             this.tsmiContact.Name = "tsmiContact";
             this.tsmiContact.Size = new System.Drawing.Size(182, 22);
             this.tsmiContact.Text = "Contact";
@@ -2602,7 +2603,7 @@
             this.tsmiDuplicateSurfaceInteraction,
             this.tsmiDividerSurfaceInteraction1,
             this.tsmiDeleteSurfaceInteraction});
-            this.tsmiSurfaceInteraction.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSurfaceInteraction.Image")));
+            this.tsmiSurfaceInteraction.Image = global::PrePoMax.Properties.Resources.SurfaceInteraction;
             this.tsmiSurfaceInteraction.Name = "tsmiSurfaceInteraction";
             this.tsmiSurfaceInteraction.Size = new System.Drawing.Size(173, 22);
             this.tsmiSurfaceInteraction.Text = "Surface Interaction";
@@ -2653,7 +2654,7 @@
             this.tsmiShowContactPair,
             this.tsmiDividerContactPair3,
             this.tsmiDeleteContactPair});
-            this.contactPairToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("contactPairToolStripMenuItem.Image")));
+            this.contactPairToolStripMenuItem.Image = global::PrePoMax.Properties.Resources.ContactPair;
             this.contactPairToolStripMenuItem.Name = "contactPairToolStripMenuItem";
             this.contactPairToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.contactPairToolStripMenuItem.Text = "Contact Pair";
@@ -2698,7 +2699,7 @@
             // 
             // tsmiHideContactPair
             // 
-            this.tsmiHideContactPair.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHideContactPair.Image")));
+            this.tsmiHideContactPair.Image = global::PrePoMax.Properties.Resources.Hide;
             this.tsmiHideContactPair.Name = "tsmiHideContactPair";
             this.tsmiHideContactPair.Size = new System.Drawing.Size(195, 22);
             this.tsmiHideContactPair.Text = "Hide";
@@ -2706,7 +2707,7 @@
             // 
             // tsmiShowContactPair
             // 
-            this.tsmiShowContactPair.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowContactPair.Image")));
+            this.tsmiShowContactPair.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsmiShowContactPair.Name = "tsmiShowContactPair";
             this.tsmiShowContactPair.Size = new System.Drawing.Size(195, 22);
             this.tsmiShowContactPair.Text = "Show";
@@ -2832,7 +2833,7 @@
             this.tsmiDuplicateStep,
             this.tsmiDividerStep2,
             this.tsmiDeleteStep});
-            this.tsmiStep.Image = ((System.Drawing.Image)(resources.GetObject("tsmiStep.Image")));
+            this.tsmiStep.Image = global::PrePoMax.Properties.Resources.Step;
             this.tsmiStep.Name = "tsmiStep";
             this.tsmiStep.Size = new System.Drawing.Size(153, 22);
             this.tsmiStep.Text = "Step";
@@ -2883,7 +2884,7 @@
             this.tsmiPropagateHistoryOutput,
             this.tsmiHistoryOutputDivider1,
             this.tsmiDeleteHistoryOutput});
-            this.tsmiHistoryOutput.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHistoryOutput.Image")));
+            this.tsmiHistoryOutput.Image = global::PrePoMax.Properties.Resources.History_output;
             this.tsmiHistoryOutput.Name = "tsmiHistoryOutput";
             this.tsmiHistoryOutput.Size = new System.Drawing.Size(153, 22);
             this.tsmiHistoryOutput.Text = "History Output";
@@ -2929,7 +2930,7 @@
             this.tsmiPropagateFieldOutput,
             this.tsmiDividerFieldOutput1,
             this.tsmiDeleteFieldOutput});
-            this.tsmiFieldOutput.Image = ((System.Drawing.Image)(resources.GetObject("tsmiFieldOutput.Image")));
+            this.tsmiFieldOutput.Image = global::PrePoMax.Properties.Resources.Field_output;
             this.tsmiFieldOutput.Name = "tsmiFieldOutput";
             this.tsmiFieldOutput.Size = new System.Drawing.Size(153, 22);
             this.tsmiFieldOutput.Text = "Field Output";
@@ -3011,7 +3012,7 @@
             // 
             // tsmiHideBC
             // 
-            this.tsmiHideBC.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHideBC.Image")));
+            this.tsmiHideBC.Image = global::PrePoMax.Properties.Resources.Hide;
             this.tsmiHideBC.Name = "tsmiHideBC";
             this.tsmiHideBC.Size = new System.Drawing.Size(128, 22);
             this.tsmiHideBC.Text = "Hide";
@@ -3019,7 +3020,7 @@
             // 
             // tsmiShowBC
             // 
-            this.tsmiShowBC.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowBC.Image")));
+            this.tsmiShowBC.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsmiShowBC.Name = "tsmiShowBC";
             this.tsmiShowBC.Size = new System.Drawing.Size(128, 22);
             this.tsmiShowBC.Text = "Show";
@@ -3042,6 +3043,7 @@
             this.tsmiLoad.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiCreateLoad,
             this.tsmiEditLoad,
+            this.tsmiPreviewLoad,
             this.tsmiPropagateLoad,
             this.tsmiDividerLoad1,
             this.tsmiHideLoad,
@@ -3067,8 +3069,17 @@
             this.tsmiEditLoad.Text = "Edit";
             this.tsmiEditLoad.Click += new System.EventHandler(this.tsmiEditLoad_Click);
             // 
+            // tsmiPreviewLoad
+            // 
+            this.tsmiPreviewLoad.Image = global::PrePoMax.Properties.Resources.Preview_load;
+            this.tsmiPreviewLoad.Name = "tsmiPreviewLoad";
+            this.tsmiPreviewLoad.Size = new System.Drawing.Size(128, 22);
+            this.tsmiPreviewLoad.Text = "Preview";
+            this.tsmiPreviewLoad.Click += new System.EventHandler(this.tsmiPreviewLoad_Click);
+            // 
             // tsmiPropagateLoad
             // 
+            this.tsmiPropagateLoad.Image = global::PrePoMax.Properties.Resources.Step;
             this.tsmiPropagateLoad.Name = "tsmiPropagateLoad";
             this.tsmiPropagateLoad.Size = new System.Drawing.Size(128, 22);
             this.tsmiPropagateLoad.Text = "Propagate";
@@ -3081,7 +3092,7 @@
             // 
             // tsmiHideLoad
             // 
-            this.tsmiHideLoad.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHideLoad.Image")));
+            this.tsmiHideLoad.Image = global::PrePoMax.Properties.Resources.Hide;
             this.tsmiHideLoad.Name = "tsmiHideLoad";
             this.tsmiHideLoad.Size = new System.Drawing.Size(128, 22);
             this.tsmiHideLoad.Text = "Hide";
@@ -3089,7 +3100,7 @@
             // 
             // tsmiShowLoad
             // 
-            this.tsmiShowLoad.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowLoad.Image")));
+            this.tsmiShowLoad.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsmiShowLoad.Name = "tsmiShowLoad";
             this.tsmiShowLoad.Size = new System.Drawing.Size(128, 22);
             this.tsmiShowLoad.Text = "Show";
@@ -3255,91 +3266,91 @@
             this.tsmiColorContoursOn,
             this.tsmiDividerResultPart3,
             this.tsmiDeleteResultParts});
-            this.tsmiResultPart.Image = ((System.Drawing.Image)(resources.GetObject("tsmiResultPart.Image")));
+            this.tsmiResultPart.Image = global::PrePoMax.Properties.Resources.Part;
             this.tsmiResultPart.Name = "tsmiResultPart";
-            this.tsmiResultPart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiResultPart.Size = new System.Drawing.Size(154, 22);
             this.tsmiResultPart.Text = "Part";
             // 
             // tsmiEditResultPart
             // 
             this.tsmiEditResultPart.Name = "tsmiEditResultPart";
-            this.tsmiEditResultPart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditResultPart.Size = new System.Drawing.Size(173, 22);
             this.tsmiEditResultPart.Text = "Edit";
             this.tsmiEditResultPart.Click += new System.EventHandler(this.tsmiEditResultParts_Click);
             // 
             // tsmiDividerResultPart1
             // 
             this.tsmiDividerResultPart1.Name = "tsmiDividerResultPart1";
-            this.tsmiDividerResultPart1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerResultPart1.Size = new System.Drawing.Size(170, 6);
             // 
             // tsmiHideResultParts
             // 
-            this.tsmiHideResultParts.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHideResultParts.Image")));
+            this.tsmiHideResultParts.Image = global::PrePoMax.Properties.Resources.Hide;
             this.tsmiHideResultParts.Name = "tsmiHideResultParts";
-            this.tsmiHideResultParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiHideResultParts.Size = new System.Drawing.Size(173, 22);
             this.tsmiHideResultParts.Text = "Hide";
             this.tsmiHideResultParts.Click += new System.EventHandler(this.tsmiHideResultParts_Click);
             // 
             // tsmiShowResultParts
             // 
-            this.tsmiShowResultParts.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowResultParts.Image")));
+            this.tsmiShowResultParts.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsmiShowResultParts.Name = "tsmiShowResultParts";
-            this.tsmiShowResultParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiShowResultParts.Size = new System.Drawing.Size(173, 22);
             this.tsmiShowResultParts.Text = "Show";
             this.tsmiShowResultParts.Click += new System.EventHandler(this.tsmiShowResultParts_Click);
             // 
             // tsmiShowOnlyResultParts
             // 
-            this.tsmiShowOnlyResultParts.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowOnlyResultParts.Image")));
+            this.tsmiShowOnlyResultParts.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsmiShowOnlyResultParts.Name = "tsmiShowOnlyResultParts";
-            this.tsmiShowOnlyResultParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiShowOnlyResultParts.Size = new System.Drawing.Size(173, 22);
             this.tsmiShowOnlyResultParts.Text = "Show Only";
             this.tsmiShowOnlyResultParts.Click += new System.EventHandler(this.tsmiShowOnlyResultParts_Click);
             // 
             // tsmiSetTransparencyForResultParts
             // 
             this.tsmiSetTransparencyForResultParts.Name = "tsmiSetTransparencyForResultParts";
-            this.tsmiSetTransparencyForResultParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiSetTransparencyForResultParts.Size = new System.Drawing.Size(173, 22);
             this.tsmiSetTransparencyForResultParts.Text = "Set Transparency";
             this.tsmiSetTransparencyForResultParts.Click += new System.EventHandler(this.tsmiSetTransparencyForResultParts_Click);
             // 
             // tsmiDividerResultPart2
             // 
             this.tsmiDividerResultPart2.Name = "tsmiDividerResultPart2";
-            this.tsmiDividerResultPart2.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerResultPart2.Size = new System.Drawing.Size(170, 6);
             // 
             // tsmiColorContoursOff
             // 
-            this.tsmiColorContoursOff.Image = ((System.Drawing.Image)(resources.GetObject("tsmiColorContoursOff.Image")));
+            this.tsmiColorContoursOff.Image = global::PrePoMax.Properties.Resources.Deformed;
             this.tsmiColorContoursOff.Name = "tsmiColorContoursOff";
-            this.tsmiColorContoursOff.Size = new System.Drawing.Size(180, 22);
+            this.tsmiColorContoursOff.Size = new System.Drawing.Size(173, 22);
             this.tsmiColorContoursOff.Text = "Color Contours off";
             this.tsmiColorContoursOff.Click += new System.EventHandler(this.tsmiColorContoursOff_Click);
             // 
             // tsmiColorContoursOn
             // 
-            this.tsmiColorContoursOn.Image = ((System.Drawing.Image)(resources.GetObject("tsmiColorContoursOn.Image")));
+            this.tsmiColorContoursOn.Image = global::PrePoMax.Properties.Resources.Color_contours;
             this.tsmiColorContoursOn.Name = "tsmiColorContoursOn";
-            this.tsmiColorContoursOn.Size = new System.Drawing.Size(180, 22);
+            this.tsmiColorContoursOn.Size = new System.Drawing.Size(173, 22);
             this.tsmiColorContoursOn.Text = "Color Contours on";
             this.tsmiColorContoursOn.Click += new System.EventHandler(this.tsmiColorContoursOn_Click);
             // 
             // tsmiDividerResultPart3
             // 
             this.tsmiDividerResultPart3.Name = "tsmiDividerResultPart3";
-            this.tsmiDividerResultPart3.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerResultPart3.Size = new System.Drawing.Size(170, 6);
             // 
             // tsmiDeleteResultParts
             // 
             this.tsmiDeleteResultParts.Name = "tsmiDeleteResultParts";
-            this.tsmiDeleteResultParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteResultParts.Size = new System.Drawing.Size(173, 22);
             this.tsmiDeleteResultParts.Text = "Delete";
             this.tsmiDeleteResultParts.Click += new System.EventHandler(this.tsmiDeleteResultParts_Click);
             // 
             // tsmiDividerResults1
             // 
             this.tsmiDividerResults1.Name = "tsmiDividerResults1";
-            this.tsmiDividerResults1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerResults1.Size = new System.Drawing.Size(151, 6);
             // 
             // tsmiResultFieldOutput
             // 
@@ -3347,7 +3358,7 @@
             this.tsmiDeleteResultFieldOutput});
             this.tsmiResultFieldOutput.Image = global::PrePoMax.Properties.Resources.Field_output;
             this.tsmiResultFieldOutput.Name = "tsmiResultFieldOutput";
-            this.tsmiResultFieldOutput.Size = new System.Drawing.Size(180, 22);
+            this.tsmiResultFieldOutput.Size = new System.Drawing.Size(154, 22);
             this.tsmiResultFieldOutput.Text = "Field Output";
             // 
             // tsmiDeleteResultFieldOutput
@@ -3365,7 +3376,7 @@
             this.tsmiDeleteResultHistoryOutput});
             this.tsmiResultHistoryOutput.Image = global::PrePoMax.Properties.Resources.History_output;
             this.tsmiResultHistoryOutput.Name = "tsmiResultHistoryOutput";
-            this.tsmiResultHistoryOutput.Size = new System.Drawing.Size(180, 22);
+            this.tsmiResultHistoryOutput.Size = new System.Drawing.Size(154, 22);
             this.tsmiResultHistoryOutput.Text = "History Output";
             // 
             // tsmiCreateResultHistoryOutput
@@ -3390,13 +3401,13 @@
             // tsmiDividerResults2
             // 
             this.tsmiDividerResults2.Name = "tsmiDividerResults2";
-            this.tsmiDividerResults2.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerResults2.Size = new System.Drawing.Size(151, 6);
             // 
             // tsmiTransformation
             // 
             this.tsmiTransformation.Image = global::PrePoMax.Properties.Resources.Transformations;
             this.tsmiTransformation.Name = "tsmiTransformation";
-            this.tsmiTransformation.Size = new System.Drawing.Size(180, 22);
+            this.tsmiTransformation.Size = new System.Drawing.Size(154, 22);
             this.tsmiTransformation.Text = "Transformation";
             this.tsmiTransformation.Click += new System.EventHandler(this.tsmiTransformation_Click);
             // 
@@ -3476,7 +3487,7 @@
             this.panelControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControl.Location = new System.Drawing.Point(0, 0);
             this.panelControl.Name = "panelControl";
-            this.panelControl.Size = new System.Drawing.Size(791, 372);
+            this.panelControl.Size = new System.Drawing.Size(991, 423);
             this.panelControl.TabIndex = 1;
             // 
             // aeAnnotationTextEditor
@@ -3549,9 +3560,9 @@
             this.tsslCancel,
             this.tsslEmpty,
             this.tsslUnitSystem});
-            this.statusStripMain.Location = new System.Drawing.Point(0, 606);
+            this.statusStripMain.Location = new System.Drawing.Point(0, 657);
             this.statusStripMain.Name = "statusStripMain";
-            this.statusStripMain.Size = new System.Drawing.Size(1064, 24);
+            this.statusStripMain.Size = new System.Drawing.Size(1264, 24);
             this.statusStripMain.TabIndex = 2;
             this.statusStripMain.Text = "statusStrip1";
             // 
@@ -3587,7 +3598,7 @@
             // tsslEmpty
             // 
             this.tsslEmpty.Name = "tsslEmpty";
-            this.tsslEmpty.Size = new System.Drawing.Size(728, 19);
+            this.tsslEmpty.Size = new System.Drawing.Size(1126, 19);
             this.tsslEmpty.Spring = true;
             this.tsslEmpty.Text = " ";
             // 
@@ -3609,13 +3620,13 @@
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.Controls.Add(this.splitContainer1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1064, 482);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1264, 533);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.LeftToolStripPanelVisible = false;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 24);
             this.toolStripContainer1.Name = "toolStripContainer1";
             this.toolStripContainer1.RightToolStripPanelVisible = false;
-            this.toolStripContainer1.Size = new System.Drawing.Size(1064, 582);
+            this.toolStripContainer1.Size = new System.Drawing.Size(1264, 633);
             this.toolStripContainer1.TabIndex = 4;
             this.toolStripContainer1.Text = "toolStripContainer";
             // 
@@ -3639,7 +3650,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Panel2MinSize = 250;
-            this.splitContainer1.Size = new System.Drawing.Size(1064, 482);
+            this.splitContainer1.Size = new System.Drawing.Size(1264, 533);
             this.splitContainer1.SplitterDistance = 269;
             this.splitContainer1.TabIndex = 2;
             // 
@@ -3658,8 +3669,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.tbOutput);
-            this.splitContainer2.Size = new System.Drawing.Size(791, 482);
-            this.splitContainer2.SplitterDistance = 372;
+            this.splitContainer2.Size = new System.Drawing.Size(991, 533);
+            this.splitContainer2.SplitterDistance = 423;
             this.splitContainer2.TabIndex = 2;
             // 
             // tbOutput
@@ -3674,7 +3685,7 @@
             this.tbOutput.Name = "tbOutput";
             this.tbOutput.ReadOnly = true;
             this.tbOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbOutput.Size = new System.Drawing.Size(791, 105);
+            this.tbOutput.Size = new System.Drawing.Size(991, 105);
             this.tbOutput.TabIndex = 0;
             this.tbOutput.Text = "Output text box";
             // 
@@ -3689,7 +3700,7 @@
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(1064, 630);
+            this.ClientSize = new System.Drawing.Size(1264, 681);
             this.Controls.Add(this.toolStripContainer1);
             this.Controls.Add(this.statusStripMain);
             this.Controls.Add(this.menuStripMain);
@@ -4136,6 +4147,7 @@
         private System.Windows.Forms.ToolStripButton tsbResultsUndeformedWireframe;
         private System.Windows.Forms.ToolStripButton tsbResultsUndeformedSolid;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem tsmiPreviewLoad;
     }
 }
 

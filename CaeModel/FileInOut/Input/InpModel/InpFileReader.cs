@@ -94,7 +94,7 @@ namespace FileInOut.Input
             //
             if (fileName != null && File.Exists(fileName))
             {
-                string[] lines = File.ReadAllLines(fileName);
+                string[] lines = Tools.ReadAllLines(fileName);
                 lines = ReadIncludes(lines, 0, Path.GetDirectoryName(fileName));
                 //
                 string[] dataSet;
@@ -262,8 +262,8 @@ namespace FileInOut.Input
             //
             if (fileName != null && File.Exists(fileName))
             {
-                string[] lines = File.ReadAllLines(fileName);
-                lines = ReadIncludes(lines, 0, Path.GetDirectoryName(fileName));
+                string[] lines = Tools.ReadAllLines(fileName);
+                //lines = ReadIncludes(lines, 0, Path.GetDirectoryName(fileName));
                 //
                 string[] dataSet;
                 string[][] dataSets = GetDataSets(lines);
@@ -355,7 +355,7 @@ namespace FileInOut.Input
                             if (File.Exists(fileName))
                             {
                                 includeRowNumber = i;
-                                includeLines = File.ReadAllLines(fileName);
+                                includeLines = Tools.ReadAllLines(fileName);
                                 break;
                             }
                             else _errors.Add("Line " + i + ": The include file does not exist.");
