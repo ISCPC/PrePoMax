@@ -2759,9 +2759,7 @@ namespace UserControls
         }
         private bool CanPreview(TreeNode node)
         {
-            if (node.Tag is DLoad) return true;
-            else if (node.Tag is HydrostaticPressure) return true;
-            else if (node.Tag is ImportedPressure) return true;
+            if (node.Tag is IPreviewable) return true;
             else return false;
         }
         private bool CanSearchContactPairs(TreeNode node)

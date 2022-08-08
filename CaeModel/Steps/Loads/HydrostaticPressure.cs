@@ -10,7 +10,7 @@ using CaeResults;
 namespace CaeModel
 {
     [Serializable]
-    public class HydrostaticPressure : VariablePressure
+    public class HydrostaticPressure : VariablePressure, IPreviewable
     {
         // Variables                                                                                                                
         private double[] _firstPointCoor;

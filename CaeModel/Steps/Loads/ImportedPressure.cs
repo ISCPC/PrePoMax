@@ -11,7 +11,7 @@ using System.IO;
 namespace CaeModel
 {
     [Serializable]
-    public class ImportedPressure : VariablePressure
+    public class ImportedPressure : VariablePressure, IPreviewable
     {
         // Variables                                                                                                                
         private string _fileName;
@@ -79,6 +79,10 @@ namespace CaeModel
             }
             //
             return true;
+        }
+        public bool IsInitialized()
+        {
+            return _interpolator != null;
         }
         public void ImportPressure()
         {

@@ -311,6 +311,7 @@
             this.tsmiInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiPreviewInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerInitialCondition1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDeleteInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiStepMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -356,6 +357,7 @@
             this.tsmiCreateDefinedField = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditDefinedField = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiPropagateDefinedField = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiPreviewDefinedField = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerDefinedField1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDeleteDefinedField = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiAnalysis = new System.Windows.Forms.ToolStripMenuItem();
@@ -2779,6 +2781,7 @@
             this.tsmiInitialCondition.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiCreateInitialCondition,
             this.tsmiEditInitialCondition,
+            this.tsmiPreviewInitialCondition,
             this.tsmiDividerInitialCondition1,
             this.tsmiDeleteInitialCondition});
             this.tsmiInitialCondition.Name = "tsmiInitialCondition";
@@ -2788,26 +2791,34 @@
             // tsmiCreateInitialCondition
             // 
             this.tsmiCreateInitialCondition.Name = "tsmiCreateInitialCondition";
-            this.tsmiCreateInitialCondition.Size = new System.Drawing.Size(108, 22);
+            this.tsmiCreateInitialCondition.Size = new System.Drawing.Size(115, 22);
             this.tsmiCreateInitialCondition.Text = "Create";
             this.tsmiCreateInitialCondition.Click += new System.EventHandler(this.tsmiCreateInitialCondition_Click);
             // 
             // tsmiEditInitialCondition
             // 
             this.tsmiEditInitialCondition.Name = "tsmiEditInitialCondition";
-            this.tsmiEditInitialCondition.Size = new System.Drawing.Size(108, 22);
+            this.tsmiEditInitialCondition.Size = new System.Drawing.Size(115, 22);
             this.tsmiEditInitialCondition.Text = "Edit";
             this.tsmiEditInitialCondition.Click += new System.EventHandler(this.tsmiEditInitialCondition_Click);
+            // 
+            // tsmiPreviewInitialCondition
+            // 
+            this.tsmiPreviewInitialCondition.Image = global::PrePoMax.Properties.Resources.Preview_initial_condition;
+            this.tsmiPreviewInitialCondition.Name = "tsmiPreviewInitialCondition";
+            this.tsmiPreviewInitialCondition.Size = new System.Drawing.Size(115, 22);
+            this.tsmiPreviewInitialCondition.Text = "Preview";
+            this.tsmiPreviewInitialCondition.Click += new System.EventHandler(this.tsmiPreviewInitialCondition_Click);
             // 
             // tsmiDividerInitialCondition1
             // 
             this.tsmiDividerInitialCondition1.Name = "tsmiDividerInitialCondition1";
-            this.tsmiDividerInitialCondition1.Size = new System.Drawing.Size(105, 6);
+            this.tsmiDividerInitialCondition1.Size = new System.Drawing.Size(112, 6);
             // 
             // tsmiDeleteInitialCondition
             // 
             this.tsmiDeleteInitialCondition.Name = "tsmiDeleteInitialCondition";
-            this.tsmiDeleteInitialCondition.Size = new System.Drawing.Size(108, 22);
+            this.tsmiDeleteInitialCondition.Size = new System.Drawing.Size(115, 22);
             this.tsmiDeleteInitialCondition.Text = "Delete";
             this.tsmiDeleteInitialCondition.Click += new System.EventHandler(this.tsmiDeleteInitialCondition_Click);
             // 
@@ -2835,7 +2846,7 @@
             this.tsmiDeleteStep});
             this.tsmiStep.Image = global::PrePoMax.Properties.Resources.Step;
             this.tsmiStep.Name = "tsmiStep";
-            this.tsmiStep.Size = new System.Drawing.Size(153, 22);
+            this.tsmiStep.Size = new System.Drawing.Size(180, 22);
             this.tsmiStep.Text = "Step";
             // 
             // tsmiCreateStep
@@ -2874,7 +2885,7 @@
             // tsmiDividerStep1
             // 
             this.tsmiDividerStep1.Name = "tsmiDividerStep1";
-            this.tsmiDividerStep1.Size = new System.Drawing.Size(150, 6);
+            this.tsmiDividerStep1.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiHistoryOutput
             // 
@@ -2886,7 +2897,7 @@
             this.tsmiDeleteHistoryOutput});
             this.tsmiHistoryOutput.Image = global::PrePoMax.Properties.Resources.History_output;
             this.tsmiHistoryOutput.Name = "tsmiHistoryOutput";
-            this.tsmiHistoryOutput.Size = new System.Drawing.Size(153, 22);
+            this.tsmiHistoryOutput.Size = new System.Drawing.Size(180, 22);
             this.tsmiHistoryOutput.Text = "History Output";
             // 
             // tsmiCreateHistoryOutput
@@ -2932,7 +2943,7 @@
             this.tsmiDeleteFieldOutput});
             this.tsmiFieldOutput.Image = global::PrePoMax.Properties.Resources.Field_output;
             this.tsmiFieldOutput.Name = "tsmiFieldOutput";
-            this.tsmiFieldOutput.Size = new System.Drawing.Size(153, 22);
+            this.tsmiFieldOutput.Size = new System.Drawing.Size(180, 22);
             this.tsmiFieldOutput.Text = "Field Output";
             // 
             // tsmiCreateFieldOutput
@@ -2981,7 +2992,7 @@
             this.tsmiDeleteBC});
             this.tsmiBC.Image = global::PrePoMax.Properties.Resources.Bc;
             this.tsmiBC.Name = "tsmiBC";
-            this.tsmiBC.Size = new System.Drawing.Size(153, 22);
+            this.tsmiBC.Size = new System.Drawing.Size(180, 22);
             this.tsmiBC.Text = "BC";
             // 
             // tsmiCreateBC
@@ -3052,7 +3063,7 @@
             this.tsmiDeleteLoad});
             this.tsmiLoad.Image = global::PrePoMax.Properties.Resources.Load;
             this.tsmiLoad.Name = "tsmiLoad";
-            this.tsmiLoad.Size = new System.Drawing.Size(153, 22);
+            this.tsmiLoad.Size = new System.Drawing.Size(180, 22);
             this.tsmiLoad.Text = "Load";
             // 
             // tsmiCreateLoad
@@ -3124,43 +3135,52 @@
             this.tsmiCreateDefinedField,
             this.tsmiEditDefinedField,
             this.tsmiPropagateDefinedField,
+            this.tsmiPreviewDefinedField,
             this.tsmiDividerDefinedField1,
             this.tsmiDeleteDefinedField});
             this.tsmiDefinedField.Image = global::PrePoMax.Properties.Resources.Defined_field;
             this.tsmiDefinedField.Name = "tsmiDefinedField";
-            this.tsmiDefinedField.Size = new System.Drawing.Size(153, 22);
+            this.tsmiDefinedField.Size = new System.Drawing.Size(180, 22);
             this.tsmiDefinedField.Text = "Defined Field";
             // 
             // tsmiCreateDefinedField
             // 
             this.tsmiCreateDefinedField.Name = "tsmiCreateDefinedField";
-            this.tsmiCreateDefinedField.Size = new System.Drawing.Size(128, 22);
+            this.tsmiCreateDefinedField.Size = new System.Drawing.Size(180, 22);
             this.tsmiCreateDefinedField.Text = "Create";
             this.tsmiCreateDefinedField.Click += new System.EventHandler(this.tsmiCreateDefinedField_Click);
             // 
             // tsmiEditDefinedField
             // 
             this.tsmiEditDefinedField.Name = "tsmiEditDefinedField";
-            this.tsmiEditDefinedField.Size = new System.Drawing.Size(128, 22);
+            this.tsmiEditDefinedField.Size = new System.Drawing.Size(180, 22);
             this.tsmiEditDefinedField.Text = "Edit";
             this.tsmiEditDefinedField.Click += new System.EventHandler(this.tsmiEditDefinedField_Click);
             // 
             // tsmiPropagateDefinedField
             // 
             this.tsmiPropagateDefinedField.Name = "tsmiPropagateDefinedField";
-            this.tsmiPropagateDefinedField.Size = new System.Drawing.Size(128, 22);
+            this.tsmiPropagateDefinedField.Size = new System.Drawing.Size(180, 22);
             this.tsmiPropagateDefinedField.Text = "Propagate";
             this.tsmiPropagateDefinedField.Click += new System.EventHandler(this.tsmiPropagateDefinedField_Click);
+            // 
+            // tsmiPreviewDefinedField
+            // 
+            this.tsmiPreviewDefinedField.Image = global::PrePoMax.Properties.Resources.Preview_defined_field;
+            this.tsmiPreviewDefinedField.Name = "tsmiPreviewDefinedField";
+            this.tsmiPreviewDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiPreviewDefinedField.Text = "Preview";
+            this.tsmiPreviewDefinedField.Click += new System.EventHandler(this.tsmiPreviewDefinedField_Click);
             // 
             // tsmiDividerDefinedField1
             // 
             this.tsmiDividerDefinedField1.Name = "tsmiDividerDefinedField1";
-            this.tsmiDividerDefinedField1.Size = new System.Drawing.Size(125, 6);
+            this.tsmiDividerDefinedField1.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiDeleteDefinedField
             // 
             this.tsmiDeleteDefinedField.Name = "tsmiDeleteDefinedField";
-            this.tsmiDeleteDefinedField.Size = new System.Drawing.Size(128, 22);
+            this.tsmiDeleteDefinedField.Size = new System.Drawing.Size(180, 22);
             this.tsmiDeleteDefinedField.Text = "Delete";
             this.tsmiDeleteDefinedField.Click += new System.EventHandler(this.tsmiDeleteDefinedField_Click);
             // 
@@ -3598,7 +3618,7 @@
             // tsslEmpty
             // 
             this.tsslEmpty.Name = "tsslEmpty";
-            this.tsslEmpty.Size = new System.Drawing.Size(1126, 19);
+            this.tsslEmpty.Size = new System.Drawing.Size(928, 19);
             this.tsslEmpty.Spring = true;
             this.tsslEmpty.Text = " ";
             // 
@@ -4148,6 +4168,8 @@
         private System.Windows.Forms.ToolStripButton tsbResultsUndeformedSolid;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem tsmiPreviewLoad;
+        private System.Windows.Forms.ToolStripMenuItem tsmiPreviewInitialCondition;
+        private System.Windows.Forms.ToolStripMenuItem tsmiPreviewDefinedField;
     }
 }
 

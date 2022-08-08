@@ -6253,6 +6253,21 @@ namespace PrePoMax
         {
             return _model.InitialConditions.Values.ToArray();
         }
+        public void PreviewInitialCondition(string initialConditionName)
+        {
+            InitialCondition initialCondition = GetInitialCondition(initialConditionName);
+            if (initialCondition != null)
+            {
+                FeResults results;
+                if (initialCondition is InitialTemperature it)
+                {
+                    results = it.GetPreview(_model.Mesh, initialConditionName, _model.UnitSystem.UnitSystemType);
+                }
+                else throw new CaeException("It is not possible to preview this initial condition type.");
+                //
+                SetResults(results);
+            }
+        }
         public void ReplaceInitialCondition(string oldInitialConditionName, InitialCondition initialCondition)
         {
             DeleteSelectionBasedInitialConditionSets(oldInitialConditionName);
@@ -6927,23 +6942,23 @@ namespace PrePoMax
         }
         public void PreviewLoad(string stepName, string loadName)
         {
-            Load load = GetStep(stepName).Loads[loadName];
+            Load load = GetLoad(stepName, loadName);
             if (load != null)
             {
                 FeResults results;
                 if (load is DLoad dl)
                 {
-                    results = dl.GetPreview(_model.Mesh, stepName + "_" + load, _model.UnitSystem.UnitSystemType);
+                    results = dl.GetPreview(_model.Mesh, stepName + "_" + loadName, _model.UnitSystem.UnitSystemType);
                 }
                 else if (load is ImportedPressure ip)
                 {
-                    results = ip.GetPreview(_model.Mesh, stepName + "_" + load, _model.UnitSystem.UnitSystemType);
+                    results = ip.GetPreview(_model.Mesh, stepName + "_" + loadName, _model.UnitSystem.UnitSystemType);
                 }
                 else if (load is HydrostaticPressure hp)
                 {
-                    results = hp.GetPreview(_model.Mesh, stepName + "_" + load, _model.UnitSystem.UnitSystemType);
+                    results = hp.GetPreview(_model.Mesh, stepName + "_" + loadName, _model.UnitSystem.UnitSystemType);
                 }
-                else throw new NotSupportedException();
+                else throw new CaeException("It is not possible to preview this load type.");
                 //
                 SetResults(results);
             }
@@ -7101,7 +7116,7 @@ namespace PrePoMax
         }
         public DefinedField GetDefinedField(string stepName, string definedFieldName)
         {
-            return _model.StepCollection.GetStep(stepName).DefinedFields[definedFieldName]; ;
+            return _model.StepCollection.GetStep(stepName).DefinedFields[definedFieldName];
         }
         public DefinedField[] GetAllDefinedFields(string stepName)
         {
@@ -7137,6 +7152,21 @@ namespace PrePoMax
                     AddDefinedField(nextStepName, definedField);
             }
 
+        }
+        public void PreviewDefinedField(string stepName, string definedFieldName)
+        {
+            DefinedField definedField = GetDefinedField(stepName, definedFieldName);
+            if (definedField != null)
+            {
+                FeResults results;
+                if (definedField is DefinedTemperature dt)
+                {
+                    results = dt.GetPreview(_model.Mesh, stepName + "_" + definedFieldName, _model.UnitSystem.UnitSystemType);
+                }
+                else throw new CaeException("It is not possible to preview this defined field type.");
+                //
+                SetResults(results);
+            }
         }
         public void ActivateDeactivateDefinedField(string stepName, string definedFieldName, bool active)
         {
@@ -11315,6 +11345,8 @@ namespace PrePoMax
         public void DrawImportedPressureLoadSymbols(string prefixName, ImportedPressure ipLoad, Color color, int symbolSize,
                                                     vtkControl.vtkRendererLayer layer)
         {
+            if (!ipLoad.IsInitialized()) ipLoad.ImportPressure();
+            //
             FeSurface surface = _model.Mesh.Surfaces[ipLoad.SurfaceName];
             //
             List<int> allElementIds = new List<int>();
@@ -11338,8 +11370,10 @@ namespace PrePoMax
             // Front shell face which is a S2 POS face works in the same way as a solid face
             // Back shell face which is a S1 NEG must be inverted
             int id;
-            double[] faceNormal;
             bool shellElement;
+            double[] faceNormal;
+            double maxPressure = 0;
+            double[] pressures = new double[distributedElementIds.Length];
             double[][] distributedCoor = new double[distributedElementIds.Length][];
             double[][] distributedLoadNormals = new double[distributedElementIds.Length][];
             for (int i = 0; i < distributedElementIds.Length; i++)
@@ -11347,8 +11381,12 @@ namespace PrePoMax
                 id = distributedElementIds[i];
                 _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
                                                           out faceNormal, out shellElement);
+                // Pressure
+                pressures[i] = ipLoad.GetPressureForPoint(faceCenter);
+                if (Math.Abs(pressures[i]) > maxPressure) maxPressure = Math.Abs(pressures[i]);
                 //
-                if ((ipLoad.ScaleFactor < 0) != shellElement) // if both are equal no need to reverse the direction
+                if ((ipLoad.TwoD && pressures[i] < 0) ||    // only 2d edges can be selected, 3d edges cannot be selected
+                    (!ipLoad.TwoD && (pressures[i] < 0) != shellElement))   // if both are equal no need to reverse the direction
                 {
                     faceNormal[0] *= -1;
                     faceNormal[1] *= -1;
@@ -11359,18 +11397,19 @@ namespace PrePoMax
                 distributedLoadNormals[i] = faceNormal;
             }
             // Arrows
-            if (allCoor.Count > 0)
+            vtkControl.vtkMaxActorData data;
+            for (int i = 0; i < distributedElementIds.Length; i++)
             {
-                vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-                data.Name = prefixName;
+                data = new vtkControl.vtkMaxActorData();
+                data.Name = prefixName + "_" + i.ToString();
                 data.Color = color;
                 data.Layer = layer;
-                data.Geometry.Nodes.Coor = distributedCoor.ToArray();
-                data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
+                data.Geometry.Nodes.Coor = new double[][] { distributedCoor[i] };
+                data.Geometry.Nodes.Normals = new double[][] { distributedLoadNormals[i] };
                 data.SectionViewPossible = false;
                 ApplyLighting(data);
-                bool translate = ipLoad.ScaleFactor > 0;
-                _form.AddOrientedArrowsActor(data, symbolSize, translate);
+                bool translate = pressures[i] > 0;
+                _form.AddOrientedArrowsActor(data, symbolSize, translate, Math.Abs(pressures[i]) / maxPressure);
             }
         }
         public void DrawSTLoadSymbols(string prefixName, STLoad stLoad, double[][] symbolCoor, Color color,

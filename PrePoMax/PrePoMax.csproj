@@ -892,6 +892,8 @@
     <None Include="Icons\Mesh\Reference_point.ico" />
     <None Include="Icons\Material\Material.ico" />
     <None Include="Icons\Section\Section.ico" />
+    <None Include="Icons\Initial conditions\Preview_initial_condition.ico" />
+    <None Include="Icons\Step\Preview_defined_field.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

@@ -172,9 +172,6 @@
   <data name="Down_arrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Down_arrow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="InvertHideShow" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Common\InvertHideShow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Material" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Material\Material.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -259,6 +256,9 @@
   <data name="Surface" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Mesh\Surface.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Section" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Section\Section.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Undeformed_Wireframe" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Undeformed_Wireframe.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -295,6 +295,9 @@
   <data name="NoResult" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Analysis\NoResult.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Preview_initial_condition" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Initial conditions\Preview_initial_condition.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Warning" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Analysis\Warning.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -316,6 +319,9 @@
   <data name="Field_output" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Step\Field_output.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="InvertHideShow" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Common\InvertHideShow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Node_set" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Mesh\Node_set.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -334,7 +340,7 @@
   <data name="ElementEdges" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\View\ElementEdges.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Section" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Section\Section.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Preview_defined_field" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Step\Preview_defined_field.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

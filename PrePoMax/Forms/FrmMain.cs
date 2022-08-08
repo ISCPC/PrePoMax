@@ -895,7 +895,9 @@ namespace PrePoMax
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
+                ApplyActionOnItems<InitialCondition>(items, PreviewInitialCondition);
                 ApplyActionOnItemsInStep<Load>(items, stepNames, PreviewLoad);
+                ApplyActionOnItemsInStep<DefinedField>(items, stepNames, PreviewDefinedField);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
@@ -4611,6 +4613,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiPreviewInitialCondition_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Initial Conditions", _controller.GetAllInitialConditions(), PreviewInitialCondition);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeleteInitialCondition_Click(object sender, EventArgs e)
         {
             try
@@ -4639,6 +4652,29 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmInitialCondition;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmInitialCondition, "Edit Initial Condition", initialConditionName);
+        }
+        private void PreviewInitialCondition(string[] initialConditionNames)
+        {
+            foreach (var name in initialConditionNames) PreviewInitialCondition(name);
+        }
+        private void PreviewInitialCondition(string initialConditionName)
+        {
+            _controller.PreviewInitialCondition(initialConditionName);
+            //
+            if (_controller.CurrentResult != null && _controller.CurrentResult.Mesh != null)
+            {
+                SetResultNames();
+                // Reset the previous step and increment
+                SetAllStepAndIncrementIds();
+                // Set last increment
+                SetDefaultStepAndIncrementIds();
+                // Show the selection in the results tree
+                SelectFirstComponentOfFirstFieldOutput();
+            }
+            // Set the representation which also calls Draw
+            _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+            //
+            SetMenuAndToolStripVisibility();
         }
         private void DeleteInitialConditions(string[] initialConditionNames)
         {
@@ -5331,6 +5367,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiPreviewDefinedField_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndPreviewDefinedField);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeleteDefinedField_Click(object sender, EventArgs e)
         {
             try
@@ -5350,6 +5397,10 @@ namespace PrePoMax
         private void SelectAndPropagateDefinedField(string stepName)
         {
             SelectOneEntityInStep("Defined fields", _controller.GetAllDefinedFields(stepName), stepName, PropagateDefinedField);
+        }
+        private void SelectAndPreviewDefinedField(string stepName)
+        {
+            SelectOneEntityInStep("Defined fields", _controller.GetAllDefinedFields(stepName), stepName, PreviewDefinedField);
         }
         private void SelectAndDeleteDefinedFields(string stepName)
         {
@@ -5395,6 +5446,25 @@ namespace PrePoMax
                                                      + "?") == DialogResult.Cancel) propagate = false;
             }
             if (propagate) _controller.PropagateDefinedFieldCommand(stepName, definedFieldName);
+        }
+        private void PreviewDefinedField(string stepName, string definedFieldName)
+        {
+            _controller.PreviewDefinedField(stepName, definedFieldName);
+            //
+            if (_controller.CurrentResult != null && _controller.CurrentResult.Mesh != null)
+            {
+                SetResultNames();
+                // Reset the previous step and increment
+                SetAllStepAndIncrementIds();
+                // Set last increment
+                SetDefaultStepAndIncrementIds();
+                // Show the selection in the results tree
+                SelectFirstComponentOfFirstFieldOutput();
+            }
+            // Set the representation which also calls Draw
+            _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+            //
+            SetMenuAndToolStripVisibility();
         }
         private void DeleteDefinedFields(string stepName, string[] definedFieldNames)
         {
@@ -8297,6 +8367,6 @@ namespace PrePoMax
             }
         }
 
-       
+        
     }
 }

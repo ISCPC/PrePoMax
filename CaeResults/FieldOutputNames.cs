@@ -57,7 +57,7 @@ namespace CaeResults
         public const string F1 = "F1";
         public const string F2 = "F2";
         public const string F3 = "F3";
-        //
+        // Stress
         public const string Mises = "MISES";
         public const string Tresca = "TRESCA";
         public const string S11 = "S11";
@@ -66,7 +66,7 @@ namespace CaeResults
         public const string S12 = "S12";
         public const string S23 = "S23";
         public const string S13 = "S13";
-        //
+        // Strain
         public const string ME11 = "ME11";
         public const string ME22 = "ME22";
         public const string ME33 = "ME33";
@@ -80,7 +80,9 @@ namespace CaeResults
         public const string E12 = "E12";
         public const string E23 = "E23";
         public const string E13 = "E13";
-        //
+        // Thermal
+        public const string T = "T";
+        // Contact
         public const string COpen = "COPEN";
         public const string CSlip1 = "CSLIP1";
         public const string CSlip2 = "CSLIP2";

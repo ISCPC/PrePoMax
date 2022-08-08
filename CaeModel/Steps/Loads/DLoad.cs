@@ -10,7 +10,7 @@ using CaeResults;
 namespace CaeModel
 {
     [Serializable]
-    public class DLoad : Load
+    public class DLoad : Load, IPreviewable
     {
         // Variables                                                                                                                
         private string _surfaceName;
@@ -34,10 +34,10 @@ namespace CaeModel
             _magnitude = magnitude;
         }
 
+
         // Methods                                                                                                                  
         public FeResults GetPreview(FeMesh targetMesh, string resultName, UnitSystemType unitSystemType)
         {
-            //
             PartExchangeData allData = new PartExchangeData();
             targetMesh.GetAllNodesAndCells(out allData.Nodes.Ids, out allData.Nodes.Coor, out allData.Cells.Ids,
                                            out allData.Cells.CellNodeIds, out allData.Cells.Types);

@@ -96,6 +96,8 @@ namespace PrePoMax
             //
             SetBase(_definedTemperature, regionTypePropertyNamePairs);
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            FilteredFileNameEditor.Filter = "Calculix result files|*.frd";
         }
 
 
