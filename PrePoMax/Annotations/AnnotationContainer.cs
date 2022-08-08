@@ -12,9 +12,10 @@ namespace PrePoMax
     public class AnnotationContainer
     {
         // Variables                                                                                                                
+        private bool _suppressed;                                           // used only for min/max annotations
         public static string MeasureAnnotationName = "Measure_Annotation";
-        public static string MinAnnotationName = "Min_Annotation";
-        public static string MaxAnnotationName = "Max_Annotation";
+        public static string MinAnnotationName = "Min_Annotation";          // there is a copy of this in vtkControl.Globals
+        public static string MaxAnnotationName = "Max_Annotation";          // there is a copy of this in vtkControl.Globals
         //
         private Dictionary<string, AnnotationBase> _geometryAnnotations;
         private Dictionary<string, AnnotationBase> _modelAnnotations;
@@ -29,6 +30,8 @@ namespace PrePoMax
         {
             AnnotationBase.Controller = controller;
             //
+            _suppressed = false;
+            //
             _geometryAnnotations = new Dictionary<string, AnnotationBase>();
             _modelAnnotations = new Dictionary<string, AnnotationBase>();
             _allResultsAnnotations = new Dictionary<string, Dictionary<string, AnnotationBase>>();
@@ -36,6 +39,8 @@ namespace PrePoMax
         public AnnotationContainer(AnnotationContainer annotationContainer, Controller controller)
         {
             AnnotationBase.Controller = controller;
+            //
+            _suppressed = false;
             //
             if (annotationContainer == null)    // compatibility v1.3.1
             {
@@ -185,6 +190,8 @@ namespace PrePoMax
         }
         public void SuppressCurrentAnnotations()
         {
+            _suppressed = true;
+            //
             RemoveCurrentMeasureAnnotation();   // measure annotations cannot be suppressed
             //
             foreach (var entry in GetCurrentAnnotations()) entry.Value.Visible = false;
@@ -193,6 +200,8 @@ namespace PrePoMax
         }
         public void ResumeCurrentAnnotations()
         {
+            _suppressed = false;
+            //
             foreach (var entry in GetCurrentAnnotations()) entry.Value.Visible = true;
             //
             DrawAnnotations();
@@ -237,8 +246,8 @@ namespace PrePoMax
             // Min/Max annotations
             if (AnnotationBase.Controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                bool showMin = AnnotationBase.Controller.Settings.Post.ShowMinValueLocation;
-                bool showMax = AnnotationBase.Controller.Settings.Post.ShowMaxValueLocation;
+                bool showMin = AnnotationBase.Controller.Settings.Post.ShowMinValueLocation && !_suppressed;
+                bool showMax = AnnotationBase.Controller.Settings.Post.ShowMaxValueLocation && !_suppressed;
                 //
                 AnnotationBase.Controller.Form.AddArrowWidget(MinAnnotationName, "", numberFormat, new double[3],
                                                                 drawBackground, drawBorder, showMin);

@@ -5806,13 +5806,6 @@ namespace vtkControl
                 arrowWidget.GetBackgroundProperty().SetColor(1, 1, 1);
                 // Set text, number format and anchor befofre arrange
                 arrowWidget.SetNumberFormat(numberFormat);
-                // Update the contents of the min/max annotations
-                if (visible && (name == Globals.MinAnnotationName || name == Globals.MaxAnnotationName)) UpdateScalarFormatting();
-                else
-                {
-                    arrowWidget.SetText(text);
-                    arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
-                }
                 // Event
                 arrowWidget.MouseDoubleClick += widget_DoubleClicked;
                 // Add
@@ -5823,13 +5816,6 @@ namespace vtkControl
             else
             {
                 arrowWidget.SetNumberFormat(numberFormat);
-                // Update the contents of the min/max annotations
-                if (visible && (name == Globals.MinAnnotationName || name == Globals.MaxAnnotationName)) UpdateScalarFormatting();
-                else
-                {
-                    arrowWidget.SetText(text);
-                    arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
-                }
             }
             //
             if (visible) arrowWidget.VisibilityOn();
@@ -5839,6 +5825,13 @@ namespace vtkControl
             else arrowWidget.BackgroundVisibilityOff();
             if (drawBorder) arrowWidget.BorderVisibilityOn();
             else arrowWidget.BorderVisibilityOff();
+            // Update the contents and visibility of the min/max annotations - due to visibility must be here
+            if (visible && (name == Globals.MinAnnotationName || name == Globals.MaxAnnotationName)) UpdateScalarFormatting();
+            else
+            {
+                arrowWidget.SetText(text);
+                arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
+            }
             //
             RenderSceene();
         }

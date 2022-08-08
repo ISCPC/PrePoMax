@@ -80,7 +80,7 @@ namespace CaeGlobals
                 double valueDouble;
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    valueDouble = ConvertToUnits(valueString);
+                    valueDouble = ConvertToCrrentUnits(valueString);
                 }
                 return valueDouble;
             }
@@ -108,7 +108,7 @@ namespace CaeGlobals
             }
         }
         //
-        private static double ConvertToUnits(string valueWithUnitString)
+        private static double ConvertToCrrentUnits(string valueWithUnitString)
         {
             valueWithUnitString = valueWithUnitString.Trim().Replace(" ", "");
             //

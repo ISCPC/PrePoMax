@@ -58,7 +58,7 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    valueDouble = ConvertToUnits(valueString);
+                    valueDouble = ConvertToCrrentUnits(valueString);
                 }
                 //
                 return valueDouble;
@@ -88,7 +88,7 @@ namespace CaeGlobals
             }
         }
         //
-        private static double ConvertToUnits(string valueWithUnitString)
+        private static double ConvertToCrrentUnits(string valueWithUnitString)
         {
             // 1 inch = 1/12 foot
             double conversion = 1.0 / 12.0;

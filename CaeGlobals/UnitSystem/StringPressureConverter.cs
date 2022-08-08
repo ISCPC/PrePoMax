@@ -49,9 +49,7 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Pressure pressure = Pressure.Parse(valueString);
-                    if ((int)_pressureUnit != MyUnit.NoUnit) pressure = pressure.ToUnit(_pressureUnit);
-                    valueDouble = pressure.Value;
+                    valueDouble = ConvertToCrrentUnits(valueString);
                 }
                 //
                 return valueDouble;
@@ -78,6 +76,13 @@ namespace CaeGlobals
             {
                 return base.ConvertTo(context, culture, value, destinationType);
             }
+        }
+        //
+        public static double ConvertToCrrentUnits(string valueWithUnitString)
+        {
+            Pressure pressure = Pressure.Parse(valueWithUnitString);
+            if ((int)_pressureUnit != MyUnit.NoUnit) pressure = pressure.ToUnit(_pressureUnit);
+            return pressure.Value;
         }
     }
 

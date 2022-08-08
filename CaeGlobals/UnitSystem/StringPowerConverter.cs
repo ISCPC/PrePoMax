@@ -58,7 +58,7 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    valueDouble = ConvertToUnits(valueString);
+                    valueDouble = ConvertToCrrentUnits(valueString);
                 }
                 //
                 return valueDouble;
@@ -87,7 +87,7 @@ namespace CaeGlobals
                 return base.ConvertTo(context, culture, value, destinationType);
             }
         }
-        private static double ConvertToUnits(string valueString)
+        private static double ConvertToCrrentUnits(string valueString)
         {
             // 1 inch = 0.0254 meters
             // 1 pound force = 4.44822162 newtons
