@@ -80,9 +80,32 @@ namespace CaeGlobals
         //
         public static double ConvertToCrrentUnits(string valueWithUnitString)
         {
-            Pressure pressure = Pressure.Parse(valueWithUnitString);
-            if ((int)_pressureUnit != MyUnit.NoUnit) pressure = pressure.ToUnit(_pressureUnit);
-            return pressure.Value;
+            try
+            {
+                Pressure pressure = Pressure.Parse(valueWithUnitString);
+                if ((int)_pressureUnit != MyUnit.NoUnit) pressure = pressure.ToUnit(_pressureUnit);
+                return pressure.Value;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + Environment.NewLine + Environment.NewLine + SupportedUnitAbbreviations());
+            }
+        }
+        public static string SupportedUnitAbbreviations()
+        {
+            string abb;
+            string supportedUnitAbbreviations = "Supported pressure abbreviations: ";
+            var allUnits = Pressure.Units;
+            for (int i = 0; i < allUnits.Length; i++)
+            {
+                abb = Pressure.GetAbbreviation(allUnits[i]);
+                if (abb != null) abb.Trim();
+                if (abb.Length > 0) supportedUnitAbbreviations += abb;
+                if (i != allUnits.Length - 1) supportedUnitAbbreviations += ", ";
+            }
+            supportedUnitAbbreviations += ".";
+            //
+            return supportedUnitAbbreviations;
         }
     }
 
