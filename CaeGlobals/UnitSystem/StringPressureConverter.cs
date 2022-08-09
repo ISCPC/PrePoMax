@@ -15,7 +15,7 @@ namespace CaeGlobals
     {
         // Variables                                                                                                                
         protected static PressureUnit _pressureUnit = PressureUnit.Pascal;
-        
+
 
         // Properties                                                                                                               
         public static string SetUnit
@@ -32,7 +32,7 @@ namespace CaeGlobals
         public StringPressureConverter()
         {
         }
-
+        
 
         // Methods                                                                                                                  
         public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
