@@ -100,6 +100,7 @@ namespace CaeGlobals
                 unit = "";
             else unit = Power.GetAbbreviation(powerUnit) + "/(" + Area.GetAbbreviation(areaUnit) + "·" +
                         TemperatureDelta.GetAbbreviation(temperatureDeltaUnit) + ")";
+            //return unit;
             return unit.Replace("∆", "");
         }
         
@@ -122,15 +123,10 @@ namespace CaeGlobals
             if (value is string valueString)
             {
                 double valueDouble;
-                double conversionToSI;
-                double conversionFromSI;
+                //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    GetConversionToSI(valueString, out valueDouble, out conversionToSI);
-                    GetConversionFromSI(out conversionFromSI);
-                    //
-                    if (Math.Abs(conversionToSI - 1 / conversionFromSI) > 1E-6)
-                        valueDouble *= conversionToSI * conversionFromSI;
+                    valueDouble = ConvertToCurrentUnits(valueString);
                 }
                 return valueDouble;
             }
@@ -232,6 +228,36 @@ namespace CaeGlobals
                 //
                 conversionFromSI = (double)power.Value / (area.Value * temperatureDelta.Value);
             }
+        }
+        //
+        public static double ConvertToCurrentUnits(string valueWithUnitString)
+        {
+            try
+            {
+                double valueDouble;
+                double conversionToSI;
+                double conversionFromSI;
+                GetConversionToSI(valueWithUnitString, out valueDouble, out conversionToSI);
+                GetConversionFromSI(out conversionFromSI);
+                //
+                if (Math.Abs(conversionToSI - 1 / conversionFromSI) > 1E-6)
+                    valueDouble *= conversionToSI * conversionFromSI;
+                //
+                return valueDouble;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message.Replace("∆", "") + Environment.NewLine + Environment.NewLine + SupportedUnitAbbreviations());
+            }
+        }
+        public static string SupportedUnitAbbreviations()
+        {
+            string supportedUnitAbbreviations = StringPowerConverter.SupportedUnitAbbreviations();
+            supportedUnitAbbreviations += Environment.NewLine + Environment.NewLine;
+            supportedUnitAbbreviations += StringAreaConverter.SupportedUnitAbbreviations();
+            supportedUnitAbbreviations += Environment.NewLine + Environment.NewLine;
+            supportedUnitAbbreviations += StringTemperatureConverter.SupportedDeltaUnitAbbreviations();
+            return supportedUnitAbbreviations;
         }
     }
 

@@ -48,7 +48,7 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    valueDouble = ConvertToCrrentUnits(valueString);
+                    valueDouble = ConvertToCurrentUnits(valueString);
                 }
                 //
                 return valueDouble;
@@ -76,7 +76,7 @@ namespace CaeGlobals
                 return base.ConvertTo(context, culture, value, destinationType);
             }
         }
-        public static double ConvertToCrrentUnits(string valueWithUnitString)
+        public static double ConvertToCurrentUnits(string valueWithUnitString)
         {
             try
             {

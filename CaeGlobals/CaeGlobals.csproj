@@ -130,8 +130,9 @@
     <Compile Include="CommonClasses\Vec3D.cs" />
     <Compile Include="UnitSystem\MyUnit.cs" />
     <Compile Include="UnitSystem\StringAccelerationConverter.cs" />
-    <Compile Include="UnitSystem\StringHeatTransferCoefficientConverter - Copy.cs" />
+    <Compile Include="UnitSystem\StringHeatTransferCoefficientConverter.cs" />
     <Compile Include="UnitSystem\StringHeatTransferCoefficientFromConverter.cs" />
+    <Compile Include="UnitSystem\StringMassConverter.cs" />
     <Compile Include="UnitSystem\StringPowerConverter.cs" />
     <Compile Include="UnitSystem\StringNewtonGravityUndefinedConverter.cs" />
     <Compile Include="UnitSystem\StringPowerPerVolumeConverter.cs" />
