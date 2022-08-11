@@ -44,6 +44,8 @@ namespace UserControls
             //
             propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(labelRatio);
+            //
+            propertyGrid.Site = new MySite(propertyGrid);
         }
 
 

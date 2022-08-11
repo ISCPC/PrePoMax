@@ -46,6 +46,10 @@ namespace CaeGlobals
                 return MessageBox.Show(text, "Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
             }
         }
+        public static DialogResult ShowWarningQuestion(IWin32Window owner, string text)
+        {
+            return MessageBox.Show(owner, text, "Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+        }
         public static DialogResult ShowQuestion(string caption, string text)
         {
             using (new CenterWinDialog(ParentForm))
