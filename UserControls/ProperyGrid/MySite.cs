@@ -9,6 +9,9 @@ using System.ComponentModel;
 
 namespace UserControls
 {
+    //                                                                                                                              
+    // https://stackoverflow.com/questions/23219139/propertygrid-validation                                                         
+    //                                                                                                                              
     public class MySite : ISite, IUIService
     {
         public MySite(PropertyGrid propertyGrid)
@@ -27,32 +30,21 @@ namespace UserControls
         // this is part of IUIService
         public DialogResult ShowDialog(Form form)
         {
-            // Check the form passed here is the error dialog box.
-            // It's type name should be GridErrorDlg.
-            // You can also scan all controls and for example
-            // remove or modify some buttons...
+            // Check the form passed here is the error dialog box. It's type name should be GridErrorDlg.
             DialogResult result;
             //
             if (form.GetType().Name == "GridErrorDlg")
             {
-                string info = "";
-                //info += Environment.NewLine + Environment.NewLine;
-                //info += "OK - continue editing;
-                //info += "Cancel - cancel editing;";
-                result = CaeGlobals.MessageBoxes.ShowWarningQuestion(PropertyGrid, form.Controls[0].Text + info);
+                // Show a message box instead of the default error form
+                result = CaeGlobals.MessageBoxes.ShowWarningQuestion(PropertyGrid, form.Controls[0].Text);
+                // To reset the property grid data use refresh
+                //PropertyGrid.Refresh();
             }
             else
             {
                 result = form.ShowDialog(PropertyGrid);
             }
             return result;
-
-            //DialogResult result = form.ShowDialog(PropertyGrid);
-            //if (form.GetType().Name == "GridErrorDlg" && result == DialogResult.OK)
-            //{
-            //    //PropertyGrid.Refresh();
-            //}
-            //return result;
         }
 
         public PropertyGrid PropertyGrid { get; private set; }
