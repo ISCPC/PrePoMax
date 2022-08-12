@@ -7419,13 +7419,14 @@ namespace PrePoMax
         private bool CheckModelBeforeJobRun()
         {
             // Check for missing section
+            string msg;
             int[] unAssignedElementIds = _model.GetSectionAssignments(out Dictionary<int, int> elementIdSectionId);
             if (unAssignedElementIds.Length != 0)
             {
                 string elementSetName = _model.Mesh.ElementSets.GetNextNumberedKey(Globals.MissingSectionName);
                 AddElementSetCommand(new FeElementSet(elementSetName, unAssignedElementIds));
                 //
-                string msg = unAssignedElementIds.Length + " finite elements are missing a section assignment. Continue?";
+                msg = unAssignedElementIds.Length + " finite elements are missing a section assignment. Continue?";
                 if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
                                     MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
             }
@@ -7433,15 +7434,15 @@ namespace PrePoMax
             int[] slipWearStepIds = _model.StepCollection.GetSlipWearStepIds();
             if (slipWearStepIds.Length > 0 && _model.Properties.ModelType != ModelType.SlipWearModel)
             {
-                string msg = "Slip wear steps are defined but the model type is not a slip wear model. Continue?";
+                msg = "Slip wear steps are defined but the model type is not a slip wear model. Continue?";
                 if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
                                     MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
             }
             // Check for existance of boundary displacement step
             if (_model.Properties.BdmRemeshing && _model.StepCollection.GetBoundaryDisplacementStep() == null)
             {
-                string msg = "Mesh smoothing after the slip wear step is turned on but the boundary displacement step " +
-                             "is not defined. Continue?";
+                msg = "Mesh smoothing after the slip wear step is turned on but the boundary displacement step " +
+                      "is not defined. Continue?";
                 if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
                                     MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
             }
@@ -7451,23 +7452,34 @@ namespace PrePoMax
             {
                 if (!_model.AreSlipWearCoefficientsDefined(out materialIdCoefficient))
                 {
-                    string msg = "No slip wear material coefficients are defined. Continue?";
+                    msg = "No slip wear material coefficients are defined. Continue?";
                     if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
                                         MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
                 }
                 if (!_model.StepCollection.AreContactHistoryOutputsDefined())
                 {
-                    string msg = "Contact history output variables CDIS are not defined for each analysis step. Continue?";
+                    msg = "Contact history output variables CDIS are not defined for each analysis step. Continue?";
                     if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
                                         MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
                 }
             }
-            // Check for radiation load without Stefan-Boltzmann constant
-            if (_model.StepCollection.IsActiveRadiationLoadDefined() && !_model.Properties.IsStefanBoltzmannDefined())
+            // Check for radiation load without Stefan-Boltzmann and absolute zero constants
+            if (_model.StepCollection.IsActiveRadiationLoadDefined())
             {
-                string msg = "A radiation load is used but the Stefan-Boltzmann constant is not defined. Continue?";
-                if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
-                                    MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
+                msg = "";
+                if (!_model.Properties.IsAbsoluteZeroDefined() && !_model.Properties.IsStefanBoltzmannDefined())
+                    msg = "A radiation load is used but the absolute zero temperature and the Stefan-Boltzmann constant " +
+                           "are not defined. Continue?";
+                else if (!_model.Properties.IsAbsoluteZeroDefined())
+                    msg = "A radiation load is used but the absolute zero temperature is not defined. Continue?";
+                else if (!_model.Properties.IsStefanBoltzmannDefined())
+                    msg = "A radiation load is used but the Stefan-Boltzmann constant is not defined. Continue?";
+                //
+                if (msg.Length > 0)
+                {
+                    if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) ==
+                        DialogResult.Cancel) return false;
+                }
             }
             return true;
         }

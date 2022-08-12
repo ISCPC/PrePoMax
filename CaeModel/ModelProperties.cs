@@ -185,6 +185,10 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
+        public bool IsAbsoluteZeroDefined()
+        {
+            return AbsoluteZero != double.PositiveInfinity;
+        }
         public bool IsStefanBoltzmannDefined()
         {
             return StefanBoltzmann != double.PositiveInfinity;
