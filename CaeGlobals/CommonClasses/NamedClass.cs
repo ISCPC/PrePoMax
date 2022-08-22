@@ -108,7 +108,6 @@ namespace CaeGlobals
             //
             return nameRoot + max.ToString();
         }
-
         public static string GetNameWithoutLastValue(string name, char splitter = '-')
         {
             int tmp;

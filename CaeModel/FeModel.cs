@@ -1088,6 +1088,8 @@ namespace CaeModel
             double area;
             GetDistributedNodalValuesFromSurface(spring.RegionName, out nodalStiffnesses, out area);
             //
+            if (spring.StiffnessPerArea) area = 1;      // account for the stiffness type
+            //
             List<PointSpring> springs = new List<PointSpring>();
             foreach (var entry in nodalStiffnesses)
             {
