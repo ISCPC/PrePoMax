@@ -5939,7 +5939,14 @@ namespace PrePoMax
         private void GetDefaultJob(List<AnalysisJob> defaultJob)
         {
             _frmAnalysis.PrepareForm(null, null);
-            defaultJob.Add(_frmAnalysis.Job);
+            AnalysisJob job = _frmAnalysis.Job;
+            //
+            if (_controller.OpenedFileName != null)
+            {
+                job.Name = NamedClass.GetErrorFreeName(Path.GetFileNameWithoutExtension(_controller.OpenedFileName));
+            }
+            //
+            defaultJob.Add(job);
         }
 
         #endregion  ################################################################################################################
