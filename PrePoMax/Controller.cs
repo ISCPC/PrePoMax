@@ -2809,6 +2809,10 @@ namespace PrePoMax
             int partId = part1.PartId;
             _model.Geometry.ChangePartId(partName1, part2.PartId);
             _model.Geometry.ChangePartId(partName2, partId);
+            // Swap meshing parameters
+            MeshingParameters meshingParameters = part1.MeshingParameters;
+            part1.MeshingParameters = part2.MeshingParameters;
+            part2.MeshingParameters = meshingParameters;
             // Swap colors
             Color color = part1.Color;
             part1.Color = part2.Color;
