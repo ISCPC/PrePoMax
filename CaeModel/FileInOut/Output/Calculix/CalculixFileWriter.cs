@@ -70,7 +70,7 @@ namespace FileInOut.Output
             // Collect pre-tension loads
             string name;
             List<PreTensionLoad> preTensionLoadsList;
-            OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads = new OrderedDictionary<string, List<PreTensionLoad>>();
+            OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads = new OrderedDictionary<string, List<PreTensionLoad>>("Pretension loads");
             foreach (var step in model.StepCollection.StepsList)
             {
                 foreach (var entry in step.Loads)

@@ -122,25 +122,25 @@ namespace CaeMesh
             //
             _meshRepresentation = representation;
             //
-            _nodeSets = new OrderedDictionary<string, FeNodeSet>();
-            _elementSets = new OrderedDictionary<string, FeElementSet>();
+            _nodeSets = new OrderedDictionary<string, FeNodeSet>("Node sets");
+            _elementSets = new OrderedDictionary<string, FeElementSet>("Element sets");
             //
-            _surfaces = new OrderedDictionary<string, FeSurface>();
-            _referencePoints = new OrderedDictionary<string, FeReferencePoint>();
+            _surfaces = new OrderedDictionary<string, FeSurface>("Surfaces");
+            _referencePoints = new OrderedDictionary<string, FeReferencePoint>("Reference points");
             //
-            _parts = new OrderedDictionary<string, BasePart>();
+            _parts = new OrderedDictionary<string, BasePart>("Base parts");
             ExtractPartsFast(inpElementTypeSets, partNamePrefix, importOptions);
             //
-            _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>();
+            _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>("Mesh refinements");
             //
             UpdateMaxNodeAndElementIds();
         }
         public FeMesh(FeMesh mesh, string[] partsToKeep)
         {
             _meshRepresentation = mesh._meshRepresentation;
-            _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>();
+            _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>("Mesh refinements");
             //
-            _parts = new OrderedDictionary<string, BasePart>();
+            _parts = new OrderedDictionary<string, BasePart>("Base parts");
             foreach (var partName in partsToKeep)
             {
                 _parts.Add(partName, mesh.Parts[partName].DeepCopy());
@@ -166,10 +166,10 @@ namespace CaeMesh
                 _elements.Add(elementId, mesh.Elements[elementId].DeepCopy());
             }
             //
-            _nodeSets = new OrderedDictionary<string, FeNodeSet>();
-            _elementSets = new OrderedDictionary<string, FeElementSet>();
-            _surfaces = new OrderedDictionary<string, FeSurface>();
-            _referencePoints = new OrderedDictionary<string, FeReferencePoint>();
+            _nodeSets = new OrderedDictionary<string, FeNodeSet>("Node sets");
+            _elementSets = new OrderedDictionary<string, FeElementSet>("Element sets");
+            _surfaces = new OrderedDictionary<string, FeSurface>("Surfaces");
+            _referencePoints = new OrderedDictionary<string, FeReferencePoint>("Referenece points");
             //
             _maxNodeId = mesh._maxNodeId;
             _maxElementId = mesh._maxElementId;
@@ -191,7 +191,7 @@ namespace CaeMesh
                         {
                             // Compatibility for version v0.5.1
                             bpd.OnDeserialization(null);
-                            _parts = new OrderedDictionary<string, BasePart>(bpd);
+                            _parts = new OrderedDictionary<string, BasePart>("", bpd);
                         }
                         else if (entry.Value is OrderedDictionary<string, BasePart> bpod) _parts = bpod;
                         else if (entry.Value == null) _parts = null;
@@ -202,7 +202,7 @@ namespace CaeMesh
                         {
                             // Compatibility for version v0.5.1
                             nsd.OnDeserialization(null);
-                            _nodeSets = new OrderedDictionary<string, FeNodeSet>(nsd);
+                            _nodeSets = new OrderedDictionary<string, FeNodeSet>("", nsd);
                         }
                         else if (entry.Value is OrderedDictionary<string, FeNodeSet> nsod) _nodeSets = nsod;
                         else if (entry.Value == null) _nodeSets = null;
@@ -213,7 +213,7 @@ namespace CaeMesh
                         {
                             // Compatibility for version v0.5.1
                             esd.OnDeserialization(null);
-                            _elementSets = new OrderedDictionary<string, FeElementSet>(esd);
+                            _elementSets = new OrderedDictionary<string, FeElementSet>("", esd);
                         }
                         else if (entry.Value is OrderedDictionary<string, FeElementSet> esod) _elementSets = esod;
                         else if (entry.Value == null) _elementSets = null;
@@ -224,7 +224,7 @@ namespace CaeMesh
                         {
                             // Compatibility for version v0.5.1
                             sd.OnDeserialization(null);
-                            _surfaces = new OrderedDictionary<string, FeSurface>(sd);
+                            _surfaces = new OrderedDictionary<string, FeSurface>("", sd);
                         }
                         else if (entry.Value is OrderedDictionary<string, FeSurface> sod) _surfaces = sod;
                         else if (entry.Value == null) _surfaces = null;
@@ -235,7 +235,7 @@ namespace CaeMesh
                         {
                             // Compatibility for version v0.5.1
                             rpd.OnDeserialization(null);
-                            _referencePoints = new OrderedDictionary<string, FeReferencePoint>(rpd);
+                            _referencePoints = new OrderedDictionary<string, FeReferencePoint>("", rpd);
                         }
                         else if (entry.Value is OrderedDictionary<string, FeReferencePoint> rpod) _referencePoints = rpod;
                         else if (entry.Value == null) _referencePoints = null;
@@ -255,7 +255,7 @@ namespace CaeMesh
                 }
             }
             // Compatibility for version v0.5.2
-            if (_meshRefinements == null) _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>();
+            if (_meshRefinements == null) _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>("Mesh refinements");
         }
 
 

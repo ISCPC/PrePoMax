@@ -561,7 +561,7 @@ namespace CaeResults
         }
         public static OrderedDictionary<string, string> GetPossibleDeformationFieldOutputNamesMap()
         {
-            OrderedDictionary<string, string> names = new OrderedDictionary<string, string>();
+            OrderedDictionary<string, string> names = new OrderedDictionary<string, string>("Deformation names");
             names.Add("Displacements", FOFieldNames.Disp);
             names.Add("Forces", FOFieldNames.Forc);
             names.Add("Surface normals", FOFieldNames.SurfaceNormal);
@@ -2797,7 +2797,7 @@ namespace CaeResults
             HashSet<int> slipStepIdsHash = new HashSet<int>(slipStepIds);
             //
             double sumTime = 0;
-            OrderedDictionary<int, double> stepIdStartTime = new OrderedDictionary<int, double>();
+            OrderedDictionary<int, double> stepIdStartTime = new OrderedDictionary<int, double>("Step id - step time");
             foreach (var entry in stepIdDuration)
             {
                 stepIdStartTime.Add(entry.Key, sumTime);
