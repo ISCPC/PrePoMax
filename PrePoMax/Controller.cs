@@ -576,7 +576,7 @@ namespace PrePoMax
             //
             UpdateExplodedView(false);
             // Settings
-            AddFileNameToRecent(fileName);  // this redraws the scene
+            AddFileNameToRecentFiles(fileName);  // this redraws the scene
         }
         private void OpenPmx(string fileName)
         {
@@ -1485,7 +1485,7 @@ namespace PrePoMax
                 File.Copy(tmpFileName, fileName, true);
                 File.Delete(tmpFileName);
                 // Settings
-                AddFileNameToRecent(fileName); // this line redraws the scene
+                AddFileNameToRecentFiles(fileName); // this line redraws the scene
                 //
                 ApplySettings(); // work folder and executable
                 //
@@ -1702,7 +1702,7 @@ namespace PrePoMax
             return output;
         }
         // Recent
-        private void AddFileNameToRecent(string fileName)
+        private void AddFileNameToRecentFiles(string fileName)
         {
             // Settings
             _settings.General.AddRecentFile(fileName);
@@ -5167,6 +5167,26 @@ namespace PrePoMax
             AnnotateWithColorLegend();
             //
             CheckAndUpdateValidity();
+        }
+        //
+        public string[] GetMaterialLibraryFiles()
+        {
+            return _settings.General.GetMaterialLibraryFiles();
+        }
+        public void AddMaterialLibraryFile(string fileNameWithPath)
+        {
+            _settings.General.AddMaterialLibraryFile(fileNameWithPath);
+            _settings.SaveToFile();
+        }
+        public void RemoveMaterialLibraryFile(string fileNameWithPath)
+        {
+            _settings.General.RemoveMaterialLibraryFile(fileNameWithPath);
+            _settings.SaveToFile();
+        }
+        public void ClearMaterialLibraryFiles()
+        {
+            _settings.General.ClearMaterialLibraryFiles();
+            _settings.SaveToFile();
         }
 
         #endregion #################################################################################################################

@@ -54,9 +54,14 @@ namespace PrePoMax.Forms
                     }
                     if (lvModelMaterials.Items.Count > 0) lvModelMaterials.Items[0].Selected = true;
                 }
-                //
+                // Load material libraries
                 string fileName = Path.Combine(Application.StartupPath, Globals.MaterialLibraryFileName);
                 LoadMaterialLibraryFromFile(fileName);
+                //
+                foreach (var materialLibraryFile in _controller.Settings.General.GetMaterialLibraryFiles())
+                {
+                    LoadMaterialLibraryFromFile(materialLibraryFile);
+                }
                 //
                 TreeNode materialNode;
                 GetNodeContainingFirstMaterial(cltvLibrary.Nodes[0], out materialNode);
@@ -116,6 +121,7 @@ namespace PrePoMax.Forms
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
                         LoadMaterialLibraryFromFile(openFileDialog.FileName);
+                        _controller.AddMaterialLibraryFile(openFileDialog.FileName);
                         SetControlStates();
                     }
                 }
@@ -129,6 +135,8 @@ namespace PrePoMax.Forms
         {
             if (lvLibraries.SelectedItems.Count == 1)
             {
+                _controller.RemoveMaterialLibraryFile(lvLibraries.SelectedItems[0].Text);
+                //
                 int selectedId = lvLibraries.SelectedIndices[0];
                 lvLibraries.SelectedIndices.Clear();
                 lvLibraries.Items.RemoveAt(selectedId);
