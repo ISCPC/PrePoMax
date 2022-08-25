@@ -30,8 +30,14 @@ namespace CaeJob
         // Constructors                                                                                                             
         public EnvironmentVariable()
         {
-            //Name = "VariableName";
-            //Value = "Empty";
+            //Active = true;
+        }
+        public EnvironmentVariable(string name, string value)
+            : this()
+        {
+            Active = true;
+            Name = name;
+            Value = value;
         }
 
         public override string ToString()
