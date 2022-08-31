@@ -269,7 +269,7 @@ namespace vtkControl
             //
             _animating = false;
             //
-            _transforms = new OrderedDictionary<vtkTransform, int>();
+            _transforms = new OrderedDictionary<vtkTransform, int>("Transformations");
             //
             _sectionView = false;
             _sectionViewPlane = null;

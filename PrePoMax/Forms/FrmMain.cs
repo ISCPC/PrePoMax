@@ -2752,7 +2752,7 @@ namespace PrePoMax
                 frmGetValue.MinValue = 25;
                 frmGetValue.MaxValue = 255;
                 SetFormLoaction(frmGetValue);
-                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>();
+                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>("Preset transparency values");
                 presetValues.Add("Semi-transparent", 128);
                 presetValues.Add("Opaque", 255);
                 string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
@@ -2814,7 +2814,7 @@ namespace PrePoMax
             frmGetValue.MinValue = 0;
             frmGetValue.MaxValue = 90;
             SetFormLoaction(frmGetValue);
-            OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>();
+            OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>("Preset values");
             presetValues.Add("Default", CaeMesh.Globals.EdgeAngle);
             string desc = "Enter the face angle for model edges detection.";
             frmGetValue.PrepareForm("Find model edges: " + partNames.ToShortString(), "Angle", desc,
@@ -3678,7 +3678,7 @@ namespace PrePoMax
                 frmGetValue.MinValue = 25;
                 frmGetValue.MaxValue = 255;
                 SetFormLoaction(frmGetValue);
-                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>();
+                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>("Preset values");
                 presetValues.Add("Semi-transparent", 128);
                 presetValues.Add("Opaque", 255);
                 string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
@@ -5939,7 +5939,14 @@ namespace PrePoMax
         private void GetDefaultJob(List<AnalysisJob> defaultJob)
         {
             _frmAnalysis.PrepareForm(null, null);
-            defaultJob.Add(_frmAnalysis.Job);
+            AnalysisJob job = _frmAnalysis.Job;
+            //
+            if (_controller.OpenedFileName != null)
+            {
+                job.Name = NamedClass.GetErrorFreeName(Path.GetFileNameWithoutExtension(_controller.OpenedFileName));
+            }
+            //
+            defaultJob.Add(job);
         }
 
         #endregion  ################################################################################################################
@@ -6120,7 +6127,7 @@ namespace PrePoMax
                 frmGetValue.MinValue = 25;
                 frmGetValue.MaxValue = 255;
                 SetFormLoaction(frmGetValue);
-                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>();
+                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>("Preset transparency values");
                 presetValues.Add("Semi-transparent", 128);
                 presetValues.Add("Opaque", 255);
                 string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";

@@ -23,7 +23,7 @@ namespace CaeResults
         //  Constructors                                                                                                            
         public ResultsCollection()
         {
-            _results = new OrderedDictionary<string, FeResults>();
+            _results = new OrderedDictionary<string, FeResults>("Results collection");
             //
             Clear();
         }
