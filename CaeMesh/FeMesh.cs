@@ -1355,18 +1355,26 @@ namespace CaeMesh
                 {
                     if (vis.FaceTypes != null) faceType = vis.FaceTypes[i];
                     else faceType = GeomFaceType.Unknown;
-                    // For each vertex
+                    //
+
+                    RemoveEdgeLoops(faceVertexEdgeIds[i]);
+
                     foreach (var entry in faceVertexEdgeIds[i])
                     {
                         // Cylinder and toruses have a single edge along their axis which creates 3 edge vertices
-                        if (entry.Value.Count == 3 && (faceType == GeomFaceType.Cylinder || faceType == GeomFaceType.Torus)) continue;
-                        else if (entry.Value.Count != 2)
+                        if (entry.Value.Count == 1 && (faceType == GeomFaceType.Cylinder || faceType == GeomFaceType.Torus)) continue;
+                        else
                         {
-                            nodeId = entry.Key;
-                            errorNodeIds.Add(nodeId);
-                            //
-                            GetEdgeIdsOnEdgeLoop(nodeId, faceVertexEdgeIds[i], ref errorEdgeIds);
+                            foreach (var remainingEdgeId in entry.Value)
+                                errorEdgeIds.Add(remainingEdgeId);
                         }
+                        //else if (entry.Value.Count != 2)
+                        //{
+                        //    nodeId = entry.Key;
+                        //    errorNodeIds.Add(nodeId);
+                        //    //
+                        //    GetEdgeIdsOnEdgeLoop(nodeId, faceVertexEdgeIds[i], ref errorEdgeIds);
+                        //}
                     }
                 }
             }
@@ -1381,6 +1389,103 @@ namespace CaeMesh
             if (errorNodeIds.Count > 0) gp.ErrorNodeIds = errorNodeIds.ToArray();
             else gp.ErrorNodeIds = null;
         }
+        private void RemoveEdgeLoops(Dictionary<int, List<int>> vertexIdEdgeIds)
+        {
+            List<int> edgeLoop;
+            List<int> verticesToRemove = new List<int>();
+            //
+            while (true)
+            {
+                edgeLoop = GetEdgeLoop(vertexIdEdgeIds);
+                if (edgeLoop.Count > 0)
+                {
+                    verticesToRemove.Clear();
+                    //
+                    foreach (var entry in vertexIdEdgeIds)
+                    {
+                        foreach (var edgeId in edgeLoop)
+                        {
+                            entry.Value.Remove(edgeId);
+                            if (entry.Value.Count == 0) verticesToRemove.Add(entry.Key);
+                        }
+                    }
+                    //
+                    foreach (var vertexId in verticesToRemove) vertexIdEdgeIds.Remove(vertexId);
+                }
+                else break;
+            }
+            return;
+        }
+        private List<int> GetEdgeLoop(Dictionary<int, List<int>> vertexIdEdgeIds)
+        {
+            List<int> loopEdgeIds = new List<int>();
+            List<int> loopVertexIds = new List<int>();
+            //
+            int[] vertexIds;
+            Dictionary<int, int[]> edgeIdVertexIds = new Dictionary<int, int[]>();
+            foreach (var entry in vertexIdEdgeIds)
+            {
+                foreach (var edgeId in entry.Value)
+                {
+                    if (edgeIdVertexIds.TryGetValue(edgeId, out vertexIds)) vertexIds[1] = entry.Key;
+                    else edgeIdVertexIds.Add(edgeId, new int[] { entry.Key, 0 });
+                }
+            }
+            // First vertex must not be an end point
+            foreach (var entry in vertexIdEdgeIds)
+            {
+                if (entry.Value.Count % 2 == 0)
+                {
+                    loopEdgeIds.Clear();
+                    loopVertexIds.Clear();
+                    AddNextEdgeToLoop(entry.Key, vertexIdEdgeIds, edgeIdVertexIds, loopVertexIds, loopEdgeIds);
+                    if (loopEdgeIds.Count > 0) return loopEdgeIds;
+                }
+            }
+            //
+            return loopEdgeIds;
+        }
+        private bool AddNextEdgeToLoop(int vertexId,
+                                       Dictionary<int, List<int>> vertexIdEdgeIds, Dictionary<int, int[]> edgeIdVertexIds,
+                                       List<int> loopVertexIds, List<int> loopEdgeIds)
+        {
+            // Check if there is a loop of vertices before there is a loop of edges
+            loopVertexIds.Add(vertexId);
+            //
+            bool closed = false;
+            int newVertexId;
+            int[] vertexIds;
+            List<int> edgeIds = vertexIdEdgeIds[vertexId];
+            //
+            foreach (var edgeId in edgeIds)
+            {
+                if (loopEdgeIds.Count > 1 && loopEdgeIds[0] == edgeId &&
+                    loopVertexIds.Count > 1 && loopVertexIds[0] == vertexId) return true;
+                else
+                {
+                    if (loopEdgeIds.Count == 0 || !loopEdgeIds.Contains(edgeId))
+                    {
+                        // Add
+                        loopEdgeIds.Add(edgeId);
+                        //
+                        vertexIds = edgeIdVertexIds[edgeId];
+                        if (vertexId == vertexIds[0]) newVertexId = vertexIds[1];
+                        else newVertexId = vertexIds[0];
+                        //
+                        
+                        closed = AddNextEdgeToLoop(newVertexId, vertexIdEdgeIds, edgeIdVertexIds, loopVertexIds, loopEdgeIds);
+                        // Finish
+                        if (closed) return true;
+                        // Remove
+                        else loopEdgeIds.Remove(edgeId);
+                    }
+                }
+            }
+            //
+            loopVertexIds.Remove(vertexId);
+            return false;
+        }
+
         private void GetEdgeIdsOnEdgeLoop(int nodeId, Dictionary<int, List<int>> nodeEdgeIds, ref HashSet<int> edgeIds)
         {
             List<int> oneNodeEdgeIds = nodeEdgeIds[nodeId];

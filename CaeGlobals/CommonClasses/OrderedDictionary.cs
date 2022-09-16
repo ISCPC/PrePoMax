@@ -465,8 +465,8 @@ namespace CaeGlobals
         {
             // Using typeof() works also for null fields
             info.AddValue("_name", _name, typeof(string));
-            info.AddValue("_list", _name, typeof(List<TKey>));
-            info.AddValue("_dictionary", _name, typeof(Dictionary<TKey, TValue>));
+            info.AddValue("_list", _list, typeof(List<TKey>));
+            info.AddValue("_dictionary", _dictionary, typeof(Dictionary<TKey, TValue>));
         }
     }
 }
