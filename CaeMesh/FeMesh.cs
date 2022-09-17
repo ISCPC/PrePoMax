@@ -1309,204 +1309,16 @@ namespace CaeMesh
             gp.ErrorEdgeCellIds = null;
             gp.ErrorNodeIds = null;
             //
-            int nodeId;
-            int edgeId;
-            int[] edgeCell;
-            List<int> vertexEdgeIds;
-            List<int> errorEdgeCellIds = new List<int>();
-            List<int> errorNodeIds = new List<int>();
-            HashSet<int> errorEdgeIds = new HashSet<int>();
-            VisualizationData vis = gp.Visualization;
-            HashSet<int> vertexNodeIds = new HashSet<int>(vis.VertexNodeIds);
+            int[] errorEdgeCellIds = null;
+            int[] errorNodeIds = null;
             // Shell parts
             if (gp.PartType == PartType.Shell)
             {
-                Dictionary<int, List<int>>[] faceVertexEdgeIds = new Dictionary<int, List<int>>[vis.FaceEdgeIds.Length];
-                // Build a map of all edges connected to a vertex
-                // For each surface
-                for (int i = 0; i < vis.FaceEdgeIds.Length; i++)
-                {
-                    faceVertexEdgeIds[i] = new Dictionary<int, List<int>>();
-                    // For each surface edge
-                    for (int j = 0; j < vis.FaceEdgeIds[i].Length; j++)
-                    {
-                        edgeId = vis.FaceEdgeIds[i][j];
-                        // For each edge cell
-                        for (int k = 0; k < vis.EdgeCellIdsByEdge[edgeId].Length; k++)
-                        {
-                            edgeCell = vis.EdgeCells[vis.EdgeCellIdsByEdge[edgeId][k]];
-                            // For each node in edge cell
-                            for (int l = 0; l < edgeCell.Length; l++)
-                            {
-                                if (vertexNodeIds.Contains(edgeCell[l]))    // is this node a vertex
-                                {
-                                    if (faceVertexEdgeIds[i].TryGetValue(edgeCell[l], out vertexEdgeIds))
-                                        vertexEdgeIds.Add(edgeId);
-                                    else faceVertexEdgeIds[i].Add(edgeCell[l], new List<int>() { edgeId });
-                                }
-                            }
-                        }
-                    }
-                }
-                // From the map extract all end/start vertices and their open edge loops
-                GeomFaceType faceType;
-                // For each face
-                for (int i = 0; i < faceVertexEdgeIds.Length; i++)
-                {
-                    if (vis.FaceTypes != null) faceType = vis.FaceTypes[i];
-                    else faceType = GeomFaceType.Unknown;
-                    //
-
-                    RemoveEdgeLoops(faceVertexEdgeIds[i]);
-
-                    foreach (var entry in faceVertexEdgeIds[i])
-                    {
-                        // Cylinder and toruses have a single edge along their axis which creates 3 edge vertices
-                        if (entry.Value.Count == 1 && (faceType == GeomFaceType.Cylinder || faceType == GeomFaceType.Torus)) continue;
-                        else
-                        {
-                            foreach (var remainingEdgeId in entry.Value)
-                                errorEdgeIds.Add(remainingEdgeId);
-                        }
-                        //else if (entry.Value.Count != 2)
-                        //{
-                        //    nodeId = entry.Key;
-                        //    errorNodeIds.Add(nodeId);
-                        //    //
-                        //    GetEdgeIdsOnEdgeLoop(nodeId, faceVertexEdgeIds[i], ref errorEdgeIds);
-                        //}
-                    }
-                }
-            }
-            // Collect error edge cell ids
-            foreach (var errorEdgeId in errorEdgeIds)
-            {
-                errorEdgeCellIds.AddRange(vis.EdgeCellIdsByEdge[errorEdgeId]);
+                gp.Visualization.CheckForErrorElementsInShellCADPart(out errorEdgeCellIds, out errorNodeIds);
             }
             // Save
-            if (errorEdgeCellIds.Count > 0) gp.ErrorEdgeCellIds = errorEdgeCellIds.ToArray();
-            else gp.ErrorEdgeCellIds = null;
-            if (errorNodeIds.Count > 0) gp.ErrorNodeIds = errorNodeIds.ToArray();
-            else gp.ErrorNodeIds = null;
-        }
-        private void RemoveEdgeLoops(Dictionary<int, List<int>> vertexIdEdgeIds)
-        {
-            List<int> edgeLoop;
-            List<int> verticesToRemove = new List<int>();
-            //
-            while (true)
-            {
-                edgeLoop = GetEdgeLoop(vertexIdEdgeIds);
-                if (edgeLoop.Count > 0)
-                {
-                    verticesToRemove.Clear();
-                    //
-                    foreach (var entry in vertexIdEdgeIds)
-                    {
-                        foreach (var edgeId in edgeLoop)
-                        {
-                            entry.Value.Remove(edgeId);
-                            if (entry.Value.Count == 0) verticesToRemove.Add(entry.Key);
-                        }
-                    }
-                    //
-                    foreach (var vertexId in verticesToRemove) vertexIdEdgeIds.Remove(vertexId);
-                }
-                else break;
-            }
-            return;
-        }
-        private List<int> GetEdgeLoop(Dictionary<int, List<int>> vertexIdEdgeIds)
-        {
-            List<int> loopEdgeIds = new List<int>();
-            List<int> loopVertexIds = new List<int>();
-            //
-            int[] vertexIds;
-            Dictionary<int, int[]> edgeIdVertexIds = new Dictionary<int, int[]>();
-            foreach (var entry in vertexIdEdgeIds)
-            {
-                foreach (var edgeId in entry.Value)
-                {
-                    if (edgeIdVertexIds.TryGetValue(edgeId, out vertexIds)) vertexIds[1] = entry.Key;
-                    else edgeIdVertexIds.Add(edgeId, new int[] { entry.Key, 0 });
-                }
-            }
-            // First vertex must not be an end point
-            foreach (var entry in vertexIdEdgeIds)
-            {
-                if (entry.Value.Count % 2 == 0)
-                {
-                    loopEdgeIds.Clear();
-                    loopVertexIds.Clear();
-                    AddNextEdgeToLoop(entry.Key, vertexIdEdgeIds, edgeIdVertexIds, loopVertexIds, loopEdgeIds);
-                    if (loopEdgeIds.Count > 0) return loopEdgeIds;
-                }
-            }
-            //
-            return loopEdgeIds;
-        }
-        private bool AddNextEdgeToLoop(int vertexId,
-                                       Dictionary<int, List<int>> vertexIdEdgeIds, Dictionary<int, int[]> edgeIdVertexIds,
-                                       List<int> loopVertexIds, List<int> loopEdgeIds)
-        {
-            // Check if there is a loop of vertices before there is a loop of edges
-            loopVertexIds.Add(vertexId);
-            //
-            bool closed = false;
-            int newVertexId;
-            int[] vertexIds;
-            List<int> edgeIds = vertexIdEdgeIds[vertexId];
-            //
-            foreach (var edgeId in edgeIds)
-            {
-                if (loopEdgeIds.Count > 1 && loopEdgeIds[0] == edgeId &&
-                    loopVertexIds.Count > 1 && loopVertexIds[0] == vertexId) return true;
-                else
-                {
-                    if (loopEdgeIds.Count == 0 || !loopEdgeIds.Contains(edgeId))
-                    {
-                        // Add
-                        loopEdgeIds.Add(edgeId);
-                        //
-                        vertexIds = edgeIdVertexIds[edgeId];
-                        if (vertexId == vertexIds[0]) newVertexId = vertexIds[1];
-                        else newVertexId = vertexIds[0];
-                        //
-                        
-                        closed = AddNextEdgeToLoop(newVertexId, vertexIdEdgeIds, edgeIdVertexIds, loopVertexIds, loopEdgeIds);
-                        // Finish
-                        if (closed) return true;
-                        // Remove
-                        else loopEdgeIds.Remove(edgeId);
-                    }
-                }
-            }
-            //
-            loopVertexIds.Remove(vertexId);
-            return false;
-        }
-
-        private void GetEdgeIdsOnEdgeLoop(int nodeId, Dictionary<int, List<int>> nodeEdgeIds, ref HashSet<int> edgeIds)
-        {
-            List<int> oneNodeEdgeIds = nodeEdgeIds[nodeId];
-            // Only continue for start/end and inside/normal vertices
-            // 3 edges might mean the connection to the outer/another edge loop
-            if (oneNodeEdgeIds.Count > 2) return;      
-            //
-            foreach (var edgeId in oneNodeEdgeIds)
-            {
-                if (edgeIds.Add(edgeId))    // is it a new edge?
-                {
-                    foreach (var entry in nodeEdgeIds)
-                    {
-                        if (entry.Value.Contains(edgeId))
-                        {
-                            GetEdgeIdsOnEdgeLoop(entry.Key, nodeEdgeIds, ref edgeIds);
-                            break;
-                        }
-                    }
-                }
-            }
+            gp.ErrorEdgeCellIds = errorEdgeCellIds;
+            gp.ErrorNodeIds = errorNodeIds;
         }
         private void SplitVisualizationEdgesAndFaces(BasePart part, HashSet<int> vertexNodeIds = null)
         {
@@ -2158,31 +1970,47 @@ namespace CaeMesh
             partFaceTypes = new GeomFaceType[vis.CellIdsByFace.Length];
             Dictionary<int, HashSet<int>> nodeIdsBySurfaces = vis.GetNodeIdsBySurfaces();
             // For each part surface
+            int foundKey;
+            int foundFirstKey;
+            int foundSecondKey;
             for (int i = 0; i < vis.CellIdsByFace.Length; i++)
             {
                 surfaceNodeIds = nodeIdsBySurfaces[i];
                 // Find the surface with the same node ids
+                foundFirstKey = -1;
+                foundSecondKey = -1;
                 oneSurfCount = 0;
+                //
                 foreach (var surfaceNodeIdsEntry in surfaceIdNodeIds)
                 {
                     if (surfaceNodeIdsEntry.Value.Count > 0)
                     {
-                        if ((surfaceNodeIdsEntry.Value.Count == surfaceNodeIds.Count &&
-                             surfaceNodeIdsEntry.Value.Except(surfaceNodeIds).Count() == 0)
-                            // Next line is for when the mesh is converted to parabolic mesh outside netgen - before this method
-                            || (surfaceNodeIdsEntry.Value.Intersect(surfaceNodeIds).Count() == surfaceNodeIdsEntry.Value.Count()))
+                        if (surfaceNodeIdsEntry.Value.Count == surfaceNodeIds.Count &&
+                            surfaceNodeIdsEntry.Value.Except(surfaceNodeIds).Count() == 0)
                         {
-                            newSurfaceIds[surfaceCount] = surfaceNodeIdsEntry.Key;
-                            oldSurfaceIds[surfaceCount] = surfaceCount;
-                            //
-                            oldIdNewId.Add(surfaceCount, surfaceNodeIdsEntry.Key);
-                            //
-                            surfaceCount++;
-                            oneSurfCount++;
+                            foundFirstKey = surfaceNodeIdsEntry.Key;
                             break;
+                        }
+                        else if (surfaceNodeIdsEntry.Value.Intersect(surfaceNodeIds).Count() == surfaceNodeIdsEntry.Value.Count())
+                        {
+                            foundSecondKey = surfaceNodeIdsEntry.Key;
+                            // Do not break, search all faces for possible firstKey
                         }
                     }
                 }
+                if (foundFirstKey != -1 || foundSecondKey != -1)
+                {
+                    foundKey = foundFirstKey != -1 ? foundFirstKey : foundSecondKey;
+                    //
+                    newSurfaceIds[surfaceCount] = foundKey;
+                    oldSurfaceIds[surfaceCount] = surfaceCount;
+                    //
+                    oldIdNewId.Add(surfaceCount, foundKey);
+                    //
+                    surfaceCount++;
+                    oneSurfCount++;
+                }
+                //
                 if (oneSurfCount == 0)
                 {
                     oneSurfCount = 0;
