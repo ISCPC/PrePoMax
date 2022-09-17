@@ -735,12 +735,13 @@ namespace CaeResults
                         unitAbbreviation = "/";
                         break;
                     default:
-                        // OpenFOAM
-                        if (componentName.ToUpper().StartsWith("VAL")) { }
-                        else if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
-                        //
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "?";
+                        // OpenFOAM
+                        if (componentName.ToUpper().StartsWith("VAL")) { }
+                        else if (_unitSystem.UnitSystemType == UnitSystemType.UNIT_LESS) unitAbbreviation = "";
+                        else if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
+                        //
                         break;
                 }
             }
