@@ -679,9 +679,9 @@ namespace CaeResults
                 // -2           0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
                 // -2           0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
                 width = 12;
+                lineId = lineNum;
                 for (int i = 0; i < numOfVal; i++)
                 {
-                    lineId = i + lineNum;
                     line = lines[lineId];
                     // Node id
                     if (directIds) nodeValueId = i;
@@ -700,8 +700,7 @@ namespace CaeResults
                         {
                             if (lines.Length > lineId + 1 && lines[lineId + 1].Trim().StartsWith("-2"))
                             {
-                                i++;
-                                lineId = i + lineNum;
+                                lineId++;
                                 line = lines[lineId];
                                 start = 13;
                             }
@@ -712,6 +711,8 @@ namespace CaeResults
                         if (nodeValueId != -1) values[j][nodeValueId] = float.Parse(line.Substring(start, width));
                         start += width;
                     }
+                    //
+                    lineId++;
                 }
             }
             else
