@@ -3005,6 +3005,11 @@ namespace CaeMesh
             }
             return partIds.ToArray();
         }
+        public BasePart GetPartByGeometryId(int geometryId)
+        {
+            int[] itemTypePartIds = GetItemTypePartIdsFromGeometryId(geometryId);
+            return GetPartById(itemTypePartIds[2]);
+        }
         public HashSet<BasePart> GetPartsFromSelectionIds(int[] prevIds, vtkSelectItem selectItem)
         {
             HashSet<BasePart> parts = new HashSet<BasePart>();
@@ -3045,12 +3050,7 @@ namespace CaeMesh
             }
             else if (selectItem == vtkSelectItem.Geometry)
             {
-                int[] itemTypePartIds;
-                foreach (var geometryId in prevIds)
-                {
-                    itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
-                    parts.Add(GetPartById(itemTypePartIds[2]));
-                }
+                foreach (var geometryId in prevIds) parts.Add(GetPartByGeometryId(geometryId));
             }
             else if (selectItem == vtkSelectItem.Part)
             {
@@ -5399,7 +5399,8 @@ namespace CaeMesh
                         {
                             if (!surfaceIds.Contains(neighbourId) && !newSurfaceIds.Contains(neighbourId))
                             {
-                                alpha = edgeAngles[new int[] { Math.Min(notVisitedSurfaceId, neighbourId), Math.Max(notVisitedSurfaceId, neighbourId) }][0];
+                                alpha = edgeAngles[new int[] { Math.Min(notVisitedSurfaceId, neighbourId),
+                                                               Math.Max(notVisitedSurfaceId, neighbourId) }][0];
                                 if (alpha <= angle)
                                 {
                                     newSurfaceIds.Add(neighbourId);

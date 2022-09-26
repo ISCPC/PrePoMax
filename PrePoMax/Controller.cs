@@ -5701,6 +5701,7 @@ namespace PrePoMax
                         tie.MasterCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
                                                                         contactPair.MasterSlaveItem.MasterGeometryIds.ToArray(),
                                                                         true));
+                        tie.MasterCreationData = GetMouseSelectionFromSelectionNodeIds(tie.MasterCreationData);
                         tie.MasterCreationIds = new int[] { 1 };
                         //
                         tie.SlaveCreationData = new Selection();
@@ -5709,6 +5710,7 @@ namespace PrePoMax
                         tie.SlaveCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
                                                                        contactPair.MasterSlaveItem.SlaveGeometryIds.ToArray(),
                                                                        true));
+                        tie.SlaveCreationData = GetMouseSelectionFromSelectionNodeIds(tie.SlaveCreationData);
                         tie.SlaveCreationIds = new int[] { 1 };
                         //
                         AddConstraintCommand(tie, false);
@@ -8992,6 +8994,130 @@ namespace PrePoMax
             bool shellFrontFace = mesh.IsShellElementFrontFaceSelected(elementId, selectionDirection);
             return mesh.GetGeometrySurfaceIdsByAngle(elementId, cellFaceNodeIds, shellFrontFace, angle);
         }
+        // Get mouse selection from id selection
+        private Selection GetMouseSelectionFromSelectionNodeIds(Selection selectionIn)
+        {
+            if (selectionIn.SelectItem == vtkSelectItem.Surface)
+            {
+                int nodeId;
+                int elementId;
+                int itemId;
+                int partId;
+                int[] cellIds;
+                int[] nodeIds;
+                int[] itemTypePartIds;
+                int[] ids;
+                bool shellElement;
+                double[] coor;
+                double[] direction;
+                FeNode node;
+                FeFaceName faceName;
+                vtkSelectBy selectBy;
+                GeometryType geomType;
+                BasePart part;
+                SelectionNodeMouse mouseNode;
+                // Copy current selection
+                Selection currentSelection = _selection;
+                _selection = selectionIn.DeepClone();
+                _selection.Clear();
+                //
+                foreach (var selectionNode in selectionIn.Nodes)
+                {
+                    if (selectionNode is SelectionNodeIds selectionNodeIds)
+                    {
+                        if (selectionNodeIds.GeometryIds)
+                        {
+                            foreach (var geometryId in selectionNodeIds.ItemIds)
+                            {
+                                coor = new double[3];
+                                direction = new double[3];
+                                //
+                                itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
+                                itemId = itemTypePartIds[0];
+                                geomType = (GeometryType)itemTypePartIds[1];
+                                partId = itemTypePartIds[2];
+                                part = _model.Mesh.GetPartById(partId);
+                                //
+                                if (geomType == GeometryType.SolidSurface)
+                                {
+                                    cellIds = part.Visualization.CellIdsByFace[itemId];
+                                    if (cellIds.Length > 0)
+                                    {
+                                        nodeIds = part.Visualization.Cells[cellIds[0]];
+                                        for (int i = 0; i < nodeIds.Length; i++)
+                                        {
+                                            node = _model.Mesh.Nodes[nodeIds[i]];
+                                            coor[0] += node.X;
+                                            coor[1] += node.Y;
+                                            coor[2] += node.Z;
+                                        }
+                                        coor[0] /= nodeIds.Length;
+                                        coor[1] /= nodeIds.Length;
+                                        coor[2] /= nodeIds.Length;
+                                        //
+                                        selectBy = vtkSelectBy.GeometrySurface;
+                                    }
+                                    else throw new NotSupportedException();
+                                }
+                                else if (geomType == GeometryType.ShellFrontSurface)
+                                {
+                                    cellIds = part.Visualization.CellIdsByFace[itemId];
+                                    if (cellIds.Length > 0)
+                                    {
+                                        elementId = part.Visualization.CellIds[cellIds[0]];
+                                        faceName = FeFaceName.S2;
+                                        _model.Mesh.GetElementFaceCenterAndNormal(elementId, faceName, out coor, out direction,
+                                                                                  out shellElement);
+                                        direction[0] *= -1;
+                                        direction[1] *= -1;
+                                        direction[2] *= -1;
+                                        selectBy = vtkSelectBy.GeometrySurface;
+                                    }
+                                    else throw new NotSupportedException();
+                                }
+                                else if (geomType == GeometryType.ShellBackSurface)
+                                {
+                                    cellIds = part.Visualization.CellIdsByFace[itemId];
+                                    if (cellIds.Length > 0)
+                                    {
+                                        elementId = part.Visualization.CellIds[cellIds[0]];
+                                        faceName = FeFaceName.S1;
+                                        _model.Mesh.GetElementFaceCenterAndNormal(elementId, faceName, out coor, out direction,
+                                                                                  out shellElement);
+                                        selectBy = vtkSelectBy.GeometrySurface;
+                                    }
+                                    else throw new NotSupportedException();
+                                }
+                                else if (geomType == GeometryType.ShellEdgeSurface)
+                                {
+                                    cellIds = part.Visualization.EdgeCellIdsByEdge[itemId];
+                                    if (cellIds.Length > 0)
+                                    {
+                                        nodeId = part.Visualization.EdgeCells[cellIds[0]][0];
+                                        coor = _model.Mesh.Nodes[nodeId].Coor;
+                                        selectBy = vtkSelectBy.GeometryEdge;
+                                    }
+                                    else throw new NotSupportedException();
+                                }
+                                else throw new NotSupportedException();
+                                //
+                                mouseNode = new SelectionNodeMouse(coor, direction, null, vtkSelectOperation.Add,
+                                                                   new int[] { partId }, new double[][] { part.Offset },
+                                                                   selectBy, -1);
+
+                                AddSelectionNode(mouseNode, false, false);
+                            }
+                        }
+                    }
+                }
+                // Restore current selection
+                Selection selectionOut = _selection.DeepClone();
+                _selection = currentSelection;
+                //
+                return selectionOut;
+            }
+            else throw new NotSupportedException();
+        }
 
         #endregion #################################################################################################################
 
@@ -9276,9 +9402,9 @@ namespace PrePoMax
             int edgeCellId;
             List<int[]> edgeCells = new List<int[]>();
             //
-            foreach (var grometryId in geometryIds)
+            foreach (var geometryId in geometryIds)
             {
-                itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(grometryId);
+                itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
                 GeometryType geomType = (GeometryType)itemTypePartIds[1];
                 // Surface - but do not select shell edge surfaces
                 if (geomType == GeometryType.SolidSurface ||
