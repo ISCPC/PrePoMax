@@ -5682,6 +5682,8 @@ namespace PrePoMax
                         surface.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
                                                                       contactPair.MasterSlaveItem.MasterGeometryIds.ToArray(),
                                                                       true));
+                        surface.CreationData = GetMouseSelectionFromSelectionNodeIds(surface.CreationData);
+                        //
                         AddSurfaceCommand(surface, false);
                     }
                     else
@@ -6129,6 +6131,7 @@ namespace PrePoMax
                     contactPairToAdd.MasterCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
                                                             contactPair.MasterSlaveItem.MasterGeometryIds.ToArray(),
                                                             true));
+                    contactPairToAdd.MasterCreationData = GetMouseSelectionFromSelectionNodeIds(contactPairToAdd.MasterCreationData);
                     contactPairToAdd.MasterCreationIds = new int[] { 1 };
                     //
                     contactPairToAdd.SlaveCreationData = new Selection();
@@ -6137,6 +6140,7 @@ namespace PrePoMax
                     contactPairToAdd.SlaveCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
                                                            contactPair.MasterSlaveItem.SlaveGeometryIds.ToArray(),
                                                            true));
+                    contactPairToAdd.SlaveCreationData = GetMouseSelectionFromSelectionNodeIds(contactPairToAdd.SlaveCreationData);
                     contactPairToAdd.SlaveCreationIds = new int[] { 1 };
                     //
                     AddContactPairCommand(contactPairToAdd, false);
