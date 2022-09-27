@@ -8512,7 +8512,11 @@ namespace PrePoMax
             else if (selectBy == vtkSelectBy.GeometryEdge || selectBy == vtkSelectBy.QueryEdge)
             {
                 // GeometryEdge - from form FrmSelectGeometry
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId, false);
+                bool shellEdgeFace = false;
+                if (DisplayedMesh.GetPartById(selectionOnPartId).PartType == PartType.Shell &&
+                    _selection.SelectItem == vtkSelectItem.Surface) shellEdgeFace = true;
+                //
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId, shellEdgeFace);
             }
             else if (selectBy == vtkSelectBy.GeometrySurface || selectBy == vtkSelectBy.QuerySurface)
             {
@@ -8538,7 +8542,6 @@ namespace PrePoMax
                 ids = new int[] { FeMesh.GetGeometryPartIdFromGeometryId(selectedGeomId) };
             }
             else throw new NotSupportedException();
-            //
             // Change geometry ids to node, elemet or cell ids if necessary
             if (!keepGeometryIds) ids = DisplayedMesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
             return ids;
@@ -9068,9 +9071,11 @@ namespace PrePoMax
                                         faceName = FeFaceName.S2;
                                         _model.Mesh.GetElementFaceCenterAndNormal(elementId, faceName, out coor, out direction,
                                                                                   out shellElement);
+                                        // Invert direction of the S2 normal
                                         direction[0] *= -1;
                                         direction[1] *= -1;
                                         direction[2] *= -1;
+                                        //
                                         selectBy = vtkSelectBy.GeometrySurface;
                                     }
                                     else throw new NotSupportedException();
@@ -9084,6 +9089,11 @@ namespace PrePoMax
                                         faceName = FeFaceName.S1;
                                         _model.Mesh.GetElementFaceCenterAndNormal(elementId, faceName, out coor, out direction,
                                                                                   out shellElement);
+                                        // Invert direction of the S1 normal
+                                        direction[0] *= -1;
+                                        direction[1] *= -1;
+                                        direction[2] *= -1;
+                                        //
                                         selectBy = vtkSelectBy.GeometrySurface;
                                     }
                                     else throw new NotSupportedException();
@@ -9093,8 +9103,18 @@ namespace PrePoMax
                                     cellIds = part.Visualization.EdgeCellIdsByEdge[itemId];
                                     if (cellIds.Length > 0)
                                     {
-                                        nodeId = part.Visualization.EdgeCells[cellIds[0]][0];
-                                        coor = _model.Mesh.Nodes[nodeId].Coor;
+                                        nodeIds = part.Visualization.EdgeCells[cellIds[0]];
+                                        for (int i = 0; i < nodeIds.Length; i++)
+                                        {
+                                            node = _model.Mesh.Nodes[nodeIds[i]];
+                                            coor[0] += node.X;
+                                            coor[1] += node.Y;
+                                            coor[2] += node.Z;
+                                        }
+                                        coor[0] /= nodeIds.Length;
+                                        coor[1] /= nodeIds.Length;
+                                        coor[2] /= nodeIds.Length;
+                                        //
                                         selectBy = vtkSelectBy.GeometryEdge;
                                     }
                                     else throw new NotSupportedException();

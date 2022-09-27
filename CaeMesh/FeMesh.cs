@@ -5309,7 +5309,7 @@ namespace CaeMesh
             }
             // Get geometry ids                                             
             int typeId = shellEdgeFace ? (int)GeometryType.ShellEdgeSurface : (int)GeometryType.Edge;
-            int partId = part.PartId; ;
+            int partId = part.PartId;
             //
             int count = 0;
             int[] geometryIds = new int[allEdgeIds.Count];
