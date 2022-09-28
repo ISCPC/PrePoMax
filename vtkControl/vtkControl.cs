@@ -1019,7 +1019,7 @@ namespace vtkControl
             int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
             int[] globalCellEdgeNodeIds = GetEdgeNodeIds(pickedPoint, globalCellId, cell, cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-            //double dist = vtkInteractorStyleControl.DisplayToWorldScale(_renderer, 7);
+            //double dist = GetSelectionPrecision();
             //
             string noEdgePartName;
             vtkMaxActorData actorData = Controller_GetGeometryActorData(pickedPoint,
@@ -1065,7 +1065,7 @@ namespace vtkControl
             int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
             int[] globalCellEdgeNodeIds = GetEdgeNodeIds(pickedPoint, globalCellId, cell, cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-            //double dist = vtkInteractorStyleControl.DisplayToWorldScale(_renderer, 7);
+            //double dist = GetSelectionPrecision();
             //
             vtkMaxActorData actorData = Controller_GetGeometryVertexActorData(pickedPoint,
                                                                               globalCellId,
@@ -1434,7 +1434,6 @@ namespace vtkControl
                 // Skip invisible actors
                 if (entry.Value.Geometry.GetVisibility() != 0)
                 {
-                    //
                     locator = entry.Value.CellLocator;
                     if (locator != null)
                     {
@@ -1462,7 +1461,7 @@ namespace vtkControl
             //
             double maxErrorDistance2;
             if (_renderingOn)   // user mouse interaction
-                maxErrorDistance2 = Math.Pow(vtkInteractorStyleControl.DisplayToWorldScale(_renderer, 7), 2);
+                maxErrorDistance2 = Math.Pow(GetSelectionPrecision(), 2);
             else                // regeneration - the distance to the closest item if items changed
                 maxErrorDistance2 = double.MaxValue;
             //
