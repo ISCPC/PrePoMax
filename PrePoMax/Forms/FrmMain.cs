@@ -145,7 +145,7 @@ namespace PrePoMax
             get { return _modelTree.DisableSelectionsChanged; }
             set { _modelTree.DisableSelectionsChanged = value; }
         }
-        public bool RenderingOn { get { return _vtk.RenderingOn; } set { _vtk.RenderingOn = value; } }
+        public bool RenderingOn { get { return _vtk.RenderingOn; } set { _vtk.RenderingOn = value; } }        
         private ViewType GetViewType(ViewGeometryModelResults view)
         {
             ViewType viewType;
@@ -7332,7 +7332,6 @@ namespace PrePoMax
 
         #region vtkControl  ########################################################################################################
         // vtkControl
-
         public void SetFrontBackView(bool animate, bool front)
         {
             InvokeIfRequired(_vtk.SetFrontBackView, animate, front);
@@ -7616,12 +7615,20 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SmoothPart, partName, a, fileName);
         }
-
+        // User pick
+        public void ActivateUserPick()
+        {
+            _vtk.UserPick = true;
+        }
+        public void DeactivateUserPick()
+        {
+            _vtk.UserPick = false;
+        }
         #endregion  ################################################################################################################
 
         #region Results  ###########################################################################################################
         // Results
-        
+
         public void SetFieldData(string name, string component, int stepId, int stepIncrementId)
         {
             CaeResults.FieldData fieldData = new CaeResults.FieldData(name, component, stepId, stepIncrementId);

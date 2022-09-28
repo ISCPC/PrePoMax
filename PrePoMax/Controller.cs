@@ -8082,6 +8082,9 @@ namespace PrePoMax
         {
             try
             {
+                // Activate user pick
+                _form.ActivateUserPick();
+                //
                 if (_selectBy == vtkSelectBy.Id) return;
                 // Empty pick - Clear if no operation is used
                 if (pickedPoint == null && planeParameters == null)
@@ -8119,8 +8122,11 @@ namespace PrePoMax
                     AddSelectionNode(selectionNode, true, false);
                 }
             }
-            catch
+            catch { }
+            finally
             {
+                // Dectivate user pick
+                _form.DeactivateUserPick();
             }
         }
         public void AddSelectionNode(SelectionNode node, bool highlight, bool callSelectionChenged)

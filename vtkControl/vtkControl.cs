@@ -34,6 +34,7 @@ namespace vtkControl
         int countError;
         // Variables                                                                                                                        
         private bool _renderingOn;
+        private bool _userPick;     // used to determine if the selection distance should be limited
         private vtkRenderer _renderer;
         private vtkRenderer _selectionRenderer;
         private vtkRenderer _overlayRenderer;
@@ -110,6 +111,7 @@ namespace vtkControl
                 }
             }
         }
+        public bool UserPick { get { return _userPick; } set { _userPick = value; } }
         public vtkEdgesVisibility EdgesVisibility
         {
             get { return _edgesVisibility; }
@@ -1465,7 +1467,8 @@ namespace vtkControl
             else                // regeneration - the distance to the closest item if items changed
                 maxErrorDistance2 = double.MaxValue;
             //
-            //System.Diagnostics.Debug.WriteLine(DateTime.Now.ToLongTimeString() + " Min distance: " + minDist);
+            if (!_userPick) maxErrorDistance2 = double.MaxValue;    // must be in a separate if
+            //
             if (minDist > maxErrorDistance2) return -1;
             else
             {
