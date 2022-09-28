@@ -39,17 +39,18 @@ namespace CaeResults
     public static class OpenFoamFileReader
     {
         // Variables                                                                                                                
-        static private HashSet<string> resultFileNames = new HashSet<string>() {
-            "gammaInt", 
-            "k",
-            "nut",
-            "omega",
-            "p",
-            "phi",
-            "pMean",
-            "ReThetat",
-            "U",
-        };
+        //static private HashSet<string> resultFileNames = new HashSet<string>() {
+        //    "gammaInt", 
+        //    "k",
+        //    "nut",
+        //    "omega",
+        //    "p",
+        //    "phi",
+        //    "pMean",
+        //    "ReThetat",
+        //    "U",
+        //    "yPlus",
+        //};
 
 
         // Methods                                                                                                                  
@@ -532,69 +533,91 @@ namespace CaeResults
             if (header.FieldType == OpenFoamFieldType.Unknown || header.FieldType == OpenFoamFieldType.SurfaceScalarField) return;
             //
             string[] tmp;
-            string[] splitter = new string[] { "(", ",", " ", ")" };
+            string[] splitter = new string[] { "(", ",", " ", ")", ";" };
             int numOfCells;
             int numOfComponents;
             float[][] cellValues;
             // Skip keywords until internalField
             while (!lines[lineId].ToUpper().StartsWith("INTERNALFIELD")) lineId++;
-            lineId++;
-            //
-            numOfCells = int.Parse(lines[lineId++]);
-            // Skip bracket
-            if (lines[lineId].StartsWith("(")) lineId++;
-            // Count the number of components
-            tmp = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-            numOfComponents = tmp.Length;
-            cellValues = new float[numOfComponents][];
-            for (int i = 0; i < numOfComponents; i++) cellValues[i] = new float[numOfCells];
-            //
-            string line;
-            if (header.FieldType == OpenFoamFieldType.VolScalarField)
+            // internalField   nonuniform List<scalar>
+            if (lines[lineId].ToUpper().Contains("NONUNIFORM"))
             {
-                for (int i = 0; i < numOfCells; i++)
+                if (lines[lineId].ToUpper().Contains("LIST<SCALAR>"))
                 {
-                    line = lines[lineId];
-                    cellValues[0][i] = float.Parse(line);
                     lineId++;
-                }
-            }
-            else if (header.FieldType == OpenFoamFieldType.VolVectorField)
-            {
-                for (int i = 0; i < numOfCells; i++)
-                {
+                    //
+                    numOfCells = int.Parse(lines[lineId++]);
+                    // Skip bracket
+                    if (lines[lineId].StartsWith("(")) lineId++;
+                    // Count the number of components
                     tmp = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-                    for (int j = 0; j < numOfComponents; j++) cellValues[j][i] = float.Parse(tmp[j]);
-                    lineId++;
+                    numOfComponents = tmp.Length;
+                    cellValues = new float[numOfComponents][];
+                    for (int i = 0; i < numOfComponents; i++) cellValues[i] = new float[numOfCells];
+                    //
+                    string line;
+                    if (header.FieldType == OpenFoamFieldType.VolScalarField)
+                    {
+                        for (int i = 0; i < numOfCells; i++)
+                        {
+                            line = lines[lineId];
+                            cellValues[0][i] = float.Parse(line);
+                            lineId++;
+                        }
+                    }
+                    else if (header.FieldType == OpenFoamFieldType.VolVectorField)
+                    {
+                        for (int i = 0; i < numOfCells; i++)
+                        {
+                            tmp = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                            for (int j = 0; j < numOfComponents; j++) cellValues[j][i] = float.Parse(tmp[j]);
+                            lineId++;
+                        }
+                    }
+                    // Get sum of nodal values
+                    float[][] nodeValues = new float[numOfComponents][];
+                    for (int i = 0; i < numOfComponents; i++) nodeValues[i] = new float[nodeIdsLookUp.Count];
+                    //
+                    int localNodeId;
+                    foreach (var entry in cellIdNodeIds)
+                    {
+                        foreach (var nodeId in entry.Value)
+                        {
+                            localNodeId = nodeIdsLookUp[nodeId];
+                            for (int i = 0; i < numOfComponents; i++) nodeValues[i][localNodeId] += cellValues[i][entry.Key];
+                        }
+                    }
+                    // Average nodal values
+                    foreach (var entry in nodeIdCellCount)
+                    {
+                        localNodeId = nodeIdsLookUp[entry.Key];
+                        for (int i = 0; i < numOfComponents; i++) nodeValues[i][localNodeId] /= entry.Value;
+                    }
+                    //
+                    field = new Field(fieldData.Name);
+                    string componentName;
+                    for (int i = 0; i < numOfComponents; i++)
+                    {
+                        if (numOfComponents == 1) componentName = "VAL";
+                        else componentName = "VAL" + (i + 1).ToString();
+                        field.AddComponent(componentName, nodeValues[i]);
+                    }
                 }
             }
-            // Get sum of nodal values
-            float[][] nodeValues = new float[numOfComponents][];
-            for (int i = 0; i < numOfComponents; i++) nodeValues[i] = new float[nodeIdsLookUp.Count];
-            //
-            int localNodeId;
-            foreach (var entry in cellIdNodeIds)
+            // internalField   uniform 1
+            else if (lines[lineId].ToUpper().Contains("UNIFORM"))
             {
-                foreach (var nodeId in entry.Value)
+                tmp = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                if (tmp.Length >= 2)
                 {
-                    localNodeId = nodeIdsLookUp[nodeId];
-                    for (int i = 0; i < numOfComponents; i++) nodeValues[i][localNodeId] += cellValues[i][entry.Key];
+                    float value = float.Parse(tmp[2]);
+                    float[] nodeValues = new float[nodeIdsLookUp.Count];
+                    for (int i = 0; i < nodeValues.Length; i++) nodeValues[i] = value;
+                    //
+                    field = new Field(fieldData.Name);
+                    string componentName = "VAL";
+                    field.AddComponent(componentName, nodeValues);
                 }
-            }
-            // Average nodal values
-            foreach (var entry in nodeIdCellCount)
-            {
-                localNodeId = nodeIdsLookUp[entry.Key];
-                for (int i = 0; i < numOfComponents; i++) nodeValues[i][localNodeId] /= entry.Value;
-            }
-            //
-            field = new Field(fieldData.Name);
-            string componentName;
-            for (int i = 0; i < numOfComponents; i++)
-            {
-                if (numOfComponents == 1) componentName = "VAL";
-                else componentName = "VAL" + (i + 1).ToString();
-                field.AddComponent(componentName, nodeValues[i]);
             }
         }
         // File
