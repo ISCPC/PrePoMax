@@ -1284,15 +1284,17 @@ namespace PrePoMax
                                                 "|PrePoMax history|*.pmh" +
                                                 "|Calculix result files|*.frd" +
                                                 "|Calculix dat files|*.dat" +       // added .dat file
-                                                "|OpenFoam files|*.foam";           // added .foam file
+                                                "|OpenFoam files|*.foam";
+
                     }
                     // No dedugger
                     else
                     {
-                        openFileDialog.Filter = "All files|*.pmx;*.pmh;*.frd" +
+                        openFileDialog.Filter = "All files|*.pmx;*.pmh;*.frd;*.foam" +
                                                 "|PrePoMax files|*.pmx" +
                                                 "|PrePoMax history|*.pmh" +
-                                                "|Calculix result files|*.frd";
+                                                "|Calculix result files|*.frd" +
+                                                "|OpenFoam files|*.foam";
                     }
 
                     //
