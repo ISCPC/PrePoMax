@@ -1223,7 +1223,6 @@ namespace PrePoMax
                     tsViews.DisableMouseButtons = false;
                     // Toolbar Results
                     tsDeformationFactor.Enabled = true;
-                    UpdateScaleFactorTextBoxState();
                     tsResults.Enabled = true;
                     // Vtk
                     vtkVisible = true;
@@ -6796,7 +6795,7 @@ namespace PrePoMax
         {
             try
             {
-                // Enable scale factor text box
+                // Enable scale factor text box if needed
                 UpdateScaleFactorTextBoxState();
                 //
                 _controller.Redraw();
@@ -6823,6 +6822,10 @@ namespace PrePoMax
             {
                 ExceptionTools.Show(this, ex);
             }
+        }
+        private void tstbDeformationFactor_EnabledChanged(object sender, EventArgs e)
+        {
+            if (tstbDeformationFactor.Enabled) UpdateScaleFactorTextBoxState();
         }
         //
         public void SetResultNames()
@@ -8383,6 +8386,6 @@ namespace PrePoMax
             }
         }
 
-        
+      
     }
 }
