@@ -454,6 +454,13 @@ namespace PrePoMax
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
+        public void DeInitialize()
+        {
+            New();
+            //
+            _commands.Clear();
+            _allResults.Clear();
+        }
         public void Clear()
         {
             _form.CloseAllForms();
