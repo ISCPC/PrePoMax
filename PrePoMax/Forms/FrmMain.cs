@@ -8231,6 +8231,18 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
+            try
+            {
+                _controller.TestCreateSurface();
+            }
+            catch
+            {
+
+            }
+
+            return;
+            
+
             ImportedPressure pressure = (ImportedPressure)_controller.GetStep("Step-1").Loads["Imported_pressure-1"];
             pressure.ImportPressure();
             //

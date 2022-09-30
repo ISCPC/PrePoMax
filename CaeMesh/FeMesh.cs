@@ -3822,7 +3822,7 @@ namespace CaeMesh
             //
             surface.ClearElementFaces(); // area = 0 
             //
-            if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
+            if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection || surface.CreatedFrom == FeSurfaceCreatedFrom.Faces)
             {
                 CreateSurfaceFacesFromSelection(surface.FaceIds, out nodeIds, out elementSets, out area, out surfaceFaceTypes);
                 surface.Area = area;
