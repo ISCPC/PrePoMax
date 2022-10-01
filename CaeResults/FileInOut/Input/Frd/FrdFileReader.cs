@@ -683,6 +683,7 @@ namespace CaeResults
                 for (int i = 0; i < numOfVal; i++)
                 {
                     line = lines[lineId];
+                    line = line.Replace("NAN", "NaN");
                     // Node id
                     if (directIds) nodeValueId = i;
                     else
@@ -702,6 +703,7 @@ namespace CaeResults
                             {
                                 lineId++;
                                 line = lines[lineId];
+                                line = line.Replace("NAN", "NaN");
                                 start = 13;
                             }
                             // No continuation found
