@@ -157,7 +157,19 @@ namespace FileInOut.Input
                     //
                     WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                     //
-                    if (keyword == "*NSET")
+                    if (keyword == "*PART")
+                    {
+                        // Files created in Gmesh containing only one part can have a name
+                        string newName = GetPartName(dataSet);
+                        if (newName != null && mesh.Parts.Count == 1)
+                        {
+                            string oldName = mesh.Parts.Keys.First();
+                            BasePart part = mesh.Parts[oldName];
+                            part.Name = newName;
+                            mesh.Parts.Replace(oldName, newName, part);
+                        }
+                    }
+                    else if (keyword == "*NSET")
                     {
                         GetNodeOrElementSet("NSET", dataSet, mesh, out name, out ids);
                         if (NamedClass.CheckNameError(name) != null) AddError(NamedClass.CheckNameError(name));
@@ -610,6 +622,23 @@ namespace FileInOut.Input
             {
                 AddError(ex.Message);
             }
+        }
+        // Part name
+        private static string GetPartName(string[] lines)
+        {
+            if (lines.Length > 0)
+            {
+                string[] tmp = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var keyword in tmp)
+                {
+                    if (keyword.Trim().ToUpper().StartsWith("NAME="))
+                    {
+                        tmp = tmp[1].Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                        if (tmp.Length == 2) return tmp[1].Trim();
+                    }
+                }
+            }
+            return null;
         }
         // Node/Element set
         private static void GetNodeOrElementSet(string keywordName, string[] lines, FeMesh mesh, out string name, out int[] ids)
