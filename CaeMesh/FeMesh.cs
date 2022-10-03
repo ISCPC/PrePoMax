@@ -1309,99 +1309,16 @@ namespace CaeMesh
             gp.ErrorEdgeCellIds = null;
             gp.ErrorNodeIds = null;
             //
-            int nodeId;
-            int edgeId;
-            int[] edgeCell;
-            List<int> vertexEdgeIds;
-            List<int> errorEdgeCellIds = new List<int>();
-            List<int> errorNodeIds = new List<int>();
-            HashSet<int> errorEdgeIds = new HashSet<int>();
-            VisualizationData vis = gp.Visualization;
-            HashSet<int> vertexNodeIds = new HashSet<int>(vis.VertexNodeIds);
+            int[] errorEdgeCellIds = null;
+            int[] errorNodeIds = null;
             // Shell parts
             if (gp.PartType == PartType.Shell)
             {
-                Dictionary<int, List<int>>[] faceVertexEdgeIds = new Dictionary<int, List<int>>[vis.FaceEdgeIds.Length];
-                // Build a map of all edges connected to a vertex
-                // For each surface
-                for (int i = 0; i < vis.FaceEdgeIds.Length; i++)
-                {
-                    faceVertexEdgeIds[i] = new Dictionary<int, List<int>>();
-                    // For each surface edge
-                    for (int j = 0; j < vis.FaceEdgeIds[i].Length; j++)
-                    {
-                        edgeId = vis.FaceEdgeIds[i][j];
-                        // For each edge cell
-                        for (int k = 0; k < vis.EdgeCellIdsByEdge[edgeId].Length; k++)
-                        {
-                            edgeCell = vis.EdgeCells[vis.EdgeCellIdsByEdge[edgeId][k]];
-                            // For each node in edge cell
-                            for (int l = 0; l < edgeCell.Length; l++)
-                            {
-                                if (vertexNodeIds.Contains(edgeCell[l]))    // is this node a vertex
-                                {
-                                    if (faceVertexEdgeIds[i].TryGetValue(edgeCell[l], out vertexEdgeIds))
-                                        vertexEdgeIds.Add(edgeId);
-                                    else faceVertexEdgeIds[i].Add(edgeCell[l], new List<int>() { edgeId });
-                                }
-                            }
-                        }
-                    }
-                }
-                // From the map extract all end/start vertices and their open edge loops
-                GeomFaceType faceType;
-                // For each face
-                for (int i = 0; i < faceVertexEdgeIds.Length; i++)
-                {
-                    if (vis.FaceTypes != null) faceType = vis.FaceTypes[i];
-                    else faceType = GeomFaceType.Unknown;
-                    // For each vertex
-                    foreach (var entry in faceVertexEdgeIds[i])
-                    {
-                        // Cylinder and toruses have a single edge along their axis which creates 3 edge vertices
-                        if (entry.Value.Count == 3 && (faceType == GeomFaceType.Cylinder || faceType == GeomFaceType.Torus)) continue;
-                        else if (entry.Value.Count != 2)
-                        {
-                            nodeId = entry.Key;
-                            errorNodeIds.Add(nodeId);
-                            //
-                            GetEdgeIdsOnEdgeLoop(nodeId, faceVertexEdgeIds[i], ref errorEdgeIds);
-                        }
-                    }
-                }
-            }
-            // Collect error edge cell ids
-            foreach (var errorEdgeId in errorEdgeIds)
-            {
-                errorEdgeCellIds.AddRange(vis.EdgeCellIdsByEdge[errorEdgeId]);
+                gp.Visualization.CheckForErrorElementsInShellCADPart(out errorEdgeCellIds, out errorNodeIds);
             }
             // Save
-            if (errorEdgeCellIds.Count > 0) gp.ErrorEdgeCellIds = errorEdgeCellIds.ToArray();
-            else gp.ErrorEdgeCellIds = null;
-            if (errorNodeIds.Count > 0) gp.ErrorNodeIds = errorNodeIds.ToArray();
-            else gp.ErrorNodeIds = null;
-        }
-        private void GetEdgeIdsOnEdgeLoop(int nodeId, Dictionary<int, List<int>> nodeEdgeIds, ref HashSet<int> edgeIds)
-        {
-            List<int> oneNodeEdgeIds = nodeEdgeIds[nodeId];
-            // Only continue for start/end and inside/normal vertices
-            // 3 edges might mean the connection to the outer/another edge loop
-            if (oneNodeEdgeIds.Count > 2) return;      
-            //
-            foreach (var edgeId in oneNodeEdgeIds)
-            {
-                if (edgeIds.Add(edgeId))    // is it a new edge?
-                {
-                    foreach (var entry in nodeEdgeIds)
-                    {
-                        if (entry.Value.Contains(edgeId))
-                        {
-                            GetEdgeIdsOnEdgeLoop(entry.Key, nodeEdgeIds, ref edgeIds);
-                            break;
-                        }
-                    }
-                }
-            }
+            gp.ErrorEdgeCellIds = errorEdgeCellIds;
+            gp.ErrorNodeIds = errorNodeIds;
         }
         private void SplitVisualizationEdgesAndFaces(BasePart part, HashSet<int> vertexNodeIds = null)
         {
@@ -2053,31 +1970,47 @@ namespace CaeMesh
             partFaceTypes = new GeomFaceType[vis.CellIdsByFace.Length];
             Dictionary<int, HashSet<int>> nodeIdsBySurfaces = vis.GetNodeIdsBySurfaces();
             // For each part surface
+            int foundKey;
+            int foundFirstKey;
+            int foundSecondKey;
             for (int i = 0; i < vis.CellIdsByFace.Length; i++)
             {
                 surfaceNodeIds = nodeIdsBySurfaces[i];
                 // Find the surface with the same node ids
+                foundFirstKey = -1;
+                foundSecondKey = -1;
                 oneSurfCount = 0;
+                //
                 foreach (var surfaceNodeIdsEntry in surfaceIdNodeIds)
                 {
                     if (surfaceNodeIdsEntry.Value.Count > 0)
                     {
-                        if ((surfaceNodeIdsEntry.Value.Count == surfaceNodeIds.Count &&
-                             surfaceNodeIdsEntry.Value.Except(surfaceNodeIds).Count() == 0)
-                            // Next line is for when the mesh is converted to parabolic mesh outside netgen - before this method
-                            || (surfaceNodeIdsEntry.Value.Intersect(surfaceNodeIds).Count() == surfaceNodeIdsEntry.Value.Count()))
+                        if (surfaceNodeIdsEntry.Value.Count == surfaceNodeIds.Count &&
+                            surfaceNodeIdsEntry.Value.Except(surfaceNodeIds).Count() == 0)
                         {
-                            newSurfaceIds[surfaceCount] = surfaceNodeIdsEntry.Key;
-                            oldSurfaceIds[surfaceCount] = surfaceCount;
-                            //
-                            oldIdNewId.Add(surfaceCount, surfaceNodeIdsEntry.Key);
-                            //
-                            surfaceCount++;
-                            oneSurfCount++;
+                            foundFirstKey = surfaceNodeIdsEntry.Key;
                             break;
+                        }
+                        else if (surfaceNodeIdsEntry.Value.Intersect(surfaceNodeIds).Count() == surfaceNodeIdsEntry.Value.Count())
+                        {
+                            foundSecondKey = surfaceNodeIdsEntry.Key;
+                            // Do not break, search all faces for possible firstKey
                         }
                     }
                 }
+                if (foundFirstKey != -1 || foundSecondKey != -1)
+                {
+                    foundKey = foundFirstKey != -1 ? foundFirstKey : foundSecondKey;
+                    //
+                    newSurfaceIds[surfaceCount] = foundKey;
+                    oldSurfaceIds[surfaceCount] = surfaceCount;
+                    //
+                    oldIdNewId.Add(surfaceCount, foundKey);
+                    //
+                    surfaceCount++;
+                    oneSurfCount++;
+                }
+                //
                 if (oneSurfCount == 0)
                 {
                     oneSurfCount = 0;
@@ -3072,6 +3005,11 @@ namespace CaeMesh
             }
             return partIds.ToArray();
         }
+        public BasePart GetPartByGeometryId(int geometryId)
+        {
+            int[] itemTypePartIds = GetItemTypePartIdsFromGeometryId(geometryId);
+            return GetPartById(itemTypePartIds[2]);
+        }
         public HashSet<BasePart> GetPartsFromSelectionIds(int[] prevIds, vtkSelectItem selectItem)
         {
             HashSet<BasePart> parts = new HashSet<BasePart>();
@@ -3112,12 +3050,7 @@ namespace CaeMesh
             }
             else if (selectItem == vtkSelectItem.Geometry)
             {
-                int[] itemTypePartIds;
-                foreach (var geometryId in prevIds)
-                {
-                    itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
-                    parts.Add(GetPartById(itemTypePartIds[2]));
-                }
+                foreach (var geometryId in prevIds) parts.Add(GetPartByGeometryId(geometryId));
             }
             else if (selectItem == vtkSelectItem.Part)
             {
@@ -3889,7 +3822,7 @@ namespace CaeMesh
             //
             surface.ClearElementFaces(); // area = 0 
             //
-            if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
+            if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection || surface.CreatedFrom == FeSurfaceCreatedFrom.Faces)
             {
                 CreateSurfaceFacesFromSelection(surface.FaceIds, out nodeIds, out elementSets, out area, out surfaceFaceTypes);
                 surface.Area = area;
@@ -5376,7 +5309,7 @@ namespace CaeMesh
             }
             // Get geometry ids                                             
             int typeId = shellEdgeFace ? (int)GeometryType.ShellEdgeSurface : (int)GeometryType.Edge;
-            int partId = part.PartId; ;
+            int partId = part.PartId;
             //
             int count = 0;
             int[] geometryIds = new int[allEdgeIds.Count];
@@ -5466,7 +5399,8 @@ namespace CaeMesh
                         {
                             if (!surfaceIds.Contains(neighbourId) && !newSurfaceIds.Contains(neighbourId))
                             {
-                                alpha = edgeAngles[new int[] { Math.Min(notVisitedSurfaceId, neighbourId), Math.Max(notVisitedSurfaceId, neighbourId) }][0];
+                                alpha = edgeAngles[new int[] { Math.Min(notVisitedSurfaceId, neighbourId),
+                                                               Math.Max(notVisitedSurfaceId, neighbourId) }][0];
                                 if (alpha <= angle)
                                 {
                                     newSurfaceIds.Add(neighbourId);

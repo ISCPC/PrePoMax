@@ -184,6 +184,7 @@
             this.cltvLibrary.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.cltvLibrary_AfterSelect);
             this.cltvLibrary.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltvLibrary_MouseDoubleClick);
             this.cltvLibrary.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltvLibrary_MouseDown);
+            this.cltvLibrary.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltvLibrary_MouseUp);
             // 
             // btnOK
             // 

@@ -46,10 +46,26 @@ namespace CaeGlobals
             if (value is string valueString)
             {
                 double valueDouble;
+                // Replace commas with dots
+                valueString = valueString.Replace(',', '.');
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    valueDouble = ConvertToCurrentUnits(valueString);
+                    NCalc.Expression e = new NCalc.Expression(valueString);
+                    if (e.HasErrors())
+                    {
+                        // Remove current abbreviations
+                        string abb = Pressure.GetAbbreviation(_pressureUnit);
+                        if (valueString.Contains(abb)) valueString = valueString.Replace(abb, "");
+                        e = new NCalc.Expression(valueString);
+                    }
+                    if (!e.HasErrors())
+                    {
+                        var result = e.Evaluate();
+                        if (result is int) valueDouble = (int)result;
+                        else if (result is double) valueDouble = (double)result;
+                    }
+                    else valueDouble = ConvertToCurrentUnits(valueString);
                 }
                 //
                 return valueDouble;
@@ -107,6 +123,8 @@ namespace CaeGlobals
             //
             return supportedUnitAbbreviations;
         }
+
+
     }
 
 }

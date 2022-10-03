@@ -625,6 +625,7 @@ namespace CaeResults
         {
             string[] record;
             string[] splitter = new string[] { " " };
+            // -4  DISP        4    1
             // -5  D1          1    2    1    0                                          
             // -5  D2          1    2    2    0                                          
             // -5  D3          1    2    3    0                                          
@@ -636,22 +637,24 @@ namespace CaeResults
             {
                 record = lines[lineNum].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                 //
-                if (record[0] == "-5") componentName = record[1];
+                if (record[0] == "-5") 
+                {
+                    componentName = record[1];
+                    if (componentRenamer.TryGetValue(componentName, out componentRename)) componentName = componentRename;
+                    components.Add(componentName);
+                } 
                 else break;
-                //
-                if (componentRenamer.TryGetValue(componentName, out componentRename)) componentName = componentRename;
-                components.Add(componentName);
                 //
                 lineNum++;
             }
-            //lineNum--;
             // Check if the line number equals the numebr of lines
-            if (lines.Length - lineNum != numOfVal) numOfVal = lines.Length - lineNum;
+            if (lines.Length - lineNum < numOfVal) numOfVal = lines.Length - lineNum;
             //
             float[][] values = new float[components.Count][];
             for (int i = 0; i < values.Length; i++) values[i] = new float[nodeIdsLookUp.Count];
             //
             bool directIds = nodeIdsLookUp.Count == numOfVal;
+            int lineId;
             int nodeId;
             int nodeValueId;
             int start;
@@ -664,10 +667,23 @@ namespace CaeResults
                 // -1         2-2.80622E-01-9.91633E-02-7.35318E-02-5.78751E-02-1.60376E-03-2.20396E-03
                 // -1         3 2.28310E-01 8.87877E-02 8.87877E-02 4.85675E-02-3.63429E-08-2.93555E-03
                 // -1         4 2.24848E-01 8.74410E-02 8.74410E-02-4.91735E-02 3.93390E-08-6.85921E-03
+                //
+                // -1         1 1.00000E+00 1.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+                // -2           0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+                // -2           0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+                // -2           0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+                // -2           0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+                // -1         2 1.00000E+00 1.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+                // -2           0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+                // -2           0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+                // -2           0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+                // -2           0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
                 width = 12;
+                lineId = lineNum;
                 for (int i = 0; i < numOfVal; i++)
                 {
-                    line = lines[i + lineNum];
+                    line = lines[lineId];
+                    line = line.Replace("NAN", "NaN");
                     // Node id
                     if (directIds) nodeValueId = i;
                     else
@@ -680,11 +696,25 @@ namespace CaeResults
                     start = 13;
                     for (int j = 0; j < components.Count; j++)
                     {
-                        if (start + width > line.Length) continue;
+                        // Is line to short - do results continue in the next line?
+                        if (start + width > line.Length)
+                        {
+                            if (lines.Length > lineId + 1 && lines[lineId + 1].Trim().StartsWith("-2"))
+                            {
+                                lineId++;
+                                line = lines[lineId];
+                                line = line.Replace("NAN", "NaN");
+                                start = 13;
+                            }
+                            // No continuation found
+                            else continue;
+                        }
                         //
                         if (nodeValueId != -1) values[j][nodeValueId] = float.Parse(line.Substring(start, width));
                         start += width;
                     }
+                    //
+                    lineId++;
                 }
             }
             else
@@ -697,8 +727,8 @@ namespace CaeResults
                 // -1         6-1.16413E-0027.22403E-003-2.74940E-001
                 for (int i = 0; i < numOfVal; i++)
                 {
-                    line = lines[i + lineNum];
-                    // Node id
+                    lineId = i + lineNum;
+                    line = lines[lineId];
                     // Node id
                     if (directIds) nodeValueId = i;
                     else

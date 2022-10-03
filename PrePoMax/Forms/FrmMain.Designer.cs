@@ -819,7 +819,7 @@
             this.tstbDeformationFactor});
             this.tsDeformationFactor.Location = new System.Drawing.Point(3, 25);
             this.tsDeformationFactor.Name = "tsDeformationFactor";
-            this.tsDeformationFactor.Size = new System.Drawing.Size(591, 25);
+            this.tsDeformationFactor.Size = new System.Drawing.Size(622, 25);
             this.tsDeformationFactor.TabIndex = 8;
             // 
             // tslResultName
@@ -883,6 +883,7 @@
             this.tstbDeformationFactor.TextBoxTextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tstbDeformationFactor.ToolTipText = "Enter the deformation scale factor";
             this.tstbDeformationFactor.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tstbDeformationFactor_KeyDown);
+            this.tstbDeformationFactor.EnabledChanged += new System.EventHandler(this.tstbDeformationFactor_EnabledChanged);
             // 
             // tsResults
             // 
@@ -2846,7 +2847,7 @@
             this.tsmiDeleteStep});
             this.tsmiStep.Image = global::PrePoMax.Properties.Resources.Step;
             this.tsmiStep.Name = "tsmiStep";
-            this.tsmiStep.Size = new System.Drawing.Size(180, 22);
+            this.tsmiStep.Size = new System.Drawing.Size(153, 22);
             this.tsmiStep.Text = "Step";
             // 
             // tsmiCreateStep
@@ -2885,7 +2886,7 @@
             // tsmiDividerStep1
             // 
             this.tsmiDividerStep1.Name = "tsmiDividerStep1";
-            this.tsmiDividerStep1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerStep1.Size = new System.Drawing.Size(150, 6);
             // 
             // tsmiHistoryOutput
             // 
@@ -2897,7 +2898,7 @@
             this.tsmiDeleteHistoryOutput});
             this.tsmiHistoryOutput.Image = global::PrePoMax.Properties.Resources.History_output;
             this.tsmiHistoryOutput.Name = "tsmiHistoryOutput";
-            this.tsmiHistoryOutput.Size = new System.Drawing.Size(180, 22);
+            this.tsmiHistoryOutput.Size = new System.Drawing.Size(153, 22);
             this.tsmiHistoryOutput.Text = "History Output";
             // 
             // tsmiCreateHistoryOutput
@@ -2943,7 +2944,7 @@
             this.tsmiDeleteFieldOutput});
             this.tsmiFieldOutput.Image = global::PrePoMax.Properties.Resources.Field_output;
             this.tsmiFieldOutput.Name = "tsmiFieldOutput";
-            this.tsmiFieldOutput.Size = new System.Drawing.Size(180, 22);
+            this.tsmiFieldOutput.Size = new System.Drawing.Size(153, 22);
             this.tsmiFieldOutput.Text = "Field Output";
             // 
             // tsmiCreateFieldOutput
@@ -2992,7 +2993,7 @@
             this.tsmiDeleteBC});
             this.tsmiBC.Image = global::PrePoMax.Properties.Resources.Bc;
             this.tsmiBC.Name = "tsmiBC";
-            this.tsmiBC.Size = new System.Drawing.Size(180, 22);
+            this.tsmiBC.Size = new System.Drawing.Size(153, 22);
             this.tsmiBC.Text = "BC";
             // 
             // tsmiCreateBC
@@ -3063,7 +3064,7 @@
             this.tsmiDeleteLoad});
             this.tsmiLoad.Image = global::PrePoMax.Properties.Resources.Load;
             this.tsmiLoad.Name = "tsmiLoad";
-            this.tsmiLoad.Size = new System.Drawing.Size(180, 22);
+            this.tsmiLoad.Size = new System.Drawing.Size(153, 22);
             this.tsmiLoad.Text = "Load";
             // 
             // tsmiCreateLoad
@@ -3140,27 +3141,27 @@
             this.tsmiDeleteDefinedField});
             this.tsmiDefinedField.Image = global::PrePoMax.Properties.Resources.Defined_field;
             this.tsmiDefinedField.Name = "tsmiDefinedField";
-            this.tsmiDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDefinedField.Size = new System.Drawing.Size(153, 22);
             this.tsmiDefinedField.Text = "Defined Field";
             // 
             // tsmiCreateDefinedField
             // 
             this.tsmiCreateDefinedField.Name = "tsmiCreateDefinedField";
-            this.tsmiCreateDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateDefinedField.Size = new System.Drawing.Size(128, 22);
             this.tsmiCreateDefinedField.Text = "Create";
             this.tsmiCreateDefinedField.Click += new System.EventHandler(this.tsmiCreateDefinedField_Click);
             // 
             // tsmiEditDefinedField
             // 
             this.tsmiEditDefinedField.Name = "tsmiEditDefinedField";
-            this.tsmiEditDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditDefinedField.Size = new System.Drawing.Size(128, 22);
             this.tsmiEditDefinedField.Text = "Edit";
             this.tsmiEditDefinedField.Click += new System.EventHandler(this.tsmiEditDefinedField_Click);
             // 
             // tsmiPropagateDefinedField
             // 
             this.tsmiPropagateDefinedField.Name = "tsmiPropagateDefinedField";
-            this.tsmiPropagateDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiPropagateDefinedField.Size = new System.Drawing.Size(128, 22);
             this.tsmiPropagateDefinedField.Text = "Propagate";
             this.tsmiPropagateDefinedField.Click += new System.EventHandler(this.tsmiPropagateDefinedField_Click);
             // 
@@ -3168,19 +3169,19 @@
             // 
             this.tsmiPreviewDefinedField.Image = global::PrePoMax.Properties.Resources.Preview_defined_field;
             this.tsmiPreviewDefinedField.Name = "tsmiPreviewDefinedField";
-            this.tsmiPreviewDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiPreviewDefinedField.Size = new System.Drawing.Size(128, 22);
             this.tsmiPreviewDefinedField.Text = "Preview";
             this.tsmiPreviewDefinedField.Click += new System.EventHandler(this.tsmiPreviewDefinedField_Click);
             // 
             // tsmiDividerDefinedField1
             // 
             this.tsmiDividerDefinedField1.Name = "tsmiDividerDefinedField1";
-            this.tsmiDividerDefinedField1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerDefinedField1.Size = new System.Drawing.Size(125, 6);
             // 
             // tsmiDeleteDefinedField
             // 
             this.tsmiDeleteDefinedField.Name = "tsmiDeleteDefinedField";
-            this.tsmiDeleteDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteDefinedField.Size = new System.Drawing.Size(128, 22);
             this.tsmiDeleteDefinedField.Text = "Delete";
             this.tsmiDeleteDefinedField.Click += new System.EventHandler(this.tsmiDeleteDefinedField_Click);
             // 

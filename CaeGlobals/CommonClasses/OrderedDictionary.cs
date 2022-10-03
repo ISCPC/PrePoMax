@@ -23,7 +23,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+using System.Runtime.Serialization;
 using System.Linq;
 
 namespace CaeGlobals
@@ -42,12 +42,15 @@ namespace CaeGlobals
     /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
     /// 
     [Serializable]
-    public class OrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+    public class OrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ISerializable
     {
-        private string _name;
-        private List<TKey> _list;
-        private Dictionary<TKey, TValue> _dictionary;
+        // Variables                                                                                                                
+        private string _name;                               //ISerializable
+        private List<TKey> _list;                           //ISerializable
+        private Dictionary<TKey, TValue> _dictionary;       //ISerializable
 
+
+        // Constructors                                                                                                             
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderedDictionary{TKey, TValue}"/> class.
         /// </summary>
@@ -129,7 +132,30 @@ namespace CaeGlobals
             _dictionary = new Dictionary<TKey, TValue>(dictionary, comparer);
             _list = new List<TKey>(_dictionary.Keys);
         }
+        //ISerializable
+        public OrderedDictionary(SerializationInfo info, StreamingContext context)
+        {
+            int count = 0;
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_name":
+                        _name = (string)entry.Value; count++; break;
+                    case "list":        // Compatibility v1.3.4
+                    case "_list":
+                        _list = (List<TKey>)entry.Value; count++; break;
+                    case "dictionary":  // Compatibility v1.3.4
+                    case "_dictionary":
+                        _dictionary = (Dictionary<TKey, TValue>)entry.Value; count++; break;
+                }
+                // Compatibility v1.3.4
+                if (_name == null || _name == "") _name = "Ordered dictionary";
+            }
+        }
 
+
+        // Methods                                                                                                                  
         /// <summary>
         ///   Gets the <typeparam ref="TValue"/> at the specified index.
         /// </summary>
@@ -245,7 +271,7 @@ namespace CaeGlobals
                 throw new Exception("The dictionary " + name + "already contains the key " + key.ToString() + "." +
                                     Environment.NewLine + ex.Message);
             }
-            
+
         }
 
         /// <summary>
@@ -260,7 +286,7 @@ namespace CaeGlobals
             if (!_list.Contains(item.Key))
                 _list.Add(item.Key);
         }
-        
+
         /// <summary>
         /// Adds another dictionary to the <see cref="T:System.Collections.Generic.IDictionary`2" />.
         /// </summary>
@@ -405,7 +431,7 @@ namespace CaeGlobals
 
             return false;
         }
-       
+
 
         /// <summary>
         /// Gets the value associated with the specified key.
@@ -432,6 +458,15 @@ namespace CaeGlobals
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+        
+        // ISerialization
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // Using typeof() works also for null fields
+            info.AddValue("_name", _name, typeof(string));
+            info.AddValue("_list", _list, typeof(List<TKey>));
+            info.AddValue("_dictionary", _dictionary, typeof(Dictionary<TKey, TValue>));
         }
     }
 }

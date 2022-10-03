@@ -204,6 +204,28 @@ namespace PrePoMax.Forms
         //
         private void cltvLibrary_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            //try
+            //{
+            //    if (cltvLibrary.SelectedNode != null)
+            //    {
+            //        cltvLibrary.SelectedNode.EnsureVisible();
+            //        tbCategoryName.Text = cltvLibrary.SelectedNode.Text;
+            //        //
+            //        if (cltvLibrary.SelectedNode.Tag != null)
+            //        {
+            //            if (_frmMaterial != null) _frmMaterial.Material = (Material)cltvLibrary.SelectedNode.Tag;
+            //        }
+            //    }
+            //}
+            //catch
+            //{ }
+        }
+        private void cltvLibrary_MouseDown(object sender, MouseEventArgs e)
+        {
+            
+        }
+        private void cltvLibrary_MouseUp(object sender, MouseEventArgs e)
+        {
             try
             {
                 if (cltvLibrary.SelectedNode != null)
@@ -213,24 +235,19 @@ namespace PrePoMax.Forms
                     //
                     if (cltvLibrary.SelectedNode.Tag != null)
                     {
-                        if (_frmMaterial != null) _frmMaterial.Material = (Material)cltvLibrary.SelectedNode.Tag;
+                        if (_frmMaterial != null)
+                        {
+                            // Convert material unit system
+                            Material previewMaterial = (Material)cltvLibrary.SelectedNode.Tag.DeepClone();
+                            previewMaterial.ConvertUnits(_controller.Model.UnitSystem, _libraryUnitSystem, _controller.Model.UnitSystem);
+                            _frmMaterial.Material = previewMaterial;
+                        }
+                        
                     }
                 }
             }
             catch
             { }
-        }
-        private void cltvLibrary_MouseDown(object sender, MouseEventArgs e)
-        {
-            //try
-            //{
-            //    if (cltvLibrary.HitTest(e.Location).Node == null)
-            //    {
-            //        //cltvLibrary.SelectedNode = null;
-            //    }
-            //}
-            //catch
-            //{ }
         }
         private void cltvLibrary_MouseDoubleClick(object sender, MouseEventArgs e)
         {

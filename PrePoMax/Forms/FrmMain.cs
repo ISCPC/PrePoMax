@@ -145,7 +145,7 @@ namespace PrePoMax
             get { return _modelTree.DisableSelectionsChanged; }
             set { _modelTree.DisableSelectionsChanged = value; }
         }
-        public bool RenderingOn { get { return _vtk.RenderingOn; } set { _vtk.RenderingOn = value; } }
+        public bool RenderingOn { get { return _vtk.RenderingOn; } set { _vtk.RenderingOn = value; } }        
         private ViewType GetViewType(ViewGeometryModelResults view)
         {
             ViewType viewType;
@@ -529,11 +529,13 @@ namespace PrePoMax
                         else if (importExtensions.Contains(extension))
                         {
                             // Create new model
-                            New(ModelSpaceEnum.ThreeD, unitSystemType);
-                            // Import
-                            await _controller.ImportFileAsync(fileName, false);
-                            //
-                            _controller.OpenedFileName = null; // otherwise the previous OpenedFileName gets overwriten on Save
+                            if (New(ModelSpaceEnum.ThreeD, unitSystemType))
+                            {
+                                // Import
+                                await _controller.ImportFileAsync(fileName, false);
+                                // Set to null, otherwise the previous OpenedFileName gets overwriten on Save
+                                _controller.OpenedFileName = null; 
+                            }
                         }
                         else MessageBoxes.ShowError("The file name extension is not supported.");
                         //
@@ -1223,7 +1225,6 @@ namespace PrePoMax
                     tsViews.DisableMouseButtons = false;
                     // Toolbar Results
                     tsDeformationFactor.Enabled = true;
-                    UpdateScaleFactorTextBoxState();
                     tsResults.Enabled = true;
                     // Vtk
                     vtkVisible = true;
@@ -1244,31 +1245,46 @@ namespace PrePoMax
         {
             New(ModelSpaceEnum.Undefined, UnitSystemType.Undefined);
         }
-        private void New(ModelSpaceEnum modelSpace, UnitSystemType unitSystemType)
+        private bool New(ModelSpaceEnum modelSpace, UnitSystemType unitSystemType)
         {
             try
             {
-                if (_controller.ModelChanged &&
-                    MessageBoxes.ShowWarningQuestion("OK to close the current model?") != DialogResult.OK) return;
+                if ((_controller.ModelChanged || _controller.ModelInitialized || _controller.ResultsInitialized) &&
+                    MessageBoxes.ShowWarningQuestion("OK to close the current model?") != DialogResult.OK) return false;
                 //
-                _controller.New();
-                // The model space and the unit system are undefined
-                if (modelSpace == ModelSpaceEnum.Undefined || unitSystemType == UnitSystemType.Undefined)
-                    SelectNewModelProperties();
-                else _controller.SetNewModelPropertiesCommand(modelSpace, unitSystemType);
-                //
+                _controller.DeInitialize();
                 SetMenuAndToolStripVisibility();
                 //
-                _controller.ModelChanged = false; // must be here since adding unit system changes the model                
+                bool update = false;
+                // The model space and the unit system are undefined
+                if (modelSpace == ModelSpaceEnum.Undefined || unitSystemType == UnitSystemType.Undefined)
+                {
+                    if (SelectNewModelProperties(true))
+                    {
+                        _controller.New();
+                        SetNewModelProperties();
+                        update = true;
+                    }
+                }
+                else
+                {
+                    _controller.New();
+                    _controller.SetNewModelPropertiesCommand(modelSpace, unitSystemType);
+                    update = true;
+                }
+                //
+                if (update)
+                {
+                    SetMenuAndToolStripVisibility();
+                    //
+                    _controller.ModelChanged = false; // must be here since adding a unit system changes the model
+                }
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
-            finally
-            {
-
-            }
+            return true;
         }
         private async void tsmiOpen_Click(object sender, EventArgs e)
         {
@@ -1284,15 +1300,17 @@ namespace PrePoMax
                                                 "|PrePoMax history|*.pmh" +
                                                 "|Calculix result files|*.frd" +
                                                 "|Calculix dat files|*.dat" +       // added .dat file
-                                                "|OpenFoam files|*.foam";           // added .foam file
+                                                "|OpenFoam files|*.foam";
+
                     }
                     // No dedugger
                     else
                     {
-                        openFileDialog.Filter = "All files|*.pmx;*.pmh;*.frd" +
+                        openFileDialog.Filter = "All files|*.pmx;*.pmh;*.frd;*.foam" +
                                                 "|PrePoMax files|*.pmx" +
                                                 "|PrePoMax history|*.pmh" +
-                                                "|Calculix result files|*.frd";
+                                                "|Calculix result files|*.frd" +
+                                                "|OpenFoam files|*.foam";
                     }
 
                     //
@@ -1343,7 +1361,7 @@ namespace PrePoMax
                 }
                 else MessageBoxes.ShowWarning("Another task is already running.");
                 // If the model space or the unit system are undefined
-                if (_controller.ModelInitialized) SelectNewModelProperties();
+                if (_controller.ModelInitialized) IfNeededSelectAndSetNewModelProperties();
                 if (_controller.ResultsInitialized) SelectResultsUnitSystem();
             }
             catch (Exception ex)
@@ -1611,7 +1629,7 @@ namespace PrePoMax
                 if (!_controller.ModelInitialized)
                     throw new CaeException("There is no model to import into. First create a new model.");
                 // If the model space or the unit system are undefined
-                SelectNewModelProperties();
+                IfNeededSelectAndSetNewModelProperties();
                 //
                 string filter = GetFileImportFilter(onlyMaterials);
                 string[] files = GetFileNamesToImport(filter);
@@ -5685,7 +5703,10 @@ namespace PrePoMax
                 if (System.Diagnostics.Debugger.IsAttached)
                 {
                     if (GetCurrentView() == ViewGeometryModelResults.Geometry ||
-                    GetCurrentView() == ViewGeometryModelResults.Model) SelectNewModelProperties();
+                        GetCurrentView() == ViewGeometryModelResults.Model)
+                    {
+                        IfNeededSelectAndSetNewModelProperties();
+                    }
                     else SelectResultsUnitSystem();
                 }
             }
@@ -5694,26 +5715,67 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        public void SelectNewModelProperties()
+        private void IfNeededSelectAndSetNewModelProperties()
+        {
+            try
+            {
+                UnitSystemType unitSystemType = _controller.Model.UnitSystem.UnitSystemType;
+                ModelSpaceEnum modelSpace = _controller.Model.Properties.ModelSpace;
+                // If needed
+                if (modelSpace == ModelSpaceEnum.Undefined || unitSystemType == UnitSystemType.Undefined)
+                {
+                    // Select and set
+                    if (SelectNewModelProperties(false)) SetNewModelProperties();
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private bool SelectNewModelProperties(bool cancelPossible)
+        {
+            DialogResult dialogResult = DialogResult.Cancel;
+            //
+            InvokeIfRequired(() =>
+            {
+                try
+                {                    
+                    // Disable the form during regenerate - check that the state is ready
+                    if (tsslState.Text != Globals.RegeneratingText)
+                    {
+                        CloseAllForms();
+                        SetFormLoaction(_frmNewModel);
+                        //
+                        if (_frmNewModel.PrepareForm("", "New Model"))
+                        {
+                            _frmNewModel.SetCancelPossible(cancelPossible);
+                            dialogResult = _frmNewModel.ShowDialog(this);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ExceptionTools.Show(this, ex);
+                }
+            });
+            //
+            return dialogResult == DialogResult.OK;
+        }
+        private void SetNewModelProperties()
         {
             InvokeIfRequired(() =>
             {
                 try
                 {
-                    // Disable the form during regenerate - check that the state is ready
-                    if (tsslState.Text != Globals.RegeneratingText)
+                    if (_frmNewModel.ModelSpace.IsTwoD())
                     {
-                        UnitSystemType unitSystemType = _controller.Model.UnitSystem.UnitSystemType;
-                        ModelSpaceEnum modelSpace = _controller.Model.Properties.ModelSpace;
-                        //
-                        if (unitSystemType == UnitSystemType.Undefined || modelSpace == ModelSpaceEnum.Undefined)
-                        {
-                            CloseAllForms();
-                            SetFormLoaction(_frmNewModel);
-                            //
-                            if (_frmNewModel.PrepareForm("", "New Model")) _frmNewModel.ShowDialog(this);
-                        }
+                        if ((_controller.Model.Geometry != null && !_controller.Model.Geometry.BoundingBox.Is2D())
+                            || (_controller.Model.Mesh != null && !_controller.Model.Mesh.BoundingBox.Is2D()))
+                            throw new CaeException("Use of the 2D model space is not possible. The geometry or the mesh " +
+                                                   "do not contain 2D geometry in x-y plane.");
                     }
+                    _controller.SetNewModelPropertiesCommand(_frmNewModel.ModelSpace, _frmNewModel.UnitSystem.UnitSystemType);
                 }
                 catch (Exception ex)
                 {
@@ -5737,7 +5799,14 @@ namespace PrePoMax
                             CloseAllForms();
                             SetFormLoaction(_frmNewModel);
                             //
-                            if (_frmNewModel.PrepareForm("", "Results")) _frmNewModel.ShowDialog(this);
+                            if (_frmNewModel.PrepareForm("", "Results"))
+                            {
+                                if (_frmNewModel.ShowDialog(this) == DialogResult.OK)
+                                {
+                                    _controller.SetResultsUnitSystem(_frmNewModel.UnitSystem.UnitSystemType);
+                                }
+                                else throw new NotSupportedException();
+                            }
                         }
                     }
                 }
@@ -6794,7 +6863,7 @@ namespace PrePoMax
         {
             try
             {
-                // Enable scale factor text box
+                // Enable scale factor text box if needed
                 UpdateScaleFactorTextBoxState();
                 //
                 _controller.Redraw();
@@ -6821,6 +6890,10 @@ namespace PrePoMax
             {
                 ExceptionTools.Show(this, ex);
             }
+        }
+        private void tstbDeformationFactor_EnabledChanged(object sender, EventArgs e)
+        {
+            if (tstbDeformationFactor.Enabled) UpdateScaleFactorTextBoxState();
         }
         //
         public void SetResultNames()
@@ -7332,7 +7405,6 @@ namespace PrePoMax
 
         #region vtkControl  ########################################################################################################
         // vtkControl
-
         public void SetFrontBackView(bool animate, bool front)
         {
             InvokeIfRequired(_vtk.SetFrontBackView, animate, front);
@@ -7616,12 +7688,20 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SmoothPart, partName, a, fileName);
         }
-
+        // User pick
+        public void ActivateUserPick()
+        {
+            _vtk.UserPick = true;
+        }
+        public void DeactivateUserPick()
+        {
+            _vtk.UserPick = false;
+        }
         #endregion  ################################################################################################################
 
         #region Results  ###########################################################################################################
         // Results
-        
+
         public void SetFieldData(string name, string component, int stepId, int stepIncrementId)
         {
             CaeResults.FieldData fieldData = new CaeResults.FieldData(name, component, stepId, stepIncrementId);
@@ -8151,6 +8231,18 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
+            try
+            {
+                _controller.TestCreateSurface();
+            }
+            catch
+            {
+
+            }
+
+            return;
+            
+
             ImportedPressure pressure = (ImportedPressure)_controller.GetStep("Step-1").Loads["Imported_pressure-1"];
             pressure.ImportPressure();
             //
@@ -8374,6 +8466,6 @@ namespace PrePoMax
             }
         }
 
-        
+      
     }
 }
