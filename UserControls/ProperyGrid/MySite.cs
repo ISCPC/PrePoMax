@@ -14,9 +14,12 @@ namespace UserControls
     //                                                                                                                              
     public class MySite : ISite, IUIService
     {
+        private string _name;
         public MySite(PropertyGrid propertyGrid)
         {
             PropertyGrid = propertyGrid;
+            //
+            _name = "MySite.Name";
         }
 
         public object GetService(Type serviceType)
@@ -62,11 +65,11 @@ namespace UserControls
         {
             get
             {
-                throw new NotImplementedException();
+                return _name;
             }
             set
             {
-                throw new NotImplementedException();
+                _name = value;
             }
         }
 
