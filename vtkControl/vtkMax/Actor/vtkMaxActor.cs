@@ -478,10 +478,11 @@ namespace vtkControl
             if (true)
             {
                 int smoothingIterations = 20;
-                double passBand = 0.001;
+                double passBand = 0.1;
                 double featureAngle = 360.0;
                 //
                 smoother.SetInput(_geometryMapper.GetInput());
+                smoother.NormalizeCoordinatesOn();
                 smoother.SetNumberOfIterations(smoothingIterations);
                 //smoother.BoundarySmoothingOff();
                 smoother.BoundarySmoothingOn();
