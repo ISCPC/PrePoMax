@@ -46,24 +46,25 @@ namespace CaeGlobals
             if (value is string valueString)
             {
                 double valueDouble;
-                // Replace commas with dots
-                valueString = valueString.Replace(',', '.');
+                valueString = valueString.Trim();
                 //
+                if (valueString.Length == 0 || valueString == "=") return 0;   // empty string -> 0
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    NCalc.Expression e = new NCalc.Expression(valueString);
-                    if (e.HasErrors())
+                    if (valueString.StartsWith("="))
                     {
-                        // Remove current abbreviations
-                        string abb = Pressure.GetAbbreviation(_pressureUnit);
-                        if (valueString.Contains(abb)) valueString = valueString.Replace(abb, "");
-                        e = new NCalc.Expression(valueString);
-                    }
-                    if (!e.HasErrors())
-                    {
-                        var result = e.Evaluate();
-                        if (result is int) valueDouble = (int)result;
-                        else if (result is double) valueDouble = (double)result;
+                        valueString = valueString.Substring(1, valueString.Length - 1);
+                        NCalc.Expression e = MyNCalc.GetExpression(valueString);
+                        if (!e.HasErrors())
+                        {
+                            object result = e.Evaluate();
+                            if (result is int) valueDouble = (int)result;
+                            else if (result is double) valueDouble = (double)result;
+                        }
+                        else
+                        {
+                            throw new CaeException("Equation error:" + Environment.NewLine + e.Error);
+                        }
                     }
                     else valueDouble = ConvertToCurrentUnits(valueString);
                 }
