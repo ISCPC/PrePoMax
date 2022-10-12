@@ -38,21 +38,6 @@ namespace CaeResults
 
     public static class OpenFoamFileReader
     {
-        // Variables                                                                                                                
-        //static private HashSet<string> resultFileNames = new HashSet<string>() {
-        //    "gammaInt", 
-        //    "k",
-        //    "nut",
-        //    "omega",
-        //    "p",
-        //    "phi",
-        //    "pMean",
-        //    "ReThetat",
-        //    "U",
-        //    "yPlus",
-        //};
-
-
         // Methods                                                                                                                  
         static public FeResults Read(string fileName)
         {
@@ -196,12 +181,13 @@ namespace CaeResults
             //
             return null;
         }
-        static public Dictionary<string, string[]> GetTimeResultVariableNames(string fileName)
+        static public Dictionary<string, string[]> GetTimeResultScalarVariableNames(string fileName)
         {
             Dictionary<string, string[]> timeResultVariableNames = new Dictionary<string, string[]>();
             //
             if (fileName != null && File.Exists(fileName))
             {
+                OpenFoamHeader header;
                 string[] resultFileNames;
                 HashSet<string> variableNamesHash = new HashSet<string>();
                 //
@@ -216,7 +202,9 @@ namespace CaeResults
                     resultFileNames = Directory.GetFiles(timeResultFolderNames[sortedTime]);
                     foreach (var resultFileName in resultFileNames)
                     {
-                        variableNamesHash.Add(Path.GetFileNameWithoutExtension(resultFileName));
+                        header = GetHeaderFromFile(resultFileName);
+                        if (header.FieldType == OpenFoamFieldType.VolScalarField)
+                            variableNamesHash.Add(Path.GetFileNameWithoutExtension(resultFileName));
                     }
                     timeResultVariableNames.Add(sortedTime.ToString(), variableNamesHash.ToArray());
                 }
@@ -726,6 +714,20 @@ namespace CaeResults
                 //
                 field = new Field(fieldData.Name);
                 string componentName;
+                // Add vector magnitude
+                if (header.FieldType == OpenFoamFieldType.VolVectorField && nodeValues.Length == 3 && nodeValues[0] != null)
+                {
+                    componentName = "ALL";
+                    float[] magnitude = new float[nodeValues[0].Length];
+                    for (int i = 0; i < nodeValues[0].Length; i++)
+                    {
+                        magnitude[i] = (float)Math.Sqrt(nodeValues[0][i] * nodeValues[0][i] +
+                                                        nodeValues[1][i] * nodeValues[1][i]+
+                                                        nodeValues[2][i] * nodeValues[2][i]);
+                    }
+                    field.AddComponent(componentName, magnitude);
+                }
+                // Add components
                 for (int i = 0; i < numOfComponents; i++)
                 {
                     if (numOfComponents == 1) componentName = "VAL";

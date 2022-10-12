@@ -132,7 +132,7 @@ namespace PrePoMax
             bool browsable = false;
             //
             Dictionary<string, string[]> timeResultVariableNames =
-                CaeResults.OpenFoamFileReader.GetTimeResultVariableNames(_importedPressure.FileName);
+                CaeResults.OpenFoamFileReader.GetTimeResultScalarVariableNames(_importedPressure.FileName);
             //
             if (timeResultVariableNames != null && timeResultVariableNames.Count > 0)
             {

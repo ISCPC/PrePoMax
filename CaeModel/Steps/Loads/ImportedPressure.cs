@@ -57,7 +57,7 @@ namespace CaeModel
                 error = "The selected file does not exist.";
                 return false;
             }
-            Dictionary<string, string[]> timeResultVariableNames = OpenFoamFileReader.GetTimeResultVariableNames(_fileName);
+            Dictionary<string, string[]> timeResultVariableNames = OpenFoamFileReader.GetTimeResultScalarVariableNames(_fileName);
             if (timeResultVariableNames.Count == 0)
             {
                 error = "The selected OpenFOAM folder does not contain results.";

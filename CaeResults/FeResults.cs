@@ -738,7 +738,7 @@ namespace CaeResults
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "?";
                         // OpenFOAM
-                        if (componentName.ToUpper().StartsWith("VAL")) { }
+                        if (componentName.ToUpper() == "ALL" || componentName.ToUpper().StartsWith("VAL")) { }
                         else if (_unitSystem.UnitSystemType == UnitSystemType.UNIT_LESS) unitAbbreviation = "";
                         else if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
                         //
