@@ -146,7 +146,11 @@ namespace CaeModel
             float[] distances3 = new float[allData.Nodes.Coor.Length];
             float[] values = new float[allData.Nodes.Coor.Length];
             //
-            for (int i = 0; i < values.Length; i++)
+
+
+            
+            Parallel.For(0, values.Length, i =>
+            //for (int i = 0; i < values.Length; i++)
             {
                 if (nodeIds.Contains(allData.Nodes.Ids[i]))
                 {
@@ -168,6 +172,7 @@ namespace CaeModel
                     values[i] = float.NaN;
                 }
             }
+            );
             //
             Dictionary<int, int> nodeIdsLookUp = new Dictionary<int, int>();
             for (int i = 0; i < allData.Nodes.Coor.Length; i++) nodeIdsLookUp.Add(allData.Nodes.Ids[i], i);

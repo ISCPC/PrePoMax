@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeGlobals;
 using System.Runtime.Serialization;
+using System.Collections.Concurrent;
 
 namespace CaeMesh
 {
@@ -1080,7 +1081,8 @@ namespace CaeMesh
         {
             int[][] cells = part.Visualization.Cells;
             // Get all edges
-            Dictionary<int[], CellEdgeData> allEdges = part.Visualization.GetCellEdgeData(GetVisualizationEdgeCells);
+            Dictionary<int[], CellEdgeData> allEdges;
+            allEdges = part.Visualization.GetCellEdgeData3(GetVisualizationEdgeCells);
             // Get only edges where cells meet at an angle > input angle
             // Get free surface edges
             double phi;
