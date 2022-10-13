@@ -691,7 +691,6 @@ namespace CaeResults
                 for (int i = 0; i < numOfVal; i++)
                 {
                     line = lines[lineId];
-                    //line = line.Replace("NAN", "NaN");
                     // Node id
                     if (directIds) nodeValueId = i;
                     else
@@ -711,7 +710,6 @@ namespace CaeResults
                             {
                                 lineId++;
                                 line = lines[lineId];
-                                //line = line.Replace("NAN", "NaN");
                                 start = 13;
                             }
                             // No continuation found
@@ -721,14 +719,7 @@ namespace CaeResults
                         if (nodeValueId != -1)
                         {
                             substring = line.Substring(start, width);
-                            if (!float.TryParse(substring, out value))
-                            {
-                                value = float.NaN;
-                                //substring = substring.Trim().ToUpper();
-                                //if (substring == "NAN") value = float.NaN;
-                                //else if (substring == "INF") value = float.NaN;
-                                //else if (substring == "-INF") value = float.NaN;
-                            }
+                            if (!float.TryParse(substring, out value)) value = float.NaN;
                             //
                             values[j][nodeValueId] = value;
                         }
