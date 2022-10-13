@@ -650,23 +650,29 @@ namespace CaeResults
                         unitAbbreviation = "";
                         break;
                     case FOFieldNames.Disp:
+                    case FOFieldNames.Dispi:
                     case FOFieldNames.Distance: // Imported pressure
                         unitConverter = new StringLengthConverter();
                         unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
                         break;
                     case FOFieldNames.Stress:
+                    case FOFieldNames.Stressi:
                     case FOFieldNames.ZZStr:
+                    case FOFieldNames.ZZStri:
                     case FOFieldNames.Imported: // Imported pressure
                         unitConverter = new StringPressureConverter();
                         unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
                         break;
-                    case FOFieldNames.ToStrain: 
+                    case FOFieldNames.ToStrain:
+                    case FOFieldNames.ToStraii:
                     case FOFieldNames.MeStrain:
+                    case FOFieldNames.MeStraii:
                     case FOFieldNames.Pe:
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "/";
                         break;
                     case FOFieldNames.Forc:
+                    case FOFieldNames.Forci:
                         unitConverter = new StringForceConverter();
                         unitAbbreviation = _unitSystem.ForceUnitAbbreviation;
                         break;
@@ -675,6 +681,7 @@ namespace CaeResults
                         unitAbbreviation = _unitSystem.EnergyPerVolumeUnitAbbreviation;
                         break;
                     case FOFieldNames.Error:
+                    case FOFieldNames.Errori:
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "%";
                         break;
@@ -722,6 +729,7 @@ namespace CaeResults
                         unitAbbreviation = _unitSystem.PowerUnitAbbreviation;
                         break;
                     case FOFieldNames.HError:
+                    case FOFieldNames.HErrori:
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "%";
                         break;
