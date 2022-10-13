@@ -275,7 +275,7 @@ namespace vtkControl
         {
             this._name = data.Name;            
             //
-            if (createNodalActor)
+            if ((data.Geometry.Cells.CellNodeIds == null && data.Geometry.Nodes.Coor != null) || createNodalActor)
                 CreateNodalActor(data);
             else
             {

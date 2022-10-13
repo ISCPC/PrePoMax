@@ -15,6 +15,7 @@ using System.Drawing;
 using System.ComponentModel;
 using System.Management;
 using System.Runtime.Serialization;
+using System.Reflection.Emit;
 
 namespace PrePoMax
 {
@@ -8735,9 +8736,9 @@ namespace PrePoMax
             _form.GetPointAndCellIdsInsideFrustum(planeParameters, selectionPartNames, out nodeIds, out elementIds);
             //
             int[] ids = null;
-            if (elementIds == null || elementIds.Length == 0) return ids;
+            if ((elementIds == null || elementIds.Length == 0) && (nodeIds == null || nodeIds.Length == 0)) return ids;
             // Get geometry ids
-            ids = mesh.GetGeometryIds2(elementIds);
+            ids = mesh.GetGeometryIds(nodeIds, elementIds);
             if (keepGeometryIds) return ids;
             // Change geometry ids to node, element, ... ids
             if (selectBy == vtkSelectBy.Geometry)
@@ -9455,27 +9456,42 @@ namespace PrePoMax
             int partId;
             int[] itemTypePartIds;
             FeMesh mesh = DisplayedMesh;
-            int[] geometryIds = mesh.GetGeometryIds(elementIds);
+            int[] geometryIds = mesh.GetGeometryIds(nodeIds, elementIds);
             //
             BasePart part;
             HashSet<string> noEdgePartNamesHash = new HashSet<string>();
             int edgeId;
             int edgeCellId;
-            List<int[]> edgeCells = new List<int[]>();
+            CompareIntArray comparer = new CompareIntArray();
+            HashSet<int[]> edgeCells = new HashSet<int[]>();
+            HashSet<int> vertexNodeIds = new HashSet<int>();
             //
             foreach (var geometryId in geometryIds)
             {
                 itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
                 GeometryType geomType = (GeometryType)itemTypePartIds[1];
-                // Surface - but do not select shell edge surfaces
-                if (geomType == GeometryType.SolidSurface ||
-                    geomType == GeometryType.ShellFrontSurface ||
-                    geomType == GeometryType.ShellBackSurface) 
+                //
+                itemId = itemTypePartIds[0];
+                partId = itemTypePartIds[2];
+                part = mesh.GetPartById(partId);
+                // Vertex
+                if (geomType == GeometryType.Vertex)
                 {
-                    itemId = itemTypePartIds[0];
-                    partId = itemTypePartIds[2];
-                    part = mesh.GetPartById(partId);
-                    //
+                    vertexNodeIds.Add(part.Visualization.VertexNodeIds[itemId]);
+                }
+                else if (geomType == GeometryType.Edge)
+                {
+                    for (int j = 0; j < part.Visualization.EdgeCellIdsByEdge[itemId].Length; j++)
+                    {
+                        edgeCellId = part.Visualization.EdgeCellIdsByEdge[itemId][j];
+                        edgeCells.Add(part.Visualization.EdgeCells[edgeCellId]);
+                    }
+                }
+                // Surface - but do not select shell edge surfaces
+                else if (geomType == GeometryType.SolidSurface ||
+                         geomType == GeometryType.ShellFrontSurface ||
+                         geomType == GeometryType.ShellBackSurface) 
+                {
                     if (part.Visualization.EdgeCells.Length == 0) noEdgePartNamesHash.Add(part.Name);
                     else
                     {
@@ -9493,8 +9509,19 @@ namespace PrePoMax
             }
             //
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-            DisplayedMesh.GetNodesAndCellsForEdges(edgeCells.ToArray(), out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
-                                                   out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
+            // Draw edges
+            if (edgeCells.Count > 0)
+            {
+                DisplayedMesh.GetNodesAndCellsForEdges(edgeCells.ToArray(), out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
+                                                       out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
+            }
+            else
+            // Draw nodes
+            {
+                double[][] nodeCoor = DisplayedMesh.GetNodeSetCoor(vertexNodeIds.ToArray(), true);
+                data.NodeSize = _settings.Pre.NodeSymbolSize;
+                data.Geometry.Nodes.Coor = nodeCoor;
+            }
             // Name for the probe widget
             data.Name = geometryIds.ToString();
             //
