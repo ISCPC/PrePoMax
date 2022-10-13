@@ -790,7 +790,7 @@ namespace UserControls
         {
             CodersLabTreeView tree = GetActiveTree();
             //
-            if (tree.Focused)
+            //if (tree.Focused)
             {
                 if (e.KeyCode == Keys.Delete)
                 {
