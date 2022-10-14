@@ -7468,6 +7468,21 @@ namespace PrePoMax
                 if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
                                     MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
             }
+            // Chack for contacts of different type
+            if (_model.ContactPairs.Count > 0)
+            {
+                HashSet<ContactPairMethod> contactPairMethods = new HashSet<ContactPairMethod>();
+                foreach (var entry in _model.ContactPairs)
+                {
+                    if (entry.Value.Active) contactPairMethods.Add(entry.Value.Method);
+                }
+                if (contactPairMethods.Count > 1)
+                {
+                    msg = "More than one contact methods is used in the model. Continue?";
+                    if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
+                                        MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
+                }
+            }
             // Check for existance of slip wear steps
             int[] slipWearStepIds = _model.StepCollection.GetSlipWearStepIds();
             if (slipWearStepIds.Length > 0 && _model.Properties.ModelType != ModelType.SlipWearModel)

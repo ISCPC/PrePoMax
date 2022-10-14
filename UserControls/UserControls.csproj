@@ -85,6 +85,10 @@
     <Compile Include="Forms\FrmPropertyDataListView.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="GroupBoxes\CollapsableGroupBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GroupBoxes\CollapsableGroupBox.Designer.cs" />
     <Compile Include="MenuStrip\NoHighlightRenderer.cs" />
     <Compile Include="MessageBoxes\AutoClosingMessageBox.cs" />
     <Compile Include="DataGridView\DataGridViewCopyPaste.cs">
@@ -393,6 +397,8 @@
     <None Include="Resources\Show2.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Images\Collapse.png" />
+    <None Include="Images\Expand.png" />
     <Content Include="License-LGPL.txt" />
     <None Include="Resources\Unactive2.ico" />
     <None Include="Resources\Preview_load.ico" />

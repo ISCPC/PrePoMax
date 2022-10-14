@@ -18,7 +18,10 @@ namespace CaeModel
         NodeToSurface,
         [StandardValue("Surface to surface", "Surface to surface", Description =
                        "Use face-to-face penalty contact method. All contact pairs in the model must use the same contact type.")]
-        SurfaceToSurface
+        SurfaceToSurface,
+        [StandardValue("Mortar", "Mortar", Description =
+                       "Use mortar contact method. All contact pairs in the model must use the same contact type.")]
+        Mortar
     }
 
     [Serializable]
