@@ -13703,22 +13703,32 @@ namespace PrePoMax
                                                                _currentFieldData.StepIncrementId, nodeIds, ref coor);
                 //
                 FeNode[] nodes = new FeNode[nodeIds.Length];
-                for (int i = 0; i < nodes.Length; i++) nodes[i] = new FeNode(nodeIds[i], coor[i]);
+                Dictionary<int, int> globalToLocalNodeIds = new Dictionary<int, int>();
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    nodes[i] = new FeNode(nodeIds[i], coor[i]);
+                    globalToLocalNodeIds.Add(nodeIds[i], i);
+                }
                 // Exploded view
                 if (IsExplodedViewActive())
                 {
-                    int[] partIds = _allResults.CurrentResult.Mesh.GetPartIdsByNodeIds(nodeIds);
-                    if (partIds != null && partIds.Length == 1)
+                    HashSet<int> nodeIdsHash = new HashSet<int>(nodeIds);
+                    HashSet<int> commonNodes;
+                    foreach (var entry in _allResults.CurrentResult.Mesh.Parts)
                     {
-                        BasePart part = _allResults.CurrentResult.Mesh.GetPartById(partIds[0]);
-                        for (int i = 0; i < nodes.Length; i++)
+                        commonNodes = new HashSet<int>(nodeIdsHash.Intersect(entry.Value.NodeLabels));
+                        if (commonNodes.Count() > 0)
                         {
-                            nodes[i].X += part.Offset[0];
-                            nodes[i].Y += part.Offset[1];
-                            nodes[i].Z += part.Offset[2];
+                            foreach (var nodeId in commonNodes)
+                            {
+                                nodes[globalToLocalNodeIds[nodeId]].X += entry.Value.Offset[0];
+                                nodes[globalToLocalNodeIds[nodeId]].Y += entry.Value.Offset[1];
+                                nodes[globalToLocalNodeIds[nodeId]].Z += entry.Value.Offset[2];
+                            }
+                            nodeIdsHash.ExceptWith(commonNodes);
                         }
+                        if (nodeIdsHash.Count() == 0) break;
                     }
-                    else throw new NotSupportedException();
                 }
                 //
                 return nodes;
