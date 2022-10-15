@@ -28,7 +28,7 @@ namespace CaeModel
         [StandardValue("PG linear mortar", "PG linear mortar", Description =
                        "Use Petrov-Galerkin linear mortar contact method. " + 
                        "All contact pairs in the model must use the same contact type.")]
-        PgLinMortar
+        PGLinMortar
     }
 
     [Serializable]
