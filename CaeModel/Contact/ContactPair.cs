@@ -21,7 +21,14 @@ namespace CaeModel
         SurfaceToSurface,
         [StandardValue("Mortar", "Mortar", Description =
                        "Use mortar contact method. All contact pairs in the model must use the same contact type.")]
-        Mortar
+        Mortar,
+        [StandardValue("Linear mortar", "Linear mortar", Description =
+                       "Use linear mortar contact method. All contact pairs in the model must use the same contact type.")]
+        LinMortar,
+        [StandardValue("PG linear mortar", "PG linear mortar", Description =
+                       "Use Petrov-Galerkin linear mortar contact method. " + 
+                       "All contact pairs in the model must use the same contact type.")]
+        PgLinMortar
     }
 
     [Serializable]
