@@ -35,7 +35,7 @@ The PrePoMax is a solution which consists of 9 projects:
 *  PrePoMax: classes for user interface
 *  STL: classes for stl geometry import
 *  UserControls: classes for more complex user controls, as model tree view...
-*  vtkcontrol: classes for 3D visualization
+*  vtkControl: classes for 3D visualization
 
 PrePoMax is compiled in an exe file all the other projects are compiled in dll files.
 
