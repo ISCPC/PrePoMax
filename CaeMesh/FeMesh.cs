@@ -2282,7 +2282,7 @@ namespace CaeMesh
         public bool ArePartsMergable(string[] partNames)
         {
             HashSet<PartType> partTypes = new HashSet<PartType>();
-            foreach (var entry in _parts) partTypes.Add(entry.Value.PartType);
+            foreach (var partName in partNames) partTypes.Add(_parts[partName].PartType);
             return partTypes.Count == 1;
         }
         private void MergeGeometryParts()

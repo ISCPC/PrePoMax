@@ -199,6 +199,7 @@
     <Compile Include="ToolStripFocus.Designer.cs">
       <DependentUpon>ToolStripFocus.cs</DependentUpon>
     </Compile>
+    <Compile Include="Trees\Extensions.cs" />
     <Compile Include="Trees\OrderedDictionary.cs" />
     <Compile Include="Views\Sections\ViewSection.cs" />
     <Compile Include="Views\Sections\ViewSolidSection.cs" />

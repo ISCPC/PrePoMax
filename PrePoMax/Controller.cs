@@ -1886,16 +1886,18 @@ namespace PrePoMax
             for (int i = 0; i < resultNames.Length; i++)
             {
                 result = _allResults.GetResult(resultNames[i]);
-                if (result != null && result.Mesh != null)
-                    updateR = result.Mesh.ResumeExploededView();
+                if (result != null && result.Mesh != null) updateR = result.Mesh.ResumeExploededView();
                 if (result == _allResults.CurrentResult && updateR) updateCR = true;
             }
             //
-            if ((_currentView == ViewGeometryModelResults.Geometry && updateG) ||
-                (_currentView == ViewGeometryModelResults.Model && updateM) ||
-                (_currentView == ViewGeometryModelResults.Results && updateCR))
+            if (update)
             {
-                if (update) Redraw();
+                if ((_currentView == ViewGeometryModelResults.Geometry && updateG) ||
+                    (_currentView == ViewGeometryModelResults.Model && updateM) ||
+                    (_currentView == ViewGeometryModelResults.Results && updateCR))
+                {
+                    Redraw();
+                }
             }
         }
         public void UpdateExplodedView(bool update, string[] partNames = null)
@@ -1904,16 +1906,36 @@ namespace PrePoMax
             if (mesh == null) return;
             //
             ExplodedViewParameters parameters = _explodedViews.GetCurrentExplodedViewParameters();
+            //
+            UpdateExplodedView(mesh, parameters, update, partNames);
+        }
+        public void UpdateExplodedView(FeMesh mesh, ExplodedViewParameters parameters, bool update, string[] partNames = null)
+        {
+            if (mesh == null) return;
+            //
             if (parameters.ScaleFactor != -1)
             {
                 mesh.RemoveExplodedView();
                 //
-                Dictionary<string, double[]> partOffsets = 
-                    mesh.GetExplodedViewOffsets((int)parameters.Type, parameters.ScaleFactor * parameters.Magnification,
+                Dictionary<string, double[]> partOffsets =
+                    mesh.GetExplodedViewOffsets((int)parameters.Type,
+                                                parameters.ScaleFactor * parameters.Magnification,
                                                 partNames);
                 mesh.ApplyExplodedView(partOffsets);
                 //
                 if (update) Redraw();
+            }
+        }
+        private void UpdateCurrentResultExplodedView()
+        {
+            string currentResultName = _allResults.GetCurrentResultName();
+            if (_explodedViews.IsResultExplodedViewActive(currentResultName))
+            {
+                ExplodedViewParameters parameters = _explodedViews.GetResultExplodedViewParameters(currentResultName);
+                if (parameters != null)
+                {
+                    UpdateExplodedView(_allResults.CurrentResult.Mesh, parameters, false);
+                }
             }
         }
         public void TurnExplodedViewOnOff(bool animate)
@@ -2349,10 +2371,15 @@ namespace PrePoMax
                 }
             }
             //
-            if (_allResults.CurrentResult != null && _allResults.CurrentResult.Mesh != null)
+            FeResults result = _allResults.CurrentResult;
+            if (result != null && result.Mesh != null)
             {
-                string[] addedPartNames = _allResults.CurrentResult.AddPartsFromMesh(_model.Geometry,
-                                                                                     partNamesToCopy.ToArray());
+                _model.Geometry.SuppressExploededView();
+                string[] addedPartNames = result.AddPartsFromMesh(_model.Geometry, partNamesToCopy.ToArray());
+                _model.Geometry.ResumeExploededView();
+                // Update results exploded view
+                UpdateCurrentResultExplodedView();
+                //
                 if (addedPartNames.Length > 0)
                 {
                     _form.RegenerateTree();
@@ -2805,7 +2832,7 @@ namespace PrePoMax
             _model.Geometry.Parts.Replace(part2.Name, part1.Name, part1);
             _model.Geometry.Parts.Replace(part.Name, part2.Name, part2);
             // Swap in tree
-            _form.SwapTreeNode(CurrentView, partName1, part1, partName2, part2, null);
+            _form.SwapTreeNode(_currentView, partName1, part1, partName2, part2, null);
         }
         public void SwapGeometryPartGeometries(string partName1, string partName2)
         {
@@ -7878,11 +7905,16 @@ namespace PrePoMax
         }
         public void RemoveResultParts(string[] partNames)
         {
+            FeResults result = _allResults.CurrentResult;
             ViewGeometryModelResults view = ViewGeometryModelResults.Results;
             // Remove annotations
             _annotations.RemoveCurrentArrowAnnotationsByParts(partNames, view);
-            //
-            string[] removedPartNames = _allResults.CurrentResult.RemoveParts(partNames);
+            // Supress exploded view
+            result.Mesh.SuppressExploededView();
+            // Remove
+            string[] removedPartNames = result.RemoveParts(partNames);
+            // Resume exploded view
+            result.Mesh.ResumeExploededView();  // resume is enough
             //
             foreach (var name in removedPartNames) _form.RemoveTreeNode<BasePart>(view, name, null);
             //
@@ -7897,15 +7929,16 @@ namespace PrePoMax
         {
             string[] mergedParts;
             ResultPart newResultPart;
+            FeResults result = _allResults.CurrentResult;
             ViewGeometryModelResults view = ViewGeometryModelResults.Results;
-            //
-            ExplodedViewParameters parameters = _explodedViews.GetCurrentExplodedViewParameters().DeepClone();
-            RemoveExplodedView(false);
             // Remove annotations
             _annotations.RemoveCurrentArrowAnnotationsByParts(partNames, view);
-            //
-            _allResults.CurrentResult.Mesh.MergeResultParts(partNames, out newResultPart, out mergedParts);
-            ApplyExplodedView(parameters, null, false);
+            // Remove exploded view
+            result.Mesh.RemoveExplodedView();
+            // Merge
+            result.Mesh.MergeResultParts(partNames, out newResultPart, out mergedParts);
+            // Update exploded view
+            UpdateCurrentResultExplodedView();
             //
             if (newResultPart != null && mergedParts != null)
             {
@@ -9737,7 +9770,7 @@ namespace PrePoMax
             try
             {
                 // Set the current view and call DrawGeometry
-                if (CurrentView != ViewGeometryModelResults.Geometry) CurrentView = ViewGeometryModelResults.Geometry;
+                if (_currentView != ViewGeometryModelResults.Geometry) CurrentView = ViewGeometryModelResults.Geometry;
                 // Draw geometry
                 else
                 {
@@ -9847,7 +9880,7 @@ namespace PrePoMax
             try
             {
                 // Set the current view and call DrawModel
-                if (CurrentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
+                if (_currentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
                 // Draw model
                 else
                 {
@@ -12542,7 +12575,7 @@ namespace PrePoMax
         }
         public void Highlight3DObjects(object[] obj, bool clear = true)
         {
-            Highlight3DObjects(CurrentView, obj, clear);
+            Highlight3DObjects(_currentView, obj, clear);
         }
         public void Highlight3DObjects(ViewGeometryModelResults view, object[] obj, bool clear)
         {
@@ -13160,7 +13193,7 @@ namespace PrePoMax
             try
             {
                 // Set the current view and call DrawResults
-                if (CurrentView != ViewGeometryModelResults.Results) CurrentView = ViewGeometryModelResults.Results;
+                if (_currentView != ViewGeometryModelResults.Results) CurrentView = ViewGeometryModelResults.Results;
                 // Draw results
                 else
                 {
@@ -13236,7 +13269,8 @@ namespace PrePoMax
                 // Draw geometry parts copied to the results
                 else if (entry.Value is GeometryPart)
                 {
-                    DrawGeomPart(_allResults.CurrentResult.Mesh, entry.Value, layer, false, true);    // pickable for the Section view to work
+                    // Pickable for the Section view to work
+                    DrawGeomPart(_allResults.CurrentResult.Mesh, entry.Value, layer, false, true);
                 }
                 //
                 if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
@@ -13779,7 +13813,7 @@ namespace PrePoMax
                     if (maxDisplacement == -float.MaxValue) scale = 0;  // the displacement filed does not exist
                     else if (maxDisplacement != 0) scale = automaticScale * (size * 0.25f / maxDisplacement);
                     // Round
-                    scale = (float)CaeGlobals.Tools.RoundToSignificantDigits(scale, 3);
+                    scale = (float)CaeGlobals.Tools.RoundToSignificantDigits(scale, 2);
                 }
                 // User defined
                 else scale = _form.GetDeformationFactor();

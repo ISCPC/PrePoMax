@@ -5580,7 +5580,8 @@ namespace PrePoMax
             aeAnnotationTextEditor.Visible = true;
             aeAnnotationTextEditor.Tag = annotation;
             //
-            _vtk.DisableInteractor = true;
+            _vtk.SelectBy = vtkSelectBy.Widget;
+            //_vtk.DisableInteractor = true;
         }
         private void EndEditArrowAnnotation()
         {
@@ -5599,7 +5600,8 @@ namespace PrePoMax
                 //
                 aeAnnotationTextEditor.Visible = false;
                 //
-                _vtk.DisableInteractor = false;
+                //_vtk.DisableInteractor = false;
+                _vtk.SelectBy = vtkSelectBy.Default;
                 //
                 _controller.Annotations.DrawAnnotations();  // redraw in both cases
             }
@@ -7967,27 +7969,35 @@ namespace PrePoMax
             }
             else
             {
-                int count = 0;
-                BasePart[] parts;
-                int numOfSelectedTreeNodes = 0;
                 //
-                if (GetCurrentView() == ViewGeometryModelResults.Geometry) parts = _controller.GetGeometryPartsForSelection(partNames);
-                else if (GetCurrentView() == ViewGeometryModelResults.Model) parts = _controller.GetModelParts(partNames);
-                else if (GetCurrentView() == ViewGeometryModelResults.Results) parts = _controller.GetResultParts(partNames);
-                else throw new NotSupportedException();
-                //
-                foreach (var part in parts)
+                if (e.Clicks == 2) _modelTree.EditSelectedPart();
+                else
                 {
-                    numOfSelectedTreeNodes = _modelTree.SelectBasePart(e, modifierKeys, part, false);
-                    count++;
+                    int count = 0;
+                    BasePart[] parts;
+                    int numOfSelectedTreeNodes = 0;
                     //
-                    if (count == 1 && modifierKeys == Keys.None) modifierKeys |= Keys.Shift;
-                }
-                _modelTree.UpdateHighlight();
-                //
-                if (numOfSelectedTreeNodes > 0 && e.Button == MouseButtons.Right)
-                {
-                    _modelTree.ShowContextMenu(_vtk, e.X, _vtk.Height - e.Y);
+                    if (GetCurrentView() == ViewGeometryModelResults.Geometry)
+                        parts = _controller.GetGeometryPartsForSelection(partNames);
+                    else if (GetCurrentView() == ViewGeometryModelResults.Model)
+                        parts = _controller.GetModelParts(partNames);
+                    else if (GetCurrentView() == ViewGeometryModelResults.Results)
+                        parts = _controller.GetResultParts(partNames);
+                    else throw new NotSupportedException();
+                    //
+                    foreach (var part in parts)
+                    {
+                        numOfSelectedTreeNodes = _modelTree.SelectBasePart(e, modifierKeys, part, false);
+                        count++;
+                        //
+                        if (count == 1 && modifierKeys == Keys.None) modifierKeys |= Keys.Shift;
+                    }
+                    _modelTree.UpdateHighlight();
+                    //
+                    if (numOfSelectedTreeNodes > 0 && e.Button == MouseButtons.Right)
+                    {
+                        _modelTree.ShowContextMenu(_vtk, e.X, _vtk.Height - e.Y);
+                    }
                 }
             }
         }
