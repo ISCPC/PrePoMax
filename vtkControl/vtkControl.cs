@@ -5786,6 +5786,7 @@ namespace vtkControl
                                    bool drawBackground, bool drawBorder, bool visible)
         {
             vtkMaxTextWithArrowWidget arrowWidget;
+            // Create annotation
             if (!_arrowWidgets.TryGetValue(name, out arrowWidget))
             {
                 arrowWidget = new vtkMaxTextWithArrowWidget(name);
@@ -5803,6 +5804,7 @@ namespace vtkControl
                 // Arange
                 ArrangeVisibleArrowWidgets();
             }
+            // Edit annptation
             else
             {
                 arrowWidget.SetNumberFormat(numberFormat);

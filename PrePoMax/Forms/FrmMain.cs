@@ -7340,6 +7340,7 @@ namespace PrePoMax
             InvokeIfRequired(() =>
             {
                 _vtk.Clear();
+                _vtk.RemoveAllArrowWidgets();
                 _modelTree.Clear();
                 outputLines = new string[0];
                 tbOutput.Text = "";
