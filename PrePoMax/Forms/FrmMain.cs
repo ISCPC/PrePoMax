@@ -2387,18 +2387,27 @@ namespace PrePoMax
         //
         private void tsmiResultsUndeformed_Click(object sender, EventArgs e)
         {
-            if (_frmAnimation.Visible) _frmAnimation.Hide();
-            _controller.ViewResultsType = ViewResultsType.Undeformed;
+            if (GetCurrentView() == ViewGeometryModelResults.Results)
+            {
+                if (_frmAnimation.Visible) _frmAnimation.Hide();
+                _controller.ViewResultsType = ViewResultsType.Undeformed;
+            }
         }
         private void tsmiResultsDeformed_Click(object sender, EventArgs e)
         {
-            if (_frmAnimation.Visible) _frmAnimation.Hide();
-            _controller.ViewResultsType = ViewResultsType.Deformed;
+            if (GetCurrentView() == ViewGeometryModelResults.Results)
+            {
+                if (_frmAnimation.Visible) _frmAnimation.Hide();
+                _controller.ViewResultsType = ViewResultsType.Deformed;
+            }
         }
         private void tsmiResultsColorContours_Click(object sender, EventArgs e)
         {
-            if (_frmAnimation.Visible) _frmAnimation.Hide();
-            _controller.ViewResultsType = ViewResultsType.ColorContours;
+            if (GetCurrentView() == ViewGeometryModelResults.Results)
+            {
+                if (_frmAnimation.Visible) _frmAnimation.Hide();
+                _controller.ViewResultsType = ViewResultsType.ColorContours;
+            }
         }
 
         #endregion
