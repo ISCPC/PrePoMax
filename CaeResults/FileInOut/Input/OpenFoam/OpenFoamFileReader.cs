@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using CaeMesh;
 using CaeGlobals;
+using vtkControl;
 
 namespace CaeResults
 {
@@ -35,7 +36,9 @@ namespace CaeResults
             FieldType = OpenFoamFieldType.Unknown;
         }
     }
-
+    //                                                                      
+    // https://doc.cfd.direct/openfoam/user-guide-v6/basic-file-format      
+    //                                                                      
     public static class OpenFoamFileReader
     {
         // Methods                                                                                                                  
@@ -354,7 +357,7 @@ namespace CaeResults
             int numOfBoundaries;
             string line;
             // Read the number of boundaries
-            numOfBoundaries = int.Parse(lines[lineId++]);
+            numOfBoundaries = int.Parse(lines[lineId++].Split('(')[0]);
             // Get boundaries
             List<string> boundary = new List<string>();
             List<List<string>> boundaries = new List<List<string>>();
@@ -876,15 +879,82 @@ namespace CaeResults
         // File
         static private string[] SkipCommentsAndEmptyLines(string[] lines)
         {
+            bool containsCommentDelimiters;
+            bool singleLineComment = false;
+            bool multiLineComment = false;
             string line;
-            List<string> dataLines = new List<string>();
+            StringBuilder sb = new StringBuilder();
+            List<string> dataLines = new List<string>(lines.Length);
             //
             for (int i = 0; i < lines.Length; i++)
             {
                 line = lines[i].Trim();
-                if (line.Length > 0 && line[0] != '/' && line[0] != '\\' && line[0] != '|')
+                // Skip empty lines
+                if (line.Length == 0) continue;
+                // Comments
+                singleLineComment = false;
+                containsCommentDelimiters = false;
+                //
+                if (line.Length >= 2)
+                {
+                    for (int j = 0; j < line.Length - 1; j++)   // - 1 since the last char is inspected using j + 1
+                    {
+                        if (line[j] == '/')
+                        {
+                            if (line[j + 1] == '/')
+                            {
+                                containsCommentDelimiters = true;
+                                break;
+                            }
+                            else if (line[j + 1] == '*')
+                            {
+                                containsCommentDelimiters = true;
+                                break;
+                            }
+                        }
+                        else if (line[j] == '*' && line[j + 1] == '/')
+                        {
+                            containsCommentDelimiters = true;
+                            break;
+                        }
+                    }
+                }
+                // Add a line without comments
+                if (!multiLineComment && !containsCommentDelimiters)
                 {
                     dataLines.Add(line);
+                }
+                // Add a line with comments
+                else
+                {
+                    sb.Clear();
+                    for (int j = 0; j < line.Length; j++)
+                    {
+                        if (line[j] == '/' && j + 1 < line.Length)
+                        { 
+                            if (line[j + 1] == '/')
+                            {
+                                if (!multiLineComment) singleLineComment = true;
+                            }
+                            else if (line[j + 1] == '*')
+                            {
+                                if (!singleLineComment) multiLineComment = true;
+                            }
+                        }
+                        else if (line[j] == '*' && j + 1 < line.Length && line[j + 1] == '/')
+                        {
+                            if (!singleLineComment && multiLineComment)
+                            {
+                                multiLineComment = false;
+                                j++;
+                                continue; // skip end comment characters
+                            }
+                        }
+                        // Add non commented character
+                        if (!singleLineComment && !multiLineComment) sb.Append(line[j]);
+                    }
+                    // Add line
+                    if (sb.Length > 0) dataLines.Add(sb.ToString().Trim());
                 }
             }
             //
@@ -975,7 +1045,7 @@ namespace CaeResults
             //
             while(reader.BaseStream.Position < reader.BaseStream.Length)
             {
-                line = ReadLineFromBinaryReader(reader).ToUpper();
+                line = ReadLineFromBinaryReader(reader).ToUpper().TrimStart();
                 if (line == null) return false;
                 lineCount++;
                 //
