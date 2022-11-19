@@ -616,7 +616,7 @@ namespace CaeJob
         }
         private void SetNumberOfProcessors(ProcessStartInfo psi)
         {
-            SetEnvironmentVariable(psi, new EnvironmentVariable() { Name = "OMP_NUM_THREADS", Value = _numCPUs.ToString() });
+            SetEnvironmentVariable(psi, new EnvironmentVariable() { Name = "OMP_NUM_THREADS", Value = _numCPUs.ToString(), Active = true });
         }
         private void SetEnvironmentVariable(ProcessStartInfo psi, EnvironmentVariable environmentVariable)
         {
