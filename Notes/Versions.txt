@@ -230,7 +230,7 @@ Add color for slave constraint and contact items
 Load, Bc, duplicate?
 Pressure evaluator to all units!
 Contact Tied requires Friction to work! Add check!
-Save as: Krilo 	... if a file Krilo with no extension exist it will ask for overwrite
+Save as: Krilo 	... if a file Krilo with no extension exist it will ask for overwrite !!! Windows problem
 
 
 Done
