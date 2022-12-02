@@ -1312,14 +1312,17 @@ namespace vtkControl
             // Make all actors visible
             foreach (var entry in _actors)
             {
-                if (_selectableActorsFilter != null)
+                //if (entry.Value.Pickable)
                 {
-                    // Change the visibility of geometry only to enable reset
-                    if (_selectableActorsFilter.Contains(entry.Value.Name)) entry.Value.Geometry.VisibilityOn();
-                    else entry.Value.Geometry.VisibilityOff();
+                    if (_selectableActorsFilter != null)
+                    {
+                        // Change the visibility of geometry only to enable reset
+                        if (_selectableActorsFilter.Contains(entry.Value.Name)) entry.Value.Geometry.VisibilityOn();
+                        else entry.Value.Geometry.VisibilityOff();
+                    }
+                    // Set opacity for all visible actors to 1
+                    if (entry.Value.GeometryProperty.GetOpacity() != 1) entry.Value.GeometryProperty.SetOpacity(1);
                 }
-                // Set opacity for all visible actors to 1
-                if (entry.Value.GeometryProperty.GetOpacity() != 1) entry.Value.GeometryProperty.SetOpacity(1);
             }
             // Pick actor by hardware rendering - render the sceene before Pick
             _renderer.Render();
@@ -1379,9 +1382,12 @@ namespace vtkControl
             // Reset the actor visibility
             foreach (var entry in _actors)
             {
-                entry.Value.UpdateColor();
-                ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value.Geometry, entry.Value.GeometryProperty,
-                                                             vtkRendererLayer.Base);
+                //if (entry.Value.Pickable)
+                {
+                    entry.Value.UpdateColor();
+                    ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value.Geometry, entry.Value.GeometryProperty,
+                                                                 vtkRendererLayer.Base);
+                }
             }
             //
             if (cellId == -1)

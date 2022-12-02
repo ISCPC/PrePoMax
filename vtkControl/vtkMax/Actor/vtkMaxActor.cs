@@ -92,7 +92,7 @@ namespace vtkControl
                 if (_modelEdges != null) _modelEdgesProperty = _modelEdges.GetProperty();
             }
         }
-        //
+        // Properties
         public vtkProperty GeometryProperty
         {
             get { return _geometryProperty; }
@@ -126,6 +126,7 @@ namespace vtkControl
             }
         }
         public bool BackfaceCulling { get { return _backfaceCulling; } set { _backfaceCulling = value; } }
+        public bool Pickable { get { return _geometry.GetPickable() == 1; } }
         public System.Drawing.Color Color
         {
             get { return _color; }
@@ -1522,11 +1523,11 @@ namespace vtkControl
         public void UpdateColor()
         {
             double opacity = _color.A / 255d;
-            //
-            if (_colorTable != null)
+            // Custom coloring of elements: sections, materials...
+            if (_colorTable != null)    
             {
                 // Create color table
-                vtkLookupTable cellLut = null;
+                vtkLookupTable cellLut = null;  //make it global!!!
                 cellLut = vtkLookupTable.New();
                 cellLut.SetNumberOfTableValues(_colorTable.Length + 1); // +1 for the missing color
                 cellLut.Build();
@@ -1549,14 +1550,13 @@ namespace vtkControl
                 _geometryProperty.SetDiffuse(0.201); // must be a little larger
                 //
                 _geometryProperty.SetOpacity(opacity);
-                //
+                // This changes the base color and forces graphics update !?
+                //_geometryProperty.SetSpecularColor(1, 1, 1);
                 _geometryProperty.SetSpecular(0.6);
-                _geometryProperty.SetSpecularColor(1, 1, 1);
                 _geometryProperty.SetSpecularPower(100);
             }
             else
             {
-                _geometryProperty.SetAmbientColor(1, 1, 1);  // also reset part color highlight
                 _geometryProperty.SetAmbient(_ambient);
                 _geometryProperty.SetDiffuse(_diffuse);
                 //
@@ -1565,9 +1565,15 @@ namespace vtkControl
                 if (!ColorContours)
                 {
                     _geometryProperty.SetColor(_color.R / 255d, _color.G / 255d, _color.B / 255d);
+                    // This changes the base color and forces graphics update !?
+                    //_geometryProperty.SetSpecularColor(1, 1, 1);
                     _geometryProperty.SetSpecular(0.6);
-                    _geometryProperty.SetSpecularColor(1, 1, 1);
                     _geometryProperty.SetSpecularPower(100);
+                }
+                else
+                {
+                    // This changes the base color and forces graphics update !?
+                    _geometryProperty.SetAmbientColor(1, 1, 1);  // also reset part color highlight
                 }
             }
             //
@@ -1591,20 +1597,24 @@ namespace vtkControl
             {
                 vtkProperty property = vtkProperty.New();
                 //
-                opacity = _backfaceColor.A / 255d;
-                //
                 property.SetAmbient(_ambient);
                 property.SetDiffuse(_diffuse);
-                property.SetAmbientColor(1, 1, 1);  // also reset part color highlight
                 //
+                opacity = _backfaceColor.A / 255d;
                 property.SetOpacity(opacity);
                 //
                 if (!ColorContours)
                 {
                     property.SetColor(_backfaceColor.R / 255d, _backfaceColor.G / 255d, _backfaceColor.B / 255d);
+                    // This changes the base color and forces graphics update !?
+                    //property.SetSpecularColor(1, 1, 1);
                     property.SetSpecular(0.6);
-                    property.SetSpecularColor(1, 1, 1);
                     property.SetSpecularPower(100);
+                }
+                else
+                {
+                    // This changes the base color and forces graphics update !?
+                    property.SetAmbientColor(1, 1, 1);  // also reset part color highlight
                 }
                 _geometry.SetBackfaceProperty(property);
             }

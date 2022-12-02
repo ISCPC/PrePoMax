@@ -410,6 +410,7 @@ namespace PrePoMax
                 //
                 _frmQuery = new FrmQuery();
                 _frmQuery.Form_WriteDataToOutput = WriteDataToOutput;
+                _frmQuery.Form_RemoveAnnotations = tsbRemoveAnnotations_Click;
                 AddFormToAllForms(_frmQuery);
                 //
                 _frmAnimation = new FrmAnimation();
@@ -6751,7 +6752,20 @@ namespace PrePoMax
         }
         private void tsbRemoveAnnotations_Click(object sender, EventArgs e)
         {
-            _controller.Annotations.RemoveCurrentArrowAnnotations();
+            try
+            {
+                if (_controller.Annotations.GetCurrentAnnotationNames().Length > 0)
+                {
+                    if (MessageBoxes.ShowWarningQuestion("OK to delete current view annotations?") == DialogResult.OK)
+                    {
+                        _controller.Annotations.RemoveCurrentArrowAnnotations();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
         }
         //
         private void tscbSymbolsForStep_SelectedIndexChanged(object sender, System.EventArgs e)

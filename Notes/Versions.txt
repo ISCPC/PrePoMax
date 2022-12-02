@@ -215,6 +215,24 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 
 
+
+ToDo
+
+Add support for PERTURBATION
+Collapsable group box in front of the Name?
+Binary with comments?
+Bug fixes?
+Axysymetric line?
+2D Fixed not working for rotations?
+Select similar in size?
+VtkMeshQuality
+Add color for slave constraint and contact items
+Load, Bc, duplicate?
+Pressure evaluator to all units!
+Contact Tied requires Friction to work! Add check!
+Save as: Krilo 	... if a file Krilo with no extension exist it will ask for overwrite
+
+
 Done
 
 
