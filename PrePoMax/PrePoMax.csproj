@@ -412,8 +412,6 @@
     <Compile Include="Forms\73_Transformation\ViewLinearPattern.cs" />
     <Compile Include="Forms\73_Transformation\ViewTransformation.cs" />
     <Compile Include="Forms\73_Transformation\ViewSymetry.cs" />
-    <Compile Include="Forms\StringDefaultStringConverter.cs" />
-    <Compile Include="Forms\StringDefaultDoubleConverter.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewFriction.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceInteractionProperty.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceBehavior.cs" />

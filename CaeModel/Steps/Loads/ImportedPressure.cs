@@ -18,7 +18,7 @@ namespace CaeModel
         private string _pressureTime;
         private string _pressureVariableName;
         private InterpolatorEnum _interpolatorType;
-        private float _scaleFactor;
+        private double _scaleFactor;
         //
         private FileInfo _oldFileInfo;
         //
@@ -31,7 +31,7 @@ namespace CaeModel
         public string PressureTime { get { return _pressureTime; } set { _pressureTime = value; } }
         public string PressureVariableName { get { return _pressureVariableName; } set { _pressureVariableName = value; } }
         public InterpolatorEnum InterpolatorType { get { return _interpolatorType; } set { _interpolatorType = value; } }
-        public float ScaleFactor { get { return _scaleFactor; } set { _scaleFactor = value; } }
+        public double ScaleFactor { get { return _scaleFactor; } set { _scaleFactor = value; } }
 
 
         // Constructors                                                                                                             

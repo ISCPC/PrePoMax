@@ -6,36 +6,22 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Globalization;
-using UnitsNet.Units;
-using UnitsNet;
 
 namespace CaeGlobals
 {
-    public class StringAngleFixedDOFConverter : TypeConverter
+    public class StringDoubleDefaultConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static AngleUnit _angleUnit = AngleUnit.Radian;
-        //
-        protected ArrayList values;
-        protected string _fixed = "Fixed";
-
-
-        // Properties                                                                                                               
-        public static string SetUnit
-        {
-            set
-            {
-                if (value == "") _angleUnit = (AngleUnit)MyUnit.NoUnit;
-                else _angleUnit = Angle.ParseUnit(value);
-            }
-        }
+        private ArrayList values;
+        private string _default = "Default";
+        public static double InitialValue = 0;
 
 
         // Constructors                                                                                                             
-        public StringAngleFixedDOFConverter()
+        public StringDoubleDefaultConverter()
         {
             // Initializes the standard values list with defaults.
-            values = new ArrayList(new double[] { double.PositiveInfinity, 0});
+            values = new ArrayList(new double[] { double.NaN, InitialValue });
         }
 
 
@@ -60,28 +46,47 @@ namespace CaeGlobals
             // Convert from string
             if (value is string valueString)
             {
-                if (Equals(valueString, _fixed)) return double.PositiveInfinity;
-                else return MyNCalc.ConvertFromString(valueString, ConvertToCurrentUnits);
+                if (Equals(valueString, _default)) return double.NaN;
+                else
+                {
+                    // From StringDoubleConverter
+                    double valueDouble;
+                    valueString = valueString.Trim();
+                    //
+                    if (valueString.Length == 0 || valueString == "=") return 0;   // empty string -> 0
+                    if (!double.TryParse(valueString, out valueDouble))
+                    {
+                        if (valueString.StartsWith("="))
+                        {
+                            valueString = valueString.Substring(1, valueString.Length - 1);
+                            NCalc.Expression e = MyNCalc.GetExpression(valueString);
+                            if (!e.HasErrors())
+                            {
+                                object result = e.Evaluate();
+                                if (result is int) valueDouble = (int)result;
+                                else if (result is double) valueDouble = (double)result;
+                            }
+                            else
+                            {
+                                throw new CaeException("Equation error:" + Environment.NewLine + e.Error);
+                            }
+                        }
+                        else throw new Exception(valueString + " is not a valid value for Double.");
+                    }
+                    //
+                    return valueDouble;
+                }
             }
             else return base.ConvertFrom(context, culture, value);
         }
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
-            // Convert to string
             try
             {
                 if (destinationType == typeof(string))
                 {
-                    if (value is double valueDouble)
-                    {
-                        if (double.IsPositiveInfinity(valueDouble)) return _fixed;
-                        else
-                        {
-                            string valueString = valueDouble.ToString();
-                            if ((int)_angleUnit != MyUnit.NoUnit) valueString += " " + Angle.GetAbbreviation(_angleUnit);
-                            return valueString;
-                        }
-                    }
+                    if (double.IsNaN((double)value)) return _default;
+                    else return value.ToString();
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
             }
@@ -90,24 +95,7 @@ namespace CaeGlobals
                 return base.ConvertTo(context, culture, value, destinationType);
             }
         }
-        //
-        public static double ConvertToCurrentUnits(string valueWithUnitString)
-        {
-            try
-            {
-                Angle angle = Angle.Parse(valueWithUnitString);
-                if ((int)_angleUnit != MyUnit.NoUnit) angle = angle.ToUnit(_angleUnit);
-                return angle.Value;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message + Environment.NewLine + Environment.NewLine + SupportedUnitAbbreviations());
-            }
-        }
-        public static string SupportedUnitAbbreviations()
-        {
-            return StringAngleConverter.SupportedUnitAbbreviations();
-        }
     }
+    
 
 }

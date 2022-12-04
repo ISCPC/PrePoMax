@@ -43,34 +43,7 @@ namespace CaeGlobals
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             // Convert from string
-            if (value is string valueString)
-            {
-                double valueDouble;
-                valueString = valueString.Trim();
-                //
-                if (valueString.Length == 0 || valueString == "=") return 0;   // empty string -> 0
-                if (!double.TryParse(valueString, out valueDouble))
-                {
-                    if (valueString.StartsWith("="))
-                    {
-                        valueString = valueString.Substring(1, valueString.Length - 1);
-                        NCalc.Expression e = MyNCalc.GetExpression(valueString);
-                        if (!e.HasErrors())
-                        {
-                            object result = e.Evaluate();
-                            if (result is int) valueDouble = (int)result;
-                            else if (result is double) valueDouble = (double)result;
-                        }
-                        else
-                        {
-                            throw new CaeException("Equation error:" + Environment.NewLine + e.Error);
-                        }
-                    }
-                    else valueDouble = ConvertToCurrentUnits(valueString);
-                }
-                //
-                return valueDouble;
-            }
+            if (value is string valueString) return MyNCalc.ConvertFromString(valueString, ConvertToCurrentUnits);
             else return base.ConvertFrom(context, culture, value);
         }
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)

@@ -181,7 +181,7 @@ namespace PrePoMax.Forms
         }
         private void dgvData_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {
-            MessageBoxes.ShowError("Property value is not valid.");
+            MessageBoxes.ShowError(e.Exception.Message);
         }
         private void btnOK_Click(object sender, EventArgs e)
         {

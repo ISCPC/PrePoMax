@@ -11,33 +11,56 @@ using UnitsNet.Units;
 
 namespace CaeGlobals
 {
-    public class StringLengthPixelConverter : TypeConverter
+    public class StringDoubleConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static string pixelAbbrevation = "px";
-        protected static string error = "Unable to parse quantity. Expected the form \"{value} {unit abbreviation}" +
-                                        "\", such as \"5.5 m\". The spacing is optional.";
 
 
         // Properties                                                                                                               
 
 
         // Constructors                                                                                                             
-        public StringLengthPixelConverter()
+        public StringDoubleConverter()
         {
         }
 
 
         // Methods                                                                                                                  
-        public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             if (sourceType == typeof(string)) return true;
             else return base.CanConvertFrom(context, sourceType);
         }
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            // Convert from string
-            if (value is string valueString) return (int)MyNCalc.ConvertFromString(valueString, ConvertToCurrentUnits);
+            if (value is string valueString)
+            {
+                double valueDouble;
+                valueString = valueString.Trim();
+                //
+                if (valueString.Length == 0 || valueString == "=") return 0;   // empty string -> 0
+                if (!double.TryParse(valueString, out valueDouble))
+                {
+                    if (valueString.StartsWith("="))
+                    {
+                        valueString = valueString.Substring(1, valueString.Length - 1);
+                        NCalc.Expression e = MyNCalc.GetExpression(valueString);
+                        if (!e.HasErrors())
+                        {
+                            object result = e.Evaluate();
+                            if (result is int) valueDouble = (int)result;
+                            else if (result is double) valueDouble = (double)result;
+                        }
+                        else
+                        {
+                            throw new CaeException("Equation error:" + Environment.NewLine + e.Error);
+                        }
+                    }
+                    else throw new Exception(valueString + " is not a valid value for Double.");
+                }
+                //
+                return valueDouble;
+            }
             else return base.ConvertFrom(context, culture, value);
         }
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
@@ -47,10 +70,7 @@ namespace CaeGlobals
             {
                 if (destinationType == typeof(string))
                 {
-                    if (value is int valueInt)
-                    {
-                        return valueInt.ToString() + " " + pixelAbbrevation;
-                    }
+                    return value.ToString();
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
             }
@@ -58,24 +78,6 @@ namespace CaeGlobals
             {
                 return base.ConvertTo(context, culture, value, destinationType);
             }
-        }
-        //
-        public static double ConvertToCurrentUnits(string valueWithUnitString)
-        {
-            try
-            {
-                valueWithUnitString = valueWithUnitString.Replace(pixelAbbrevation, "");
-                return int.Parse(valueWithUnitString);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(error + Environment.NewLine + Environment.NewLine + SupportedUnitAbbreviations());
-            }
-        }
-        public static string SupportedUnitAbbreviations()
-        {
-            string supportedUnitAbbreviations = "Supported pixel abbreviations: " + pixelAbbrevation + ".";
-            return supportedUnitAbbreviations;
         }
     }
 

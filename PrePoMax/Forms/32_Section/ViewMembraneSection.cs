@@ -27,7 +27,7 @@ namespace PrePoMax
         [OrderedDisplayName(3, 10, "Offset")]
         [DescriptionAttribute("Set the offset of the membrane mid-surface in regard to the selected geometry. "
                               + "The unit is the shell thickness.")]
-        [TypeConverter(typeof(StringDefaultDoubleConverter))]
+        [TypeConverter(typeof(StringDoubleDefaultConverter))]
         public double Offset { get { return _membraneSection.Offset; } set { _membraneSection.Offset = value; } }
 
 
@@ -37,7 +37,7 @@ namespace PrePoMax
             _membraneSection = membraneSection;
             SetBase(_membraneSection);
             //
-            StringDefaultDoubleConverter.InitialValue = 1;
+            StringDoubleDefaultConverter.InitialValue = 1;
         }
 
 
