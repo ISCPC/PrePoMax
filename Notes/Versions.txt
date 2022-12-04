@@ -221,19 +221,21 @@ ToDo
 Add support for PERTURBATION
 Collapsable group box in front of the Name?
 Binary with comments?
-Bug fixes?
 Axysymetric line?
 2D Fixed not working for rotations?
 Select similar in size?
 VtkMeshQuality
 Add color for slave constraint and contact items
 Load, Bc, duplicate?
-Pressure evaluator to all units!
 Save as: Krilo 	... if a file Krilo with no extension exist it will ask for overwrite !!! Windows problem
 
 
-Done
+DONE
+
+Version 1.3.5.1
 Contact Tied requires Friction to work! Add check!
+NCalc evaluator to all units!
+Bug fixes?
 
 Version 1.3.5
 Added partial support for opening OpenFOAM results
