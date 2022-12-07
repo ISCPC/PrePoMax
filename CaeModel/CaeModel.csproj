@@ -182,6 +182,7 @@
     <Compile Include="FileInOut\Output\Stl\StlFileWriter.cs" />
     <Compile Include="GeometricRegionType.cs" />
     <Compile Include="Steps\CoupledTempDispStep.cs" />
+    <Compile Include="Steps\DynamicStep.cs" />
     <Compile Include="Steps\Loads\IPreviewLoad.cs" />
     <Compile Include="Steps\Loads\VariablePressure.cs" />
     <Compile Include="Steps\Loads\ImportedPressure.cs" />

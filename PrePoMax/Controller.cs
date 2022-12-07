@@ -318,7 +318,6 @@ namespace PrePoMax
         }
         public void SetSelectAngle(double angle)
         {
-            //System.Diagnostics.Debug.WriteLine("Angle: " + angle);
             SelectAngle = angle;
         }
         public void SetSelectItemToNode()
