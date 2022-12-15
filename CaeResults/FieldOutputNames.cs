@@ -13,6 +13,8 @@ namespace CaeResults
         //
         public const string Disp = "DISP";
         public const string Dispi = "DISPI";
+        // Velocity
+        public const string Velo = "VELO";
         // Stress
         public const string Stress = "STRESS";
         public const string Stressi = "STRESSI";

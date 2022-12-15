@@ -2780,7 +2780,8 @@ namespace PrePoMax
                 frmGetValue.MinValue = 25;
                 frmGetValue.MaxValue = 255;
                 SetFormLoaction(frmGetValue);
-                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>("Preset transparency values");
+                OrderedDictionary<string, double> presetValues =
+                    new OrderedDictionary<string, double>("Preset transparency values", StringComparer.OrdinalIgnoreCase);
                 presetValues.Add("Semi-transparent", 128);
                 presetValues.Add("Opaque", 255);
                 string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
@@ -2842,7 +2843,8 @@ namespace PrePoMax
             frmGetValue.MinValue = 0;
             frmGetValue.MaxValue = 90;
             SetFormLoaction(frmGetValue);
-            OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>("Preset values");
+            OrderedDictionary<string, double> presetValues =
+                new OrderedDictionary<string, double>("Preset values", StringComparer.OrdinalIgnoreCase);
             presetValues.Add("Default", CaeMesh.Globals.EdgeAngle);
             string desc = "Enter the face angle for model edges detection.";
             frmGetValue.PrepareForm("Find model edges: " + partNames.ToShortString(), "Angle", desc,
@@ -3706,7 +3708,8 @@ namespace PrePoMax
                 frmGetValue.MinValue = 25;
                 frmGetValue.MaxValue = 255;
                 SetFormLoaction(frmGetValue);
-                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>("Preset values");
+                OrderedDictionary<string, double> presetValues
+                    = new OrderedDictionary<string, double>("Preset values", StringComparer.OrdinalIgnoreCase);
                 presetValues.Add("Semi-transparent", 128);
                 presetValues.Add("Opaque", 255);
                 string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
@@ -6208,7 +6211,8 @@ namespace PrePoMax
                 frmGetValue.MinValue = 25;
                 frmGetValue.MaxValue = 255;
                 SetFormLoaction(frmGetValue);
-                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>("Preset transparency values");
+                OrderedDictionary<string, double> presetValues =
+                    new OrderedDictionary<string, double>("Preset transparency values", StringComparer.OrdinalIgnoreCase);
                 presetValues.Add("Semi-transparent", 128);
                 presetValues.Add("Opaque", 255);
                 string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";

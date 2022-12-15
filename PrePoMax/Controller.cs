@@ -349,7 +349,7 @@ namespace PrePoMax
             _form = form;
             _form.Controller = this;
             // Jobs
-            _jobs = new OrderedDictionary<string, AnalysisJob>("Analysis jobs");
+            _jobs = new OrderedDictionary<string, AnalysisJob>("Analysis jobs", StringComparer.OrdinalIgnoreCase);
             // Edges visibilitires
             _edgesVisibilities = new EdgesVisibilitiesCollection(this);
             // Section view
@@ -1527,7 +1527,8 @@ namespace PrePoMax
                 newModel.Properties.ModelSpace = ModelSpaceEnum.ThreeD;
                 newModel.Mesh.AddPartsFromMesh(_allResults.CurrentResult.Mesh, partNames, null, false, false);
                 // Change result parts to mesh parts
-                OrderedDictionary<string, BasePart> meshParts = new OrderedDictionary<string, BasePart>("Base parts");
+                OrderedDictionary<string, BasePart> meshParts =
+                    new OrderedDictionary<string, BasePart>("Base parts", StringComparer.OrdinalIgnoreCase);
                 MeshPart meshPart;
                 foreach (var entry in newModel.Mesh.Parts)
                 {

@@ -70,7 +70,8 @@ namespace FileInOut.Output
             // Collect pre-tension loads
             string name;
             List<PreTensionLoad> preTensionLoadsList;
-            OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads = new OrderedDictionary<string, List<PreTensionLoad>>("Pretension loads");
+            OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads =
+                new OrderedDictionary<string, List<PreTensionLoad>>("Pretension loads", StringComparer.OrdinalIgnoreCase);
             foreach (var step in model.StepCollection.StepsList)
             {
                 foreach (var entry in step.Loads)
@@ -803,12 +804,6 @@ namespace FileInOut.Output
                         CalStaticStep calStaticStep = new CalStaticStep(staticStep);
                         calStep.AddKeyword(calStaticStep);
                     }
-                    else if (step.GetType() == typeof(DynamicStep))
-                    {
-                        DynamicStep dynamicStep = step as DynamicStep;
-                        CalDynamicStep calDynamicStep = new CalDynamicStep(dynamicStep);
-                        calStep.AddKeyword(calDynamicStep);
-                    }
                     else if (step is FrequencyStep frequencyStep)
                     {
                         CalFrequencyStep calFrequencyStep = new CalFrequencyStep(frequencyStep);
@@ -818,6 +813,12 @@ namespace FileInOut.Output
                     {
                         CalBuckleStep calBuckleStep = new CalBuckleStep(buckleStep);
                         calStep.AddKeyword(calBuckleStep);
+                    }
+                    else if (step.GetType() == typeof(DynamicStep))
+                    {
+                        DynamicStep dynamicStep = step as DynamicStep;
+                        CalDynamicStep calDynamicStep = new CalDynamicStep(dynamicStep);
+                        calStep.AddKeyword(calDynamicStep);
                     }
                     else if (step.GetType() == typeof(HeatTransferStep))
                     {

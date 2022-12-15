@@ -173,7 +173,8 @@ namespace CaeModel
         public OrderedDictionary<int, double> GetStepIdDuration()
         {
             int count = 1;  // start at 1
-            OrderedDictionary<int, double> stepIdDuration = new OrderedDictionary<int, double>("Step id - duration");
+            OrderedDictionary<int, double> stepIdDuration =
+                new OrderedDictionary<int, double>("Step id - duration");
             //
             foreach (var step in _steps)
             {

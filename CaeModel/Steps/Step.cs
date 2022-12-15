@@ -70,11 +70,13 @@ namespace CaeModel
         public Step(string name)
             : base(name) 
         {
-            _historyOutputs = new OrderedDictionary<string, HistoryOutput>("History outputs");
-            _fieldOutputs = new OrderedDictionary<string, FieldOutput>("Field outputs");
-            _boundayConditions = new OrderedDictionary<string, BoundaryCondition>("Boundary conditions");
-            _loads = new OrderedDictionary<string, Load>("Loads");
-            _definedFields = new OrderedDictionary<string, DefinedField>("Defined fields");
+            StringComparer sc = StringComparer.OrdinalIgnoreCase;
+            //
+            _historyOutputs = new OrderedDictionary<string, HistoryOutput>("History outputs", sc);
+            _fieldOutputs = new OrderedDictionary<string, FieldOutput>("Field outputs", sc);
+            _boundayConditions = new OrderedDictionary<string, BoundaryCondition>("Boundary conditions", sc);
+            _loads = new OrderedDictionary<string, Load>("Loads", sc);
+            _definedFields = new OrderedDictionary<string, DefinedField>("Defined fields", sc);
             _perturbation = false;
             _nlgeom = false;
             _maxIncrements = 100;
@@ -114,7 +116,8 @@ namespace CaeModel
                 }
             }
             // Compatibility for version v.1.0.0
-            if (_definedFields == null) _definedFields = new OrderedDictionary<string, DefinedField>("Defined fields"); 
+            if (_definedFields == null)
+                _definedFields = new OrderedDictionary<string, DefinedField>("Defined fields", StringComparer.OrdinalIgnoreCase);
         }
 
 

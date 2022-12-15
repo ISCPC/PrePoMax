@@ -138,16 +138,18 @@ namespace FileInOut.Input
                     }
                 }
                 //
-
-                OrderedDictionary<string, FeReferencePoint> referencePoints = new OrderedDictionary<string, FeReferencePoint>("Reference points");
-                OrderedDictionary<string, Material> materials = new OrderedDictionary<string, Material>("Materials");
-                OrderedDictionary<string, Section> sections = new OrderedDictionary<string, Section>("Sections");
-                OrderedDictionary<string, Constraint> constraints = new OrderedDictionary<string, Constraint>("Constraints");
+                StringComparer sc = StringComparer.OrdinalIgnoreCase;
+                //
+                OrderedDictionary<string, FeReferencePoint> referencePoints
+                    = new OrderedDictionary<string, FeReferencePoint>("Reference points", sc);
+                OrderedDictionary<string, Material> materials = new OrderedDictionary<string, Material>("Materials", sc);
+                OrderedDictionary<string, Section> sections = new OrderedDictionary<string, Section>("Sections", sc);
+                OrderedDictionary<string, Constraint> constraints = new OrderedDictionary<string, Constraint>("Constraints", sc);
                 OrderedDictionary<string, SurfaceInteraction> surfaceInteractions = 
-                    new OrderedDictionary<string, SurfaceInteraction>("Surface interactions");
-                OrderedDictionary<string, ContactPair> contactPairs = new OrderedDictionary<string, ContactPair>("Contact pairs");
-                OrderedDictionary<string, Amplitude> amplitudes = new OrderedDictionary<string, Amplitude>("Amplitudes");
-                OrderedDictionary<string, Step> steps = new OrderedDictionary<string, Step>("Steps");
+                    new OrderedDictionary<string, SurfaceInteraction>("Surface interactions", sc);
+                OrderedDictionary<string, ContactPair> contactPairs = new OrderedDictionary<string, ContactPair>("Contact pairs", sc);
+                OrderedDictionary<string, Amplitude> amplitudes = new OrderedDictionary<string, Amplitude>("Amplitudes", sc);
+                OrderedDictionary<string, Step> steps = new OrderedDictionary<string, Step>("Steps", sc);
                 List<CalculixUserKeyword> userKeywords = new List<CalculixUserKeyword>();
                 //
                 for (int i = 0; i < dataSets.Length; i++)
