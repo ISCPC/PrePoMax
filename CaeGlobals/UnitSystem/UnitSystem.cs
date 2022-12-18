@@ -524,6 +524,7 @@ namespace CaeGlobals
             StringAreaConverter.SetUnit = AreaUnitAbbreviation;
             StringVolumeConverter.SetUnit = VolumeUnitAbbreviation;
             StringRotationalSpeedConverter.SetUnit = RotationalSpeedUnitAbbreviation;
+            StringVelocityConverter.SetUnit = VelocityUnitAbbreviation;
             StringAccelerationConverter.SetUnit = AccelerationUnitAbbreviation;
             StringForceConverter.SetUnit = ForceUnitAbbreviation;
             StringForcePerLenghtConverter.SetUnit = ForcePerLengthUnitAbbreviation;

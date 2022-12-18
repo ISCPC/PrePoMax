@@ -6328,6 +6328,10 @@ namespace PrePoMax
                 {
                     results = it.GetPreview(_model.Mesh, initialConditionName, _model.UnitSystem.UnitSystemType);
                 }
+                else if (initialCondition is InitialVelocity iv)
+                {
+                    results = iv.GetPreview(_model.Mesh, initialConditionName, _model.UnitSystem.UnitSystemType);
+                }
                 else throw new CaeException("It is not possible to preview this initial condition type.");
                 //
                 SetResults(results);
@@ -6383,6 +6387,19 @@ namespace PrePoMax
                     initialCondition.RegionName = name;
                     initialCondition.RegionType = RegionTypeEnum.NodeSetName;
                 }
+                // Initial velocity
+                else if (initialCondition is InitialVelocity)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets, initialCondition.Name);
+                    // For
+                    FeElementSet elementSet = new FeElementSet(name, initialCondition.CreationIds, true);
+                    elementSet.CreationData = initialCondition.CreationData.DeepClone();
+                    elementSet.Internal = true;
+                    AddElementSet(elementSet);
+                    //
+                    initialCondition.RegionName = name;
+                    initialCondition.RegionType = RegionTypeEnum.ElementSetName;
+                }
                 else throw new NotSupportedException();
             }
             // Clear the creation data if not used
@@ -6398,7 +6415,10 @@ namespace PrePoMax
             InitialCondition initialCondition = GetInitialCondition(oldInitialConditionName);
             if (initialCondition.CreationData != null && initialCondition.RegionName != null)
             {
-                if (initialCondition is InitialTemperature) RemoveNodeSets(new string[] { initialCondition.RegionName });
+                if (initialCondition is InitialTemperature)
+                    RemoveNodeSets(new string[] { initialCondition.RegionName });
+                else if (initialCondition is InitialVelocity)
+                    RemoveElementSets(new string[] { initialCondition.RegionName });
                 else throw new NotSupportedException();
             }
         }
@@ -12319,8 +12339,6 @@ namespace PrePoMax
                 bool onlyVisible = false;
                 count += DrawItemsByGeometryIds(ids, prefixName, elementSet.Name, color, layer, 5, backfaceCulling,
                                                 useSecondaryHighlightColor, onlyVisible);
-                // Nodes
-
             }
             else
             {
@@ -12658,9 +12676,14 @@ namespace PrePoMax
                     }
                     else if (obj is InitialCondition ic)
                     {
-                        if (ic.RegionType == RegionTypeEnum.NodeSetName)
+                        if (ic.RegionType == RegionTypeEnum.PartName)
+                            HighlightModelParts(new string[] { ic.RegionName });
+                        else if (ic.RegionType == RegionTypeEnum.NodeSetName)
                             HighlightNodeSets(new string[] { ic.RegionName });
-                        else if (ic.RegionType == RegionTypeEnum.SurfaceName) HighlightSurfaces(new string[] { ic.RegionName });
+                        else if (ic.RegionType == RegionTypeEnum.ElementSetName)
+                            HighlightElementSets(new string[] { ic.RegionName });
+                        else if (ic.RegionType == RegionTypeEnum.SurfaceName)
+                            HighlightSurfaces(new string[] { ic.RegionName });
                         else if (ic.RegionType == RegionTypeEnum.Selection) { }
                         else throw new NotSupportedException();
                     }
@@ -12898,7 +12921,6 @@ namespace PrePoMax
             FeElementSet elementSet;
             foreach (var elementSetName in elementSetsToSelect)
             {
-
                 if (_model.Mesh.ElementSets.TryGetValue(elementSetName, out elementSet))
                 {
                     count += DrawElementSet("Highlight", elementSet, Color.Red,

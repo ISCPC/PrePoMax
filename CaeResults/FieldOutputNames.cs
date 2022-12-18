@@ -64,6 +64,10 @@ namespace CaeResults
         public const string U2 = "U2";
         public const string U3 = "U3";
         //
+        public const string V1 = "V1";
+        public const string V2 = "V2";
+        public const string V3 = "V3";
+        //
         public const string F1 = "F1";
         public const string F2 = "F2";
         public const string F3 = "F3";

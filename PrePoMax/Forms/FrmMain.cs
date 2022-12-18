@@ -727,10 +727,25 @@ namespace PrePoMax
                 // Model tree
                 else if (_modelTree.ActiveControl == null || !_modelTree.ActiveControl.Focused)
                 {
+                    Control focusedControl = FindFocusedControl(this);
+                    // Check for toolstrip
+                    if (focusedControl != null && focusedControl.Parent is ToolStripFocus) { }
                     // Check for annotation editor
-                    if (!aeAnnotationTextEditor.Visible) _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
+                    else if (aeAnnotationTextEditor.Visible) { }
+                    // Forward to tree
+                    else _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
                 }
             }
+        }
+        public static Control FindFocusedControl(Control control)
+        {
+            var container = control as IContainerControl;
+            while (container != null)
+            {
+                control = container.ActiveControl;
+                container = control as IContainerControl;
+            }
+            return control;
         }
         // Timer
         private void timerOutput_Tick(object sender, EventArgs e)
@@ -6910,7 +6925,7 @@ namespace PrePoMax
                 if (e.KeyCode == Keys.Enter)
                 {
                     _controller.Redraw();
-                    this.ActiveControl = null;
+                    this.ActiveControl = _vtk;
                     // No beep
                     e.SuppressKeyPress = true;
                 }

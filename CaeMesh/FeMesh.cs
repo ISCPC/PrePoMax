@@ -6073,6 +6073,13 @@ namespace CaeMesh
             else if (_parts.ContainsKey(regionName)) group = _parts[regionName];
             else throw new CaeException("The element set name or part name does not exist.");
             //
+            if (group is FeElementSet es && es.CreatedFromParts)
+            {
+                HashSet<int> elementIds = new HashSet<int>();
+                foreach (int partId in es.Labels) elementIds.UnionWith(GetPartById(partId).Labels);
+                group = new FeGroup("tmp", elementIds.ToArray());
+            }
+            //
             Dictionary<int, bool> partVisibilities = new Dictionary<int, bool>();
             foreach (var part in _parts) partVisibilities.Add(part.Value.PartId, part.Value.Visible);
             // Create a node set from the element set
@@ -6084,7 +6091,8 @@ namespace CaeMesh
                 if (!(onlyVisible && !partVisibilities[element.PartId])) nodeIds.UnionWith(element.NodeIds);
             }
             //
-            string nodeSetName = _nodeSets.GetNextNumberedKey(regionName + "_el");
+            string nodeSetName = regionName + "_fromEl";
+            if (_nodeSets.ContainsKey(nodeSetName)) nodeSetName = _nodeSets.GetNextNumberedKey(nodeSetName);
             FeNodeSet nodeSet = new FeNodeSet(nodeSetName, nodeIds.ToArray());
             UpdateNodeSetCenterOfGravity(nodeSet);
             return nodeSet;

@@ -790,7 +790,7 @@ namespace UserControls
         {
             CodersLabTreeView tree = GetActiveTree();
             //
-            //if (tree.Focused)
+            //if (tree.Focused) // Disable since called from FrmMain.KeyboardHook_KeyDown
             {
                 if (e.KeyCode == Keys.Delete)
                 {

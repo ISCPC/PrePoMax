@@ -463,16 +463,19 @@ namespace FileInOut.Output
         {
             if (model.Mesh != null)
             {
-                CalNodeSet nodeSet;
+                HashSet<string> nodeSetNames = new HashSet<string>();
+                CalNodeSet calNodeSet;
                 foreach (var entry in model.Mesh.NodeSets)
                 {
                     if (entry.Value.Active)
                     {
-                        nodeSet = new CalNodeSet(entry.Value);
-                        parent.AddKeyword(nodeSet);
+                        calNodeSet = new CalNodeSet(entry.Value);
+                        parent.AddKeyword(calNodeSet);
                     }
                     else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
                 }
+                nodeSetNames.UnionWith(model.Mesh.NodeSets.Keys);
+                // Reference points
                 FeReferencePoint rp;
                 FeNodeSet rpNodeSet;
                 foreach (var entry in referencePointsNodeIds)
@@ -481,14 +484,45 @@ namespace FileInOut.Output
                     {
                         rp.RefNodeSetName = rp.Name + FeReferencePoint.RefName + entry.Value[0];
                         rp.RotNodeSetName = rp.Name + FeReferencePoint.RotName + entry.Value[1];
-
+                        // Check name
+                        if (nodeSetNames.Contains(rp.RefNodeSetName))
+                        {
+                            rp.RefNodeSetName = nodeSetNames.GetNextNumberedKey(rp.RefNodeSetName);
+                            nodeSetNames.Add(rp.RefNodeSetName);
+                        }
+                        if (nodeSetNames.Contains(rp.RotNodeSetName))
+                        {
+                            rp.RotNodeSetName = nodeSetNames.GetNextNumberedKey(rp.RotNodeSetName);
+                            nodeSetNames.Add(rp.RotNodeSetName);
+                        }
+                        //
                         rpNodeSet = new FeNodeSet(rp.RefNodeSetName, new int[] { entry.Value[0] });
-                        nodeSet = new CalNodeSet(rpNodeSet);
-                        parent.AddKeyword(nodeSet);
-
+                        calNodeSet = new CalNodeSet(rpNodeSet);
+                        parent.AddKeyword(calNodeSet);
+                        //
                         rpNodeSet = new FeNodeSet(rp.RotNodeSetName, new int[] { entry.Value[1] });
-                        nodeSet = new CalNodeSet(rpNodeSet);
-                        parent.AddKeyword(nodeSet);
+                        calNodeSet = new CalNodeSet(rpNodeSet);
+                        parent.AddKeyword(calNodeSet);
+                    }
+                }
+                // Initial conditions
+                FeNodeSet nodeSet;
+                foreach (var entry in model.InitialConditions)
+                {
+                    if (entry.Value is InitialVelocity iv && iv.Active)
+                    {
+                        nodeSet = model.Mesh.GetNodeSetFromPartOrElementSetName(iv.RegionName, false);
+                        // Check name
+                        if (nodeSetNames.Contains(nodeSet.Name))
+                        {
+                            nodeSet.Name = nodeSetNames.GetNextNumberedKey(nodeSet.Name);
+                            nodeSetNames.Add(nodeSet.Name);
+                        }
+                        // Add temp name
+                        iv.NodeSetName = nodeSet.Name;
+                        //
+                        calNodeSet = new CalNodeSet(nodeSet);
+                        parent.AddKeyword(calNodeSet);
                     }
                 }
             }
@@ -763,6 +797,11 @@ namespace FileInOut.Output
                         {
                             CalInitialTemperature calInitialTemperature = new CalInitialTemperature(model, it);
                             parent.AddKeyword(calInitialTemperature);
+                        }
+                        else if (entry.Value is InitialVelocity iv)
+                        {
+                            CalInitialVelocity calInitialVelocity = new CalInitialVelocity(model, iv);
+                            parent.AddKeyword(calInitialVelocity);
                         }
                     }
                     else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
