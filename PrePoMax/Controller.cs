@@ -10369,9 +10369,20 @@ namespace PrePoMax
                 Color colorBorder = Color.Black;
                 //
                 double[][] coor = new double[][] { referencePoint.Coor() };
-                DrawNodes(referencePoint.Name + Globals.NameSeparator + "Border", coor, colorBorder, layer, nodeSize,
-                          false, false);
-                DrawNodes(referencePoint.Name, coor, color, layer, nodeSize - 3, false, false);
+                //
+                vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+                data.Name = "Reference_point" + Globals.NameSeparator + referencePoint.Name;
+                data.Color = color;
+                data.BackfaceColor = colorBorder;
+                data.Layer = layer;
+                data.Geometry.Nodes.Coor = coor;
+                data.Pickable = true;
+                ApplyLighting(data);
+                _form.AddSphereActor(data, 2 * nodeSize);
+                //
+                //DrawNodes(referencePoint.Name + Globals.NameSeparator + "Border", coor, colorBorder, layer, nodeSize,
+                //          false, false);
+                //DrawNodes(referencePoint.Name, coor, color, layer, nodeSize - 3, false, false);
             }
             catch { } // do not show the exception to the user
         }
@@ -11437,7 +11448,7 @@ namespace PrePoMax
                     if (nodeSet == null) nodeSet = _model.Mesh.GetNodeSetFromPartOrElementSetName(bFlux.RegionName, false);
                     //
                     if (nodeSet.Labels.Length > 0)
-                        DrawBodyFluxymbol(prefixName, bFlux, nodeSet.CenterOfGravity, color, symbolSize, symbolLayer);
+                        DrawBodyFluxSymbol(prefixName, bFlux, nodeSet.CenterOfGravity, color, symbolSize, symbolLayer);
                 }
                 else if (load is FilmHeatTransfer filmHeatTransfer)
                 {
@@ -11948,7 +11959,7 @@ namespace PrePoMax
                 _form.AddOrientedArrowsActor(data, symbolSize, translate);
             }
         }
-        public void DrawBodyFluxymbol(string prefixName, BodyFlux bFlux, double[] symbolCoor, Color color,
+        public void DrawBodyFluxSymbol(string prefixName, BodyFlux bFlux, double[] symbolCoor, Color color,
                                       int symbolSize, vtkControl.vtkRendererLayer layer)
         {
             double[][] normals = new double[][] { new double[] { 1, 0, 0 } };
@@ -12243,7 +12254,7 @@ namespace PrePoMax
             data.Layer = layer;
             data.DrawOnGeometry = drawOnGeometry;
             data.Geometry.Nodes.Coor = nodeCoor;
-            data.UseSecondaryHighightColor = useSecondaryHighlightColor;            
+            data.UseSecondaryHighightColor = useSecondaryHighlightColor;
             //
             ApplyLighting(data);
             _form.Add3DNodes(data);
