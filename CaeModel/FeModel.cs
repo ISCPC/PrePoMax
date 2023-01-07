@@ -8,6 +8,7 @@ using CaeGlobals;
 using System.Runtime.Serialization;
 using Calculix = FileInOut.Output.Calculix;
 using System.IO;
+using System.Drawing;
 
 namespace CaeModel
 {
@@ -849,10 +850,10 @@ namespace CaeModel
             //
             ImportMesh(mesh, null, false);
             // Recolor parts at the end of the import
-            for (int i = 0; i < importedParts.Length; i++)
+            foreach (var importedPart in importedParts)
             {
-                if (_geometry.Parts.ContainsKey(importedParts[i].Name))
-                    importedParts[i].Color = _geometry.Parts[importedParts[i].Name].Color;
+                if (_geometry.Parts.ContainsKey(importedPart.Name) && _mesh.Parts.ContainsKey(importedPart.Name))
+                    _mesh.Parts[importedPart.Name].Color = _geometry.Parts[importedPart.Name].Color;
             }
         }
         public void ImportGeneratedRemeshFromMeshFile(string fileName, int[] elementIds, BasePart part,

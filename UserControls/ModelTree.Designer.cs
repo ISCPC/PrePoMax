@@ -158,6 +158,7 @@
             this.tpResults = new System.Windows.Forms.TabPage();
             this.stbResults = new UserControls.SearchTextBox();
             this.cltvResults = new UserControls.CodersLabTreeView();
+            this.tsmiCheckModel = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsTree.SuspendLayout();
             this.tcGeometryModelResults.SuspendLayout();
             this.tpGeometry.SuspendLayout();
@@ -206,6 +207,7 @@
             this.tsmiColorContoursOn,
             this.tsmiSpaceAnalysis,
             this.tsmiRun,
+            this.tsmiCheckModel,
             this.tsmiMonitor,
             this.tsmiResults,
             this.tsmiKill,
@@ -218,7 +220,7 @@
             this.tsmiSpaceDelete,
             this.tsmiDelete});
             this.cmsTree.Name = "cmsTree";
-            this.cmsTree.Size = new System.Drawing.Size(212, 842);
+            this.cmsTree.Size = new System.Drawing.Size(212, 886);
             // 
             // tsmiCreate
             // 
@@ -948,6 +950,13 @@
             this.cltvResults.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvResults.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
             // 
+            // tsmiCheckModel
+            // 
+            this.tsmiCheckModel.Name = "tsmiCheckModel";
+            this.tsmiCheckModel.Size = new System.Drawing.Size(211, 22);
+            this.tsmiCheckModel.Text = "Check Model";
+            this.tsmiCheckModel.Click += new System.EventHandler(this.tsmiCheckModel_Click);
+            // 
             // ModelTree
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1038,5 +1047,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiSearchContactPairs;
         private System.Windows.Forms.ToolStripMenuItem tsmiQuery;
         private System.Windows.Forms.ToolStripMenuItem tsmiPreview;
+        private System.Windows.Forms.ToolStripMenuItem tsmiCheckModel;
     }
 }

@@ -187,6 +187,15 @@ namespace CaeModel
             //
             return stepIdDuration;
         }
+        // Run or check analysis
+        public void SetRunAnalysis()
+        {
+            foreach (Step step in _steps) step.RunAnalysis = true;
+        }
+        public void SetCheckModel()
+        {
+            foreach (Step step in _steps) step.RunAnalysis = false;
+        }
         // History
         public void AddHistoryOutput(HistoryOutput historyOutput, string stepName)
         {

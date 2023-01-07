@@ -8,6 +8,7 @@ using CaeMesh;
 using CaeGlobals;
 using CaeModel;
 using FileInOut.Output.Calculix;
+using System.Reflection;
 
 namespace FileInOut.Input
 {
@@ -277,7 +278,6 @@ namespace FileInOut.Input
             if (fileName != null && File.Exists(fileName))
             {
                 string[] lines = Tools.ReadAllLines(fileName);
-                //lines = ReadIncludes(lines, 0, Path.GetDirectoryName(fileName));
                 //
                 string[] dataSet;
                 string[][] dataSets = GetDataSets(lines);
@@ -301,6 +301,48 @@ namespace FileInOut.Input
                 // Remove duplicate elements
                 RemoveDuplicateElements(elements, inpElementTypeSets, out uniqueElements, out elementSets);
             }
+        }
+
+        static public void ReadNam(string fileName, out string[] nodeSetNames, out int[][] nodeIds)
+        {
+            nodeSetNames = null;
+            nodeIds = null;
+            List<string> nodeSetNamesList = new List<string>();
+            List<int[]> nodeIdsLists = new List<int[]>();
+            _errors = new List<string>();
+            //
+            if (fileName != null && File.Exists(fileName))
+            {
+                string[] lines = Tools.ReadAllLines(fileName, true);
+                //
+                string[] dataSet;
+                string[][] dataSets = GetDataSets(lines);
+                //
+                int[] ids;
+                string name;
+                string keyword;
+                FeMesh mesh = new FeMesh(MeshRepresentation.Results);
+                //
+                for (int i = 0; i < dataSets.Length; i++)
+                {
+                    dataSet = dataSets[i];
+                    keyword = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
+                    //
+                    if (keyword == "*NSET")
+                    {
+                        GetNodeOrElementSet("NSET", dataSet, mesh, out name, out ids);
+                        if (NamedClass.CheckNameError(name) != null) AddError(NamedClass.CheckNameError(name));
+                        else if (ids != null)
+                        {
+                            nodeSetNamesList.Add(name);
+                            nodeIdsLists.Add(ids);
+                        }
+                    }
+                }
+            }
+            //
+            nodeSetNames = nodeSetNamesList.ToArray();
+            nodeIds = nodeIdsLists.ToArray();
         }
         private static void RemoveDuplicateElements(Dictionary<int, FeElement> elements,
                                                     List<InpElementSet> inpElementTypeSets,

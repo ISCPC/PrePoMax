@@ -741,6 +741,44 @@ namespace PrePoMax
                 _modelChanged = true;
             }
         }
+        private void OpenNam(string fileName, bool redraw = true)
+        {
+            string[] nodeSetNames;
+            int[][] nodeIds;
+            FileInOut.Input.InpFileReader.ReadNam(fileName, out nodeSetNames, out nodeIds);
+            //
+            if (nodeSetNames == null || nodeSetNames.Length == 0)
+            {
+                MessageBoxes.ShowError("The file "+ fileName + " does not exist or is empty.");
+                return;
+            }
+            else
+            {
+                string name;
+                HashSet<string> existingNames = _allResults.CurrentResult.Mesh.NodeSets.Keys.ToHashSet();
+                Dictionary<string, FeNodeSet> nodeSets = new Dictionary<string, FeNodeSet>();
+                for (int i = 0; i < nodeSetNames.Length; i++)
+                {
+                    name = nodeSetNames[i];
+                    if (existingNames.Contains(name)) name = _allResults.CurrentResult.Mesh.NodeSets.GetNextNumberedKey(name);
+                    //
+                    nodeSets.Add(name, new FeNodeSet(name, nodeIds[i]));
+                }
+                _allResults.CurrentResult.Mesh.NodeSets.AddRange(nodeSets);
+                //
+                if (redraw)
+                {
+                    // Set the view but do not draw
+                    _currentView = ViewGeometryModelResults.Results;
+                    _form.SetCurrentView(_currentView);
+                    // Regenerate tree
+                    _form.RegenerateTree();
+
+                }
+                // Model changed
+                _modelChanged = true;
+            }
+        }
         private void OpenFoam(string fileName)
         {
             FeResults results = OpenFoamFileReader.Read(fileName);
@@ -807,6 +845,14 @@ namespace PrePoMax
                 string celFileName = Path.GetFileNameWithoutExtension(_allResults.CurrentResult.FileName) + ".cel";
                 celFileName = Path.Combine(Path.GetDirectoryName(_allResults.CurrentResult.FileName), celFileName);
                 if (File.Exists(celFileName)) OpenCel(celFileName, false);
+            }
+            // Open .nam file
+            if (_allResults.CurrentResult.FileName != null && _allResults.CurrentResult.FileName.Length > 0)
+            {
+                string namFileName = Path.GetFileNameWithoutExtension(_allResults.CurrentResult.FileName) +
+                                     "_WarnNodeMissTiedContact.nam";
+                namFileName = Path.Combine(Path.GetDirectoryName(_allResults.CurrentResult.FileName), namFileName);
+                if (File.Exists(namFileName)) OpenNam(namFileName, false);
             }
             // Open .dat file
             if (readDatFile)
@@ -7478,12 +7524,15 @@ namespace PrePoMax
             ApplySettings();
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldJobName, job, null);
         }
-        public bool PrepareAndRunJob(string inputFileName, AnalysisJob job)
+        public bool PrepareAndRunJob(string inputFileName, AnalysisJob job, bool onlyCheckModel)
         {
             if (File.Exists(job.Executable))
             {
                 if (CheckModelBeforeJobRun() && DeleteFilesBeforeJobRun(inputFileName)) // must be separete due to exception
                 {
+                    if (onlyCheckModel) _model.StepCollection.SetCheckModel();
+                    else _model.StepCollection.SetRunAnalysis();
+
                     if (_model.Properties.ModelType == ModelType.SlipWearModel)
                     {
                         return RunWearJob(inputFileName, job);
@@ -7594,9 +7643,11 @@ namespace PrePoMax
                                             Path.Combine(directory, inputFileNameWithoutExtension + ".cvg"),
                                             Path.Combine(directory, inputFileNameWithoutExtension + ".12d"),
                                             Path.Combine(directory, inputFileNameWithoutExtension + ".cel"), // contact elments
+                                            Path.Combine(directory, inputFileNameWithoutExtension +
+                                                         "._WarnNodeMissTiedContact.nam"), // missing contact nodes
                                             Path.Combine(directory, "ResultsForLastIterations.frd"),
                                             Path.Combine(directory, inputFileNameWithoutExtension + ".frd")
-                                            };
+                                           };
             try
             {
                 foreach (var fileName in files) File.Delete(fileName);
