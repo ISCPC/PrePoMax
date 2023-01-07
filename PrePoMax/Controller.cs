@@ -10370,19 +10370,19 @@ namespace PrePoMax
                 //
                 double[][] coor = new double[][] { referencePoint.Coor() };
                 //
-                vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-                data.Name = "Reference_point" + Globals.NameSeparator + referencePoint.Name;
-                data.Color = color;
-                data.BackfaceColor = colorBorder;
-                data.Layer = layer;
-                data.Geometry.Nodes.Coor = coor;
-                data.Pickable = true;
-                ApplyLighting(data);
-                _form.AddSphereActor(data, 2 * nodeSize);
+                //vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+                //data.Name = "Reference_point" + Globals.NameSeparator + referencePoint.Name;
+                //data.Color = color;
+                //data.BackfaceColor = colorBorder;
+                //data.Layer = layer;
+                //data.Geometry.Nodes.Coor = coor;
+                //data.Pickable = true;
+                //ApplyLighting(data);
+                //_form.AddSphereActor(data, 2 * nodeSize);
                 //
-                //DrawNodes(referencePoint.Name + Globals.NameSeparator + "Border", coor, colorBorder, layer, nodeSize,
-                //          false, false);
-                //DrawNodes(referencePoint.Name, coor, color, layer, nodeSize - 3, false, false);
+                DrawNodes(referencePoint.Name + Globals.NameSeparator + "Border", coor, colorBorder, layer, nodeSize,
+                          false, false);
+                DrawNodes(referencePoint.Name, coor, color, layer, nodeSize - 3, false, false);
             }
             catch { } // do not show the exception to the user
         }

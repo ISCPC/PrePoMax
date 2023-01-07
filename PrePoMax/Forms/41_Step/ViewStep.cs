@@ -32,6 +32,16 @@ namespace PrePoMax
             get { return _step.SolverType; }
             set { _step.SolverType = value; }
         }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(11, 11, "No analysis")]
+        [DescriptionAttribute("Select yes for input deck and geometry checking only. The set of equations is built but not solved " +
+                              "(the Jacobian determinant is checked).")]
+        public bool NoAnalysis
+        {
+            get { return _step.NoAnalysis; }
+            set { _step.NoAnalysis = value; }
+        }
 
 
 
@@ -42,6 +52,8 @@ namespace PrePoMax
                 throw new ArgumentNullException();
             //
             _step = step;
+            //
+            _dctd.RenameBooleanPropertyToYesNo(nameof(NoAnalysis));
         }
 
         // Methods

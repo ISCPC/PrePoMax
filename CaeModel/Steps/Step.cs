@@ -44,6 +44,7 @@ namespace CaeModel
         protected OrderedDictionary<string, DefinedField> _definedFields;               //ISerializable
         protected bool _perturbation;                                                   //ISerializable
         protected bool _nlgeom;                                                         //ISerializable
+        protected bool _noAnalysis;                                                     //ISerializable
         protected int _maxIncrements;                                                   //ISerializable
         protected IncrementationTypeEnum _incrementationType;                           //ISerializable
         protected SolverTypeEnum _solverType;                                           //ISerializable
@@ -57,6 +58,7 @@ namespace CaeModel
         public OrderedDictionary<string, DefinedField> DefinedFields { get { return _definedFields; } }
         public bool Perturbation { get { return _perturbation; } set { _perturbation = value; } }
         public bool Nlgeom { get { return _nlgeom; } set { _nlgeom = value; } }
+        public bool NoAnalysis { get { return _noAnalysis; } set { _noAnalysis = value; } }
         public int MaxIncrements { get { return _maxIncrements; } set { _maxIncrements = Math.Max(value, 1); } }
         public IncrementationTypeEnum IncrementationType { get { return _incrementationType; } set { _incrementationType = value; } }
         public SolverTypeEnum SolverType { get { return _solverType; } set { _solverType = value; } }
@@ -80,7 +82,9 @@ namespace CaeModel
             _perturbation = false;
             _nlgeom = false;
             _maxIncrements = 100;
+            _noAnalysis = false;
             _incrementationType = IncrementationTypeEnum.Default;
+            
         }
         public Step(SerializationInfo info, StreamingContext context)
             :base(info, context)
@@ -105,6 +109,8 @@ namespace CaeModel
                         _perturbation = (bool)entry.Value; break;
                     case "_nlgeom":
                         _nlgeom = (bool)entry.Value; break;
+                    case "_noAnalysis":
+                        _noAnalysis = (bool)entry.Value; break;
                     case "_maxIncrements":
                         _maxIncrements = (int)entry.Value; break;
                     case "_incrementationType":
@@ -164,6 +170,7 @@ namespace CaeModel
             info.AddValue("_definedFields", _definedFields, typeof(OrderedDictionary<string, DefinedField>));
             info.AddValue("_perturbation", _perturbation, typeof(bool));
             info.AddValue("_nlgeom", _nlgeom, typeof(bool));
+            info.AddValue("_noAnalysis", _noAnalysis, typeof(bool));
             info.AddValue("_maxIncrements", _maxIncrements, typeof(int));
             info.AddValue("_incrementationType", _incrementationType, typeof(IncrementationTypeEnum));
             info.AddValue("_solverType", _solverType, typeof(SolverTypeEnum));

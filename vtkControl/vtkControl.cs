@@ -1325,17 +1325,13 @@ namespace vtkControl
                 }
             }
             // Pick actor by hardware rendering - render the sceene before Pick
-            foreach (var entry in _overlayActors)
-            {
-
-            }
-            _overlayRenderer.Render();
-            _propPicker.Pick(x, y, 0, _overlayRenderer);
-            pickedActor = _propPicker.GetActor();
-            //
-            //_renderer.Render();
-            //_propPicker.Pick(x, y, 0, _renderer);
+            //_overlayRenderer.Render();
+            //_propPicker.Pick(x, y, 0, _overlayRenderer);
             //pickedActor = _propPicker.GetActor();
+            //
+            _renderer.Render();
+            _propPicker.Pick(x, y, 0, _renderer);
+            pickedActor = _propPicker.GetActor();
             // First pick
             if (pickedActor != null)
             {
