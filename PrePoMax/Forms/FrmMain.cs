@@ -71,7 +71,7 @@ namespace PrePoMax
         private FrmLoad _frmLoad;
         private FrmDefinedField _frmDefinedField;
         private FrmSettings _frmSettings;
-        private FrmQuery _frmQuery;
+        private FrmFind _frmQuery;
         private FrmAnalysis _frmAnalysis;
         private FrmMonitor _frmMonitor;
         private FrmAnimation _frmAnimation;

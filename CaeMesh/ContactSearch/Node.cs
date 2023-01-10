@@ -7,7 +7,7 @@ using CaeGlobals;
 
 namespace CaeMesh
 {
-    public class Node<T>
+    public class Node<T> : IComparable<Node<T>> where T : IComparable<T>
     {
         // Variables                                                                                                                
         private T _data;
@@ -37,6 +37,15 @@ namespace CaeMesh
         {
             _data = data;
             _neighbors = neighbors;
+        }
+        public int CompareTo(Node<T> other)
+        {
+            if (_neighbors == null) return -1;
+            else if (other.Neighbors == null) return 1;
+            //
+            else if (_neighbors.Count < other.Neighbors.Count) return -1;
+            else if (_neighbors.Count > other.Neighbors.Count) return 1;
+            else return _data.CompareTo(other._data);
         }
     }
 }

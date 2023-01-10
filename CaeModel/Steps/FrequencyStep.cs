@@ -22,7 +22,7 @@ namespace CaeModel
             get { return _numOfFrequencies; }
             set 
             {
-                if (value <= 1) throw new Exception("The number of frequencies must be larger than 0.");
+                if (value <= 0) throw new Exception("The number of frequencies must be larger than 0.");
                 _numOfFrequencies = value;
             }
         }

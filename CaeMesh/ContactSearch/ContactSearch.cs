@@ -394,8 +394,8 @@ namespace CaeMesh
             foreach (var csp in contactSurfacePairs)
             {
                 masterSlaveItems.Add(new MasterSlaveItem(csp[0].Part.Name, csp[1].Part.Name,
-                                                         new HashSet<int>() { csp[0].GetGeometryId() },
-                                                         new HashSet<int>() { csp[1].GetGeometryId() }));
+                                                         new HashSet<int>() { csp[0].GeometryId },
+                                                         new HashSet<int>() { csp[1].GeometryId }));
             }
             //
             ContactGraph contactGraph = new ContactGraph();
@@ -416,7 +416,7 @@ namespace CaeMesh
             Dictionary<int[], MasterSlaveItem> partKeyMasterSlaveItems = new Dictionary<int[], MasterSlaveItem>(comparer);
             //
             Dictionary<int, int> partIds = GetPartIdsMergedByCompounds();
-            //
+            // Mege by part Id
             foreach (var csp in contactSurfacePairs)
             {
                 if (partIds[csp[0].Part.PartId] < partIds[csp[1].Part.PartId])
@@ -438,15 +438,15 @@ namespace CaeMesh
                 key = new int[] { partIds[csp[i].Part.PartId], iType, partIds[csp[j].Part.PartId], jType };
                 if (partKeyMasterSlaveItems.TryGetValue(key, out masterSlaveItem))
                 {
-                    masterSlaveItem.MasterGeometryIds.Add(csp[i].GetGeometryId());
-                    masterSlaveItem.SlaveGeometryIds.Add(csp[j].GetGeometryId());
+                    masterSlaveItem.MasterGeometryIds.Add(csp[i].GeometryId);
+                    masterSlaveItem.SlaveGeometryIds.Add(csp[j].GeometryId);
                 }
                 else
                 {
                     masterSlaveItem = new MasterSlaveItem(csp[i].Part.Name, csp[j].Part.Name,
                                                           new HashSet<int>(), new HashSet<int>());
-                    masterSlaveItem.MasterGeometryIds.Add(csp[i].GetGeometryId());
-                    masterSlaveItem.SlaveGeometryIds.Add(csp[j].GetGeometryId());
+                    masterSlaveItem.MasterGeometryIds.Add(csp[i].GeometryId);
+                    masterSlaveItem.SlaveGeometryIds.Add(csp[j].GeometryId);
                     partKeyMasterSlaveItems.Add(key, masterSlaveItem);
                 }
             }
@@ -485,7 +485,5 @@ namespace CaeMesh
             //
             return partIds;
         }
-
-
     }
 }

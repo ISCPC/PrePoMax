@@ -7556,9 +7556,9 @@ namespace CaeMesh
         public void GetFaceNodes(int geometryFaceId, out int[] nodeIds)
         {
             int[] itemTypePartIds = GetItemTypePartIdsFromGeometryId(geometryFaceId);
-            VisualizationData vis = GetPartById(itemTypePartIds[2]).Visualization;
             GeometryType geomType = (GeometryType)itemTypePartIds[1];
-            //
+            VisualizationData vis = GetPartById(itemTypePartIds[2]).Visualization;
+            // Face
             if (geomType == GeometryType.SolidSurface ||
                 geomType == GeometryType.ShellFrontSurface ||
                 geomType == GeometryType.ShellBackSurface)
@@ -7637,6 +7637,8 @@ namespace CaeMesh
                 area += faceArea;
             }
         }
+
+        
 
         // Analyze
         public double GetShortestEdgeLen(string[] partNames)
@@ -7905,7 +7907,7 @@ namespace CaeMesh
             System.IO.File.WriteAllText(fileName, sb.ToString());
         }
 
-        // Operations
+        // Transformations
         public string[] TranslateParts(string[] partNames, double[] translateVector, bool copy,
                                        ICollection<string> reservedPartNames)
         {

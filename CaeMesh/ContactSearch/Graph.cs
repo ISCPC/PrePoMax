@@ -7,7 +7,7 @@ using CaeGlobals;
 
 namespace CaeMesh
 {
-    public class Graph<T>
+    public class Graph<T> where T : IComparable<T>
     {
         // Variables                                                                                                                
         private NodeList<T> _nodeSet;
@@ -173,6 +173,8 @@ namespace CaeMesh
             Queue<Node<T>> queue = new Queue<Node<T>>();
             NodeList<T> connectedNodes;
             List<Graph<T>> connectedSubgraphs = new List<Graph<T>>();
+            // Sort by 
+            _nodeSet.Sort();
             //
             foreach (var node in _nodeSet)
             {
@@ -190,7 +192,7 @@ namespace CaeMesh
                         if (visitedNodes.Add(currentNode))
                         {
                             connectedNodes.Add(currentNode);
-                            // Add all neighbour to the queue
+                            // Add all neighbours to the queue
                             foreach (var neighbour in currentNode.Neighbors)
                                 queue.Enqueue(neighbour);
                         }

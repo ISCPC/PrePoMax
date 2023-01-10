@@ -13,6 +13,7 @@ namespace CaeMesh
         private FeMesh _mesh;
         private BasePart _part;
         private int _id;
+        private int _geometryId;
         private GeometryType _geometryType;
         private HashSet<int> _nodeIds;
         private BoundingBox _boundingBox;
@@ -23,6 +24,7 @@ namespace CaeMesh
         public FeMesh Mesh { get { return _mesh; } set { _mesh = value; } }
         public BasePart Part { get { return _part; } set { _part = value; } }
         public int Id { get { return _id; } set { _id = value; } }
+        public int GeometryId { get { return _geometryId; } }
         public GeometryType GeometryType { get { return _geometryType; } set { _geometryType = value; } }
         public HashSet<int> NodeIds { get { return _nodeIds; } set { _nodeIds = value; } }
         public BoundingBox BoundingBox { get { return _boundingBox; } set { _boundingBox = value; } }
@@ -37,6 +39,7 @@ namespace CaeMesh
             _part = part;
             _id = id;
             _geometryType = geometryType;
+            _geometryId = GetGeometryId();
             //
             if (_geometryType == GeometryType.ShellEdgeSurface) _nodeIds = part.Visualization.GetNodeIdsByEdge(_id);
             else _nodeIds = part.Visualization.GetNodeIdsBySurface(_id);
@@ -53,6 +56,7 @@ namespace CaeMesh
             _mesh = contactSurface._mesh;
             _part = contactSurface._part;
             _id = contactSurface._id;
+            _geometryId = contactSurface._geometryId;
             _geometryType = contactSurface._geometryType;
             _nodeIds = new HashSet<int>(contactSurface._nodeIds);
             _boundingBox = new BoundingBox(contactSurface._boundingBox);
@@ -135,7 +139,7 @@ namespace CaeMesh
             Geometry.VcrossV(ref edgeCellNormal, a, n);
             Geometry.Vnorm(ref edgeCellNormal, edgeCellNormal);
         }
-        public int GetGeometryId()
+        private int GetGeometryId()
         {
             return _id * 100000 + (int)_geometryType * 10000 + _part.PartId;
         }

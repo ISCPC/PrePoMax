@@ -399,6 +399,12 @@
     <Compile Include="Annotations\ElementAnnotation.cs" />
     <Compile Include="Annotations\NodeAnnotation.cs" />
     <Compile Include="Annotations\AnnotationBase.cs" />
+    <Compile Include="Forms\53_Find\FrmFind.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\53_Find\FrmFind.Designer.cs">
+      <DependentUpon>FrmFind.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\72_ResultHistoryOutput\FrmResultHistoryOutput.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -735,6 +741,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\52_Query\FrmQuery.resx">
       <DependentUpon>FrmQuery.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\53_Find\FrmFind.resx">
+      <DependentUpon>FrmFind.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\61_Analysis\FrmAnalysis.resx">
       <DependentUpon>FrmAnalysis.cs</DependentUpon>
