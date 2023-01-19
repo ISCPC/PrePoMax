@@ -169,8 +169,11 @@ namespace CaeMesh
         // Added for usage in graphs
         public int CompareTo(BasePart other)
         {
-            if (System.Diagnostics.Debugger.IsAttached) throw new NotImplementedException();
+            if (_boundingBox.GetVolume() < other._boundingBox.GetVolume()) return 1;
+            else if (_boundingBox.GetVolume() > other._boundingBox.GetVolume()) return -1;
             else return 0;
+            //if (System.Diagnostics.Debugger.IsAttached) throw new NotImplementedException();
+            //else return 0;
         }
     }
 }

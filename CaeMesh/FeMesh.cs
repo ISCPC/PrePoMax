@@ -1166,16 +1166,22 @@ namespace CaeMesh
                 else geometryPart.ErrorNodeIds = null;
             }
             // Get cell neighbours
-            HashSet<int>[] cellNeighbours = new HashSet<int>[cells.Length];
+            List<int>[] cellNeighbours = new List<int>[cells.Length];
+            List<int[]>[] cellIdCellIdEdgeNodeIds = new List<int[]>[cells.Length];
             foreach (var entry in allEdges)
             {
-                cellsIds = entry.Value.CellIds.ToArray();       // for faster loops
+                cellsIds = entry.Value.CellIds.ToArray();   // for faster loops 
                 // Free edges
                 if (cellsIds.Length == 1)
                 {
                     visualizationCell1i = cellsIds[0];
+                    // Edges
+                    if (cellIdCellIdEdgeNodeIds[visualizationCell1i] == null)
+                        cellIdCellIdEdgeNodeIds[visualizationCell1i] = new List<int[]>();
                     //
-                    if (cellNeighbours[visualizationCell1i] == null) cellNeighbours[visualizationCell1i] = new HashSet<int>();
+                    cellIdCellIdEdgeNodeIds[visualizationCell1i].Add(entry.Value.NodeIds);
+                    // Cells
+                    if (cellNeighbours[visualizationCell1i] == null) cellNeighbours[visualizationCell1i] = new List<int>();
                     //
                     cellNeighbours[visualizationCell1i].Add(-1); // -1 for the free edge
                 }
@@ -1188,11 +1194,19 @@ namespace CaeMesh
                         {
                             visualizationCell1i = cellsIds[i];
                             visualizationCell2i = cellsIds[j];
+                            // Edges
+                            if (cellIdCellIdEdgeNodeIds[visualizationCell1i] == null)
+                                cellIdCellIdEdgeNodeIds[visualizationCell1i] = new List<int[]>();
+                            if (cellIdCellIdEdgeNodeIds[visualizationCell2i] == null)
+                                cellIdCellIdEdgeNodeIds[visualizationCell2i] = new List<int[]>();
                             //
+                            cellIdCellIdEdgeNodeIds[visualizationCell1i].Add(entry.Value.NodeIds);
+                            cellIdCellIdEdgeNodeIds[visualizationCell2i].Add(entry.Value.NodeIds);
+                            // Cells
                             if (cellNeighbours[visualizationCell1i] == null)
-                                cellNeighbours[visualizationCell1i] = new HashSet<int>();
+                                cellNeighbours[visualizationCell1i] = new List<int>();
                             if (cellNeighbours[visualizationCell2i] == null)
-                                cellNeighbours[visualizationCell2i] = new HashSet<int>();
+                                cellNeighbours[visualizationCell2i] = new List<int>();
                             //
                             cellNeighbours[visualizationCell1i].Add(visualizationCell2i);
                             cellNeighbours[visualizationCell2i].Add(visualizationCell1i);
@@ -1200,6 +1214,13 @@ namespace CaeMesh
                     }
                 }
             }
+            // Collect cell cell edgeNodeIds in an array
+            int[][][] cellIdCellIdEdgeNodeIdsArray = new int[cellIdCellIdEdgeNodeIds.Length][][];
+            for (int i = 0; i < cellIdCellIdEdgeNodeIds.Length; i++)
+            {
+                if (cellIdCellIdEdgeNodeIds[i] != null) cellIdCellIdEdgeNodeIdsArray[i] = cellIdCellIdEdgeNodeIds[i].ToArray();
+            }
+            part.Visualization.CellIdCellIdEdgeNodeIds = cellIdCellIdEdgeNodeIdsArray;
             // Collect cell neighbours in an array
             int[][] cellNeighboursArray = new int[cellNeighbours.Length][];
             for (int i = 0; i < cellNeighbours.Length; i++)
@@ -1751,6 +1772,7 @@ namespace CaeMesh
             //
             int[][] visualizationCells = part.Visualization.Cells;
             int[][] allCellNeighbours = part.Visualization.CellNeighboursOverCellEdge;
+            int[][][] cellIdCellIdEdgeNodeIds = part.Visualization.CellIdCellIdEdgeNodeIds;
             if (visualizationCells == null) return;
             // Spread
             int edgeId;
@@ -1760,8 +1782,9 @@ namespace CaeMesh
             HashSet<int> newSurfaceCellIds = new HashSet<int>();        // cells added per one layer
             HashSet<int> surfaceCellIdsHash = new HashSet<int>();       // all added cells
             HashSet<int> notVisitedCellIds = new HashSet<int>();        // new border cells to be examined
-            HashSet<int> freeEdgeCellIds = new HashSet<int>();
+            HashSet<int> freeEdgeIds = new HashSet<int>();
             //
+            int neighbourId;
             surfaceCellIdsHash.Add(cellId);
             notVisitedCellIds.Add(cellId);
             //
@@ -1776,17 +1799,22 @@ namespace CaeMesh
                     if (allCellNeighbours[notVisitedCellId] != null)
                     {
                         // Check all neighbours of the selected border cell
-                        foreach (var neighbourId in allCellNeighbours[notVisitedCellId])
+                        for (int i = 0; i < allCellNeighbours[notVisitedCellId].Length; i++)
                         {
+                            neighbourId = allCellNeighbours[notVisitedCellId][i];
+                            edgeNodes = cellIdCellIdEdgeNodeIds[notVisitedCellId][i].ToArray();
+                            Array.Sort(edgeNodes);
                             // -1 stands for a cell with no neighbour
-                            if (neighbourId == -1) freeEdgeCellIds.Add(notVisitedCellId);
+                            if (neighbourId == -1)
+                            {
+                                if (modelEdges.TryGetValue(edgeNodes, out edgeId)) freeEdgeIds.Add(edgeId);
+                                else
+                                {
+                                    int error = 1;
+                                }
+                            }
                             else
                             {
-                                cellNodes.Clear();
-                                cellNodes.UnionWith(visualizationCells[notVisitedCellId]);
-                                cellNodes.IntersectWith(visualizationCells[neighbourId]);
-                                edgeNodes = cellNodes.ToArray();
-                                Array.Sort(edgeNodes);
                                 // Check if the neighbour was allready added in the previous or in this border layer
                                 if (!surfaceCellIdsHash.Contains(neighbourId) && !newSurfaceCellIds.Contains(neighbourId))
                                 {
@@ -1814,26 +1842,31 @@ namespace CaeMesh
             // Cells
             surfaceCellIds = surfaceCellIdsHash.ToArray();
             // Add Free edges
-            HashSet<int> freeEdgeCellsNodeIds = new HashSet<int>();
-            if (freeEdgeCellIds.Count > 0)
-            {
-                foreach (var freeEdgeCellId in freeEdgeCellIds)
-                {
-                    freeEdgeCellsNodeIds.UnionWith(visualizationCells[freeEdgeCellId]);
-                }
-                foreach (var entry in modelEdges)
-                {
-                    if (!surfaceEdgeIdsHash.Contains(entry.Value) && freeEdgeCellsNodeIds.Intersect(entry.Key).Count() == entry.Key.Length)
-                        surfaceEdgeIdsHash.Add(entry.Value);
-                }
-                //
-                //for (int i = 0; i < surfaceCellIds.Length; i++)
-                //    freeEdgeCellsNodeIds.UnionWith(visualizationCells[surfaceCellIds[i]]);
-                //foreach (var entry in modelEdges)
-                //{
-                //    if (freeEdgeCellsNodeIds.Intersect(entry.Key).Count() == entry.Key.Length) surfaceEdgeIdsHash.Add(entry.Value);
-                //}
-            }
+
+            surfaceEdgeIdsHash.UnionWith(freeEdgeIds);
+
+            //HashSet<int> freeEdgeCellsNodeIds = new HashSet<int>();
+            //if (freeEdgeCellIds.Count > 0)
+            //{
+            //    foreach (var freeEdgeCellId in freeEdgeCellIds)
+            //    {
+            //        freeEdgeCellsNodeIds.UnionWith(visualizationCells[freeEdgeCellId]);
+            //    }
+            //    foreach (var entry in modelEdges)
+            //    {
+            //        if (!surfaceEdgeIdsHash.Contains(entry.Value) && 
+            //            freeEdgeCellsNodeIds.Intersect(entry.Key).Count() == entry.Key.Length)
+            //            surfaceEdgeIdsHash.Add(entry.Value);
+            //    }
+            //    //
+            //    //for (int i = 0; i < surfaceCellIds.Length; i++)
+            //    //    freeEdgeCellsNodeIds.UnionWith(visualizationCells[surfaceCellIds[i]]);
+            //    //foreach (var entry in modelEdges)
+            //    //{
+            //    //    if (freeEdgeCellsNodeIds.Intersect(entry.Key).Count() == entry.Key.Length) surfaceEdgeIdsHash.Add(entry.Value);
+            //    //}
+            //}
+
             surfaceEdgeIds = surfaceEdgeIdsHash.ToArray();
         }
         public void GetSplitVisualizationFaceByCellId_old(BasePart part, int cellId, Dictionary<int[], int> modelEdges,
@@ -2942,6 +2975,16 @@ namespace CaeMesh
                 }
             }
             return maxId;
+        }
+        public int[] GetVisiblePartIds()
+        {
+            // Find the part
+            List<int> ids = new List<int>();
+            foreach (var entry in _parts)
+            {
+                if (entry.Value.Visible) ids.Add(entry.Value.PartId);
+            }
+            return ids.ToArray();
         }
         public BasePart GetPartById(int id)
         {

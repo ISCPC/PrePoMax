@@ -71,7 +71,8 @@ namespace PrePoMax
         private FrmLoad _frmLoad;
         private FrmDefinedField _frmDefinedField;
         private FrmSettings _frmSettings;
-        private FrmFind _frmQuery;
+        private FrmQuery _frmQuery;
+        private FrmFind _frmFind;
         private FrmAnalysis _frmAnalysis;
         private FrmMonitor _frmMonitor;
         private FrmAnimation _frmAnimation;
@@ -413,6 +414,10 @@ namespace PrePoMax
                 _frmQuery.Form_WriteDataToOutput = WriteDataToOutput;
                 _frmQuery.Form_RemoveAnnotations = tsbRemoveAnnotations_Click;
                 AddFormToAllForms(_frmQuery);
+                //
+                _frmFind = new FrmFind();
+                _frmFind.Form_RemoveAnnotations = tsbRemoveAnnotations_Click;
+                AddFormToAllForms(_frmFind);
                 //
                 _frmAnimation = new FrmAnimation();
                 _frmAnimation.Form_ControlsEnable = DisableEnableControlsForAnimation;
@@ -5558,6 +5563,25 @@ namespace PrePoMax
                     SetFormLoaction(_frmQuery);
                     _frmQuery.PrepareForm(_controller);
                     _frmQuery.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiFind_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!_frmFind.Visible)
+                {
+                    ClearSelection();
+                    //
+                    CloseAllForms();
+                    SetFormLoaction(_frmFind);
+                    _frmFind.PrepareForm(_controller);
+                    _frmFind.Show();
                 }
             }
             catch (Exception ex)

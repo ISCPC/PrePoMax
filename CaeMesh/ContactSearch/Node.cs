@@ -40,7 +40,8 @@ namespace CaeMesh
         }
         public int CompareTo(Node<T> other)
         {
-            if (_neighbors == null) return -1;
+            if (_neighbors == null && other.Neighbors == null) return 0;
+            else if (_neighbors == null) return -1;
             else if (other.Neighbors == null) return 1;
             //
             else if (_neighbors.Count < other.Neighbors.Count) return -1;

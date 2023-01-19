@@ -23,6 +23,7 @@ namespace CaeMesh
         protected double[] _faceAreas;
         protected GeomFaceType[] _faceTypes;
         protected int[][] _faceEdgeIds;
+        protected int[][][] _cellIdCellIdEdgeNodeIds;
         protected int[][] _cellNeighboursOverCellEdge;
         protected int[][] _edgeCells;
         protected int[][] _edgeCellIdsByEdge;
@@ -101,6 +102,16 @@ namespace CaeMesh
         /// [0...num. of faces][0...num. of edges] -> local edge id
         /// </summary>
         public int[][] FaceEdgeIds { get { return _faceEdgeIds; } set { _faceEdgeIds = value; } }
+
+        /// <summary>
+        /// CellIdCellIdEdgeNodeIds
+        /// [0...num. of cells][0...num. of neigh.] -> edge node ids
+        /// </summary>
+        public int[][][] CellIdCellIdEdgeNodeIds
+        {
+            get { return _cellIdCellIdEdgeNodeIds; }
+            set { _cellIdCellIdEdgeNodeIds = value; }
+        }
 
         /// <summary>
         /// CellNeighboursOverEdge
@@ -185,6 +196,22 @@ namespace CaeMesh
                 _faceEdgeIds = new int[visualization.FaceEdgeIds.Length][];
                 for (int i = 0; i < _faceEdgeIds.Length; i++)
                     _faceEdgeIds[i] = visualization.FaceEdgeIds[i].ToArray();
+            }
+            //
+            if (visualization.CellIdCellIdEdgeNodeIds != null)
+            {
+                _cellIdCellIdEdgeNodeIds = new int[visualization.CellIdCellIdEdgeNodeIds.Length][][];
+                for (int i = 0; i < _cellIdCellIdEdgeNodeIds.Length; i++)
+                {
+                    if (visualization.CellIdCellIdEdgeNodeIds[i] != null)
+                    {
+                        _cellIdCellIdEdgeNodeIds[i] = new int[visualization.CellIdCellIdEdgeNodeIds[i].Length][];
+                        for (int j = 0; j < _cellIdCellIdEdgeNodeIds[i].Length; j++)
+                        {
+                            _cellIdCellIdEdgeNodeIds[i][j] = visualization.CellIdCellIdEdgeNodeIds[i][j].ToArray();
+                        }
+                    }
+                }
             }
             //
             if (visualization.CellNeighboursOverCellEdge != null)
@@ -905,6 +932,7 @@ namespace CaeMesh
             // Shell parts
             int edgeId;
             int[] edgeCell;
+            int[] edgeNodeIds;
             List<int> vertexEdgeIds;
             List<int> errorEdgeCellIdsList = new List<int>();
             List<int> errorNodeIdsList = new List<int>();
@@ -920,8 +948,14 @@ namespace CaeMesh
                 for (int j = 0; j < _faceEdgeIds[i].Length; j++)
                 {
                     edgeId = _faceEdgeIds[i][j];
+
+                    //IsEdgeAClosedLoop(edgeId, out edgeNodeIds);
+                    //if (edgeNodeIds != null && edgeId == 9)
+                    //    errorNodeIdsList = new List<int>(edgeNodeIds);
+
                     // Skip edges that form a single edge loop
-                    if (IsEdgeAClosedLoop(edgeId)) continue;
+                    if (IsEdgeAClosedLoop(edgeId, out edgeNodeIds))
+                        continue;
                     // For each edge cell
                     for (int k = 0; k < _edgeCellIdsByEdge[edgeId].Length; k++)
                     {
@@ -969,11 +1003,13 @@ namespace CaeMesh
             // Save
             if (errorEdgeCellIdsList.Count > 0) errorEdgeCellIds = errorEdgeCellIdsList.ToArray();
             else errorEdgeCellIds = null;
+            //
             if (errorNodeIdsList.Count > 0) errorNodeIds = errorNodeIdsList.ToArray();
             else errorNodeIds = null;
         }
-        public bool IsEdgeAClosedLoop(int edgeId)
+        public bool IsEdgeAClosedLoop(int edgeId, out int[] edgeNodeIds)
         {
+            edgeNodeIds = null;
             int[] edgeCellIds = _edgeCellIdsByEdge[edgeId];
             if (edgeCellIds.Length > 0)
             {
@@ -983,14 +1019,17 @@ namespace CaeMesh
                 //
                 for (int i = 0; i < edgeCellIds.Length; i++)
                 {
-                    edgeCell = _edgeCells[i];
+                    edgeCell = _edgeCells[edgeCellIds[i]];
                     // Add only first and second node id
                     count += 2;
                     allNodeIds.Add(edgeCell[0]);
                     allNodeIds.Add(edgeCell[1]);
                 }
                 //
-                return allNodeIds.Count() * 2 == count;
+                edgeNodeIds = allNodeIds.ToArray();
+                //
+                if (allNodeIds.Count == 2) return false;
+                else return allNodeIds.Count() * 2 == count;
             }
             else return false;
         }

@@ -16,6 +16,7 @@ using System.ComponentModel;
 using System.Management;
 using System.Runtime.Serialization;
 using System.Reflection.Emit;
+using vtkControl;
 
 namespace PrePoMax
 {
@@ -12830,7 +12831,7 @@ namespace PrePoMax
             }
             //
             GeometryPart[] parts = GetGeometryParts();
-            Color color = Color.Red;
+            Color color = Settings.Pre.PrimaryHighlightColor;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             //
             bool solidError;
@@ -12847,9 +12848,17 @@ namespace PrePoMax
                     //
                     if (solidError || shellError)
                     {
+                        // Error                                            
                         edgeCellIds.Clear();
-                        if (part.ErrorEdgeCellIds != null) edgeCellIds.UnionWith(part.ErrorEdgeCellIds);
-                        if (part.FreeEdgeCellIds != null) edgeCellIds.UnionWith(part.FreeEdgeCellIds);
+                        if (solidError)
+                        {
+                            if (part.ErrorEdgeCellIds != null) edgeCellIds.UnionWith(part.ErrorEdgeCellIds);
+                            if (part.FreeEdgeCellIds != null) edgeCellIds.UnionWith(part.FreeEdgeCellIds);
+                        }
+                        else if (shellError)
+                        {
+                            if (part.ErrorEdgeCellIds != null) edgeCellIds.UnionWith(part.ErrorEdgeCellIds);
+                        }
                         //
                         edgeCells.Clear();
                         foreach (var elementId in edgeCellIds) edgeCells.Add(part.Visualization.EdgeCells[elementId]);
@@ -12859,8 +12868,8 @@ namespace PrePoMax
                                                                out data.Geometry.Nodes.Coor,
                                                                out data.Geometry.Cells.CellNodeIds,
                                                                out data.Geometry.Cells.Types);
-                        // Name for the probe widget
-                        data.Name = part.Name + "_badEdgeElements";
+                        // Data
+                        data.Name = part.Name + "_ErrorEdgeElements";
                         data.Color = color;
                         data.Layer = layer;
                         data.CanHaveElementEdges = true;
@@ -12869,12 +12878,49 @@ namespace PrePoMax
                         //
                         ApplyLighting(data);
                         _form.Add3DCells(data);
-                        // Nodes                                                            
+                        // Nodes                
                         nodeIds.Clear();
-                        if (part.ErrorNodeIds != null) nodeIds.UnionWith(part.ErrorNodeIds);
-                        if (part.FreeNodeIds != null) nodeIds.UnionWith(part.FreeNodeIds);
-                        //
+                        if (solidError)
+                        {
+                            if (part.ErrorNodeIds != null) nodeIds.UnionWith(part.ErrorNodeIds);
+                            if (part.FreeNodeIds != null) nodeIds.UnionWith(part.FreeNodeIds);
+                        }
+                        else if (shellError)
+                        {
+                            if (part.ErrorNodeIds != null) nodeIds.UnionWith(part.ErrorNodeIds);
+                        }
                         DrawNodes(part.Name, nodeIds.ToArray(), color, layer);
+                        // Free                                             
+                        if (shellError)
+                        {
+                            edgeCellIds.Clear();
+                            if (part.FreeEdgeCellIds != null) edgeCellIds.UnionWith(part.FreeEdgeCellIds);
+                            if (part.ErrorEdgeCellIds != null) edgeCellIds.ExceptWith(part.ErrorEdgeCellIds);
+                            //
+                            edgeCells.Clear();
+                            foreach (var elementId in edgeCellIds) edgeCells.Add(part.Visualization.EdgeCells[elementId]);
+                            //
+                            data = new vtkControl.vtkMaxActorData();
+                            DisplayedMesh.GetNodesAndCellsForEdges(edgeCells.ToArray(), out data.Geometry.Nodes.Ids,
+                                                                   out data.Geometry.Nodes.Coor,
+                                                                   out data.Geometry.Cells.CellNodeIds,
+                                                                   out data.Geometry.Cells.Types);
+                            // Data
+                            data.Name = part.Name + "_ErrorEdgeElements";
+                            data.Color = color;
+                            data.Layer = layer;
+                            data.CanHaveElementEdges = true;
+                            data.BackfaceCulling = true;
+                            data.UseSecondaryHighightColor = true;
+                            //
+                            ApplyLighting(data);
+                            _form.Add3DCells(data);
+                            // Nodes                
+                            nodeIds.Clear();
+                            if (part.FreeNodeIds != null) nodeIds.UnionWith(part.FreeNodeIds);
+                            if (part.ErrorNodeIds != null) nodeIds.ExceptWith(part.ErrorNodeIds);
+                            DrawNodes(part.Name, nodeIds.ToArray(), color, layer, 5, false, true);
+                        }
                     }
                     else
                     {
@@ -12973,6 +13019,10 @@ namespace PrePoMax
             }
         }
         //
+        public void HighlightNode(int nodeId)
+        {
+            DrawNodes("Highlight", new int[] { nodeId }, Color.Red, vtkControl.vtkRendererLayer.Selection);
+        }
         public void HighlightElement(int elementId)
         {
             DrawElements("Highlight", new int[] { elementId }, Color.Red, vtkControl.vtkRendererLayer.Selection);
@@ -13937,3 +13987,4 @@ namespace PrePoMax
 
 
 }
+
