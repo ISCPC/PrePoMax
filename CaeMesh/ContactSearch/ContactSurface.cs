@@ -39,7 +39,7 @@ namespace CaeMesh
             _part = part;
             _id = id;
             _geometryType = geometryType;
-            _geometryId = GetGeometryId();
+            _geometryId = FeMesh.GetGeometryId(_id, (int)_geometryType, _part.PartId);
             //
             if (_geometryType == GeometryType.ShellEdgeSurface) _nodeIds = part.Visualization.GetNodeIdsByEdge(_id);
             else _nodeIds = part.Visualization.GetNodeIdsBySurface(_id);
@@ -65,6 +65,18 @@ namespace CaeMesh
 
 
         // Methods                                                                                                                  
+        public void ConvertToShellBackSurface()
+        {
+            if (_geometryType == GeometryType.ShellFrontSurface)
+            { 
+                int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(_geometryId);
+                int backId = FeMesh.GetGeometryId(itemTypePartIds[0], (int)GeometryType.ShellBackSurface, itemTypePartIds[2]);
+                //
+                _geometryType = GeometryType.ShellBackSurface;
+                _geometryId= backId;
+            }
+            else throw new NotSupportedException();
+        }
         public int[] GetCell(int cellId)
         {
             if (_geometryType == GeometryType.ShellEdgeSurface)
@@ -138,10 +150,6 @@ namespace CaeMesh
             //
             Geometry.VcrossV(ref edgeCellNormal, a, n);
             Geometry.Vnorm(ref edgeCellNormal, edgeCellNormal);
-        }
-        private int GetGeometryId()
-        {
-            return _id * 100000 + (int)_geometryType * 10000 + _part.PartId;
         }
     }
 }

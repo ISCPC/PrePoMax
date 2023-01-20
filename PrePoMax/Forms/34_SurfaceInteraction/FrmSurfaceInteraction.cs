@@ -39,8 +39,6 @@ namespace PrePoMax.Forms
             _controller = controller;
             _surfaceInteraction = null;
             //
-            propertyGrid.SetParent(this);   // for the Tab key to work
-            //
             int i = 0;
             _pages = new TabPage[tcProperties.TabPages.Count];
             foreach (TabPage tabPage in tcProperties.TabPages)

@@ -52,7 +52,6 @@ namespace PrePoMax.Forms
             //
             _controller = controller;
             //
-            propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(1.75);
             //
             _defaultParam = new ExplodedViewParameters();

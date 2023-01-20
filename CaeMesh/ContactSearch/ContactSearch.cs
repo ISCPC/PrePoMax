@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CaeGlobals;
+using CaeMesh.ContactSearchNamespace;
 
 namespace CaeMesh
 {
@@ -48,13 +49,14 @@ namespace CaeMesh
 
 
         // Methods                                                                                                                  
-        public List<MasterSlaveItem> FindContactPairs(double distance, double angleDeg, bool tryToResolve)
+        public List<MasterSlaveItem> FindContactPairs(double distance, double angleDeg, GeometryFilterEnum filter,
+                                                      bool tryToResolve)
         {
             if (_mesh == null) return null;
             // Bounding boxes for each cell
-            ComputeCellBoundingBoxes(distance);            
+            ComputeCellBoundingBoxes(distance, filter.HasFlag(GeometryFilterEnum.IgnoreHidden));
             // Find all surfaces of the assembly
-            ContactSurface[] contactSurfaces = GetAllContactSurfaces(distance);
+            ContactSurface[] contactSurfaces = GetAllContactSurfaces(distance, filter);
             // Find all surface pairs in contact
             double angleRad = angleDeg * Math.PI / 180;
             List<ContactSurface[]> contactSurfacePairs = new List<ContactSurface[]>();
@@ -63,6 +65,8 @@ namespace CaeMesh
             {
                 for (int j = i + 1; j < contactSurfaces.Length; j++)
                 {
+                    if (i ==0 && j == 8)
+                        i = i;
                     if (CheckSurfaceToSurfaceDistance(contactSurfaces[i], contactSurfaces[j], distance, angleRad))
                     {
                         contactSurfacePairs.Add(new ContactSurface[] { contactSurfaces[i], contactSurfaces[j] });
@@ -78,7 +82,7 @@ namespace CaeMesh
                 return GroupContactPairsByParts(contactSurfacePairs, tryToResolve);
             else throw new NotSupportedException();
         }
-        private void ComputeCellBoundingBoxes(double distance)
+        private void ComputeCellBoundingBoxes(double distance, bool ignoreHidden)
         {
             // Bounding boxes for each cell
             int[] cell;
@@ -88,6 +92,8 @@ namespace CaeMesh
             //
             foreach (var partEntry in _mesh.Parts)
             {
+                if (ignoreHidden && !partEntry.Value.Visible) continue;
+                //
                 _cellBoundingBoxes[partEntry.Value.PartId] = new BoundingBox[partEntry.Value.Visualization.Cells.Length];
                 for (int i = 0; i < partEntry.Value.Visualization.Cells.Length; i++)
                 {
@@ -128,11 +134,13 @@ namespace CaeMesh
                 _edgeCellBaseCellIds[partEntry.Value.PartId] = partEntry.Value.Visualization.GetAllEdgeCellBaseCellIds();
             }
         }
-        private ContactSurface[] GetAllContactSurfaces(double distance)
+        private ContactSurface[] GetAllContactSurfaces(double distance, GeometryFilterEnum filter)
         {
             int count = 0;
             foreach (var partEntry in _mesh.Parts)
             {
+                if (filter.HasFlag(GeometryFilterEnum.IgnoreHidden) && !partEntry.Value.Visible) continue;
+                //
                 if (partEntry.Value.PartType == PartType.Solid) count += partEntry.Value.Visualization.FaceCount;
                 else if (partEntry.Value.PartType == PartType.Shell)
                 {
@@ -146,7 +154,9 @@ namespace CaeMesh
             HashSet<int> freeEdgeIds;
             foreach (var partEntry in _mesh.Parts)
             {
-                if (partEntry.Value.PartType == PartType.Solid)
+                if (filter.HasFlag(GeometryFilterEnum.IgnoreHidden) && !partEntry.Value.Visible) continue;
+                //
+                if (filter.HasFlag(GeometryFilterEnum.Solid) && partEntry.Value.PartType == PartType.Solid)
                 {
                     // Solid faces
                     for (int i = 0; i < partEntry.Value.Visualization.FaceCount; i++)
@@ -155,29 +165,45 @@ namespace CaeMesh
                                                                       GeometryType.SolidSurface, distance * 0.5);
                     }
                 }
-                else if (partEntry.Value.PartType == PartType.Shell)
+                else if (filter.HasFlag(GeometryFilterEnum.Shell) && partEntry.Value.PartType == PartType.Shell)
                 {
-                    // Sehll faces
-                    for (int i = 0; i < partEntry.Value.Visualization.FaceCount; i++)
+                    // Shell faces
+                    if (filter.HasFlag(GeometryFilterEnum.Shell))
                     {
-                        contactSurfaces[count++] = new ContactSurface(_mesh, _nodes, partEntry.Value, i,
-                                                                      GeometryType.ShellFrontSurface, distance * 0.5);
-                        contactSurfaces[count] = new ContactSurface(contactSurfaces[count - 1]);    // copy
-                        contactSurfaces[count].GeometryType = GeometryType.ShellBackSurface;
-                        count++;
+                        for (int i = 0; i < partEntry.Value.Visualization.FaceCount; i++)
+                        {
+                            // Front face
+                            contactSurfaces[count++] = new ContactSurface(_mesh, _nodes, partEntry.Value, i,
+                                                                          GeometryType.ShellFrontSurface, distance * 0.5);
+                            // Back face
+                            contactSurfaces[count] = new ContactSurface(contactSurfaces[count - 1]); // copy
+                            contactSurfaces[count].ConvertToShellBackSurface();
+                            count++;
+                        }
                     }
                     // Shell edge faces
-                    freeEdgeIds = partEntry.Value.Visualization.GetFreeEdgeIds();
-                    for (int i = 0; i < partEntry.Value.Visualization.EdgeCount; i++)
+                    if (filter.HasFlag(GeometryFilterEnum.ShellEdge))
                     {
-                        contactSurfaces[count] = new ContactSurface(_mesh, _nodes, partEntry.Value, i,
-                                                                    GeometryType.ShellEdgeSurface, distance * 0.5);
-                        // Fnd internal edges on shells
-                        if (!freeEdgeIds.Contains(i)) contactSurfaces[count].Internal = true;
-                        count++;
+                        freeEdgeIds = partEntry.Value.Visualization.GetFreeEdgeIds();
+                        for (int i = 0; i < partEntry.Value.Visualization.EdgeCount; i++)
+                        {
+                            contactSurfaces[count] = new ContactSurface(_mesh, _nodes, partEntry.Value, i,
+                                                                        GeometryType.ShellEdgeSurface, distance * 0.5);
+                            // Fnd internal edges on shells
+                            if (!freeEdgeIds.Contains(i)) contactSurfaces[count].Internal = true;
+                            count++;
+                        }
                     }
                 }
             }
+
+
+
+
+
+
+
+
             // Find internal surfaces on compound parts
             for (int i = 0; i < contactSurfaces.Length; i++)
             {
@@ -223,6 +249,15 @@ namespace CaeMesh
             bool allowPenetration = (edgeSurface1 && edgeSurface2) ||
                                     (cs1.GeometryType == GeometryType.SolidSurface &&
                                      cs1.GeometryType == GeometryType.SolidSurface);
+            bool onlyInternal = (cs1.GeometryType == GeometryType.SolidSurface ||
+                                 cs1.GeometryType == GeometryType.ShellFrontSurface ||
+                                 cs1.GeometryType == GeometryType.ShellBackSurface) &&
+                                (cs2.GeometryType == GeometryType.SolidSurface ||
+                                 cs2.GeometryType == GeometryType.ShellFrontSurface ||
+                                 cs2.GeometryType == GeometryType.ShellBackSurface);
+
+            onlyInternal = false;
+
             // Use face cell ids or edge cell ids
             if (edgeSurface1)
             {
@@ -239,13 +274,14 @@ namespace CaeMesh
             {
                 bb1 = bbs1[cell1Id];
                 //
-                if (bb1.MaxX < intersection.MinX) continue;
-                else if (bb1.MinX > intersection.MaxX) continue;
-                else if (bb1.MaxY < intersection.MinY) continue;
-                else if (bb1.MinY > intersection.MaxY) continue;
-                else if (bb1.MaxZ < intersection.MinZ) continue;
-                else if (bb1.MinZ > intersection.MaxZ) continue;
-                else
+                if (bb1.Intersects(intersection))
+                //if (bb1.MaxX < intersection.MinX) continue;
+                //else if (bb1.MinX > intersection.MaxX) continue;
+                //else if (bb1.MaxY < intersection.MinY) continue;
+                //else if (bb1.MinY > intersection.MaxY) continue;
+                //else if (bb1.MaxZ < intersection.MinZ) continue;
+                //else if (bb1.MinZ > intersection.MaxZ) continue;
+                //else
                 {
                     // Use face cell ids or edge cell ids
                     if (edgeSurface2)
@@ -263,13 +299,14 @@ namespace CaeMesh
                     {
                         bb2 = bbs2[cell2Id];
                         //
-                        if (bb1.MaxX < bb2.MinX) continue;
-                        else if (bb1.MinX > bb2.MaxX) continue;
-                        else if (bb1.MaxY < bb2.MinY) continue;
-                        else if (bb1.MinY > bb2.MaxY) continue;
-                        else if (bb1.MaxZ < bb2.MinZ) continue;
-                        else if (bb1.MinZ > bb2.MaxZ) continue;
-                        else
+                        if (bb1.Intersects(bb2))
+                        //if (bb1.MaxX < bb2.MinX) continue;
+                        //else if (bb1.MinX > bb2.MaxX) continue;
+                        //else if (bb1.MaxY < bb2.MinY) continue;
+                        //else if (bb1.MinY > bb2.MaxY) continue;
+                        //else if (bb1.MaxZ < bb2.MinZ) continue;
+                        //else if (bb1.MinZ > bb2.MaxZ) continue;
+                        //else
                         {
                             cell1 = cs1.GetCell(cell1Id);   // reverse cell ids for shell back faces or get shell edge cell
                             cell2 = cs2.GetCell(cell2Id);   // reverse cell ids for shell back faces or get shell edge cell
@@ -281,21 +318,22 @@ namespace CaeMesh
                             t2[0] = _nodes[cell2[0]];
                             t2[1] = _nodes[cell2[1]];
                             if (!edgeSurface2) t2[2] = _nodes[cell2[2]];
-                            // 1. triangle is edge segment
+                            // 1. triangle is edge segment - create a triangle out of it
                             if (edgeSurface1)
                             {
                                 cs1.GetEdgeCellNormal(cell1Id, _edgeCellBaseCellIds[cs1.Part.PartId][cell1Id],
                                                       ref cellNorm, ref edgeCellNorm);
                                 Geometry.VpVxS(ref t1[2], t1[1], cellNorm, 0.001 * distance);
                             }
-                            // 2. triangle is edge segment
+                            // 2. triangle is edge segment - create a triangle out of it
                             if (edgeSurface2)
                             {
                                 cs2.GetEdgeCellNormal(cell2Id, _edgeCellBaseCellIds[cs2.Part.PartId][cell2Id],
                                                       ref cellNorm, ref edgeCellNorm);
                                 Geometry.VpVxS(ref t2[2], t2[1], cellNorm, 0.001 * distance);
                             }
-                            if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad, allowPenetration)) return true;
+                            if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad, allowPenetration, onlyInternal))
+                                return true;
                             // Cell 2 is a rectangle
                             if (cell2.Length == 4 || cell2.Length == 8)
                             {
@@ -304,7 +342,8 @@ namespace CaeMesh
                                 t2[1] = _nodes[cell2[2]];
                                 t2[2] = _nodes[cell2[3]];
                                 //
-                                if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad, allowPenetration)) return true;
+                                if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad, allowPenetration, onlyInternal))
+                                    return true;
                             }
                             // Cell 1 is a rectangle
                             if (cell1.Length == 4 || cell1.Length == 8)
@@ -314,7 +353,8 @@ namespace CaeMesh
                                 t1[1] = _nodes[cell1[2]];
                                 t1[2] = _nodes[cell1[3]];
                                 //
-                                if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad, allowPenetration)) return true;
+                                if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad, allowPenetration, onlyInternal))
+                                    return true;
                                 // Cell 2 triangle 1 again
                                 if (cell2.Length == 4 || cell2.Length == 8)
                                 {
@@ -322,7 +362,8 @@ namespace CaeMesh
                                     t2[1] = _nodes[cell2[1]];
                                     t2[2] = _nodes[cell2[2]];
                                     //
-                                    if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad, allowPenetration)) return true;
+                                    if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad, allowPenetration, onlyInternal))
+                                        return true;
                                 }
                             }
                         }
@@ -332,7 +373,7 @@ namespace CaeMesh
             return false;
         }
         private bool CheckTriangleToTriangleDistance(double[][] t1, double[][] t2, double distance, double angleRad,
-                                                     bool penetrationPossible)
+                                                     bool penetrationPossible, bool onlyInternal)
         {
             double dist;
             double ang;
@@ -361,7 +402,7 @@ namespace CaeMesh
                 double[] q = new double[3];
                 double[] pq = new double[3];
                 //
-                dist = Geometry.TriDist(ref p, ref q, t1, t2);
+                dist = Geometry.TriDist(ref p, ref q, t1, t2, onlyInternal);
                 //
                 if (dist < distance)
                 {
@@ -381,6 +422,14 @@ namespace CaeMesh
                         // The angle between the closest direction vector and normals must be small < 5° = 0.995
                         if (Math.Abs(ang1) < 0.995 && Math.Abs(ang2) < 0.995) return false;
                     }
+
+                    // Shrink the triangles and try again
+                    double[][] t1s = Geometry.ShrinkTriangle(t1, 0.5);
+                    double[][] t2s = Geometry.ShrinkTriangle(t2, 0.5);
+                    dist = Geometry.TriDist(ref p, ref q, t1s, t2s, false);
+                    if (dist > distance)
+                        return false;
+
                     return true;
                 }
             }

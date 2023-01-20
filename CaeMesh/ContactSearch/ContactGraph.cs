@@ -130,8 +130,7 @@ namespace CaeMesh
                 partIds.Add(FeMesh.GetPartIdFromGeometryId(itemId));
             }
             if (partIds.Count == 1) name = mesh.GetPartNamesByIds(partIds.ToArray())[0];
-            else name = allNames.GetNextNumberedKey("Merged" +
-                "");
+            else name = allNames.GetNextNumberedKey("Merged");
             //
             return name;
         }

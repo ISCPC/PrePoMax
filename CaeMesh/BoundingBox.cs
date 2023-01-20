@@ -178,6 +178,10 @@ namespace CaeMesh
             MinZ -= offset;
             MaxZ += offset;
         }
+        public void InflateIf2D(double offsetFactor)
+        {
+            if (Is2D()) Inflate(GetDiagonal() * offsetFactor);
+        }
         public void Scale(double scaleFactor)
         {
             double delta = 0.5 * (MaxX - MinX) * (scaleFactor - 1);
@@ -192,6 +196,7 @@ namespace CaeMesh
             MinZ -= delta;
             MaxZ += delta;
         }
+        
         //
         public void IncludeCoor(double[] coor)
         {

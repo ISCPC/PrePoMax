@@ -1127,7 +1127,8 @@ namespace vtkControl
                 string pickedActorName = GetActorName(pickedActor);                
                 vtkMaxActor maxActor;
                 //
-                if (!(_actors.TryGetValue(pickedActorName, out maxActor) && maxActor.FrustumCellLocator != null))
+                if (pickedActorName == null || 
+                    !(_actors.TryGetValue(pickedActorName, out maxActor) && maxActor.FrustumCellLocator != null))
                 {
                     // Actor has no locator
                 }

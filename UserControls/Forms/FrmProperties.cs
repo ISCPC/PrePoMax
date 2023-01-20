@@ -42,10 +42,7 @@ namespace UserControls
             _hideOnClose = true;
             _addNew = true;
             //
-            propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(labelRatio);
-            //
-            
         }
 
 

@@ -9561,7 +9561,7 @@ namespace PrePoMax
                     DisplayedMesh.GetNodesAndCellsForEdges(edgeCells.ToArray(), out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
                                                            out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
                     // Name for the probe widget
-                    data.Name = (faceId * 100000 + (int)GeometryType.SolidSurface * 10000 + part.PartId).ToString();
+                    data.Name = FeMesh.GetGeometryId(faceId, (int)GeometryType.SolidSurface, part.PartId).ToString();
                     //
                     return data;
                 }
@@ -12420,7 +12420,7 @@ namespace PrePoMax
             return count;
         }
         public int DrawSurface(string prefixName, string surfaceName, Color color,
-                               vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
+                               vtkRendererLayer layer, bool backfaceCulling = true,
                                bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
             FeSurface s;
@@ -12437,7 +12437,10 @@ namespace PrePoMax
                     }
                     else
                     {
-                        vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+                        vtkMaxActorData data = new vtkMaxActorData();
+                        mesh.GetSurfaceGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds,
+                                                out data.Geometry.Cells.Types, onlyVisible);
+                        //
                         data.Name = prefixName + Globals.NameSeparator + surfaceName;
                         data.Color = color;
                         data.Layer = layer;
@@ -12445,8 +12448,6 @@ namespace PrePoMax
                         data.BackfaceCulling = backfaceCulling;
                         data.DrawOnGeometry = true;
                         data.UseSecondaryHighightColor = useSecondaryHighlightColor;
-                        mesh.GetSurfaceGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds,
-                                                out data.Geometry.Cells.Types, onlyVisible);
                         //
                         ApplyLighting(data);
                         _form.Add3DCells(data);
@@ -13056,12 +13057,12 @@ namespace PrePoMax
         {
             FeMesh mesh = DisplayedMesh;
             Color color = Color.Red;
-            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
+            vtkRendererLayer layer = vtkRendererLayer.Selection;
             // Copy
             int[][] cellsCopy = new int[cells.Length][];
             for (int i = 0; i < cells.Length; i++) cellsCopy[i] = cells[i].ToArray();
             // Faces
-            vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+            vtkMaxActorData data = new vtkMaxActorData();
             data.Name = "highlight_surface_by_cells";
             data.Color = color;
             data.Layer = layer;
@@ -13077,7 +13078,7 @@ namespace PrePoMax
             // Edges
             cells = mesh.GetFreeEdgesFromVisualizationCells(cellsCopy, elementFaceTypes);
             //
-            data = new vtkControl.vtkMaxActorData();
+            data = new vtkMaxActorData();
             data.Name = "highlight_surface_edges_by_cells";
             data.Color = color;
             data.Layer = layer;
@@ -13253,7 +13254,6 @@ namespace PrePoMax
         {
             if (clear) _form.Clear3DSelection();
             int[] ids = GetSelectionIds();
-            HashSet<int> idsHash = new HashSet<int>(ids);
             if (ids.Length == 0) return;
             //
             if (_selection.SelectItem == vtkSelectItem.Node)
@@ -13961,7 +13961,7 @@ namespace PrePoMax
             int surfaceId = 1;
             int surfaceType = (int)GeometryType.SolidSurface;
             int partId = 1;
-            int geometryId = surfaceId * 100000 + surfaceType * 10000 + partId;
+            int geometryId = FeMesh.GetGeometryId(surfaceId, surfaceType, + partId);
             int[] faceIds = _model.Mesh.GetIdsFromGeometryIds(new int[] { geometryId }, vtkSelectItem.Surface);
             //
             FeSurface surface = new FeSurface(_model.Mesh.Surfaces.GetNextNumberedKey("UserSurface"));
