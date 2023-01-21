@@ -590,12 +590,12 @@ namespace CaeResults
         public static OrderedDictionary<string, string> GetPossibleDeformationFieldOutputNamesMap()
         {
             OrderedDictionary<string, string> names =
-                new OrderedDictionary<string, string>("Deformation names", StringComparer.OrdinalIgnoreCase);
+                new OrderedDictionary<string, string>("Deformation Names", StringComparer.OrdinalIgnoreCase);
             names.Add("Displacements", FOFieldNames.Disp);
             names.Add("Forces", FOFieldNames.Forc);
-            names.Add("Surface normals", FOFieldNames.SurfaceNormal);
-            names.Add("Wear depths", FOFieldNames.WearDepth);
-            names.Add("Mesh deformation", FOFieldNames.MeshDeformation);
+            names.Add("Surface Normals", FOFieldNames.SurfaceNormal);
+            names.Add("Wear Depths", FOFieldNames.WearDepth);
+            names.Add("Mesh Deformation", FOFieldNames.MeshDeformation);
             names.Add("Disp&Def&Depth", FOFieldNames.DispDeformationDepth);
             return names;
         }

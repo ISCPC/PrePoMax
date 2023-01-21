@@ -802,34 +802,34 @@ namespace PrePoMax
         {
             if (_controller.Model.Geometry != null && _controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
-                if (nodeName == "Mesh refinements") tsmiCreateMeshRefinement_Click(null, null);
+                if (nodeName == _modelTree.MeshRefinementsName) tsmiCreateMeshRefinement_Click(null, null);
             }
             else if (_controller.Model.Mesh != null && _controller.CurrentView == ViewGeometryModelResults.Model)
             {
                 // _controller.Model.Mesh defines the unit system and must
-                if (nodeName == "Node sets") tsmiCreateNodeSet_Click(null, null);
-                else if (nodeName == "Element sets") tsmiCreateElementSet_Click(null, null);
-                else if (nodeName == "Surfaces") tsmiCreateSurface_Click(null, null);
-                else if (nodeName == "Reference points") tsmiCreateRP_Click(null, null);
-                else if (nodeName == "Materials") tsmiCreateMaterial_Click(null, null);
-                else if (nodeName == "Sections") tsmiCreateSection_Click(null, null);
-                else if (nodeName == "Constraints") tsmiCreateConstraint_Click(null, null);
-                else if (nodeName == "Surface interactions") tsmiCreateSurfaceInteraction_Click(null, null);
-                else if (nodeName == "Contact pairs") tsmiCreateContactPair_Click(null, null);
-                else if (nodeName == "Amplitudes") tsmiCreateAmplitude_Click(null, null);
-                else if (nodeName == "Initial conditions") tsmiCreateInitialCondition_Click(null, null);
-                else if (nodeName == "Steps") tsmiCreateStep_Click(null, null);
-                else if (nodeName == "History outputs" && stepName != null) CreateHistoryOutput(stepName);
-                else if (nodeName == "Field outputs" && stepName != null) CreateFieldOutput(stepName);
-                else if (nodeName == "BCs" && stepName != null) CreateBoundaryCondition(stepName);
-                else if (nodeName == "Loads" && stepName != null) CreateLoad(stepName);
-                else if (nodeName == "Defined fields" && stepName != null) CreateDefinedField(stepName);
-                else if (nodeName == "Analyses") tsmiCreateAnalysis_Click(null, null);
+                if (nodeName == _modelTree.NodeSetsName) tsmiCreateNodeSet_Click(null, null);
+                else if (nodeName == _modelTree.ElementSetsName) tsmiCreateElementSet_Click(null, null);
+                else if (nodeName == _modelTree.SurfacesName) tsmiCreateSurface_Click(null, null);
+                else if (nodeName == _modelTree.ReferencePointsName) tsmiCreateRP_Click(null, null);
+                else if (nodeName == _modelTree.MaterialsName) tsmiCreateMaterial_Click(null, null);
+                else if (nodeName == _modelTree.SectionsName) tsmiCreateSection_Click(null, null);
+                else if (nodeName == _modelTree.ConstraintsName) tsmiCreateConstraint_Click(null, null);
+                else if (nodeName == _modelTree.SurfaceInteractionsName) tsmiCreateSurfaceInteraction_Click(null, null);
+                else if (nodeName == _modelTree.ContactPairsName) tsmiCreateContactPair_Click(null, null);
+                else if (nodeName == _modelTree.AmplitudesName) tsmiCreateAmplitude_Click(null, null);
+                else if (nodeName == _modelTree.InitialConditionsName) tsmiCreateInitialCondition_Click(null, null);
+                else if (nodeName == _modelTree.StepsName) tsmiCreateStep_Click(null, null);
+                else if (nodeName == _modelTree.HistoryOutputsName && stepName != null) CreateHistoryOutput(stepName);
+                else if (nodeName == _modelTree.FieldOutputsName && stepName != null) CreateFieldOutput(stepName);
+                else if (nodeName == _modelTree.BoundaryConditionsName && stepName != null) CreateBoundaryCondition(stepName);
+                else if (nodeName == _modelTree.LoadsName && stepName != null) CreateLoad(stepName);
+                else if (nodeName == _modelTree.DefinedFieldsName && stepName != null) CreateDefinedField(stepName);
+                else if (nodeName == _modelTree.AnalysesName) tsmiCreateAnalysis_Click(null, null);
             }
             else if (_controller.CurrentResult != null && _controller.CurrentResult.Mesh != null &&
                      _controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                if (nodeName == "History outputs") tsmiCreateResultHistoryOutput_Click(null, null);
+                if (nodeName == _modelTree.HistoryOutputsName) tsmiCreateResultHistoryOutput_Click(null, null);
             }
         }
         private void ModelTree_Edit(NamedClass namedClass, string stepName)
@@ -988,7 +988,7 @@ namespace PrePoMax
             {
                 names.Add(items[i].Name);
             }
-
+            //
             if (names.Count > 0)
             {
                 if (colorContours) ColorContoursOnResultPart(names.ToArray());
@@ -2802,7 +2802,7 @@ namespace PrePoMax
                 frmGetValue.MaxValue = 255;
                 SetFormLoaction(frmGetValue);
                 OrderedDictionary<string, double> presetValues =
-                    new OrderedDictionary<string, double>("Preset transparency values", StringComparer.OrdinalIgnoreCase);
+                    new OrderedDictionary<string, double>("Preset Transparency values", StringComparer.OrdinalIgnoreCase);
                 presetValues.Add("Semi-transparent", 128);
                 presetValues.Add("Opaque", 255);
                 string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
@@ -2865,7 +2865,7 @@ namespace PrePoMax
             frmGetValue.MaxValue = 90;
             SetFormLoaction(frmGetValue);
             OrderedDictionary<string, double> presetValues =
-                new OrderedDictionary<string, double>("Preset values", StringComparer.OrdinalIgnoreCase);
+                new OrderedDictionary<string, double>("Preset Transparency Values", StringComparer.OrdinalIgnoreCase);
             presetValues.Add("Default", CaeMesh.Globals.EdgeAngle);
             string desc = "Enter the face angle for model edges detection.";
             frmGetValue.PrepareForm("Find model edges: " + partNames.ToShortString(), "Angle", desc,
@@ -3730,7 +3730,7 @@ namespace PrePoMax
                 frmGetValue.MaxValue = 255;
                 SetFormLoaction(frmGetValue);
                 OrderedDictionary<string, double> presetValues
-                    = new OrderedDictionary<string, double>("Preset values", StringComparer.OrdinalIgnoreCase);
+                    = new OrderedDictionary<string, double>("Preset Transparency Values", StringComparer.OrdinalIgnoreCase);
                 presetValues.Add("Semi-transparent", 128);
                 presetValues.Add("Opaque", 255);
                 string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
@@ -6271,7 +6271,7 @@ namespace PrePoMax
                 frmGetValue.MaxValue = 255;
                 SetFormLoaction(frmGetValue);
                 OrderedDictionary<string, double> presetValues =
-                    new OrderedDictionary<string, double>("Preset transparency values", StringComparer.OrdinalIgnoreCase);
+                    new OrderedDictionary<string, double>("Preset Transparency Values", StringComparer.OrdinalIgnoreCase);
                 presetValues.Add("Semi-transparent", 128);
                 presetValues.Add("Opaque", 255);
                 string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";

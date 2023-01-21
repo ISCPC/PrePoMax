@@ -120,39 +120,39 @@ namespace UserControls
         private TreeNode _resultHistoryOutputs;     //   2
         // Geometry
         private string _geomPartsName = "Parts";
-        private string _meshRefinementsName = "Mesh refinements";
+        private string _meshRefinementsName = "Mesh Refinements";
         // Model
         private string _modelName = "Model";
         private string _modelMeshName = "Mesh";
         private string _modelPartsName = "Parts";
-        private string _modelNodeSetsName = "Node sets";
-        private string _modelElementSetsName = "Element sets";
+        private string _modelNodeSetsName = "Node Sets";
+        private string _modelElementSetsName = "Element Sets";
         private string _modelSurfacesName = "Surfaces";
-        private string _referencePointsName = "Reference points";
+        private string _referencePointsName = "Reference Points";
         private string _materialsName = "Materials";
         private string _sectionsName = "Sections";
         private string _constraintsName = "Constraints";
         private string _contactsName = "Contacts";
-        private string _surfaceInteractionsName = "Surface interactions";
-        private string _contactPairsName = "Contact pairs";
+        private string _surfaceInteractionsName = "Surface Interactions";
+        private string _contactPairsName = "Contact Pairs";
         private string _amplitudesName = "Amplitudes";
-        private string _initialConditionsName = "Initial conditions";
+        private string _initialConditionsName = "Initial Conditions";
         private string _stepsName = "Steps";
-        private string _fieldOutputsName = "Field outputs";
-        private string _historyOutputsName = "History outputs";
+        private string _fieldOutputsName = "Field Outputs";
+        private string _historyOutputsName = "History Outputs";
         private string _boundaryConditionsName = "BCs";
         private string _loadsName = "Loads";
-        private string _definedFieldsName = "Defined fields";
+        private string _definedFieldsName = "Defined Fields";
         private string _analysesName = "Analyses";
         // Results
         private string _resultMeshName = "Mesh";
         private string _resultPartsName = "Parts";
-        private string _resultNodeSetsName = "Node sets";
-        private string _resultElementSetsName = "Element sets";
+        private string _resultNodeSetsName = "Node Sets";
+        private string _resultElementSetsName = "Element Sets";
         private string _resultSurfacesName = "Surfaces";
         private string _resultsName = "Results";
-        private string _resultFieldOutputsName = "Field outputs";
-        private string _resultHistoryOutputsName = "History outputs";
+        private string _resultFieldOutputsName = "Field Outputs";
+        private string _resultHistoryOutputsName = "History Outputs";
 
 
         // Properties                                                                                                               
@@ -214,6 +214,26 @@ namespace UserControls
 
             return selected.ToArray();
         }
+        //
+        public string MeshRefinementsName { get { return _meshRefinementsName; } }
+        public string NodeSetsName { get { return _modelNodeSetsName; } }
+        public string ElementSetsName { get { return _modelElementSetsName; } }
+        public string SurfacesName { get { return _modelSurfacesName; } }
+        public string ReferencePointsName { get { return _referencePointsName; } }
+        public string MaterialsName { get { return _materialsName; } }
+        public string SectionsName { get { return _sectionsName; } }
+        public string ConstraintsName { get { return _constraintsName; } }
+        public string SurfaceInteractionsName { get { return _surfaceInteractionsName; } }
+        public string ContactPairsName { get { return _contactPairsName; } }
+        public string AmplitudesName { get { return _amplitudesName; } }
+        public string InitialConditionsName { get { return _initialConditionsName; } }
+        public string StepsName { get { return _stepsName; } }
+        public string HistoryOutputsName { get { return _historyOutputsName; } }
+        public string FieldOutputsName { get { return _fieldOutputsName; } }
+        public string BoundaryConditionsName { get { return _boundaryConditionsName; } }
+        public string LoadsName { get { return _loadsName; } }
+        public string DefinedFieldsName { get { return _definedFieldsName; } }
+        public string AnalysesName { get { return _analysesName; } }
 
 
         // Events                                                                                                                   

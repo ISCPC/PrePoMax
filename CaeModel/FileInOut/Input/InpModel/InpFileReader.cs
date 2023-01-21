@@ -142,13 +142,14 @@ namespace FileInOut.Input
                 StringComparer sc = StringComparer.OrdinalIgnoreCase;
                 //
                 OrderedDictionary<string, FeReferencePoint> referencePoints
-                    = new OrderedDictionary<string, FeReferencePoint>("Reference points", sc);
+                    = new OrderedDictionary<string, FeReferencePoint>("Reference Points", sc);
                 OrderedDictionary<string, Material> materials = new OrderedDictionary<string, Material>("Materials", sc);
                 OrderedDictionary<string, Section> sections = new OrderedDictionary<string, Section>("Sections", sc);
                 OrderedDictionary<string, Constraint> constraints = new OrderedDictionary<string, Constraint>("Constraints", sc);
                 OrderedDictionary<string, SurfaceInteraction> surfaceInteractions = 
-                    new OrderedDictionary<string, SurfaceInteraction>("Surface interactions", sc);
-                OrderedDictionary<string, ContactPair> contactPairs = new OrderedDictionary<string, ContactPair>("Contact pairs", sc);
+                    new OrderedDictionary<string, SurfaceInteraction>("Surface Interactions", sc);
+                OrderedDictionary<string, ContactPair> contactPairs =
+                    new OrderedDictionary<string, ContactPair>("Contact Pairs", sc);
                 OrderedDictionary<string, Amplitude> amplitudes = new OrderedDictionary<string, Amplitude>("Amplitudes", sc);
                 OrderedDictionary<string, Step> steps = new OrderedDictionary<string, Step>("Steps", sc);
                 List<CalculixUserKeyword> userKeywords = new List<CalculixUserKeyword>();

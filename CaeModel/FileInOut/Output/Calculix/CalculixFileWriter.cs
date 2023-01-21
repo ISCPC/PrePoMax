@@ -71,7 +71,7 @@ namespace FileInOut.Output
             string name;
             List<PreTensionLoad> preTensionLoadsList;
             OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads =
-                new OrderedDictionary<string, List<PreTensionLoad>>("Pretension loads", StringComparer.OrdinalIgnoreCase);
+                new OrderedDictionary<string, List<PreTensionLoad>>("Pretension Loads", StringComparer.OrdinalIgnoreCase);
             foreach (var step in model.StepCollection.StepsList)
             {
                 foreach (var entry in step.Loads)

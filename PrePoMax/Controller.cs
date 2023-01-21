@@ -125,7 +125,7 @@ namespace PrePoMax
                 }
             }
         }
-        public vtkControl.vtkEdgesVisibility CurrentEdgesVisibility
+        public vtkEdgesVisibility CurrentEdgesVisibility
         {
             get { return _edgesVisibilities.GetCurrentEdgesVisibility(); }
             set
@@ -350,7 +350,7 @@ namespace PrePoMax
             _form = form;
             _form.Controller = this;
             // Jobs
-            _jobs = new OrderedDictionary<string, AnalysisJob>("Analysis jobs", StringComparer.OrdinalIgnoreCase);
+            _jobs = new OrderedDictionary<string, AnalysisJob>("Analysis Jobs", StringComparer.OrdinalIgnoreCase);
             // Edges visibilitires
             _edgesVisibilities = new EdgesVisibilitiesCollection(this);
             // Section view
@@ -1575,7 +1575,7 @@ namespace PrePoMax
                 newModel.Mesh.AddPartsFromMesh(_allResults.CurrentResult.Mesh, partNames, null, false, false);
                 // Change result parts to mesh parts
                 OrderedDictionary<string, BasePart> meshParts =
-                    new OrderedDictionary<string, BasePart>("Base parts", StringComparer.OrdinalIgnoreCase);
+                    new OrderedDictionary<string, BasePart>("Base Parts", StringComparer.OrdinalIgnoreCase);
                 MeshPart meshPart;
                 foreach (var entry in newModel.Mesh.Parts)
                 {

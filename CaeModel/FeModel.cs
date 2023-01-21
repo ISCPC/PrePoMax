@@ -73,9 +73,9 @@ namespace CaeModel
             _materials = new OrderedDictionary<string, Material>("Materials", sc);
             _sections = new OrderedDictionary<string, Section>("Sections", sc);
             _constraints = new OrderedDictionary<string, Constraint>("Constraints", sc);
-            _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>("Suface tractions", sc);
-            _contactPairs = new OrderedDictionary<string, ContactPair>("Contact pairs", sc);
-            _initialConditions = new OrderedDictionary<string, InitialCondition>("Initial conditions", sc);
+            _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>("Suface Tractions", sc);
+            _contactPairs = new OrderedDictionary<string, ContactPair>("Contact Pairs", sc);
+            _initialConditions = new OrderedDictionary<string, InitialCondition>("Initial Conditions", sc);
             _amplitudes = new OrderedDictionary<string, Amplitude>("Amplitudes", sc);
             _stepCollection = new StepCollection();
             _properties = new ModelProperties();
@@ -87,14 +87,14 @@ namespace CaeModel
         {
             StringComparer sc = StringComparer.OrdinalIgnoreCase;
             // Compatibility for version v.0.6.0
-            _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>("Suface tractions", sc);
-            _contactPairs = new OrderedDictionary<string, ContactPair>("Contact pairs", sc);
+            _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>("Suface Tractions", sc);
+            _contactPairs = new OrderedDictionary<string, ContactPair>("Contact Pairs", sc);
             // Compatibility for version v.0.7.0
             _unitSystem = new UnitSystem();
             // Compatibility for version v.0.8.0
             _hashName = Tools.GetRandomString(8);
             // Compatibility for version v.1.0.0
-            _initialConditions = new OrderedDictionary<string, InitialCondition>("Initial conditions", sc);
+            _initialConditions = new OrderedDictionary<string, InitialCondition>("Initial Conditions", sc);
             // Compatibility for version v.1.2.1
             _amplitudes = new OrderedDictionary<string, Amplitude>("Amplitudes", sc);
             //
