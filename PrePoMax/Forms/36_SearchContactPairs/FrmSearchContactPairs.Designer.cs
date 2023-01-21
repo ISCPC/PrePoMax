@@ -37,6 +37,12 @@ namespace PrePoMax.Forms
             this.tsmiSwapMasterSlave = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMergeByMasterSlave = new System.Windows.Forms.ToolStripMenuItem();
             this.gbSearch = new System.Windows.Forms.GroupBox();
+            this.lGroupBy = new System.Windows.Forms.Label();
+            this.cbGroupBy = new System.Windows.Forms.ComboBox();
+            this.tbAngle = new UserControls.UnitAwareTextBox();
+            this.lAngle = new System.Windows.Forms.Label();
+            this.tbDistance = new UserControls.UnitAwareTextBox();
+            this.lDistance = new System.Windows.Forms.Label();
             this.lMethod = new System.Windows.Forms.Label();
             this.cbContactPairMethod = new System.Windows.Forms.ComboBox();
             this.lSurfaceinteraction = new System.Windows.Forms.Label();
@@ -45,22 +51,16 @@ namespace PrePoMax.Forms
             this.cbAbjustMesh = new System.Windows.Forms.ComboBox();
             this.lType = new System.Windows.Forms.Label();
             this.cbType = new System.Windows.Forms.ComboBox();
-            this.lGroupBy = new System.Windows.Forms.Label();
-            this.cbGroupBy = new System.Windows.Forms.ComboBox();
             this.btnSearch = new System.Windows.Forms.Button();
-            this.lAngle = new System.Windows.Forms.Label();
-            this.lDistance = new System.Windows.Forms.Label();
             this.gbPairs = new System.Windows.Forms.GroupBox();
+            this.propertyGrid = new UserControls.TabEnabledPropertyGrid();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
             this.cbIgnoreHiddenParts = new System.Windows.Forms.CheckBox();
-            this.propertyGrid = new UserControls.TabEnabledPropertyGrid();
-            this.tbAngle = new UserControls.UnitAwareTextBox();
-            this.tbDistance = new UserControls.UnitAwareTextBox();
             this.cbSolid = new System.Windows.Forms.CheckBox();
             this.gbGeometryFilters = new System.Windows.Forms.GroupBox();
-            this.cbShell = new System.Windows.Forms.CheckBox();
             this.cbShellEdge = new System.Windows.Forms.CheckBox();
+            this.cbShell = new System.Windows.Forms.CheckBox();
             this.gbContactPairParameters = new System.Windows.Forms.GroupBox();
             ((System.ComponentModel.ISupportInitialize)(this.dgvData)).BeginInit();
             this.cmsData.SuspendLayout();
@@ -132,6 +132,57 @@ namespace PrePoMax.Forms
             this.gbSearch.TabStop = false;
             this.gbSearch.Text = "Search Parameters";
             // 
+            // lGroupBy
+            // 
+            this.lGroupBy.AutoSize = true;
+            this.lGroupBy.Location = new System.Drawing.Point(6, 65);
+            this.lGroupBy.Name = "lGroupBy";
+            this.lGroupBy.Size = new System.Drawing.Size(56, 15);
+            this.lGroupBy.TabIndex = 7;
+            this.lGroupBy.Text = "Group by";
+            // 
+            // cbGroupBy
+            // 
+            this.cbGroupBy.FormattingEnabled = true;
+            this.cbGroupBy.Location = new System.Drawing.Point(68, 62);
+            this.cbGroupBy.Name = "cbGroupBy";
+            this.cbGroupBy.Size = new System.Drawing.Size(87, 23);
+            this.cbGroupBy.TabIndex = 5;
+            // 
+            // tbAngle
+            // 
+            this.tbAngle.Location = new System.Drawing.Point(68, 40);
+            this.tbAngle.Name = "tbAngle";
+            this.tbAngle.Size = new System.Drawing.Size(87, 23);
+            this.tbAngle.TabIndex = 3;
+            this.tbAngle.UnitConverter = null;
+            // 
+            // lAngle
+            // 
+            this.lAngle.AutoSize = true;
+            this.lAngle.Location = new System.Drawing.Point(24, 43);
+            this.lAngle.Name = "lAngle";
+            this.lAngle.Size = new System.Drawing.Size(38, 15);
+            this.lAngle.TabIndex = 3;
+            this.lAngle.Text = "Angle";
+            // 
+            // tbDistance
+            // 
+            this.tbDistance.Location = new System.Drawing.Point(68, 18);
+            this.tbDistance.Name = "tbDistance";
+            this.tbDistance.Size = new System.Drawing.Size(87, 23);
+            this.tbDistance.TabIndex = 2;
+            this.tbDistance.UnitConverter = null;
+            // 
+            // lDistance
+            // 
+            this.lDistance.AutoSize = true;
+            this.lDistance.Location = new System.Drawing.Point(10, 21);
+            this.lDistance.Name = "lDistance";
+            this.lDistance.Size = new System.Drawing.Size(52, 15);
+            this.lDistance.TabIndex = 0;
+            this.lDistance.Text = "Distance";
+            // 
             // lMethod
             // 
             this.lMethod.AutoSize = true;
@@ -201,23 +252,6 @@ namespace PrePoMax.Forms
             this.cbType.TabIndex = 8;
             this.cbType.SelectedIndexChanged += new System.EventHandler(this.cbType_SelectedIndexChanged);
             // 
-            // lGroupBy
-            // 
-            this.lGroupBy.AutoSize = true;
-            this.lGroupBy.Location = new System.Drawing.Point(6, 65);
-            this.lGroupBy.Name = "lGroupBy";
-            this.lGroupBy.Size = new System.Drawing.Size(56, 15);
-            this.lGroupBy.TabIndex = 7;
-            this.lGroupBy.Text = "Group by";
-            // 
-            // cbGroupBy
-            // 
-            this.cbGroupBy.FormattingEnabled = true;
-            this.cbGroupBy.Location = new System.Drawing.Point(68, 62);
-            this.cbGroupBy.Name = "cbGroupBy";
-            this.cbGroupBy.Size = new System.Drawing.Size(87, 23);
-            this.cbGroupBy.TabIndex = 5;
-            // 
             // btnSearch
             // 
             this.btnSearch.Location = new System.Drawing.Point(622, 101);
@@ -227,24 +261,6 @@ namespace PrePoMax.Forms
             this.btnSearch.Text = "Search";
             this.btnSearch.UseVisualStyleBackColor = true;
             this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
-            // 
-            // lAngle
-            // 
-            this.lAngle.AutoSize = true;
-            this.lAngle.Location = new System.Drawing.Point(24, 43);
-            this.lAngle.Name = "lAngle";
-            this.lAngle.Size = new System.Drawing.Size(38, 15);
-            this.lAngle.TabIndex = 3;
-            this.lAngle.Text = "Angle";
-            // 
-            // lDistance
-            // 
-            this.lDistance.AutoSize = true;
-            this.lDistance.Location = new System.Drawing.Point(10, 21);
-            this.lDistance.Name = "lDistance";
-            this.lDistance.Size = new System.Drawing.Size(52, 15);
-            this.lDistance.TabIndex = 0;
-            this.lDistance.Text = "Distance";
             // 
             // gbPairs
             // 
@@ -259,6 +275,21 @@ namespace PrePoMax.Forms
             this.gbPairs.TabIndex = 8;
             this.gbPairs.TabStop = false;
             this.gbPairs.Text = "Contact Pairs";
+            // 
+            // propertyGrid
+            // 
+            this.propertyGrid.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.propertyGrid.DisabledItemForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
+            this.propertyGrid.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
+            this.propertyGrid.Location = new System.Drawing.Point(610, 22);
+            this.propertyGrid.Name = "propertyGrid";
+            this.propertyGrid.ReadOnly = false;
+            this.propertyGrid.Size = new System.Drawing.Size(300, 345);
+            this.propertyGrid.TabIndex = 7;
+            this.propertyGrid.ToolbarVisible = false;
+            this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
             // 
             // btnCancel
             // 
@@ -294,37 +325,6 @@ namespace PrePoMax.Forms
             this.cbIgnoreHiddenParts.Text = "Ignore hidden parts";
             this.cbIgnoreHiddenParts.UseVisualStyleBackColor = true;
             // 
-            // propertyGrid
-            // 
-            this.propertyGrid.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.propertyGrid.DisabledItemForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
-            this.propertyGrid.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
-            this.propertyGrid.Location = new System.Drawing.Point(610, 22);
-            this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.ReadOnly = false;
-            this.propertyGrid.Size = new System.Drawing.Size(300, 345);
-            this.propertyGrid.TabIndex = 7;
-            this.propertyGrid.ToolbarVisible = false;
-            this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
-            // 
-            // tbAngle
-            // 
-            this.tbAngle.Location = new System.Drawing.Point(68, 40);
-            this.tbAngle.Name = "tbAngle";
-            this.tbAngle.Size = new System.Drawing.Size(87, 23);
-            this.tbAngle.TabIndex = 3;
-            this.tbAngle.UnitConverter = null;
-            // 
-            // tbDistance
-            // 
-            this.tbDistance.Location = new System.Drawing.Point(68, 18);
-            this.tbDistance.Name = "tbDistance";
-            this.tbDistance.Size = new System.Drawing.Size(87, 23);
-            this.tbDistance.TabIndex = 2;
-            this.tbDistance.UnitConverter = null;
-            // 
             // cbSolid
             // 
             this.cbSolid.AutoSize = true;
@@ -350,18 +350,6 @@ namespace PrePoMax.Forms
             this.gbGeometryFilters.TabStop = false;
             this.gbGeometryFilters.Text = "Geometry Filters";
             // 
-            // cbShell
-            // 
-            this.cbShell.AutoSize = true;
-            this.cbShell.Checked = true;
-            this.cbShell.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbShell.Location = new System.Drawing.Point(6, 42);
-            this.cbShell.Name = "cbShell";
-            this.cbShell.Size = new System.Drawing.Size(51, 19);
-            this.cbShell.TabIndex = 18;
-            this.cbShell.Text = "Shell";
-            this.cbShell.UseVisualStyleBackColor = true;
-            // 
             // cbShellEdge
             // 
             this.cbShellEdge.AutoSize = true;
@@ -373,6 +361,18 @@ namespace PrePoMax.Forms
             this.cbShellEdge.TabIndex = 19;
             this.cbShellEdge.Text = "Shell edge";
             this.cbShellEdge.UseVisualStyleBackColor = true;
+            // 
+            // cbShell
+            // 
+            this.cbShell.AutoSize = true;
+            this.cbShell.Checked = true;
+            this.cbShell.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbShell.Location = new System.Drawing.Point(6, 42);
+            this.cbShell.Name = "cbShell";
+            this.cbShell.Size = new System.Drawing.Size(51, 19);
+            this.cbShell.TabIndex = 18;
+            this.cbShell.Text = "Shell";
+            this.cbShell.UseVisualStyleBackColor = true;
             // 
             // gbContactPairParameters
             // 
@@ -407,6 +407,7 @@ namespace PrePoMax.Forms
             this.MinimumSize = new System.Drawing.Size(960, 600);
             this.Name = "FrmSearchContactPairs";
             this.Text = "Search Contact Pairs";
+            this.Activated += new System.EventHandler(this.FrmSearchContactPairs_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSearchContactPairs_FormClosing);
             this.Load += new System.EventHandler(this.FrmSearchContactPairs_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvData)).EndInit();

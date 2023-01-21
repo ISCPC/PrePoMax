@@ -173,8 +173,9 @@ namespace CaeMesh
             Queue<Node<T>> queue = new Queue<Node<T>>();
             NodeList<T> connectedNodes;
             List<Graph<T>> connectedSubgraphs = new List<Graph<T>>();
-            // Sort by 
-            _nodeSet.Sort();
+            // Sort
+            try { _nodeSet.Sort(); }
+            catch { }
             //
             foreach (var node in _nodeSet)
             {

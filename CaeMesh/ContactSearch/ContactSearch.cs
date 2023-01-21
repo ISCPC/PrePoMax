@@ -136,22 +136,10 @@ namespace CaeMesh
         }
         private ContactSurface[] GetAllContactSurfaces(double distance, GeometryFilterEnum filter)
         {
-            int count = 0;
-            foreach (var partEntry in _mesh.Parts)
-            {
-                if (filter.HasFlag(GeometryFilterEnum.IgnoreHidden) && !partEntry.Value.Visible) continue;
-                //
-                if (partEntry.Value.PartType == PartType.Solid) count += partEntry.Value.Visualization.FaceCount;
-                else if (partEntry.Value.PartType == PartType.Shell)
-                {
-                    count += 2 * partEntry.Value.Visualization.FaceCount;
-                    count += partEntry.Value.Visualization.EdgeCount;
-                }
-            }
-            ContactSurface[] contactSurfaces = new ContactSurface[count];
-            //
-            count = 0;
             HashSet<int> freeEdgeIds;
+            ContactSurface contactSurface;
+            List<ContactSurface> contactSurfacesList = new List<ContactSurface>();
+            //
             foreach (var partEntry in _mesh.Parts)
             {
                 if (filter.HasFlag(GeometryFilterEnum.IgnoreHidden) && !partEntry.Value.Visible) continue;
@@ -161,11 +149,11 @@ namespace CaeMesh
                     // Solid faces
                     for (int i = 0; i < partEntry.Value.Visualization.FaceCount; i++)
                     {
-                        contactSurfaces[count++] = new ContactSurface(_mesh, _nodes, partEntry.Value, i,
-                                                                      GeometryType.SolidSurface, distance * 0.5);
+                        contactSurfacesList.Add(new ContactSurface(_mesh, _nodes, partEntry.Value, i,
+                                                                   GeometryType.SolidSurface, distance * 0.5));
                     }
                 }
-                else if (filter.HasFlag(GeometryFilterEnum.Shell) && partEntry.Value.PartType == PartType.Shell)
+                else if (partEntry.Value.PartType == PartType.Shell)
                 {
                     // Shell faces
                     if (filter.HasFlag(GeometryFilterEnum.Shell))
@@ -173,12 +161,13 @@ namespace CaeMesh
                         for (int i = 0; i < partEntry.Value.Visualization.FaceCount; i++)
                         {
                             // Front face
-                            contactSurfaces[count++] = new ContactSurface(_mesh, _nodes, partEntry.Value, i,
-                                                                          GeometryType.ShellFrontSurface, distance * 0.5);
+                            contactSurface = new ContactSurface(_mesh, _nodes, partEntry.Value, i,
+                                                                GeometryType.ShellFrontSurface, distance * 0.5);
+                            contactSurfacesList.Add(contactSurface);
                             // Back face
-                            contactSurfaces[count] = new ContactSurface(contactSurfaces[count - 1]); // copy
-                            contactSurfaces[count].ConvertToShellBackSurface();
-                            count++;
+                            contactSurface = new ContactSurface(contactSurface);    // copy
+                            contactSurface.ConvertToShellBackSurface();
+                            contactSurfacesList.Add(contactSurface);
                         }
                     }
                     // Shell edge faces
@@ -187,23 +176,17 @@ namespace CaeMesh
                         freeEdgeIds = partEntry.Value.Visualization.GetFreeEdgeIds();
                         for (int i = 0; i < partEntry.Value.Visualization.EdgeCount; i++)
                         {
-                            contactSurfaces[count] = new ContactSurface(_mesh, _nodes, partEntry.Value, i,
-                                                                        GeometryType.ShellEdgeSurface, distance * 0.5);
+                            contactSurface = new ContactSurface(_mesh, _nodes, partEntry.Value, i,
+                                                                GeometryType.ShellEdgeSurface, distance * 0.5);
                             // Fnd internal edges on shells
-                            if (!freeEdgeIds.Contains(i)) contactSurfaces[count].Internal = true;
-                            count++;
+                            if (!freeEdgeIds.Contains(i)) contactSurface.Internal = true;
+                            contactSurfacesList.Add(contactSurface);
                         }
                     }
                 }
             }
-
-
-
-
-
-
-
-
+            //
+            ContactSurface[] contactSurfaces = contactSurfacesList.ToArray();
             // Find internal surfaces on compound parts
             for (int i = 0; i < contactSurfaces.Length; i++)
             {

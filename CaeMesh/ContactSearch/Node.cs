@@ -40,13 +40,15 @@ namespace CaeMesh
         }
         public int CompareTo(Node<T> other)
         {
-            if (_neighbors == null && other.Neighbors == null) return 0;
-            else if (_neighbors == null) return -1;
-            else if (other.Neighbors == null) return 1;
+            int n1 = _neighbors == null ? 0 : _neighbors.Count;
+            int n2 = other.Neighbors == null ? 0 : other.Neighbors.Count;
             //
-            else if (_neighbors.Count < other.Neighbors.Count) return -1;
-            else if (_neighbors.Count > other.Neighbors.Count) return 1;
-            else return _data.CompareTo(other._data);
+            if (n1 < n2)
+                return -1;
+            else if (n1 > n2)
+                return 1;
+            else
+                return _data.CompareTo(other._data);
         }
     }
 }

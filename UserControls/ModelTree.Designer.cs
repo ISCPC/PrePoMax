@@ -135,6 +135,7 @@
             this.tsmiColorContoursOn = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceAnalysis = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiRun = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCheckModel = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMonitor = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiResults = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiKill = new System.Windows.Forms.ToolStripMenuItem();
@@ -158,7 +159,6 @@
             this.tpResults = new System.Windows.Forms.TabPage();
             this.stbResults = new UserControls.SearchTextBox();
             this.cltvResults = new UserControls.CodersLabTreeView();
-            this.tsmiCheckModel = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsTree.SuspendLayout();
             this.tcGeometryModelResults.SuspendLayout();
             this.tpGeometry.SuspendLayout();
@@ -220,7 +220,7 @@
             this.tsmiSpaceDelete,
             this.tsmiDelete});
             this.cmsTree.Name = "cmsTree";
-            this.cmsTree.Size = new System.Drawing.Size(212, 886);
+            this.cmsTree.Size = new System.Drawing.Size(212, 864);
             // 
             // tsmiCreate
             // 
@@ -474,6 +474,13 @@
             this.tsmiRun.Text = "Run";
             this.tsmiRun.Click += new System.EventHandler(this.tsmiRun_Click);
             // 
+            // tsmiCheckModel
+            // 
+            this.tsmiCheckModel.Name = "tsmiCheckModel";
+            this.tsmiCheckModel.Size = new System.Drawing.Size(211, 22);
+            this.tsmiCheckModel.Text = "Check Model";
+            this.tsmiCheckModel.Click += new System.EventHandler(this.tsmiCheckModel_Click);
+            // 
             // tsmiMonitor
             // 
             this.tsmiMonitor.Name = "tsmiMonitor";
@@ -649,6 +656,7 @@
             treeNode1.ImageKey = "Dots.ico";
             treeNode1.Name = "Node0";
             treeNode1.SelectedImageKey = "Dots.ico";
+            treeNode1.StateImageKey = "Warning.ico";
             treeNode1.Text = "Solid-Part-1";
             treeNode2.ImageKey = "Dots.ico";
             treeNode2.Name = "Node1";
@@ -699,6 +707,7 @@
             this.cltvGeometry.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             this.cltvGeometry.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
             this.cltvGeometry.Size = new System.Drawing.Size(231, 450);
+            this.cltvGeometry.StateImageList = this.ilStatusIcons;
             this.cltvGeometry.TabIndex = 0;
             this.cltvGeometry.SelectionsChanged += new System.EventHandler(this.cltv_SelectionsChanged);
             this.cltvGeometry.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeCollapse);
@@ -949,13 +958,6 @@
             this.cltvResults.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDoubleClick);
             this.cltvResults.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvResults.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
-            // 
-            // tsmiCheckModel
-            // 
-            this.tsmiCheckModel.Name = "tsmiCheckModel";
-            this.tsmiCheckModel.Size = new System.Drawing.Size(211, 22);
-            this.tsmiCheckModel.Text = "Check Model";
-            this.tsmiCheckModel.Click += new System.EventHandler(this.tsmiCheckModel_Click);
             // 
             // ModelTree
             // 

@@ -13,7 +13,7 @@ using CaeMesh.ContactSearchNamespace;
 
 namespace PrePoMax.Forms
 {
-    public partial class FrmSearchContactPairs : Form
+    public partial class FrmSearchContactPairs : Form, IFormHighlight
     {
         // Variables                                                                                                                
         private Controller _controller;
@@ -419,6 +419,16 @@ namespace PrePoMax.Forms
             else _controller.ClearAllSelection();
         }
 
+        // IFormHighlight
+        public void Highlight()
+        {
+            HighlightContactPairs();
+        }
 
+        private void FrmSearchContactPairs_Activated(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine(DateTime.Now.ToString() + " Activated");
+            HighlightContactPairs();
+        }
     }
 }

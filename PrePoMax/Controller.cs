@@ -2029,8 +2029,9 @@ namespace PrePoMax
             // Resume section view
             if (sectionViewPlane != null) ApplySectionView(sectionViewPlane.Point.Coor, sectionViewPlane.Normal.Coor);
             //
-            if (_selection.Nodes.Count > 0) HighlightSelection();
-            else _form.UpdateHighlightFromTree();
+            UpdateHighlight();
+            //if (_selection.Nodes.Count > 0) HighlightSelection();
+            //else _form.UpdateHighlightFromTree();
         }
         public Dictionary<string, double[]> RemoveExplodedView(bool update, string[] partNames = null)
         {
