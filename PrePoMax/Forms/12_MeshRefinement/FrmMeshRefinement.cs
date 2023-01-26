@@ -15,8 +15,6 @@ namespace PrePoMax.Forms
         private HashSet<string> _meshRefinementNames;
         private string _meshRefinementToEditName;
         private ViewFeMeshRefinement _viewFeMeshRefinement;
-        private List<SelectionNode> _prevSelectionNodes;
-        private SelectionNodeIds _selectionNodeIds;
         private Button btnPreview;
         private Controller _controller;
         private int _previewBtnDx;
@@ -96,14 +94,14 @@ namespace PrePoMax.Forms
         {
             // Limit selection to the first selected part
             _controller.Selection.LimitSelectionToFirstPart = Visible;
-            btnPreview.Enabled = true;
         }
         async private void btnPreview_Click(object sender, EventArgs e)
         {
             try
             {
                 Enabled = false;
-                ItemSetDataEditor.SelectionForm.Hide();
+                ItemSetDataEditor.SelectionForm.Enabled = false;
+                //
                 FeMeshRefinement meshRefinement = MeshRefinement.DeepClone();
                 string[] partNames = _controller.GetPartNamesFromMeshRefinement(meshRefinement);
                 //
@@ -123,7 +121,7 @@ namespace PrePoMax.Forms
             finally
             {
                 Enabled = true;
-                ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+                ItemSetDataEditor.SelectionForm.Enabled = true;
             }
         }
 
@@ -148,13 +146,6 @@ namespace PrePoMax.Forms
                 // Replace
                 if (_propertyItemChanged || !MeshRefinement.Valid)
                 {
-                    // Replace back the ids by the previous selection
-                    if (MeshRefinement.CreationData.Nodes[0] is SelectionNodeIds sn && sn.Equals(_selectionNodeIds))
-                    {
-                        MeshRefinement.CreationData.Nodes.RemoveAt(0);
-                        MeshRefinement.CreationData.Nodes.InsertRange(0, _prevSelectionNodes);
-                    }
-                    //
                     MeshRefinement.Valid = true;
                     _controller.ReplaceMeshRefinementCommand(_meshRefinementToEditName, MeshRefinement);
                 }
@@ -187,8 +178,6 @@ namespace PrePoMax.Forms
             _meshRefinementToEditName = null;
             _viewFeMeshRefinement = null;
             propertyGrid.SelectedObject = null;
-            _prevSelectionNodes = null;
-            _selectionNodeIds = null;            
             //
             _meshRefinementNames.UnionWith(_controller.GetMeshRefinementNames());
             _meshRefinementToEditName = meshRefinementToEditName;
@@ -203,17 +192,12 @@ namespace PrePoMax.Forms
             else
             {
                 MeshRefinement = _controller.GetMeshRefinement(_meshRefinementToEditName);   // to clone
-                //
-                if (MeshRefinement.GeometryIds != null)
+                // Check validity
+                if (!MeshRefinement.Valid)
                 {
-                    // Change node selection history to ids to speed up
-                    int[] ids = MeshRefinement.GeometryIds;
-                    _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids, true);
-                    _prevSelectionNodes = MeshRefinement.CreationData.Nodes;
-                    _controller.CreateNewSelection(MeshRefinement.CreationData.CurrentView, vtkSelectItem.Geometry,
-                                                   _selectionNodeIds, true);
-                    // Copy selection
-                    MeshRefinement.CreationData = _controller.Selection.DeepClone();
+                    MeshRefinement.CreationData = null;
+                    MeshRefinement.GeometryIds = null;
+                    MeshRefinement.Valid = true;
                 }
             }
             //
@@ -234,7 +218,7 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         private string GetMeshRefinementName()
         {
-            return _meshRefinementNames.GetNextNumberedKey("Mesh_refinement");
+            return _meshRefinementNames.GetNextNumberedKey("Mesh_Refinement");
         }
         private void HighlightMeshRefinement()
         {
@@ -250,6 +234,8 @@ namespace PrePoMax.Forms
                         // The selection is limited to one part
                         int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(MeshRefinement.GeometryIds[0]);
                         BasePart part = _controller.Model.Geometry.GetPartById(itemTypePartIds[2]);
+                        if (part == null) return;
+                        //
                         bool backfaceCulling = part.PartType != PartType.Shell;
                         //
                         _controller.Selection = MeshRefinement.CreationData;  // deep copy to not clear?
@@ -266,7 +252,7 @@ namespace PrePoMax.Forms
         //
         public void SelectionChanged(int[] ids)
         {
-            if (btnPreview.Enabled)
+            if (Enabled)
             {
                 MeshRefinement.GeometryIds = ids;
                 MeshRefinement.CreationData = _controller.Selection.DeepClone();

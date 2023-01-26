@@ -353,13 +353,13 @@ namespace PrePoMax.Forms
             node.Tag = new Elastic(new double[][] { new double[] { 0, 0, 0 } });
             node = tvProperties.Nodes.Find("Plastic", true)[0];
             node.Tag = new Plastic(new double[][] { new double[] { 0, 0, 0 } });
-            node = tvProperties.Nodes.Find("ThermalExpansion", true)[0];
+            node = tvProperties.Nodes.Find("Thermal Expansion", true)[0];
             node.Tag = new ThermalExpansion(new double[][] { new double[] { 0, 0 } });
-            node = tvProperties.Nodes.Find("ThermalConductivity", true)[0];
+            node = tvProperties.Nodes.Find("Thermal Conductivity", true)[0];
             node.Tag = new ThermalConductivity(new double[][] { new double[] { 0, 0 } });
-            node = tvProperties.Nodes.Find("SpecificHeat", true)[0];
+            node = tvProperties.Nodes.Find("Specific Heat", true)[0];
             node.Tag = new SpecificHeat(new double[][] { new double[] { 0, 0 } });
-            node = tvProperties.Nodes.Find("SlipWear", true)[0];
+            node = tvProperties.Nodes.Find("Slip Wear", true)[0];
             node.Tag = new SlipWear(0, 0);
             //
             tvProperties.ExpandAll();

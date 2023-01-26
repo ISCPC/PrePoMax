@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CaeGlobals;
 using System.Runtime.Serialization;
 using System.Collections.Concurrent;
+using System.Xml.Linq;
 
 namespace CaeMesh
 {
@@ -463,6 +464,50 @@ namespace CaeMesh
             // Tuple<NamedClass, string>   ...   Tuple<invalidItem, stepName>
             List<string> invalidItems = new List<string>();
             bool valid;
+            // Meshing parameters
+            MeshingParameters meshingParameters;
+            foreach (var entry in _meshingParameters)
+            {
+                meshingParameters = entry.Value;
+                valid = meshingParameters.Valid;              // this is set to invalid after deleting a part
+                if (!valid) meshingParameters.Valid = true;   // set this to true to detect a change in validity
+                //
+                string[] partNames = GetPartNamesByIds(meshingParameters.CreationIds);
+                if (partNames == null || partNames.Length == 0) valid &= false;
+                else
+                {
+                    foreach (var partName in partNames)
+                    {
+                        if (!_parts.ContainsKey(partName))
+                        {
+                            valid &= false;
+                            break;
+                        }
+                    }
+                }
+                //
+                SetItemValidity(new MeshingParametersNamed(meshingParameters), valid, items);
+                if (!valid && meshingParameters.Active) invalidItems.Add("Meshing parameters: " + entry.Value.Name);
+            }
+            // Mesh refinement
+            int partId;
+            FeMeshRefinement meshRefinement;
+            foreach (var entry in _meshRefinements)
+            {
+                meshRefinement = entry.Value;
+                valid = meshRefinement.Valid;              // this is set to invalid after deleting a part
+                if (!valid) meshRefinement.Valid = true;   // set this to true to detect a change in validity
+                if (meshRefinement.GeometryIds.Length == 0) valid &= false;
+                else
+                {
+                    // The selection is limited to one part
+                    partId = GetPartIdFromGeometryId(meshRefinement.GeometryIds[0]);
+                    if (GetPartById(partId) == null) valid &= false;
+                }
+                //
+                SetItemValidity(meshRefinement, valid, items);
+                if (!valid && meshRefinement.Active) invalidItems.Add("Mesh refinement: " + entry.Value.Name);
+            }
             // Node set
             FeNodeSet nodeSet;
             foreach (var entry in _nodeSets)
@@ -501,7 +546,8 @@ namespace CaeMesh
                 valid &= !(surface.Type == FeSurfaceType.Node && surface.CreatedFrom == FeSurfaceCreatedFrom.Selection
                           && !_nodeSets.ContainsValidKey(surface.NodeSetName));
                 // From node set
-                valid &= !(surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet && !_nodeSets.ContainsValidKey(surface.CreatedFromNodeSetName));
+                valid &= !(surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet &&
+                         !_nodeSets.ContainsValidKey(surface.CreatedFromNodeSetName));
                 // Has element faces
                 if (surface.ElementFaces != null)
                 {
@@ -3072,7 +3118,7 @@ namespace CaeMesh
         {
             int[] itemTypePartIds = GetItemTypePartIdsFromGeometryId(geometryId);
             return GetPartById(itemTypePartIds[2]);
-        }
+        }        
         public HashSet<BasePart> GetPartsFromSelectionIds(int[] prevIds, vtkSelectItem selectItem)
         {
             HashSet<BasePart> parts = new HashSet<BasePart>();
@@ -3279,7 +3325,7 @@ namespace CaeMesh
                 boxes[count] = new BoundingBox();
                 foreach (var connectedPart in connectedParts) boxes[count].IncludeBox(connectedPart.BoundingBox);
                 //
-                boxes[count].InflateIf2D(0.1);
+                boxes[count].InflateIfThinn(0.1);
                 count++;
             }
             // Compute BB offsets
@@ -3332,6 +3378,19 @@ namespace CaeMesh
         }
         public void SuppressExploededView(string[] partNames = null)
         {
+            // Safety check
+            if (partNames != null)
+            {
+                BasePart part;
+                foreach (var partName in partNames)
+                {
+                    if (_parts.TryGetValue(partName, out part))
+                    {
+                        if (part is CompoundGeometryPart) throw new NotSupportedException();
+                    }
+                }
+            }
+            //
             partNames = ConnectedPartNames(partNames);
             // Remove already suppresed parts
             if (_partOffsets != null) partNames = partNames.Except(_partOffsets.Keys).ToArray();
@@ -5942,9 +6001,9 @@ namespace CaeMesh
             else
                 return false;
         }
-        public string[] GetPartNamesFromGeometryIds(int[] ids)
+        public string[] GetPartNamesFromGeometryIds(int[] geometryIds)
         {
-            int[] partIds = GetPartIdsFromGeometryIds(ids);
+            int[] partIds = GetPartIdsFromGeometryIds(geometryIds);
             if (partIds == null) return null;
             //
             int count = 0;
@@ -5953,23 +6012,64 @@ namespace CaeMesh
             //
             return partNames.ToArray();
         }
-        public static int[] GetPartIdsFromGeometryIds(int[] ids)
+        public int[] GetGeometryPartIdsForSubPartsFromGeometryIds(int[] ids)
         {
-            if (ids == null) return null;
+            if (ids.Length > 0)
+            {
+                int geometryId;
+                HashSet<int> geometrySubPartIds;
+                List<HashSet<int>> compoundGeometrySubPartIds = new List<HashSet<int>>();
+                foreach (var entry in _parts)
+                {
+                    if (entry.Value is CompoundGeometryPart cgp)
+                    {
+                        geometrySubPartIds = new HashSet<int>();
+                        foreach (var subPartName in cgp.SubPartNames)
+                        {
+                            geometryId = GetGeometryId(0, (int)GeometryType.Part, _parts[subPartName].PartId);
+                            geometrySubPartIds.Add(geometryId);
+                        }
+                        compoundGeometrySubPartIds.Add(geometrySubPartIds);
+                    }
+                }
+                //
+                if (compoundGeometrySubPartIds.Count > 0)
+                {
+                    int[] itemTypePartIds;
+                    HashSet<int> geometryPartIds = new HashSet<int>();
+                    for (int i = 0; i < ids.Length; i++)
+                    {
+                        itemTypePartIds = GetItemTypePartIdsFromGeometryId(ids[i]);
+                        geometryId = GetGeometryId(0, (int)GeometryType.Part, itemTypePartIds[2]);
+                        geometryPartIds.Add(geometryId);
+                        //
+                        foreach (var listEntry in compoundGeometrySubPartIds)
+                        {
+                            if (listEntry.Contains(geometryId)) geometryPartIds.UnionWith(listEntry);
+                        }
+                    }
+                    ids = geometryPartIds.ToArray();
+                }
+            }
+            return ids;
+        }
+        public static int[] GetPartIdsFromGeometryIds(int[] geometryIds)
+        {
+            if (geometryIds == null) return null;
             //
             HashSet<int> partIds = new HashSet<int>();
             int[] itemTypePartIds;
-            for (int i = 0; i < ids.Length; i++)
+            for (int i = 0; i < geometryIds.Length; i++)
             {
-                itemTypePartIds = GetItemTypePartIdsFromGeometryId(ids[i]);
+                itemTypePartIds = GetItemTypePartIdsFromGeometryId(geometryIds[i]);
                 partIds.Add(itemTypePartIds[2]);
             }
             //
             return partIds.ToArray();
         }
-        public static int GetPartIdFromGeometryId(int id)
+        public static int GetPartIdFromGeometryId(int geometryId)
         {
-            return GetItemTypePartIdsFromGeometryId(id)[2];
+            return GetItemTypePartIdsFromGeometryId(geometryId)[2];
         }
         public static int[] GetItemTypePartIdsFromGeometryId(int geometryId)
         {
@@ -6501,6 +6601,58 @@ namespace CaeMesh
         #endregion #################################################################################################################
 
         #region Remove entities ####################################################################################################
+        public void RemoveDeletedPartsFromMeshingParameters(bool keepGeometrySelections)
+        {
+            bool changed;
+            BasePart part;
+            List<int> remainingPartIds = new List<int>();
+            //
+            foreach (var entry in _meshingParameters)
+            {
+                if (!(keepGeometrySelections && entry.Value.CreationData.IsGeometryBased()))
+                {
+                    changed = false;
+                    remainingPartIds.Clear();
+                    foreach (var creationId in entry.Value.CreationIds)
+                    {
+                        part = GetPartById(creationId);
+                        if (part != null) remainingPartIds.Add(creationId);
+                        else changed = true;
+                    }
+                    //
+                    if (changed)
+                    {
+                        entry.Value.CreationIds = remainingPartIds.ToArray();
+                        entry.Value.CreationData.Nodes.Clear();
+                        entry.Value.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.None, false,
+                                                                          entry.Value.CreationIds));
+                        entry.Value.Valid = false;  // mark it as unvalid to highlight it for the user
+                    }
+                }
+            }
+        }
+        public void RemoveDeletedPartsFromMeshRefinements(bool keepGeometrySelections)
+        {
+            int partId;
+            BasePart part;
+            foreach (var entry in _meshRefinements)
+            {
+                if (!(keepGeometrySelections && entry.Value.CreationData.IsGeometryBased()))
+                {
+                    foreach (var geometryId in entry.Value.GeometryIds)
+                    {
+                        partId = GetPartIdFromGeometryId(geometryId);
+                        part = GetPartById(partId);
+                        if (part == null)
+                        {
+                            entry.Value.GeometryIds = new int[0];
+                            entry.Value.CreationData.Nodes.Clear();
+                            entry.Value.Valid = false;      // mark it as unvalid to highlight it for the user
+                        }
+                    }
+                }
+            }
+        }
         public HashSet<int> RemoveUnreferencedNodes(HashSet<int> possiblyUnrefNodeIds,
                                                     bool removeEmptyNodeSets, bool removeForRemeshing)
         {
@@ -6680,11 +6832,11 @@ namespace CaeMesh
             return changedSurfaces.ToArray();
         }
         //
-        public int[] RemoveParts(string[] partNames, out string[] removedParts, bool removeForRemeshing)
+        public int[] RemoveParts(string[] partNames, out string[] removedPartNames, bool removeForRemeshing)
         {
             int[] removedPartIds = new int[partNames.Length];
             HashSet<int> possiblyUnrefNodeIds = new HashSet<int>();
-            List<string> removedPartsList = new List<string>();     // Use a list to keep the sorting of the input partNames
+            List<string> removedPartNamesList = new List<string>();     // Use a list to keep the sorting of the input partNames
             HashSet<int> removedElementIds = new HashSet<int>();
             //
             int partCount = 0;
@@ -6706,11 +6858,15 @@ namespace CaeMesh
                     }
                     // Remove parts
                     _parts.Remove(name);
-                    removedPartsList.Add(name);
+                    removedPartNamesList.Add(name);
                 }
                 partCount++;
             }
-            removedParts = removedPartsList.ToArray();
+            removedPartNames = removedPartNamesList.ToArray();
+            // Remove parts from meshing parameters
+            RemoveDeletedPartsFromMeshingParameters(removeForRemeshing);
+            // Remove parts from mesh refinements
+            RemoveDeletedPartsFromMeshRefinements(removeForRemeshing);
             // Remove unreferenced nodes and keep empty node sets
             RemoveUnreferencedNodes(possiblyUnrefNodeIds, false, removeForRemeshing);
             // Remove elements from element sets and find empty element sets but do not remove them

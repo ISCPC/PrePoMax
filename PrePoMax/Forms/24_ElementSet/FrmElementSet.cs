@@ -153,7 +153,7 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         private string GetElementSetName()
         {
-            return _elementSetNames.GetNextNumberedKey("Element_set");
+            return _elementSetNames.GetNextNumberedKey("Element_Set");
         }
         private void HighlightElementSet()
         {

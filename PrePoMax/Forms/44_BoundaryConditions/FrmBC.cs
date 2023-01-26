@@ -361,7 +361,7 @@ namespace PrePoMax.Forms
             }
             // Displacement/Rotation
             item = new ListViewItem("Displacement/Rotation");
-            DisplacementRotation displacementRotation = new DisplacementRotation(GetBoundaryConditionName("Displacement_rotation"),
+            DisplacementRotation displacementRotation = new DisplacementRotation(GetBoundaryConditionName("Displacement_Rotation"),
                                                                                  "", RegionTypeEnum.Selection, twoD);
             if (step.IsBoundaryConditionSupported(displacementRotation))
             {

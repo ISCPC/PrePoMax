@@ -95,7 +95,8 @@
             this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.Location = new System.Drawing.Point(3, 19);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(354, 354);
+            this.propertyGrid.ReadOnly = false;
+            this.propertyGrid.Size = new System.Drawing.Size(354, 254);
             this.propertyGrid.TabIndex = 6;
             this.propertyGrid.ToolbarVisible = false;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
@@ -103,7 +104,7 @@
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(54, 576);
+            this.btnOK.Location = new System.Drawing.Point(54, 476);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 8;
@@ -115,7 +116,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(297, 576);
+            this.btnCancel.Location = new System.Drawing.Point(297, 476);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 7;
@@ -125,8 +126,7 @@
             // 
             // gbTypes
             // 
-            this.gbTypes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.gbTypes.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.gbTypes.Controls.Add(this.labSelected);
             this.gbTypes.Controls.Add(this.labAvailable);
@@ -136,10 +136,10 @@
             this.gbTypes.Controls.Add(this.tvTransformations);
             this.gbTypes.Location = new System.Drawing.Point(12, 12);
             this.gbTypes.Name = "gbTypes";
-            this.gbTypes.Size = new System.Drawing.Size(360, 296);
+            this.gbTypes.Size = new System.Drawing.Size(360, 176);
             this.gbTypes.TabIndex = 0;
             this.gbTypes.TabStop = false;
-            this.gbTypes.Text = "Transformation types";
+            this.gbTypes.Text = "Transformation Types";
             // 
             // labSelected
             // 
@@ -211,7 +211,7 @@
             // btnClear
             // 
             this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClear.Location = new System.Drawing.Point(216, 576);
+            this.btnClear.Location = new System.Drawing.Point(216, 476);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(75, 23);
             this.btnClear.TabIndex = 17;
@@ -222,7 +222,7 @@
             // bntApply
             // 
             this.bntApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.bntApply.Location = new System.Drawing.Point(135, 576);
+            this.bntApply.Location = new System.Drawing.Point(135, 476);
             this.bntApply.Name = "bntApply";
             this.bntApply.Size = new System.Drawing.Size(75, 23);
             this.bntApply.TabIndex = 18;
@@ -238,7 +238,7 @@
             this.gbProperties.Controls.Add(this.propertyGrid);
             this.gbProperties.Location = new System.Drawing.Point(12, 194);
             this.gbProperties.Name = "gbProperties";
-            this.gbProperties.Size = new System.Drawing.Size(360, 376);
+            this.gbProperties.Size = new System.Drawing.Size(360, 276);
             this.gbProperties.TabIndex = 19;
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Properties";
@@ -247,7 +247,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(384, 611);
+            this.ClientSize = new System.Drawing.Size(384, 511);
             this.Controls.Add(this.gbProperties);
             this.Controls.Add(this.bntApply);
             this.Controls.Add(this.btnClear);

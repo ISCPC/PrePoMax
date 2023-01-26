@@ -90,6 +90,7 @@ namespace UserControls
         private Dictionary<CodersLabTreeView, bool[]> _prevStates;
         // Geometry
         private TreeNode _geomParts;                // 1
+        private TreeNode _meshingParameters;        // 1
         private TreeNode _meshRefinements;          // 1
         // Model
         private TreeNode _model;                    // 1
@@ -120,6 +121,7 @@ namespace UserControls
         private TreeNode _resultHistoryOutputs;     //   2
         // Geometry
         private string _geomPartsName = "Parts";
+        private string _meshingParametersName = "Meshing Parameters";
         private string _meshRefinementsName = "Mesh Refinements";
         // Model
         private string _modelName = "Model";
@@ -215,6 +217,7 @@ namespace UserControls
             return selected.ToArray();
         }
         //
+        public string MeshingParametersName { get { return _meshingParametersName; } }
         public string MeshRefinementsName { get { return _meshRefinementsName; } }
         public string NodeSetsName { get { return _modelNodeSetsName; } }
         public string ElementSetsName { get { return _modelElementSetsName; } }
@@ -249,7 +252,6 @@ namespace UserControls
         public event Action<NamedClass[], string[]> PreviewEvent;
         public event Action<string[]> CreateCompoundPart;
         public event Action<string[]> SwapPartGeometries;
-        public event Action<string[]> MeshingParametersEvent;
         public event Func<string[], MeshingParameters, FeMeshRefinement, Task> PreviewEdgeMesh;
         public event Action<string[]> CreateMeshEvent;
         public event Action<string[]> CopyGeometryToResultsEvent;
@@ -287,6 +289,7 @@ namespace UserControls
             InitializeComponent();
             // Geometry
             _geomParts = cltvGeometry.Nodes.Find(_geomPartsName, true)[0];
+            _meshingParameters = cltvGeometry.Nodes.Find(_meshingParametersName, true)[0];
             _meshRefinements = cltvGeometry.Nodes.Find(_meshRefinementsName, true)[0];
             // Model
             _model = cltvModel.Nodes.Find(_modelName, true)[0];
@@ -463,7 +466,6 @@ namespace UserControls
             //Mesh                                                  
             visible = menuFields.MeshingParameters == n;
             tsmiSpaceMesh.Visible = visible && oneAboveVisible;
-            tsmiMeshingParameters.Visible = visible;
             tsmiPreviewEdgeMesh.Visible = visible;
             tsmiCreateMesh.Visible = visible;
             // Copy part                                            
@@ -551,7 +553,6 @@ namespace UserControls
             enabled = menuFields.Edit == 1;
             tsmiEdit.Enabled = enabled;
             // Mesh
-            tsmiMeshingParameters.Enabled = true;
             tsmiCreateMesh.Enabled = true;
             // Copy part
             tsmiCopyGeometryToResults.Enabled = true;
@@ -1155,22 +1156,6 @@ namespace UserControls
             }
         }
         // Meshing
-        private void tsmiMeshingParameters_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                List<string> names = new List<string>();
-                foreach (TreeNode node in cltvGeometry.SelectedNodes)
-                {
-                    if (node.Tag != null) names.Add(((NamedClass)node.Tag).Name);
-                }
-                if (names.Count > 0) MeshingParametersEvent?.Invoke(names.ToArray());
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
         async private void tsmiPreviewEdgeMesh_Click(object sender, EventArgs e)
         {
             try
@@ -1582,6 +1567,7 @@ namespace UserControls
             cltvGeometry.SelectedNodes.Clear();
             cltvGeometry.Nodes.Clear();
             _geomParts.Nodes.Clear();
+            _meshingParameters.Nodes.Clear();
             _meshRefinements.Nodes.Clear();
             // Model
             cltvModel.SelectedNodes.Clear();
@@ -1607,6 +1593,7 @@ namespace UserControls
             SetNumberOfUserKeywords(0);
             // Geometry
             _geomParts.Text = _geomPartsName;
+            _meshingParameters.Text = _meshingParametersName;
             _meshRefinements.Text = _meshRefinementsName;
             // Model
             _modelParts.Text = _modelPartsName;
@@ -1628,6 +1615,7 @@ namespace UserControls
             //
             // Geometry
             cltvGeometry.Nodes.Add(_geomParts);
+            cltvGeometry.Nodes.Add(_meshingParameters);
             cltvGeometry.Nodes.Add(_meshRefinements);
             // Model
             cltvModel.Nodes.Add(_model);
@@ -1800,15 +1788,16 @@ namespace UserControls
                         //AddObjectsToNode<string, CaeMesh.BasePart>(_geomPartsName, _geomParts, model.Geometry.Parts);
                         AddGeometryParts(model.Geometry.Parts);
                         _geomParts.Expand();
-                        AddObjectsToNode<string, CaeMesh.FeMeshRefinement>(_meshRefinementsName, _meshRefinements,
-                                                                           model.Geometry.MeshRefinements);
+                        AddObjectsToNode(_meshRefinementsName, _meshRefinements, model.Geometry.MeshRefinements);
                         _meshRefinements.Expand();
+                        AddObjectsToNode(_meshingParametersName, _meshingParameters, model.Geometry.MeshingParameters);
+                        _meshingParameters.Expand();
                     }
                     //
                     if (model.Mesh != null)
                     {
                         // Mesh Parts
-                        AddObjectsToNode<string, CaeMesh.BasePart>(_modelPartsName, _modelParts, model.Mesh.Parts);
+                        AddObjectsToNode(_modelPartsName, _modelParts, model.Mesh.Parts);
                         // Node sets
                         AddObjectsToNode<string, CaeMesh.FeNodeSet>(_modelNodeSetsName, _modelNodeSets, model.Mesh.NodeSets);
                         // Element sets
@@ -1948,7 +1937,14 @@ namespace UserControls
             TreeNode parent;
             TreeNode[] tmp;
             //
-            if (item is FeMeshRefinement)
+            if (item is MeshingParameters)
+            {
+                node = _meshingParameters.Nodes.Add(item.Name);
+                node.Name = node.Text;
+                node.Tag = item;
+                parent = _meshingParameters;
+            }
+            else if (item is FeMeshRefinement)
             {
                 node = _meshRefinements.Nodes.Add(item.Name);
                 node.Name = node.Text;
@@ -2212,8 +2208,9 @@ namespace UserControls
             CodersLabTreeView tree = GetTree(view);
             //
             TreeNode baseNode = null;
-            if (item is AnalysisJob) baseNode = _analyses;
+            if (item is MeshingParameters) baseNode = _meshingParameters;
             else if (item is FeMeshRefinement) baseNode = _meshRefinements;
+            else if (item is AnalysisJob) baseNode = _analyses;
             else baseNode = tree.Nodes[0];
             //
             TreeNode[] tmp;
@@ -2255,8 +2252,10 @@ namespace UserControls
             CodersLabTreeView tree = GetTree(view);
             // No parent
             TreeNode baseNode = null;
-            if (typeof(T) == typeof(FeMeshRefinement)) baseNode = _meshRefinements;
+            if (typeof(T) == typeof(MeshingParameters)) baseNode = _meshingParameters;
+            else if (typeof(T) == typeof(FeMeshRefinement)) baseNode = _meshRefinements;
             else if (typeof(T) == typeof(AnalysisJob)) baseNode = _analyses;
+            //
             else if (typeof(T) == typeof(Field)) baseNode = _resultFieldOutputs;
             else if (typeof(T) == typeof(HistoryResultSet)) baseNode = _resultHistoryOutputs;
             else baseNode = tree.Nodes[0];
@@ -2759,7 +2758,8 @@ namespace UserControls
         //                                                                                                                          
         private bool CanCreate(TreeNode node)
         {
-            if (node.Name == _meshRefinementsName) return true;
+            if (node.Name == _meshingParametersName) return true;
+            else if (node.Name == _meshRefinementsName) return true;
             else if (node.TreeView == cltvModel && node.Name == _modelNodeSetsName) return true;
             else if (node.TreeView == cltvModel && node.Name == _modelElementSetsName) return true;
             else if (node.TreeView == cltvModel && node.Name == _modelSurfacesName) return true;
@@ -2831,7 +2831,8 @@ namespace UserControls
         }
         private bool CanDeactivate(TreeNode node)
         {
-            if (node.Tag is FeMeshRefinement) return true;
+            if (node.Tag is MeshingParameters) return true;
+            else if (node.Tag is FeMeshRefinement) return true;
             else if (node.Tag is Constraint) return true;
             else if (node.Tag is ContactPair) return true;
             else if (node.Tag is InitialCondition) return true;

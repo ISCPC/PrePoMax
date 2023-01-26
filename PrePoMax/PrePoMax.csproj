@@ -127,11 +127,13 @@
     <Compile Include="Command\0030_Geometry\CFindEdgesByAngleForGeometryParts.cs" />
     <Compile Include="Command\0030_Geometry\CSplitAFaceUsingTwoPoints.cs" />
     <Compile Include="Command\0030_Geometry\CFlipFaceOrientations.cs" />
+    <Compile Include="Command\0040_Mesh\CAddMeshingParameters.cs" />
     <Compile Include="Command\0040_Mesh\CAddMeshRefinement.cs" />
     <Compile Include="Command\0040_Mesh\CCreateMesh.cs" />
+    <Compile Include="Command\0040_Mesh\CRemoveMeshingParameters.cs" />
     <Compile Include="Command\0040_Mesh\CRemoveMeshRefinements.cs" />
+    <Compile Include="Command\0040_Mesh\CReplaceMeshingParameters.cs" />
     <Compile Include="Command\0040_Mesh\CReplaceMeshRefinement.cs" />
-    <Compile Include="Command\0040_Mesh\CSetMeshingParameters.cs" />
     <Compile Include="Command\0050_Model\01_Properties\CReplaceModelProperties.cs" />
     <Compile Include="Command\0050_Model\10_Node\CRenumberNodes.cs" />
     <Compile Include="Command\0050_Model\11_Element\CRenumberElements.cs" />
@@ -904,6 +906,7 @@
     <None Include="Icons\Initial conditions\Preview_initial_condition.ico" />
     <None Include="Icons\Step\Preview_defined_field.ico" />
     <None Include="Icons\Common\Search.ico" />
+    <None Include="Icons\Geometry\Meshing_parameters.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

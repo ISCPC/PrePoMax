@@ -398,6 +398,7 @@
     <None Include="Resources\Show2.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Meshing_parameters.ico" />
     <None Include="Images\Collapse.png" />
     <None Include="Images\Expand.png" />
     <Content Include="License-LGPL.txt" />

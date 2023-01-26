@@ -252,7 +252,7 @@ namespace PrePoMax.Forms
         }
         private string GetDefinedFieldName(string name)
         {
-            if (name == null || name == "") name = "Defined field";
+            if (name == null || name == "") name = "Defined Field";
             name = name.Replace(' ', '_');
             name = _definedFieldNames.GetNextNumberedKey(name);
             return name;

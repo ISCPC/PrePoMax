@@ -123,7 +123,6 @@
             this.tsmiViewHistory = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiRegenerate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiRegenerateUsingOtherFiles = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiRegenerateForRemeshing = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiView = new System.Windows.Forms.ToolStripMenuItem();
             this.standardViewsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiFrontView = new System.Windows.Forms.ToolStripMenuItem();
@@ -198,6 +197,10 @@
             this.tsmiGeometryAnalyze = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMesh = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCreateMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiEditMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerMeshingParameters1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiDeleteMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMeshRefinement = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateMeshRefinement = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditMeshRefinement = new System.Windows.Forms.ToolStripMenuItem();
@@ -1279,8 +1282,7 @@
             this.tsmiDividerEdit1,
             this.tsmiViewHistory,
             this.tsmiRegenerate,
-            this.tsmiRegenerateUsingOtherFiles,
-            this.tsmiRegenerateForRemeshing});
+            this.tsmiRegenerateUsingOtherFiles});
             this.tsmiEdit.Name = "tsmiEdit";
             this.tsmiEdit.Size = new System.Drawing.Size(39, 20);
             this.tsmiEdit.Text = "Edit";
@@ -1324,13 +1326,6 @@
             this.tsmiRegenerateUsingOtherFiles.Size = new System.Drawing.Size(225, 22);
             this.tsmiRegenerateUsingOtherFiles.Text = "Regenerate Using Other Files";
             this.tsmiRegenerateUsingOtherFiles.Click += new System.EventHandler(this.tsmiRegenerteUsingOtherFiles_Click);
-            // 
-            // tsmiRegenerateForRemeshing
-            // 
-            this.tsmiRegenerateForRemeshing.Name = "tsmiRegenerateForRemeshing";
-            this.tsmiRegenerateForRemeshing.Size = new System.Drawing.Size(225, 22);
-            this.tsmiRegenerateForRemeshing.Text = "Regenerate for Remeshing";
-            this.tsmiRegenerateForRemeshing.Click += new System.EventHandler(this.tsmiRegenerateForRemeshing_Click);
             // 
             // tsmiView
             // 
@@ -1920,10 +1915,41 @@
             // 
             // tsmiMeshingParameters
             // 
+            this.tsmiMeshingParameters.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiCreateMeshingParameters,
+            this.tsmiEditMeshingParameters,
+            this.tsmiDividerMeshingParameters1,
+            this.tsmiDeleteMeshingParameters});
+            this.tsmiMeshingParameters.Image = global::PrePoMax.Properties.Resources.Meshing_parameters;
             this.tsmiMeshingParameters.Name = "tsmiMeshingParameters";
             this.tsmiMeshingParameters.Size = new System.Drawing.Size(182, 22);
             this.tsmiMeshingParameters.Text = "Meshing Parameters";
-            this.tsmiMeshingParameters.Click += new System.EventHandler(this.tsmiMeshingParameters_Click);
+            // 
+            // tsmiCreateMeshingParameters
+            // 
+            this.tsmiCreateMeshingParameters.Name = "tsmiCreateMeshingParameters";
+            this.tsmiCreateMeshingParameters.Size = new System.Drawing.Size(108, 22);
+            this.tsmiCreateMeshingParameters.Text = "Create";
+            this.tsmiCreateMeshingParameters.Click += new System.EventHandler(this.tsmiCreateMeshingParameters_Click);
+            // 
+            // tsmiEditMeshingParameters
+            // 
+            this.tsmiEditMeshingParameters.Name = "tsmiEditMeshingParameters";
+            this.tsmiEditMeshingParameters.Size = new System.Drawing.Size(108, 22);
+            this.tsmiEditMeshingParameters.Text = "Edit";
+            this.tsmiEditMeshingParameters.Click += new System.EventHandler(this.tsmiEditMeshingParameters_Click);
+            // 
+            // tsmiDividerMeshingParameters1
+            // 
+            this.tsmiDividerMeshingParameters1.Name = "tsmiDividerMeshingParameters1";
+            this.tsmiDividerMeshingParameters1.Size = new System.Drawing.Size(105, 6);
+            // 
+            // tsmiDeleteMeshingParameters
+            // 
+            this.tsmiDeleteMeshingParameters.Name = "tsmiDeleteMeshingParameters";
+            this.tsmiDeleteMeshingParameters.Size = new System.Drawing.Size(108, 22);
+            this.tsmiDeleteMeshingParameters.Text = "Delete";
+            this.tsmiDeleteMeshingParameters.Click += new System.EventHandler(this.tsmiDeleteMeshingParameters_Click);
             // 
             // tsmiMeshRefinement
             // 
@@ -3455,7 +3481,7 @@
             // tsmiSettings
             // 
             this.tsmiSettings.Name = "tsmiSettings";
-            this.tsmiSettings.Size = new System.Drawing.Size(180, 22);
+            this.tsmiSettings.Size = new System.Drawing.Size(116, 22);
             this.tsmiSettings.Text = "Settings";
             this.tsmiSettings.Click += new System.EventHandler(this.tsmiSettings_Click);
             // 
@@ -3463,7 +3489,7 @@
             // 
             this.tsmiQuery.Image = global::PrePoMax.Properties.Resources.Query;
             this.tsmiQuery.Name = "tsmiQuery";
-            this.tsmiQuery.Size = new System.Drawing.Size(180, 22);
+            this.tsmiQuery.Size = new System.Drawing.Size(116, 22);
             this.tsmiQuery.Text = "Query";
             this.tsmiQuery.Click += new System.EventHandler(this.tsmiQuery_Click);
             // 
@@ -3471,7 +3497,7 @@
             // 
             this.tsmiFind.Image = global::PrePoMax.Properties.Resources.Search;
             this.tsmiFind.Name = "tsmiFind";
-            this.tsmiFind.Size = new System.Drawing.Size(180, 22);
+            this.tsmiFind.Size = new System.Drawing.Size(116, 22);
             this.tsmiFind.Text = "Find";
             this.tsmiFind.Click += new System.EventHandler(this.tsmiFind_Click);
             // 
@@ -3977,7 +4003,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiHideLoad;
         private System.Windows.Forms.ToolStripMenuItem tsmiShowLoad;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerLoad2;
-        private System.Windows.Forms.ToolStripMenuItem tsmiRegenerateForRemeshing;
         private System.Windows.Forms.ToolStripButton tsbAnimate;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerGeometry1;
         private System.Windows.Forms.ToolStripMenuItem tsmiMeshingParameters;
@@ -4192,6 +4217,10 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiPreviewDefinedField;
         private System.Windows.Forms.ToolStripMenuItem tsmiCheckModel;
         private System.Windows.Forms.ToolStripMenuItem tsmiFind;
+        private System.Windows.Forms.ToolStripMenuItem tsmiCreateMeshingParameters;
+        private System.Windows.Forms.ToolStripMenuItem tsmiEditMeshingParameters;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerMeshingParameters1;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteMeshingParameters;
     }
 }
 

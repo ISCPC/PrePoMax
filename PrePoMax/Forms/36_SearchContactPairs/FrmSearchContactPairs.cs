@@ -147,7 +147,7 @@ namespace PrePoMax.Forms
                 // Resolve
                 bool tryResolve = type == SearchContactPairType.Tie;
                 // Search
-                _controller.SuppressExplodedViews();
+                _controller.SuppressExplodedView();
                 if (_contactSearch == null)
                     _contactSearch = new ContactSearch(_controller.Model.Mesh, _controller.Model.Geometry);
                 _contactSearch.GroupContactPairsBy = groupBy;

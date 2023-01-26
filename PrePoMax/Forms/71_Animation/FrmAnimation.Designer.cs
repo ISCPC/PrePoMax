@@ -98,7 +98,7 @@
             this.groupBox1.Size = new System.Drawing.Size(281, 76);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Animation type";
+            this.groupBox1.Text = "Animation Type";
             // 
             // numIncrementStep
             // 
@@ -303,7 +303,7 @@
             this.groupBox2.Size = new System.Drawing.Size(281, 51);
             this.groupBox2.TabIndex = 16;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Animation style";
+            this.groupBox2.Text = "Animation Style";
             // 
             // btnMoreLess
             // 
@@ -413,7 +413,7 @@
             this.gbColorSpectrumLimits.Size = new System.Drawing.Size(281, 51);
             this.gbColorSpectrumLimits.TabIndex = 19;
             this.gbColorSpectrumLimits.TabStop = false;
-            this.gbColorSpectrumLimits.Text = "Automatic color spectrum limits";
+            this.gbColorSpectrumLimits.Text = "Automatic Color Spectrum Limits";
             // 
             // rbLimitsCurrentFrame
             // 
@@ -536,7 +536,7 @@
             this.groupBox6.Size = new System.Drawing.Size(281, 73);
             this.groupBox6.TabIndex = 21;
             this.groupBox6.TabStop = false;
-            this.groupBox6.Text = "Movie options";
+            this.groupBox6.Text = "Movie Options";
             // 
             // btnClose
             // 

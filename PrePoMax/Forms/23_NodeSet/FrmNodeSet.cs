@@ -149,7 +149,7 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         private string GetNodeSetName()
         {
-            return _nodeSetNames.GetNextNumberedKey("Node_set");
+            return _nodeSetNames.GetNextNumberedKey("Node_Set");
         }
         private void HighlightNodeSet()
         {

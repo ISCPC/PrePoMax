@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Surface behavior");
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Surface Behavior");
             System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Friction");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Gap conductance");
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Gap Conductance");
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tvProperties = new System.Windows.Forms.TreeView();
             this.propertyGrid = new UserControls.TabEnabledPropertyGrid();
@@ -65,15 +65,15 @@
             this.tvProperties.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.tvProperties.Location = new System.Drawing.Point(6, 38);
             this.tvProperties.Name = "tvProperties";
-            treeNode1.Name = "Surface behavior";
-            treeNode1.Text = "Surface behavior";
-            treeNode1.ToolTipText = "Surface behavior";
+            treeNode1.Name = "Surface Behavior";
+            treeNode1.Text = "Surface Behavior";
+            treeNode1.ToolTipText = "Surface Behavior";
             treeNode2.Name = "Friction";
             treeNode2.Text = "Friction";
             treeNode2.ToolTipText = "Friction";
-            treeNode3.Name = "Gap conductance";
-            treeNode3.Text = "Gap conductance";
-            treeNode3.ToolTipText = "Gap conductance";
+            treeNode3.Name = "Gap Conductance";
+            treeNode3.Text = "Gap Conductance";
+            treeNode3.ToolTipText = "Gap Conductance";
             this.tvProperties.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1,
             treeNode2,
@@ -168,7 +168,7 @@
             this.gbProperties.Size = new System.Drawing.Size(360, 431);
             this.gbProperties.TabIndex = 0;
             this.gbProperties.TabStop = false;
-            this.gbProperties.Text = "Interaction models";
+            this.gbProperties.Text = "Interaction Models";
             // 
             // tcProperties
             // 
@@ -202,7 +202,7 @@
             this.tpDataPoints.Location = new System.Drawing.Point(4, 24);
             this.tpDataPoints.Name = "tpDataPoints";
             this.tpDataPoints.Padding = new System.Windows.Forms.Padding(3);
-            this.tpDataPoints.Size = new System.Drawing.Size(350, 258);
+            this.tpDataPoints.Size = new System.Drawing.Size(345, 258);
             this.tpDataPoints.TabIndex = 1;
             this.tpDataPoints.Text = "Data points";
             // 
@@ -222,7 +222,7 @@
             this.dgvData.EnablePasteMenu = true;
             this.dgvData.Location = new System.Drawing.Point(3, 3);
             this.dgvData.Name = "dgvData";
-            this.dgvData.Size = new System.Drawing.Size(344, 252);
+            this.dgvData.Size = new System.Drawing.Size(339, 252);
             this.dgvData.StartPlotAtZero = false;
             this.dgvData.TabIndex = 0;
             this.dgvData.XColIndex = 0;

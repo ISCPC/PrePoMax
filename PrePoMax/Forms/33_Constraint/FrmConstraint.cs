@@ -88,7 +88,7 @@ namespace PrePoMax.Forms
             // 
             this.tsmiSwapMasterSlave.Name = "tsmiSwapMasterSlave";
             this.tsmiSwapMasterSlave.Size = new System.Drawing.Size(172, 22);
-            this.tsmiSwapMasterSlave.Text = "Swap master/slave";
+            this.tsmiSwapMasterSlave.Text = "Swap Master/Slave";
             this.tsmiSwapMasterSlave.Click += new System.EventHandler(this.tsmiSwapMasterSlave_Click);
             // 
             // FrmConstraint
@@ -296,7 +296,7 @@ namespace PrePoMax.Forms
                 int selectedId;
                 if (_viewConstraint is ViewPointSpring vps)
                 {
-                    selectedId = lvTypes.FindItemWithText("Point spring").Index;
+                    selectedId = lvTypes.FindItemWithText("Point Spring").Index;
                     // Master
                     if (vps.MasterRegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vps.MasterRegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -311,7 +311,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewConstraint is ViewSurfaceSpring vss)
                 {
-                    selectedId = lvTypes.FindItemWithText("Surface spring").Index;
+                    selectedId = lvTypes.FindItemWithText("Surface Spring").Index;
                     // Master
                     if (vss.MasterRegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vss.MasterRegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -324,7 +324,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewConstraint is ViewRigidBody vrb)
                 {
-                    selectedId = lvTypes.FindItemWithText("Rigid body").Index;
+                    selectedId = lvTypes.FindItemWithText("Rigid Body").Index;
                     // Reference point
                     CheckMissingValueRef(ref referencePointNames, vrb.ReferencePointName, s => { vrb.ReferencePointName = s; });
                     // Slave
@@ -372,16 +372,16 @@ namespace PrePoMax.Forms
             // Populate list view
             ListViewItem item;
             // Point spring
-            item = new ListViewItem("Point spring");
-            PointSpring pointSpring = new PointSpring(GetConstraintName("Point_spring"), "", RegionTypeEnum.Selection, twoD);
+            item = new ListViewItem("Point Spring");
+            PointSpring pointSpring = new PointSpring(GetConstraintName("Point_Spring"), "", RegionTypeEnum.Selection, twoD);
             ViewPointSpring vps = new ViewPointSpring(pointSpring);
             vps.PopulateDropDownLists(nodeSetNames, referencePointNames);
             item.Tag = vps;
             vps.Color = color;
             lvTypes.Items.Add(item);
             // Surface spring
-            item = new ListViewItem("Surface spring");
-            SurfaceSpring surfaceSpring = new SurfaceSpring(GetConstraintName("Surface_spring"),
+            item = new ListViewItem("Surface Spring");
+            SurfaceSpring surfaceSpring = new SurfaceSpring(GetConstraintName("Surface_Spring"),
                                                             "", RegionTypeEnum.Selection, twoD);
             ViewSurfaceSpring vss = new ViewSurfaceSpring(surfaceSpring);
             vss.PopulateDropDownLists(surfaceNames);
@@ -389,10 +389,10 @@ namespace PrePoMax.Forms
             vss.Color = color;
             lvTypes.Items.Add(item);
             // Rigid body
-            item = new ListViewItem("Rigid body");
+            item = new ListViewItem("Rigid Body");
             if (referencePointNames.Length > 0)
             {
-                RigidBody rb = new RigidBody(GetConstraintName("Rigid_body"), referencePointNames[0],
+                RigidBody rb = new RigidBody(GetConstraintName("Rigid_Body"), referencePointNames[0],
                                              "", RegionTypeEnum.Selection, twoD);
                 ViewRigidBody vrb = new ViewRigidBody(rb);
                 vrb.PopulateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);

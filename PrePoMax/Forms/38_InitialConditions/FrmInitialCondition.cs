@@ -256,7 +256,7 @@ namespace PrePoMax.Forms
         }
         private string GetInitialConditionName(string name)
         {
-            if (name == null || name == "") name = "Initial condition";
+            if (name == null || name == "") name = "Initial Condition";
             name = name.Replace(' ', '_');
             name = _initialConditionNames.GetNextNumberedKey(name);
             //

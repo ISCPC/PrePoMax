@@ -178,9 +178,10 @@ namespace CaeMesh
             MinZ -= offset;
             MaxZ += offset;
         }
-        public void InflateIf2D(double offsetFactor)
+        public void InflateIfThinn(double offsetFactor)
         {
-            if (Is2D()) Inflate(GetDiagonal() * offsetFactor);
+            if (IsThinnInAnyDirection())
+                Inflate(GetDiagonal() * offsetFactor);
         }
         public void Scale(double scaleFactor)
         {
@@ -425,6 +426,15 @@ namespace CaeMesh
             double epsilon = GetDiagonal() * 1E-6;
             //
             if (Math.Abs(MinZ) < epsilon && Math.Abs(MaxZ) < epsilon) return true;
+            else return false;
+        }
+        public bool IsThinnInAnyDirection()
+        {
+            double epsilon = GetDiagonal() * 1E-2;
+            //
+            if (Math.Abs(MaxX - MinX) < epsilon) return true;
+            else if (Math.Abs(MaxY - MinY) < epsilon) return true;
+            else if (Math.Abs(MaxZ - MinZ) < epsilon) return true;
             else return false;
         }
         //

@@ -225,6 +225,7 @@ namespace CaeModel
             //
             List<string> invalidItems = new List<string>();
             bool valid = false;
+            invalidItems.AddRange(_geometry.CheckValidity(items));
             invalidItems.AddRange(_mesh.CheckValidity(items));
             // Sections
             Section section;

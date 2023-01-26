@@ -242,7 +242,7 @@ namespace PrePoMax.Forms
                 if (addStaticStep)
                 {
                     // Static step
-                    item = new ListViewItem("Static step");
+                    item = new ListViewItem("Static Step");
                     StaticStep staticStep = (StaticStep)CreateNewOrCloneLast(typeof(StaticStep));
                     staticStep.SolverType = defaultSolverType;
                     item.Tag = new ViewStaticStep(staticStep);
@@ -251,7 +251,7 @@ namespace PrePoMax.Forms
                 if (addSlipWearStep)
                 {
                     // Slip wear step
-                    item = new ListViewItem("Slip wear step");
+                    item = new ListViewItem("Slip Wear Step");
                     //SlipWearStep slipWearStep = new SlipWearStep(GetStepName());
                     SlipWearStep slipWearStep = (SlipWearStep)CreateNewOrCloneLast(typeof(SlipWearStep));
                     slipWearStep.SolverType = defaultSolverType;
@@ -261,7 +261,7 @@ namespace PrePoMax.Forms
                 if (addBoundaryDisplacementStep)
                 {
                     // Boundary displacement step
-                    item = new ListViewItem("Boundary displacement step");
+                    item = new ListViewItem("Boundary Displacement Step");
                     BoundaryDisplacementStep boundaryDisplacementStep = new BoundaryDisplacementStep(GetStepName());
                     item.Tag = new ViewBoundaryDisplacementStep(boundaryDisplacementStep);
                     lvTypes.Items.Add(item);
@@ -269,7 +269,7 @@ namespace PrePoMax.Forms
                 if (addFrequencyStep)
                 {
                     // Frequency step
-                    item = new ListViewItem("Frequency step");
+                    item = new ListViewItem("Frequency Step");
                     FrequencyStep frequencyStep = new FrequencyStep(GetStepName());
                     frequencyStep.SolverType = defaultSolverType;
                     item.Tag = new ViewFrequencyStep(frequencyStep);
@@ -278,7 +278,7 @@ namespace PrePoMax.Forms
                 if (addBuckleStep)
                 {
                     // Frequency step
-                    item = new ListViewItem("Buckle step");
+                    item = new ListViewItem("Buckle Step");
                     BuckleStep buckleStep = new BuckleStep(GetStepName());
                     buckleStep.SolverType = defaultSolverType;
                     item.Tag = new ViewBuckleStep(buckleStep);
@@ -287,7 +287,7 @@ namespace PrePoMax.Forms
                 if (addDynamicStep)
                 {
                     // Dynamic step
-                    item = new ListViewItem("Dynamic step");
+                    item = new ListViewItem("Dynamic Step");
                     DynamicStep dynamicStep = new DynamicStep(GetStepName());
                     dynamicStep.SolverType = defaultSolverType;
                     item.Tag = new ViewDynamicStep(dynamicStep);
@@ -296,7 +296,7 @@ namespace PrePoMax.Forms
                 if (addHeatTransferStep)
                 {
                     // Heat transfer step
-                    item = new ListViewItem("Heat transfer step");
+                    item = new ListViewItem("Heat Transfer Step");
                     HeatTransferStep heatTransferStep = new HeatTransferStep(GetStepName());
                     heatTransferStep.SolverType = defaultSolverType;
                     item.Tag = new ViewHeatTransferStep(heatTransferStep);
@@ -305,7 +305,7 @@ namespace PrePoMax.Forms
                 if (addUncoupledTemDispStep)
                 {
                     // Uncoupled temperature-displacement step
-                    item = new ListViewItem("Uncoupled temperature-displacement step");
+                    item = new ListViewItem("Uncoupled Temperature-displacement Step");
                     UncoupledTempDispStep uncoupledTempDispStep = new UncoupledTempDispStep(GetStepName());
                     uncoupledTempDispStep.SolverType = defaultSolverType;
                     item.Tag = new ViewUncoupledTempDispStep(uncoupledTempDispStep);
@@ -314,7 +314,7 @@ namespace PrePoMax.Forms
                 if (addCoupledTemDispStep)
                 {
                     // Coupled temperature-displacement step
-                    item = new ListViewItem("Coupled temperature-displacement step");
+                    item = new ListViewItem("Coupled Temperature-displacement Step");
                     CoupledTempDispStep coupledTempDispStep = new CoupledTempDispStep(GetStepName());
                     coupledTempDispStep.SolverType = defaultSolverType;
                     item.Tag = new ViewCoupledTempDispStep(coupledTempDispStep);

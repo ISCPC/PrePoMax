@@ -19,39 +19,45 @@ namespace PrePoMax.Forms
 
 
         // Properties                                                                                                               
+        //[Category("Data")]
+        //[OrderedDisplayName(0, 10, "Name")]
+        //[Description("Name of the meshing parameters.")]
+        //[Id(1, 1)]
+        //public string Name { get { return _parameters.Name; } set { _parameters.Name = value; } }
+        //
         [Category("Mesh size")]
         [OrderedDisplayName(0, 10, "Max element size")]
         [Description("The value for the maximum element size.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(1, 1)]
+        [Id(1, 2)]
         public virtual double MaxH { get { return _parameters.MaxH; } set { _parameters.MaxH = value; } }
         //
         [Category("Mesh size")]
         [OrderedDisplayName(1, 10, "Min element size")]
         [Description("The value for the minimum element size.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(2, 1)]
+        [Id(2, 2)]
         public virtual double MinH { get { return _parameters.MinH; } set { _parameters.MinH = value; } }
         //
         [Category("Mesh size")]
         [OrderedDisplayName(2, 10, "Grading")]
         [Description("The value of the mesh grading (0 => uniform mesh; 1 => aggressive local grading).")]
         [TypeConverter(typeof(StringDoubleConverter))]
-        [Id(3, 1)]
+        [Id(3, 2)]
         public double Grading { get { return _parameters.Grading; } set { _parameters.Grading = value; } }
         //
         [Category("Mesh size")]
         [OrderedDisplayName(3, 10, "Elements per edge")]
         [Description("Number of elements to generate per edge of the geometry.")]
         [TypeConverter(typeof(StringDoubleConverter))]
-        [Id(4, 1)]
+        [Id(4, 2)]
         public double Elementsperedge { get { return _parameters.Elementsperedge; } set { _parameters.Elementsperedge = value; } }
         //
         [Category("Mesh size")]
         [OrderedDisplayName(4, 10, "Elements per curvature")]
         [Description("Number of elements to generate per curvature radius.")]
         [TypeConverter(typeof(StringDoubleConverter))]
-        [Id(5, 1)]
+        [Id(5, 2)]
         public double Elementspercurve { get { return _parameters.Elementspercurve; } set { _parameters.Elementspercurve = value; } }
         // Maximal Hausdorff distance for the boundaries approximation.
         [Category("Mesh size")]
@@ -60,27 +66,27 @@ namespace PrePoMax.Forms
                               "A value of 0.01 is a suitable value for an object of size 1 in each direction.")]
         //
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(6, 1)]
+        [Id(6, 2)]
         public double Hausdorff { get { return _parameters.Hausdorff; } set { _parameters.Hausdorff = value; } }
         //
         //
         [Category("Mesh optimization")]
         [OrderedDisplayName(0, 10, "Optimize steps 2D")]
         [Description("Number of optimize steps to use for 2-D mesh optimization.")]
-        [Id(1, 2)]
+        [Id(1, 3)]
         public int OptimizeSteps2D { get { return _parameters.OptimizeSteps2D; } set { _parameters.OptimizeSteps2D = value; } }
         //
         [Category("Mesh optimization")]
         [OrderedDisplayName(1, 10, "Optimize steps 3D")]
         [Description("Number of optimize steps to use for 3-D mesh optimization.")]
-        [Id(2, 2)]
+        [Id(2, 3)]
         public int OptimizeSteps3D { get { return _parameters.OptimizeSteps3D; } set { _parameters.OptimizeSteps3D = value; } }
         //
         //
         [Category("Mesh type")]
         [OrderedDisplayName(0, 10, "Second order")]
         [Description("Create second order elements.")]
-        [Id(1, 3)]
+        [Id(1, 4)]
         public bool SecondOrder
         {
             get {return _parameters.SecondOrder;}
@@ -99,26 +105,26 @@ namespace PrePoMax.Forms
         [Category("Mesh type")]
         [OrderedDisplayName(1, 10, "Midside nodes on geometry")]
         [Description("Create midside nodes on geometry.")]
-        [Id(2, 3)]
+        [Id(2, 4)]
         public bool MidsideNodesOnGeometry { get { return _parameters.MidsideNodesOnGeometry; } set { _parameters.MidsideNodesOnGeometry = value; } }
         //
         [Category("Mesh type")]
         [OrderedDisplayName(2, 10, "Quad-dominated mesh")]
         [Description("Use quad-dominated mesh for shell parts.")]
-        [Id(3, 3)]
+        [Id(3, 4)]
         public bool QuadDominated { get { return _parameters.QuadDominated; } set { _parameters.QuadDominated = value; } }
         //
         //
         [Category("Mesh operations")]
         [OrderedDisplayName(0, 10, "Split compound mesh")]
         [Description("Split compound part mesh to unconnected part meshes.")]
-        [Id(1, 4)]
+        [Id(1, 5)]
         public bool SplitCompoundMesh { get { return _parameters.SplitCompoundMesh; } set { _parameters.SplitCompoundMesh = value; } }
         //
         [Category("Mesh operations")]
         [OrderedDisplayName(1, 10, "Keep model edges")]
         [Description("Select Yes to keep and No to ignore the model edges.")]
-        [Id(2, 4)]
+        [Id(2, 5)]
         public bool KeepModelEdges { get { return _parameters.KeepModelEdges; } set { _parameters.KeepModelEdges = value; } }
 
 

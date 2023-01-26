@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using CaeGlobals;
@@ -31,8 +32,34 @@ namespace CaeMesh
         private bool _useMmg;
         private double _hausdorff;              // 0.01 for objects of size 1; allowed distance from geometry
         private bool _keepModelEdges;
+        //
+        protected int[] _creationIds;
+        protected Selection _creationData;
+        //
+        protected string _name;             //ISerializable
+        protected bool _active;             //ISerializable
+        protected bool _visible;            //ISerializable
+        protected bool _valid;              //ISerializable
+        protected bool _internal;           //ISerializable
+        protected bool _checkName;          //ISerializable
 
-
+        public virtual string Name
+        {
+            get { return _name; }
+            set
+            {
+                if (_checkName) NamedClass.CheckNameForErrors(ref value);
+                _name = value;
+            }
+        }
+        public virtual bool Active { get { return _active; } set { _active = value; } }
+        public virtual bool Visible { get { return _visible; } set { _visible = value; } }
+        public virtual bool Valid
+        {
+            get { return _valid; }
+            set { _valid = value; }
+        }
+        public virtual bool Internal { get { return _internal; } set { _internal = value; } }
 
         // Properties                                                                                                               
         public double MaxH 
@@ -118,7 +145,7 @@ namespace CaeMesh
         }
         //
         public bool SplitCompoundMesh { get { return _splitCompoundMesh; } set { _splitCompoundMesh = value; } }
-        //
+        // mmgPlatform
         public bool UseMmg { get { return _useMmg; } set { _useMmg = value; } }
         public double Hausdorff
         {
@@ -130,12 +157,22 @@ namespace CaeMesh
             }
         }
         public bool KeepModelEdges { get { return _keepModelEdges; } set { _keepModelEdges = value; } }
+        //
+        public int[] CreationIds { get { return _creationIds; } set { _creationIds = value; } }
+        public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
 
 
         // Constructors                                                                                                             
-        public MeshingParameters()
+        public MeshingParameters(string name)
         {
-            Reset();   
+            Reset();
+            //
+            _name = name;
+            _active = true;
+            _visible = true;
+            _valid = true;
+            _internal = true;
+            _checkName = true;
         }
         public MeshingParameters(MeshingParameters meshingParameters)
         {
@@ -156,7 +193,7 @@ namespace CaeMesh
             _hausdorff = meshingParameters.Hausdorff;
             _keepModelEdges = meshingParameters.KeepModelEdges;
         }
-
+        
 
         // Methods                                                                                                                  
         public void Reset()
@@ -255,5 +292,7 @@ namespace CaeMesh
             if (meshingParameters1._keepModelEdges != meshingParameters2._keepModelEdges) return false;
             return true;
         }
+
+        
     }
 }

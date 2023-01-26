@@ -238,9 +238,9 @@ namespace PrePoMax.Forms
             _surfraceInteractionNames = _controller.GetSurfaceInteractionNames();
             _surfaceInteractionToEditName = surfaceInteractionToEditName;
             // Initialize surface interaction properties
-            tvProperties.Nodes.Find("Surface behavior", true)[0].Tag = new SurfaceBehavior();
+            tvProperties.Nodes.Find("Surface Behavior", true)[0].Tag = new SurfaceBehavior();
             tvProperties.Nodes.Find("Friction", true)[0].Tag = new Friction();
-            tvProperties.Nodes.Find("Gap conductance", true)[0].Tag = new GapConductance();
+            tvProperties.Nodes.Find("Gap Conductance", true)[0].Tag = new GapConductance();
             tvProperties.ExpandAll();
             //
             if (_surfaceInteractionToEditName == null)
@@ -352,7 +352,7 @@ namespace PrePoMax.Forms
         }
         private string GetSurfaceInteractionName()
         {
-            return _surfraceInteractionNames.GetNextNumberedKey("Surface_interaction");
+            return _surfraceInteractionNames.GetNextNumberedKey("Surface_Interaction");
         }
         private void SetDataGridViewBinding(object data)
         {
