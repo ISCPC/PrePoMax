@@ -134,6 +134,7 @@
     <Compile Include="Command\0040_Mesh\CRemoveMeshRefinements.cs" />
     <Compile Include="Command\0040_Mesh\CReplaceMeshingParameters.cs" />
     <Compile Include="Command\0040_Mesh\CReplaceMeshRefinement.cs" />
+    <Compile Include="Command\0040_Mesh\CSetMeshingParameters.cs" />
     <Compile Include="Command\0050_Model\01_Properties\CReplaceModelProperties.cs" />
     <Compile Include="Command\0050_Model\10_Node\CRenumberNodes.cs" />
     <Compile Include="Command\0050_Model\11_Element\CRenumberElements.cs" />

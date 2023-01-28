@@ -2981,7 +2981,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectOneEntity("Meshing Parameters", _controller.GetMeshingParametersNamed(), EditMeshingParameters);
+                SelectOneEntity("Meshing Parameters", _controller.GetMeshingParameters(), EditMeshingParameters);
             }
             catch (Exception ex)
             {
@@ -2992,7 +2992,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Meshing Parameters", _controller.GetMeshingParametersNamed(), DeleteMeshingParameters);
+                SelectMultipleEntities("Meshing Parameters", _controller.GetMeshingParameters(), DeleteMeshingParameters);
             }
             catch (Exception ex)
             {
@@ -3069,8 +3069,7 @@ namespace PrePoMax
             {
                 if (SetStateWorking(Globals.PreviewText))
                 {
-                    stateSet = true;
-                    _vtk.ClearSelection();  // must not be inside await - throws error
+                    stateSet = true;                    
                     //
                     await Task.Run(() =>
                     {
@@ -3240,12 +3239,32 @@ namespace PrePoMax
         {
             await Task.Run(() =>
             {
-                CreateMeshingParameters();
+                InvokeIfRequired(() => { CreateMeshingParameters(); });
                 //
-                while (_frmMeshingParameters.Visible)
+                bool firstTime = true;
+                do
                 {
-                    System.Threading.Thread.Sleep(100);
+                    System.Threading.Thread.Sleep(250);
+                    if (firstTime)
+                    {
+                        Selection selection = new Selection();
+                        selection.Add(new SelectionNodeIds(vtkSelectOperation.None, false,
+                                                           _controller.Model.Geometry.GetPartIdsByNames(partNames)));
+                        selection.SelectItem = vtkSelectItem.Part;
+                        selection.CurrentView = (int)ViewGeometryModelResults.Geometry;
+                        _controller.Selection = selection;
+                        _controller.SetSelectByToOff();
+                        //
+                        InvokeIfRequired(() => {
+                            //_controller.HighlightSelection();
+                            SelectionChanged(_controller.Model.Geometry.GetPartIdsByNames(partNames));
+                        });
+                        //
+                        firstTime = false;
+                    }
                 }
+                while (_frmMeshingParameters.Visible);
+
             });
             if (_frmMeshingParameters.DialogResult == DialogResult.OK) CreatePartMeshes(partNames);
         }

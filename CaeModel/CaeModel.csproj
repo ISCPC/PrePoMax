@@ -135,6 +135,7 @@
     <Compile Include="Constraints\RigidBody.cs" />
     <Compile Include="Constraints\Constraint.cs" />
     <Compile Include="FeModel.cs" />
+    <Compile Include="Steps\SteadyStateDynamics.cs" />
     <Compile Include="Steps\DefinedFields\DefinedField.cs" />
     <Compile Include="Steps\DefinedFields\DefinedTemperature.cs" />
     <Compile Include="Steps\FieldOutputs\ElementFieldOutput.cs" />

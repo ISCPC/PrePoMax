@@ -171,7 +171,7 @@ namespace PrePoMax.Forms
             if (_prevRemeshingParameters == null)
             {
                 MeshingParameters meshingParameters =
-                    _controller.GetDefaultMeshingParameters(_controller.Model.Mesh.Parts.Keys.ToArray(), false);
+                    _controller.GetPartDefaultMeshingParameters(_controller.Model.Mesh.Parts.Keys.ToArray(), false);
                 RemeshingParameters = new RemeshingParameters("", RegionTypeEnum.Selection, meshingParameters);
             }
             else RemeshingParameters = _prevRemeshingParameters;

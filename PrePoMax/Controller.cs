@@ -20,6 +20,7 @@ using vtkControl;
 using System.Runtime.InteropServices;
 using System.IO.Ports;
 using System.Collections.ObjectModel;
+using System.Xml.Linq;
 
 namespace PrePoMax
 {
@@ -923,7 +924,37 @@ namespace PrePoMax
                         data = CaeGlobals.Tools.LoadDumpFromFile<object[]>(br);
                         tmp = (Controller)data[0];
                         model = tmp._model;
-                        if (tmp._allResults == null)    // Compatibility v.1.3.3
+                        // Compatibility v.1.3.5
+                        Selection selection;
+                        foreach (var entry in model.Geometry.Parts)
+                        {
+                            if (entry.Value is GeometryPart gp && gp.MeshingParameters != null)
+                            {
+                                gp.MeshingParameters.FactorMax = MeshingParameters.DefaultFactorMax;
+                                gp.MeshingParameters.FactorMin = MeshingParameters.DefaultFactorMin;
+                                gp.MeshingParameters.FactorHausdorff = MeshingParameters.DefaultFactorHausdorff;
+                                gp.MeshingParameters.SetCheckName(true);
+                                string name = model.Geometry.MeshingParameters.GetNextNumberedKey("Meshing_Parameters");
+                                gp.MeshingParameters.Name = name;
+                                gp.MeshingParameters.Active = true;
+                                gp.MeshingParameters.Visible = true;
+                                gp.MeshingParameters.Valid = true;
+                                gp.MeshingParameters.Internal = false;
+                                //
+                                gp.MeshingParameters.CreationIds = new int[] { gp.PartId };
+                                selection = new Selection();
+                                selection.CurrentView = (int)ViewGeometryModelResults.Geometry;
+                                selection.SelectItem = vtkSelectItem.Part;
+                                selection.Add(new SelectionNodeIds(vtkSelectOperation.None, false,
+                                                                   gp.MeshingParameters.CreationIds));
+                                gp.MeshingParameters.CreationData = selection;
+                                //
+                                model.Geometry.MeshingParameters.Add(gp.MeshingParameters.Name, gp.MeshingParameters.DeepClone());
+                                gp.MeshingParameters = null;
+                            }
+                        }
+                        // Compatibility v.1.3.3
+                        if (tmp._allResults == null)    
                         {
                             oldResults = true;
                             allResults = new ResultsCollection();
@@ -931,7 +962,8 @@ namespace PrePoMax
                         }
                         else allResults = tmp._allResults;
                         //
-                        string[] versions = fileVersion.Split(new string[] { " ", ".", "v" }, StringSplitOptions.RemoveEmptyEntries);
+                        string[] versions = fileVersion.Split(new string[] { " ", ".", "v" },
+                                                              StringSplitOptions.RemoveEmptyEntries);
                         int major;
                         int minor;
                         int build;
@@ -2712,6 +2744,7 @@ namespace PrePoMax
                 _model.Geometry.Parts.Replace(importedFileNames[0], part.Name, part);
                 // Remove old part
                 RemoveGeometryParts(new string[] { part.Name }, keepGeometryselections);
+                _model.Geometry.ChangePartId(newPart.Name, part.PartId);
                 //
                 UpdateMeshingParameters();
                 //
@@ -3147,7 +3180,7 @@ namespace PrePoMax
             //
             _model.Geometry.MeshingParameters.Add(meshingParameters.Name, meshingParameters);
             //
-            _form.AddTreeNode(ViewGeometryModelResults.Geometry, new MeshingParametersNamed(meshingParameters), null);
+            _form.AddTreeNode(ViewGeometryModelResults.Geometry, meshingParameters, null);
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
@@ -3163,26 +3196,12 @@ namespace PrePoMax
             }
             else return null;
         }
-        public MeshingParametersNamed[] GetMeshingParametersNamed()
-        {
-            if (_model.Geometry != null)
-            {
-                int count = 0;
-                MeshingParametersNamed[] result = new MeshingParametersNamed[_model.Geometry.MeshingParameters.Count()];
-                foreach (var entry in _model.Geometry.MeshingParameters)
-                {
-                    result[count++] = new MeshingParametersNamed(entry.Value);
-                }
-                return result;
-            }
-            else return null;
-        }
         public MeshingParameters GetPartMeshingParameters(string partName)
         {
             HashSet<int> selectedPartIds;
             string[] meshablePartNames = GetMeshablePartNames(new string[] { partName });
             int[] meshablePartIds = _model.Geometry.GetPartIdsByNames(meshablePartNames);
-            MeshingParameters meshingParameters = GetDefaultMeshingParameters(partName);
+            MeshingParameters meshingParameters = GetPartDefaultMeshingParameters(partName);
             //
             foreach (var entry in _model.Geometry.MeshingParameters)
             {
@@ -3205,7 +3224,7 @@ namespace PrePoMax
             MeshingParameters meshingParameters = _model.Geometry.MeshingParameters[meshingParametersName];
             meshingParameters.Active = active;
             //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, meshingParametersName, new MeshingParametersNamed(meshingParameters), null);
+            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, meshingParametersName, meshingParameters, null);
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
@@ -3223,7 +3242,7 @@ namespace PrePoMax
             //
             _model.Geometry.MeshingParameters.Replace(oldMeshingParametersName, meshingParameters.Name, meshingParameters);
             //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldMeshingParametersName, new MeshingParametersNamed(meshingParameters),
+            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldMeshingParametersName, meshingParameters,
                                  null, updateSelection);
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
@@ -3233,13 +3252,19 @@ namespace PrePoMax
             foreach (var name in meshingParametersNames)
             {
                 _model.Geometry.MeshingParameters.Remove(name);
-                _form.RemoveTreeNode<MeshingParametersNamed>(ViewGeometryModelResults.Geometry, name, null);
+                _form.RemoveTreeNode<MeshingParameters>(ViewGeometryModelResults.Geometry, name, null);
             }
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         //
-        public MeshingParameters GetDefaultMeshingParameters(string partName)
+        public MeshingParameters GetDefaultMeshingParameters(string meshingParametersName)
+        {
+            MeshingParameters meshingParameters = _settings.Meshing.MeshingParameters.DeepClone();
+            meshingParameters.Name = meshingParametersName;
+            return meshingParameters;
+        }
+        public MeshingParameters GetPartDefaultMeshingParameters(string partName)
         {
             BasePart part = GetGeometryPart(partName);
             if (part == null) part = GetModelPart(partName);
@@ -3247,24 +3272,24 @@ namespace PrePoMax
             //
             if (!MeshJobIdle) throw new Exception("The meshing is already in progress.");
             //
-            MeshingParameters defaultMeshingParameters = Settings.Meshing.MeshingParameters.DeepClone();
-            double factorMax = 20;
-            double factorMin = 1000;
-            double factorHausdorff = 500;
-            double maxSize = part.BoundingBox.GetDiagonal();
+            MeshingParameters defaultMeshingParameters = GetDefaultMeshingParameters("Default");
+            double factorMax = defaultMeshingParameters.FactorMax;
+            double factorMin = defaultMeshingParameters.FactorMin;
+            double factorHausdorff = defaultMeshingParameters.FactorHausdorff;
+            double diagonal = part.BoundingBox.GetDiagonal();
             //
             if (part.PartType == PartType.Shell && part is GeometryPart gp && gp.CADFileData == null)
                 defaultMeshingParameters.UseMmg = true;
             else if (part.PartType == PartType.Shell && part is MeshPart)   // for remeshing
                 defaultMeshingParameters.UseMmg = true;
             //
-            defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorMax, 2);
-            defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorMin, 2);
-            defaultMeshingParameters.Hausdorff = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorHausdorff, 2);
+            defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(diagonal * factorMax, 2);
+            defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(diagonal * factorMin, 2);
+            defaultMeshingParameters.Hausdorff = CaeGlobals.Tools.RoundToSignificantDigits(diagonal * factorHausdorff, 2);
             //
             return defaultMeshingParameters;
         }
-        public MeshingParameters GetDefaultMeshingParameters(string[] partNames, bool onlyOneMeshType = true)
+        public MeshingParameters GetPartDefaultMeshingParameters(string[] partNames, bool onlyOneMeshType = true)
         {
             double sumMax = 0;
             double sumMin = 0;
@@ -3274,7 +3299,7 @@ namespace PrePoMax
             foreach (var partName in partNames)
             {
                 // Default parameters
-                defaultMeshingParameters = GetDefaultMeshingParameters(partName);
+                defaultMeshingParameters = GetPartDefaultMeshingParameters(partName);
                 // If part is not found return null
                 if (defaultMeshingParameters != null)
                 {
@@ -3386,11 +3411,6 @@ namespace PrePoMax
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
-        public string[] GetPartNamesFromMeshRefinement(FeMeshRefinement meshRefinement)
-        {
-            if (Model.Geometry != null) return Model.Geometry.GetPartNamesFromGeometryIds(meshRefinement.GeometryIds);
-            else return null;
-        }
         private void UpdateMeshRefinements(bool updateSelection = true)
         {
             if (_model != null && _model.Geometry != null)
@@ -3442,7 +3462,7 @@ namespace PrePoMax
             //
             FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, new string[] { part.Name });
             CreateMeshRefinementFile(part, meshRefinementFileName, newMeshRefinement);
-            parameters.WriteToFile(meshParametersFileName);
+            parameters.WriteToFile(meshParametersFileName, part.BoundingBox.GetDiagonal());
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
             //
             string argument = "STL_EDGE_MESH " +
@@ -3486,7 +3506,7 @@ namespace PrePoMax
             SuppressExplodedView(new string[] { part.Name });
             File.WriteAllText(brepFileName, part.CADFileData);
             CreateMeshRefinementFile(part, meshRefinementFileName, newMeshRefinement);
-            parameters.WriteToFile(meshParametersFileName);
+            parameters.WriteToFile(meshParametersFileName, part.BoundingBox.GetDiagonal());
             ResumeExplodedViews(false);
             //
             string argument = "BREP_EDGE_MESH " +
@@ -3568,7 +3588,7 @@ namespace PrePoMax
             SuppressExplodedView(partNames);
             FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, partNames);
             CreateMeshRefinementFile(part, meshRefinementFileName, null);
-            GetPartMeshingParameters(part.Name).WriteToFile(meshParametersFileName);
+            GetPartMeshingParameters(part.Name).WriteToFile(meshParametersFileName, part.BoundingBox.GetDiagonal());
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
             ResumeExplodedViews(false);
             //
@@ -3618,6 +3638,8 @@ namespace PrePoMax
             //
             System.Diagnostics.PerformanceCounter ramCounter;
             ramCounter = new System.Diagnostics.PerformanceCounter("Memory", "Available MBytes");
+            double hausdorff = meshingParameters.Hausdorff;
+            if (meshingParameters.RelativeSize) hausdorff = part.BoundingBox.GetDiagonal() * meshingParameters.FactorHausdorff;
             //
             string argument = //"-nr " + 
                               "-m " + ramCounter.NextValue() * 0.9 + " " +
@@ -3625,7 +3647,7 @@ namespace PrePoMax
                                             //"-hsiz 0.08 " +  
                               "-hmax " + meshingParameters.MaxH + " " +
                               "-hmin " + meshingParameters.MinH + " " +
-                              "-hausd " + meshingParameters.Hausdorff + " " +
+                              "-hausd " + hausdorff + " " +
                               "-in \"" + mmgInFileName + "\" " +
                               "-out \"" + mmgOutFileName + "\" ";
             //
@@ -3650,7 +3672,7 @@ namespace PrePoMax
                            //"-hsiz 0.08 " +  
                            "-hmax " + meshingParameters.MaxH + " " +
                            "-hmin " + meshingParameters.MinH + " " +
-                           "-hausd " + meshingParameters.Hausdorff + " " +
+                           "-hausd " + hausdorff + " " +
                            "-in \"" + mmgInFileName + "\" " +
                            "-out \"" + mmgOutFileName + "\" ";
                 //
@@ -3690,7 +3712,7 @@ namespace PrePoMax
             SuppressExplodedView(new string[] { part.Name });
             File.WriteAllText(brepFileName, part.CADFileData);
             MeshingParameters meshingParameters = GetPartMeshingParameters(part.Name);
-            meshingParameters.WriteToFile(meshParametersFileName);
+            meshingParameters.WriteToFile(meshParametersFileName, part.BoundingBox.GetDiagonal());
             CreateMeshRefinementFile(part, meshRefinementFileName, null);
             ResumeExplodedViews(false);
             //
@@ -8419,7 +8441,7 @@ namespace PrePoMax
         {
             // Do not call the replace command here
             item.Active = activate;
-            if (item is MeshingParametersNamed mp) ActivateDeactivateMeshingParameters(mp.Name, activate);
+            if (item is MeshingParameters mp) ActivateDeactivateMeshingParameters(mp.Name, activate);
             else if (item is FeMeshRefinement mr) ActivateDeactivateMeshRefinement(mr.Name, activate);
             else if (item is Constraint co) ActivateDeactivateConstraint(co.Name, activate);
             else if (item is ContactPair cp) ActivateDeactivateContactPair(cp.Name, activate);
@@ -8621,6 +8643,22 @@ namespace PrePoMax
                     HashSet<PartType> partTypes = new HashSet<PartType>();
                     foreach (var part in parts) partTypes.Add(part.PartType);
                     if (partTypes.Count <= 1) add = true;   // 0 : when substracting the last item
+                }
+                else if (_selection.LimitSelectionToFirstMesherType)
+                {
+                    if (afterIds == null) { _selection.Add(node, ids); afterIds = GetSelectionIds(); _selection.RemoveLast(); }
+                    HashSet<BasePart> parts = mesh.GetPartsFromSelectionIds(afterIds, _selection.SelectItem);
+                    bool mmg;
+                    HashSet<bool> mmgHash = new HashSet<bool>();
+                    foreach (var part in parts)
+                    {
+                        mmg = false;
+                        if (part.PartType == PartType.Shell && part is GeometryPart gp && gp.CADFileData == null) mmg = true;
+                        else if (part.PartType == PartType.Shell && part is MeshPart) mmg = true; // for remeshing
+                        mmgHash.Add(mmg);
+                        if (mmgHash.Count > 1) break;
+                    }
+                    if (mmgHash.Count <= 1) add = true;   // 0 : when substracting the last item
                 }
                 else add = true;
             }

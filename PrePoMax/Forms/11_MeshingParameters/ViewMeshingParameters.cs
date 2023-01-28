@@ -7,6 +7,7 @@ using CaeMesh;
 using CaeGlobals;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
+using Newtonsoft.Json.Linq;
 
 namespace PrePoMax.Forms
 {
@@ -14,59 +15,92 @@ namespace PrePoMax.Forms
     public class ViewMeshingParameters
     {
         // Variables                                                                                                                
+        protected bool _settingsView;
         protected MeshingParameters _parameters;
         protected readonly DynamicCustomTypeDescriptor _dctd;
 
 
         // Properties                                                                                                               
-        //[Category("Data")]
-        //[OrderedDisplayName(0, 10, "Name")]
-        //[Description("Name of the meshing parameters.")]
-        //[Id(1, 1)]
-        //public string Name { get { return _parameters.Name; } set { _parameters.Name = value; } }
+        [Category("Data")]
+        [OrderedDisplayName(0, 10, "Name")]
+        [Description("Name of the meshing parameters.")]
+        [Id(1, 1)]
+        public string Name { get { return _parameters.Name; } set { _parameters.Name = value; } }
+        //
+        [Category("Data")]
+        [OrderedDisplayName(1, 10, "Mesh size definition")]
+        [Description("Select the mesh size definition.")]
+        [Id(2, 1)]
+        public bool Relative
+        {
+            get { return _parameters.RelativeSize; }
+            set
+            {
+                _parameters.RelativeSize = value;
+                UpdatePropertiesVisibility();
+            }
+        }
+        //
         //
         [Category("Mesh size")]
-        [OrderedDisplayName(0, 10, "Max element size")]
+        [OrderedDisplayName(0, 10, "Max element factor")]
+        [Description("The relative factor for the maximum element size in regard to the bounding box diagonal.")]
+        [Id(1, 2)]
+        public virtual double FactorMax { get { return _parameters.FactorMax; } set { _parameters.FactorMax = value; } }
+        //
+        [Category("Mesh size")]
+        [OrderedDisplayName(1, 10, "Min element factor")]
+        [Description("The relative factor for the minimum element size in regard to the bounding box diagonal.")]
+        [Id(2, 2)]
+        public virtual double FactorMin { get { return _parameters.FactorMin; } set { _parameters.FactorMin = value; } }
+        //
+        [Category("Mesh size")]
+        [OrderedDisplayName(2, 10, "Max element size")]
         [Description("The value for the maximum element size.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(1, 2)]
+        [Id(3, 2)]
         public virtual double MaxH { get { return _parameters.MaxH; } set { _parameters.MaxH = value; } }
         //
         [Category("Mesh size")]
-        [OrderedDisplayName(1, 10, "Min element size")]
+        [OrderedDisplayName(3, 10, "Min element size")]
         [Description("The value for the minimum element size.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(2, 2)]
+        [Id(4, 2)]
         public virtual double MinH { get { return _parameters.MinH; } set { _parameters.MinH = value; } }
         //
         [Category("Mesh size")]
-        [OrderedDisplayName(2, 10, "Grading")]
+        [OrderedDisplayName(4, 10, "Grading")]
         [Description("The value of the mesh grading (0 => uniform mesh; 1 => aggressive local grading).")]
         [TypeConverter(typeof(StringDoubleConverter))]
-        [Id(3, 2)]
+        [Id(5, 2)]
         public double Grading { get { return _parameters.Grading; } set { _parameters.Grading = value; } }
         //
         [Category("Mesh size")]
-        [OrderedDisplayName(3, 10, "Elements per edge")]
+        [OrderedDisplayName(5, 10, "Elements per edge")]
         [Description("Number of elements to generate per edge of the geometry.")]
         [TypeConverter(typeof(StringDoubleConverter))]
-        [Id(4, 2)]
+        [Id(6, 2)]
         public double Elementsperedge { get { return _parameters.Elementsperedge; } set { _parameters.Elementsperedge = value; } }
         //
         [Category("Mesh size")]
-        [OrderedDisplayName(4, 10, "Elements per curvature")]
+        [OrderedDisplayName(6, 10, "Elements per curvature")]
         [Description("Number of elements to generate per curvature radius.")]
         [TypeConverter(typeof(StringDoubleConverter))]
-        [Id(5, 2)]
+        [Id(7, 2)]
         public double Elementspercurve { get { return _parameters.Elementspercurve; } set { _parameters.Elementspercurve = value; } }
+        // Hausdorff factor
+        [Category("Mesh size")]
+        [OrderedDisplayName(7, 10, "Hausdorff factor")]
+        [Description("The relative factor for the Hausdorff distance in regard to the bounding box diagonal.")]
+        [Id(8, 2)]
+        public double FactorHausdorff { get { return _parameters.FactorHausdorff; } set { _parameters.FactorHausdorff = value; } }
         // Maximal Hausdorff distance for the boundaries approximation.
         [Category("Mesh size")]
-        [OrderedDisplayName(5, 10, "Hausdorff")]
+        [OrderedDisplayName(8, 10, "Hausdorff")]
         [Description("Maximal Hausdorff distance for the boundaries approximation. " +
-                              "A value of 0.01 is a suitable value for an object of size 1 in each direction.")]
-        //
+                     "A value of 0.01 is a suitable value for an object of size 1 in each direction.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        [Id(6, 2)]
+        [Id(9, 2)]
         public double Hausdorff { get { return _parameters.Hausdorff; } set { _parameters.Hausdorff = value; } }
         //
         //
@@ -93,12 +127,7 @@ namespace PrePoMax.Forms
             set
             {
                 _parameters.SecondOrder = value;
-                //
-                if (!_parameters.UseMmg)
-                {
-                    _dctd.GetProperty(nameof(MidsideNodesOnGeometry)).SetIsBrowsable(value);
-                    _dctd.PropertySortOrder = CustomSortOrder.AscendingById;
-                }
+                UpdatePropertiesVisibility();
             }
         }
         //
@@ -137,27 +166,14 @@ namespace PrePoMax.Forms
             _dctd.CategorySortOrder = CustomSortOrder.AscendingById;
             _dctd.PropertySortOrder = CustomSortOrder.AscendingById;    // seems not to work
             // Now lets display Yes/No instead of True/False
+            _dctd.RenameBooleanProperty(nameof(Relative), "Relative", "Absolute");
             _dctd.RenameBooleanPropertyToYesNo(nameof(SecondOrder));
             _dctd.RenameBooleanPropertyToYesNo(nameof(MidsideNodesOnGeometry));
             _dctd.RenameBooleanPropertyToYesNo(nameof(QuadDominated));
             _dctd.RenameBooleanPropertyToYesNo(nameof(SplitCompoundMesh));
             _dctd.RenameBooleanPropertyToYesNo(nameof(KeepModelEdges));
             //
-            _dctd.GetProperty(nameof(MaxH)).SetIsBrowsable(true);
-            _dctd.GetProperty(nameof(MinH)).SetIsBrowsable(true);
-            _dctd.GetProperty(nameof(Grading)).SetIsBrowsable(!_parameters.UseMmg);
-            _dctd.GetProperty(nameof(Elementsperedge)).SetIsBrowsable(!_parameters.UseMmg);
-            _dctd.GetProperty(nameof(Elementspercurve)).SetIsBrowsable(!_parameters.UseMmg);
-            _dctd.GetProperty(nameof(Hausdorff)).SetIsBrowsable(_parameters.UseMmg);            // mmg only
-            _dctd.GetProperty(nameof(OptimizeSteps2D)).SetIsBrowsable(!_parameters.UseMmg);
-            _dctd.GetProperty(nameof(OptimizeSteps3D)).SetIsBrowsable(!_parameters.UseMmg);
-            _dctd.GetProperty(nameof(SecondOrder)).SetIsBrowsable(true);
-            _dctd.GetProperty(nameof(MidsideNodesOnGeometry)).SetIsBrowsable(!_parameters.UseMmg);
-            _dctd.GetProperty(nameof(QuadDominated)).SetIsBrowsable(!_parameters.UseMmg);
-            _dctd.GetProperty(nameof(SplitCompoundMesh)).SetIsBrowsable(!_parameters.UseMmg);
-            _dctd.GetProperty(nameof(KeepModelEdges)).SetIsBrowsable(_parameters.UseMmg);       // mmg only
-            // To show/hide the MediumNodesOnGeometry property
-            SecondOrder = _parameters.SecondOrder;
+            UpdatePropertiesVisibility();
         }
 
 
@@ -165,6 +181,36 @@ namespace PrePoMax.Forms
         public MeshingParameters GetBase()
         {
             return _parameters;
+        }
+        protected void UpdatePropertiesVisibility()
+        {
+            bool visible = _parameters.RelativeSize || _settingsView;
+            _dctd.GetProperty(nameof(FactorMax)).SetIsBrowsable(visible);
+            _dctd.GetProperty(nameof(FactorMin)).SetIsBrowsable(visible);
+            _dctd.GetProperty(nameof(MaxH)).SetIsBrowsable(!visible);
+            _dctd.GetProperty(nameof(MinH)).SetIsBrowsable(!visible);
+            //
+            visible = (_parameters.UseMmg && _parameters.RelativeSize) || _settingsView;
+            _dctd.GetProperty(nameof(FactorHausdorff)).SetIsBrowsable(visible); // mmg only
+            //
+            _dctd.GetProperty(nameof(Grading)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(Elementsperedge)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(Elementspercurve)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(Hausdorff)).SetIsBrowsable(_parameters.UseMmg && !_parameters.RelativeSize);   // mmg only
+            _dctd.GetProperty(nameof(OptimizeSteps2D)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(OptimizeSteps3D)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(SecondOrder)).SetIsBrowsable(true);
+            _dctd.GetProperty(nameof(MidsideNodesOnGeometry)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(QuadDominated)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(SplitCompoundMesh)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(KeepModelEdges)).SetIsBrowsable(_parameters.UseMmg || _settingsView);  // mmg only
+            // To show/hide the MediumNodesOnGeometry property
+            if (!_parameters.UseMmg)
+            {
+                _dctd.GetProperty(nameof(MidsideNodesOnGeometry)).SetIsBrowsable(_parameters.SecondOrder);
+                _dctd.PropertySortOrder = CustomSortOrder.AscendingById;
+            }
+
         }
     }
 }

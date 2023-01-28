@@ -102,7 +102,6 @@
     <Compile Include="Geometry\GeomVertex.cs" />
     <Compile Include="Geometry\GeomSurface.cs" />
     <Compile Include="Geometry\GeometryItem.cs" />
-    <Compile Include="Parts\MeshingParametersNamed.cs" />
     <Compile Include="Parts\NodalDataStructures.cs" />
     <Compile Include="Refinement\FeMeshRefinement.cs" />
     <Compile Include="Parts\CellNeighbour.cs" />

@@ -15,7 +15,6 @@ namespace PrePoMax.Forms
         private Controller _controller;
         private HashSet<string> _meshingParametersNames;
         private string _meshingParametersToEditName;
-        private MeshingParameters _defaultMeshingParameters;
         private System.Windows.Forms.ContextMenuStrip cmsPropertyGrid;
         private System.ComponentModel.IContainer components;
         private System.Windows.Forms.ToolStripMenuItem tsmiResetAll;
@@ -23,6 +22,7 @@ namespace PrePoMax.Forms
         private int _previewBtnDx;
         private ViewMeshingParameters _viewMeshingParameters;
         private System.Windows.Forms.ToolTip ttText;
+        private bool _meshingParametersChanged;
 
 
         // Callbacks                                                                                                                
@@ -36,9 +36,9 @@ namespace PrePoMax.Forms
             set
             {
                 _viewMeshingParameters = new ViewMeshingParameters(value.DeepClone());
+                propertyGrid.SelectedObject = _viewMeshingParameters;
             }
         }
-        public MeshingParameters DefaultMeshingParameters { set { _defaultMeshingParameters = value; } }
 
 
         // Constructors                                                                                                             
@@ -49,7 +49,6 @@ namespace PrePoMax.Forms
             //
             _controller = controller;
             _meshingParametersNames = new HashSet<string>();
-            _defaultMeshingParameters = null;
             _viewMeshingParameters = null;
             //
             _previewBtnDx = btnCancel.Left - btnOK.Right;
@@ -68,24 +67,24 @@ namespace PrePoMax.Forms
             // 
             // gbProperties
             // 
-            this.gbProperties.Size = new System.Drawing.Size(350, 434);
+            this.gbProperties.Size = new System.Drawing.Size(350, 444);
             // 
             // propertyGrid
             // 
             this.propertyGrid.ContextMenuStrip = this.cmsPropertyGrid;
-            this.propertyGrid.Size = new System.Drawing.Size(338, 406);
+            this.propertyGrid.Size = new System.Drawing.Size(338, 416);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(200, 446);
+            this.btnOK.Location = new System.Drawing.Point(200, 456);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(281, 446);
+            this.btnCancel.Location = new System.Drawing.Point(281, 456);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(119, 446);
+            this.btnOkAddNew.Location = new System.Drawing.Point(119, 456);
             // 
             // cmsPropertyGrid
             // 
@@ -105,7 +104,7 @@ namespace PrePoMax.Forms
             // 
             this.btnPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnPreview.Image = global::PrePoMax.Properties.Resources.Show;
-            this.btnPreview.Location = new System.Drawing.Point(166, 446);
+            this.btnPreview.Location = new System.Drawing.Point(166, 456);
             this.btnPreview.Name = "btnPreview";
             this.btnPreview.Size = new System.Drawing.Size(28, 23);
             this.btnPreview.TabIndex = 16;
@@ -115,9 +114,9 @@ namespace PrePoMax.Forms
             // 
             // FrmMeshingParameters
             // 
-            this.ClientSize = new System.Drawing.Size(374, 481);
+            this.ClientSize = new System.Drawing.Size(374, 491);
             this.Controls.Add(this.btnPreview);
-            this.MinimumSize = new System.Drawing.Size(390, 520);
+            this.MinimumSize = new System.Drawing.Size(390, 530);
             this.Name = "FrmMeshingParameters";
             this.Text = "Edit Meshing Parameters";
             this.VisibleChanged += new System.EventHandler(this.FrmMeshingParameters_VisibleChanged);
@@ -136,10 +135,12 @@ namespace PrePoMax.Forms
         // Event handlers                                                                                                           
         private void FrmMeshingParameters_VisibleChanged(object sender, EventArgs e)
         {
+            _controller.Selection.LimitSelectionToFirstMesherType = Visible;
         }
         private void tsmiResetAll_Click(object sender, EventArgs e)
         {
-            MeshingParameters = _defaultMeshingParameters;
+            MeshingParameters = GetDefaultMeshingParameters(MeshingParameters.CreationIds);
+            _meshingParametersChanged = _meshingParametersToEditName != null;
         }
         async private void btnPreview_Click(object sender, EventArgs e)
         {
@@ -151,8 +152,11 @@ namespace PrePoMax.Forms
                 MeshingParameters parameters = ((ViewMeshingParameters)(propertyGrid.SelectedObject)).GetBase();
                 //
                 string[] partNames = _controller.DisplayedMesh.GetPartNamesByIds(MeshingParameters.CreationIds);
+                //
                 if (partNames != null && partNames.Length > 0)
                 {
+                    HighlightMeshingParameters();
+                    //
                     await PreviewEdgeMeshesAsync?.Invoke(partNames, parameters, null);
                 }
             }
@@ -169,6 +173,18 @@ namespace PrePoMax.Forms
 
 
         // Overrides                                                                                                                
+        protected override void OnPropertyGridPropertyValueChanged()
+        {
+            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
+            if (property != nameof(_viewMeshingParameters.Name) &&
+                property != nameof(_viewMeshingParameters.Relative))
+            {
+                _meshingParametersChanged = true;
+            }
+            //
+            base.OnPropertyGridPropertyValueChanged();
+        }
         protected override void OnApply(bool onOkAddNew)
         {
             _viewMeshingParameters = (ViewMeshingParameters)propertyGrid.SelectedObject;
@@ -193,7 +209,11 @@ namespace PrePoMax.Forms
                 }
             }
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
-            if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
+            if (!onOkAddNew)
+            {
+                DialogResult = System.Windows.Forms.DialogResult.OK;
+                ItemSetDataEditor.SelectionForm.Hide();
+            }
         }
         protected override void OnHideOrClose()
         {
@@ -204,6 +224,8 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string meshingParametersToEditName)
         {
+            DialogResult = System.Windows.Forms.DialogResult.None;
+            //
             if (meshingParametersToEditName == null)
             {
                 btnOkAddNew.Visible = true;
@@ -220,13 +242,15 @@ namespace PrePoMax.Forms
             _meshingParametersToEditName = null;
             _viewMeshingParameters = null;
             propertyGrid.SelectedObject = null;
+            _meshingParametersChanged = false;
             //
             _meshingParametersNames.UnionWith(_controller.GetMeshingParametersNames());
             _meshingParametersToEditName = meshingParametersToEditName;
+            _meshingParametersChanged = _meshingParametersToEditName != null;
             // Create new meshing parameters
             if (_meshingParametersToEditName == null)
             {
-                MeshingParameters = new MeshingParameters(GetMeshingParametersName());
+                MeshingParameters = _controller.GetDefaultMeshingParameters(GetMeshingParametersName());
                 _controller.Selection.Clear();
             }
             // Edit existing meshing parameters
@@ -253,9 +277,31 @@ namespace PrePoMax.Forms
         {
             return _meshingParametersNames.GetNextNumberedKey("Meshing_Parameters");
         }
-
-
-
+        private MeshingParameters GetDefaultMeshingParameters(int[] ids)
+        {
+            //MeshingParameters meshingParameters = new MeshingParameters(MeshingParameters.Name);
+            MeshingParameters meshingParameters = _controller.Settings.Meshing.MeshingParameters;
+            meshingParameters.Name = MeshingParameters.Name;
+            //
+            if (ids != null && ids.Length > 0)
+            {
+                string[] partNames = _controller.Model.Geometry.GetPartNamesByIds(ids);
+                MeshingParameters defaultMeshingParameters = _controller.GetPartDefaultMeshingParameters(partNames);
+                //
+                if (defaultMeshingParameters != null)
+                {
+                    defaultMeshingParameters.Name = MeshingParameters.Name;
+                    meshingParameters = defaultMeshingParameters;
+                }
+            }
+            // Copy relative
+            meshingParameters.RelativeSize = MeshingParameters.RelativeSize;
+            // Copy creation data
+            meshingParameters.CreationIds = MeshingParameters.CreationIds;
+            meshingParameters.CreationData = MeshingParameters.CreationData;
+            //
+            return meshingParameters;
+        }
         private void HighlightMeshingParameters()
         {
             try
@@ -283,6 +329,11 @@ namespace PrePoMax.Forms
         {
             if (Enabled)
             {
+                //if (!_meshingParametersChanged)
+                {
+                    MeshingParameters = GetDefaultMeshingParameters(ids);
+                }
+                //
                 MeshingParameters.CreationIds = ids;
                 MeshingParameters.CreationData = _controller.Selection.DeepClone();
                 //

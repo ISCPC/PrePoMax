@@ -103,13 +103,12 @@ namespace PrePoMax.Forms
                 ItemSetDataEditor.SelectionForm.Enabled = false;
                 //
                 FeMeshRefinement meshRefinement = MeshRefinement.DeepClone();
-                string[] partNames = _controller.GetPartNamesFromMeshRefinement(meshRefinement);
+                //
+                string[] partNames = _controller.Model.Geometry.GetPartNamesFromGeometryIds(meshRefinement.GeometryIds);
                 //
                 if (partNames != null && partNames.Length > 0)
                 {
                     HighlightMeshRefinement();
-                    //Set the name to the prev meshRefinement name
-                    if (_meshRefinementToEditName != null) meshRefinement.Name = _meshRefinementToEditName;
                     //
                     await PreviewEdgeMeshesAsync?.Invoke(partNames, null, meshRefinement);
                 }

@@ -486,7 +486,7 @@ namespace CaeMesh
                     }
                 }
                 //
-                SetItemValidity(new MeshingParametersNamed(meshingParameters), valid, items);
+                SetItemValidity(meshingParameters, valid, items);
                 if (!valid && meshingParameters.Active) invalidItems.Add("Meshing parameters: " + entry.Value.Name);
             }
             // Mesh refinement

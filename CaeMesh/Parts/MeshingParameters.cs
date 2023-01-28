@@ -10,12 +10,21 @@ using CaeGlobals;
 namespace CaeMesh
 {
     [Serializable]
-    public class MeshingParameters
+    public class MeshingParameters : NamedClass
     {
         // fineness ... Mesh density: 0...1 (0 => coarse; 1 => fine)
         // grading  ... Mesh grading: 0...1 (0 => uniform mesh; 1 => aggressive local grading)
 
         // Variables                                                                                                                
+        public static readonly double DefaultFactorMax = 0.05;
+        public static readonly double DefaultFactorMin = 0.001;
+        public static readonly double DefaultFactorHausdorff = 0.001;
+        //
+        private bool _relativeSize;
+        private double _factorMax;
+        private double _factorMin;
+        private double _factorHausdorff;
+        //
         private double _maxH;
         private double _minH;
         private double _fineness;
@@ -35,33 +44,39 @@ namespace CaeMesh
         //
         protected int[] _creationIds;
         protected Selection _creationData;
-        //
-        protected string _name;             //ISerializable
-        protected bool _active;             //ISerializable
-        protected bool _visible;            //ISerializable
-        protected bool _valid;              //ISerializable
-        protected bool _internal;           //ISerializable
-        protected bool _checkName;          //ISerializable
 
-        public virtual string Name
-        {
-            get { return _name; }
-            set
-            {
-                if (_checkName) NamedClass.CheckNameForErrors(ref value);
-                _name = value;
-            }
-        }
-        public virtual bool Active { get { return _active; } set { _active = value; } }
-        public virtual bool Visible { get { return _visible; } set { _visible = value; } }
-        public virtual bool Valid
-        {
-            get { return _valid; }
-            set { _valid = value; }
-        }
-        public virtual bool Internal { get { return _internal; } set { _internal = value; } }
 
         // Properties                                                                                                               
+        public bool RelativeSize { get { return _relativeSize; } set { _relativeSize = value; } }
+        public double FactorMax 
+        {
+            get { return _factorMax; }
+            set
+            {
+                if (value <= 0) throw new Exception("The value must be larger than 0.");
+                _factorMax = value;
+                if (value < _factorMin) _factorMin = _factorMax;
+            }
+        }
+        public double FactorMin
+        {
+            get { return _factorMin; }
+            set
+            {
+                if (value <= 0) throw new Exception("The value must be larger than 0.");
+                _factorMin = value;
+                if (value > _factorMax) _factorMax = _factorMin;
+            }
+        }
+        public double FactorHausdorff
+        {
+            get { return _factorHausdorff; }
+            set
+            {
+                if (value <= 0) throw new Exception("The value must be larger than 0.");
+                _factorHausdorff = value;
+            }
+        }
         public double MaxH 
         {
             get { return _maxH; } 
@@ -164,18 +179,17 @@ namespace CaeMesh
 
         // Constructors                                                                                                             
         public MeshingParameters(string name)
+            : base(name)
         {
             Reset();
-            //
-            _name = name;
-            _active = true;
-            _visible = true;
-            _valid = true;
-            _internal = true;
-            _checkName = true;
         }
         public MeshingParameters(MeshingParameters meshingParameters)
         {
+            _relativeSize = meshingParameters.RelativeSize;
+            _factorMax = meshingParameters.FactorMax;
+            _factorMin = meshingParameters.FactorMin;
+            _factorHausdorff = meshingParameters.FactorHausdorff;
+            //
             _maxH = meshingParameters.MaxH;
             _minH = meshingParameters.MinH;
             _fineness = meshingParameters.Fineness;
@@ -198,7 +212,12 @@ namespace CaeMesh
         // Methods                                                                                                                  
         public void Reset()
         {
-            // defaults
+            // Defaults
+            _relativeSize = false;
+            _factorMax = DefaultFactorMax;
+            _factorMin = DefaultFactorMin;
+            _factorHausdorff = DefaultFactorHausdorff;
+            //
             _maxH = 1000;
             _minH = 0;
             _fineness = 0.5;        // has no effect
@@ -216,16 +235,22 @@ namespace CaeMesh
             _hausdorff = 0.01;
             _keepModelEdges = true;
         }
-        public void WriteToFile(string fileName)
+        public void SetCheckName(bool checkName)
+        {
+            _checkName = checkName;
+        }
+        public void WriteToFile(string fileName, double bbDiagonal)
         {
             StringBuilder sb = new StringBuilder();
             //
             sb.AppendLine("int      uselocalh                   ... Switch to enable / disable usage of local mesh size modifiers.");
             sb.AppendLine("1");
             sb.AppendLine("double   maxh		                ... Maximum global mesh size allowed.");
-            sb.AppendLine(_maxH.ToString());
+            if (_relativeSize) sb.AppendLine((_factorMax * bbDiagonal).ToString());
+            else sb.AppendLine(_maxH.ToString());
             sb.AppendLine("double   minh		                ... Minimum global mesh size allowed.");
-            sb.AppendLine(_minH.ToString());
+            if (_relativeSize) sb.AppendLine((_factorMin * bbDiagonal).ToString());
+            else sb.AppendLine(_minH.ToString());
             sb.AppendLine("double   fineness	                ... Mesh density: 0...1 (0 => coarse; 1 => fine).");
             sb.AppendLine(_fineness.ToString());
             sb.AppendLine("double   grading                     ... Mesh grading: 0...1 (0 => uniform mesh; 1 => aggressive local grading).");
@@ -274,6 +299,11 @@ namespace CaeMesh
         {
             if (meshingParameters1 == null) return false;
             if (meshingParameters2 == null) return false;
+            //
+            if (meshingParameters1._factorMax != meshingParameters2._factorMax) return false;
+            if (meshingParameters1._factorMin != meshingParameters2._factorMin) return false;
+            if (meshingParameters1._factorHausdorff != meshingParameters2._factorHausdorff) return false;
+            //
             if (meshingParameters1._maxH != meshingParameters2._maxH) return false;
             if (meshingParameters1._minH != meshingParameters2._minH) return false;
             if (meshingParameters1._fineness != meshingParameters2._fineness) return false;
@@ -292,7 +322,5 @@ namespace CaeMesh
             if (meshingParameters1._keepModelEdges != meshingParameters2._keepModelEdges) return false;
             return true;
         }
-
-        
     }
 }
