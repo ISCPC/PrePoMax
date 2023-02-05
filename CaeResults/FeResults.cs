@@ -1960,6 +1960,17 @@ namespace CaeResults
             Dictionary<int, FeNode> tmp = _mesh.Nodes;
             _mesh.Nodes = _undeformedNodes;
             _mesh.GetVisualizationNodesAndCells(part, out nodeIds, out nodeCoor, out cellIds, out cells, out cellTypes);
+            // Add exploded view
+            if (part.Offset != null && (part.Offset[0] != 0 || part.Offset[1] != 0 || part.Offset[2] != 0))
+            {
+                for (int i = 0; i < nodeCoor.Length; i++)
+                {
+                    nodeCoor[i][0] += part.Offset[0];
+                    nodeCoor[i][1] += part.Offset[1];
+                    nodeCoor[i][2] += part.Offset[2];
+                }
+            }
+            //
             _mesh.Nodes = tmp;
         }
         public void GetUndeformedModelEdges(BasePart part, out double[][] nodeCoor, out int[][] cells, out int[] cellTypes)
@@ -1968,6 +1979,17 @@ namespace CaeResults
             Dictionary<int, FeNode> tmp = _mesh.Nodes;
             _mesh.Nodes = _undeformedNodes;
             _mesh.GetNodesAndCellsForModelEdges(part, out nodeIds, out nodeCoor, out cells, out cellTypes);
+            // Add exploded view
+            if (part.Offset != null && (part.Offset[0] != 0 || part.Offset[1] != 0 || part.Offset[2] != 0))
+            {
+                for (int i = 0; i < nodeCoor.Length; i++)
+                {
+                    nodeCoor[i][0] += part.Offset[0];
+                    nodeCoor[i][1] += part.Offset[1];
+                    nodeCoor[i][2] += part.Offset[2];
+                }
+            }
+            //
             _mesh.Nodes = tmp;
         }
         // Animation        

@@ -2036,6 +2036,17 @@ namespace PrePoMax
             DrawSymbolsForStep("None", false);
             // Suppress annotations
             _annotations.SuppressCurrentAnnotations();
+            // Suppress undeformed results view
+            UndeformedModelTypeEnum undeformedType = UndeformedModelTypeEnum.None;
+            if (_currentView == ViewGeometryModelResults.Results)
+            {
+                undeformedType = Settings.Post.UndeformedModelType;
+                if (undeformedType != UndeformedModelTypeEnum.None)
+                {
+                    SetUndeformedModelType(UndeformedModelTypeEnum.None);
+                    DrawResults(false);
+                }
+            }
             // Deactivate exploded view
             if (IsExplodedViewActive())
             {
@@ -2067,6 +2078,12 @@ namespace PrePoMax
             _annotations.ResumeCurrentAnnotations();
             // Resume section view
             if (sectionViewPlane != null) ApplySectionView(sectionViewPlane.Point.Coor, sectionViewPlane.Normal.Coor);
+            // Resume undeformed results view
+            if (undeformedType != UndeformedModelTypeEnum.None)
+            {
+                SetUndeformedModelType(undeformedType);
+                DrawResults(false);
+            }
             //
             UpdateHighlight();
             //if (_selection.Nodes.Count > 0) HighlightSelection();
@@ -7902,7 +7919,7 @@ namespace PrePoMax
                                             Path.Combine(directory, inputFileNameWithoutExtension + ".12d"),
                                             Path.Combine(directory, inputFileNameWithoutExtension + ".cel"), // contact elments
                                             Path.Combine(directory, inputFileNameWithoutExtension +
-                                                         "._WarnNodeMissTiedContact.nam"), // missing contact nodes
+                                                         "_WarnNodeMissTiedContact.nam"), // missing contact nodes
                                             Path.Combine(directory, "ResultsForLastIterations.frd"),
                                             Path.Combine(directory, inputFileNameWithoutExtension + ".frd")
                                            };
