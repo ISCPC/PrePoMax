@@ -18,7 +18,7 @@ namespace CaeGlobals
         //
         protected ArrayList values;
         protected string _free = "Unconstrained";
-        protected string _fixed = "Fixed";
+        //protected string _fixed = "Fixed";
 
 
         // Properties                                                                                                               
@@ -36,7 +36,8 @@ namespace CaeGlobals
         public StringAngleDOFConverter()
         {
             // Initializes the standard values list with defaults.
-            values = new ArrayList(new double[] { double.NaN, double.PositiveInfinity, 0 });
+            //values = new ArrayList(new double[] { double.NaN, double.PositiveInfinity, 0 });
+            values = new ArrayList(new double[] { double.NaN, /*double.PositiveInfinity,*/ 0 });
         }
 
 
@@ -62,7 +63,7 @@ namespace CaeGlobals
             if (value is string valueString)
             {
                 if (String.Equals(value, _free)) return double.NaN;
-                else if (String.Equals(value, _fixed)) return double.PositiveInfinity;
+                //else if (String.Equals(value, _fixed)) return double.PositiveInfinity;
                 else return MyNCalc.ConvertFromString(valueString, ConvertToCurrentUnits);
             }
             else return base.ConvertFrom(context, culture, value);
@@ -77,7 +78,7 @@ namespace CaeGlobals
                     if (value is double valueDouble)
                     {
                         if (double.IsNaN(valueDouble)) return _free;
-                        else if (double.IsPositiveInfinity(valueDouble)) return _fixed;
+                        //else if (double.IsPositiveInfinity(valueDouble)) return _fixed;
                         else
                         {
                             string valueString = valueDouble.ToString();

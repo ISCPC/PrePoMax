@@ -13,11 +13,13 @@ namespace CaeResults
         //
         public const string Disp = "DISP";
         public const string Dispi = "DISPI";
+        public const string PDisp = "PDISP";
         // Velocity
         public const string Velo = "VELO";
         // Stress
         public const string Stress = "STRESS";
         public const string Stressi = "STRESSI";
+        public const string PStress = "PSTRESS";
         public const string ZZStr = "ZZSTR";
         public const string ZZStri = "ZZSTRI";
         // Strain
@@ -33,6 +35,7 @@ namespace CaeResults
         public const string Contact = "CONTACT";
         // Thermal
         public const string NdTemp = "NDTEMP";
+        public const string PNdTemp = "PNDTEMP";
         public const string Flux = "FLUX";
         public const string Rfl = "RFL";
         public const string HError = "HERROR";
@@ -64,6 +67,13 @@ namespace CaeResults
         public const string U2 = "U2";
         public const string U3 = "U3";
         //
+        public const string MAG1 = "MAG1";
+        public const string MAG2 = "MAG2";
+        public const string MAG3 = "MAG3";
+        public const string PHA1 = "PHA1";
+        public const string PHA2 = "PHA2";
+        public const string PHA3 = "PHA3";
+        //
         public const string V1 = "V1";
         public const string V2 = "V2";
         public const string V3 = "V3";
@@ -80,6 +90,19 @@ namespace CaeResults
         public const string S12 = "S12";
         public const string S23 = "S23";
         public const string S13 = "S13";
+        //
+        public const string MAGXX = "MAGXX";
+        public const string MAGYY = "MAGYY";
+        public const string MAGZZ = "MAGZZ";
+        public const string MAGXY = "MAGXY";
+        public const string MAGYZ = "MAGYZ";
+        public const string MAGZX = "MAGZX";
+        public const string PHAXX = "PHAXX";
+        public const string PHAYY = "PHAYY";
+        public const string PHAZZ = "PHAZZ";
+        public const string PHAXY = "PHAXY";
+        public const string PHAYZ = "PHAYZ";
+        public const string PHAZX = "PHAZX";
         // Strain
         public const string ME11 = "ME11";
         public const string ME22 = "ME22";

@@ -684,6 +684,23 @@ namespace CaeResults
                         unitConverter = new StringLengthConverter();
                         unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
                         break;
+                    case FOFieldNames.PDisp:
+                        switch (componentName.ToUpper())
+                        {
+                            case FOComponentNames.MAG1:
+                            case FOComponentNames.MAG2:
+                            case FOComponentNames.MAG3:
+                                unitConverter = new StringLengthConverter();
+                                unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
+                                break;
+                            case FOComponentNames.PHA1:
+                            case FOComponentNames.PHA2:
+                            case FOComponentNames.PHA3:
+                                unitConverter = new StringAngleDegConverter();
+                                unitAbbreviation = "°";
+                                break;
+                        }
+                        break;
                     case FOFieldNames.Velo:
                         unitConverter = new StringVelocityConverter();
                         unitAbbreviation = _unitSystem.VelocityUnitAbbreviation;
@@ -695,6 +712,29 @@ namespace CaeResults
                     case FOFieldNames.Imported: // Imported pressure
                         unitConverter = new StringPressureConverter();
                         unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
+                        break;
+                    case FOFieldNames.PStress:
+                        switch (componentName.ToUpper())
+                        {
+                            case FOComponentNames.MAGXX:
+                            case FOComponentNames.MAGYY:
+                            case FOComponentNames.MAGZZ:
+                            case FOComponentNames.MAGXY:
+                            case FOComponentNames.MAGYZ:
+                            case FOComponentNames.MAGZX:
+                                unitConverter = new StringPressureConverter();
+                                unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
+                                break;
+                            case FOComponentNames.PHAXX:
+                            case FOComponentNames.PHAYY:
+                            case FOComponentNames.PHAZZ:
+                            case FOComponentNames.PHAXY:
+                            case FOComponentNames.PHAYZ:
+                            case FOComponentNames.PHAZX:
+                                unitConverter = new StringAngleDegConverter();
+                                unitAbbreviation = "°";
+                                break;
+                        }
                         break;
                     case FOFieldNames.ToStrain:
                     case FOFieldNames.ToStraii:
@@ -808,9 +848,11 @@ namespace CaeResults
         {
             unitConverter = new DoubleConverter();
             unitAbbreviation = "?";
+            string noSuffixName = HOFieldNames.GetNoSuffixName(fieldName);
+            //
             try
             {
-                switch (fieldName.ToUpper())
+                switch (noSuffixName.ToUpper())
                 {
                     case HOFieldNames.Time:
                         unitConverter = new StringTimeConverter();
@@ -909,7 +951,7 @@ namespace CaeResults
                     // Error
                     case FOFieldNames.Error:
                     default:
-                        string noSpacesName = fieldName.Replace(' ', '_');
+                        string noSpacesName = noSuffixName.Replace(' ', '_');
                         GetFieldUnitConverterAndAbbrevation(noSpacesName.ToUpper(), componentName,
                                                             out unitConverter, out unitAbbreviation);
                         if (unitAbbreviation == "?" && System.Diagnostics.Debugger.IsAttached)
@@ -1045,7 +1087,6 @@ namespace CaeResults
                             field = GetField(fieldData);
                             if (field != null)
                             {
-                                //
                                 values = field.GetComponentValues(rhoff.ComponentName);
                                 //
                                 for (int i = 0; i < nodeIds.Length; i++)
@@ -1667,7 +1708,8 @@ namespace CaeResults
             // Sorted time
             double[] sortedTime;
             Dictionary<double, int> timeRowId;
-            GetSortedTime(new HistoryResultComponent[] { component }, out sortedTime, out timeRowId);
+            // Do not sort the time points
+            GetSortedTime(new HistoryResultComponent[] { component }, out sortedTime, out timeRowId, false);
             // Create the data array
             int numRow = sortedTime.Length;
             int numCol = component.Entries.Count + 1; // +1 for the time column
@@ -1702,7 +1744,7 @@ namespace CaeResults
             }
         }
         public void GetSortedTime(HistoryResultComponent[] components, out double[] sortedTime,
-                                  out Dictionary<double, int> timeRowId)
+                                  out Dictionary<double, int> timeRowId, bool sort = true)
         {
             // Collect all time points
             HashSet<double> timePointsHash = new HashSet<double>();
@@ -1715,7 +1757,7 @@ namespace CaeResults
             }
             // Sort time points
             sortedTime = timePointsHash.ToArray();
-            Array.Sort(sortedTime);
+            if (sort) Array.Sort(sortedTime);
             // Create a map of time point vs row id
             timeRowId = new Dictionary<double, int>();
             for (int i = 0; i < sortedTime.Length; i++) timeRowId.Add(sortedTime[i], i);
@@ -2182,7 +2224,7 @@ namespace CaeResults
         public bool ComputeWear(int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient,
                                 Dictionary<int, bool[]> nodeIdZeroDisplacements)
         {
-            if (slipStepIds != null && slipStepIds.Length > 0 && CheckFieldAndhistoryTimes())
+            if (slipStepIds != null && slipStepIds.Length > 0 && CheckFieldAndHistoryTimes())
             {
                 ComputeHistoryWearSlidingDistance();
                 //
@@ -2211,7 +2253,7 @@ namespace CaeResults
             }
             else return false;
         }
-        private bool CheckFieldAndhistoryTimes()
+        private bool CheckFieldAndHistoryTimes()
         {
             HistoryResultField relativeContactDisplacement =
                 GetHistoryResultField(HOSetNames.AllContactElements, HOFieldNames.RelativeContactDisplacement);
@@ -2260,7 +2302,7 @@ namespace CaeResults
                 relativeContactDisplacement.Components.Add(s2.Name, s2);
                
                 // Use tang1 since it contains only values != 0
-                HistoryResultComponent[] normalComponents = GetNormalsFromFromElementFaceHistory(tang1);
+                HistoryResultComponent[] normalComponents = GetNormalsFromElementFaceHistory(tang1);
                 //
                 HistoryResultField surfaceNormalsField = new HistoryResultField(HOFieldNames.SurfaceNormal);
                 surfaceNormalsField.Components.Add(normalComponents[0].Name, normalComponents[0]);  // All
@@ -2555,7 +2597,7 @@ namespace CaeResults
             //
             return magnitudeComponent;
         }
-        private HistoryResultComponent[] GetNormalsFromFromElementFaceHistory(HistoryResultComponent historyResultComponent)
+        private HistoryResultComponent[] GetNormalsFromElementFaceHistory(HistoryResultComponent historyResultComponent)
         {
             HistoryResultComponent[] normalComponents = new HistoryResultComponent[4];
             normalComponents[0] = new HistoryResultComponent(HOComponentNames.All);

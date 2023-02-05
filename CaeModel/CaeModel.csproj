@@ -82,6 +82,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Section\CalLinearSpringSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalGapConductance.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\BC\CalTemperatureBC.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalSteadyStateDynamics.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalDynamicStep.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalHeatTransferStep.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalCoupledTempDispStep.cs" />

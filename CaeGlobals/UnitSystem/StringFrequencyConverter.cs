@@ -11,23 +11,31 @@ using UnitsNet.Units;
 
 namespace CaeGlobals
 {
-    public class StringAngleDegConverter : TypeConverter
+    public class StringFrequencyConverter : TypeConverter
     {
         // Variables                                                                                                                
-        readonly static AngleUnit _angleUnit = AngleUnit.Degree;
+        protected static FrequencyUnit _frequencyUnit = FrequencyUnit.Hertz;
 
 
         // Properties                                                                                                               
+        public static string SetUnit 
+        {
+            set
+            {
+                if (value == "") _frequencyUnit = (FrequencyUnit)MyUnit.NoUnit;
+                else _frequencyUnit = Frequency.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
-        public StringAngleDegConverter()
+        public StringFrequencyConverter()
         {
         }
 
 
         // Methods                                                                                                                  
-        public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             if (sourceType == typeof(string)) return true;
             else return base.CanConvertFrom(context, sourceType);
@@ -47,7 +55,9 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return valueDouble.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
+                        string valueString = valueDouble.ToString();
+                        if ((int)_frequencyUnit != MyUnit.NoUnit) valueString += " " + Frequency.GetAbbreviation(_frequencyUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
@@ -62,8 +72,9 @@ namespace CaeGlobals
         {
             try
             {
-                Angle angle = Angle.Parse(valueWithUnitString).ToUnit(_angleUnit);
-                return angle.Value;
+                Frequency frequency = Frequency.Parse(valueWithUnitString);
+                if ((int)_frequencyUnit != MyUnit.NoUnit) frequency = frequency.ToUnit(_frequencyUnit);
+                return frequency.Value;
             }
             catch (Exception ex)
             {
@@ -72,7 +83,20 @@ namespace CaeGlobals
         }
         public static string SupportedUnitAbbreviations()
         {
-            return StringAngleConverter.SupportedUnitAbbreviations();
+            string abb;
+            string supportedUnitAbbreviations = "Supported frequency abbreviations: ";
+            var allUnits = Frequency.Units;
+            for (int i = 0; i < allUnits.Length; i++)
+            {
+                abb = Frequency.GetAbbreviation(allUnits[i]);
+                if (abb != null) abb.Trim();
+                if (abb.Length > 0) supportedUnitAbbreviations += abb;
+                if (i != allUnits.Length - 1) supportedUnitAbbreviations += ", ";
+            }
+            supportedUnitAbbreviations += ".";
+            //
+            return supportedUnitAbbreviations;
         }
     }
+
 }

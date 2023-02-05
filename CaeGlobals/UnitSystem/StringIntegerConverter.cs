@@ -11,31 +11,56 @@ using UnitsNet.Units;
 
 namespace CaeGlobals
 {
-    public class StringAngleDegConverter : TypeConverter
+    public class StringIntegerConverter : TypeConverter
     {
         // Variables                                                                                                                
-        readonly static AngleUnit _angleUnit = AngleUnit.Degree;
 
 
         // Properties                                                                                                               
 
 
         // Constructors                                                                                                             
-        public StringAngleDegConverter()
+        public StringIntegerConverter()
         {
         }
 
 
         // Methods                                                                                                                  
-        public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             if (sourceType == typeof(string)) return true;
             else return base.CanConvertFrom(context, sourceType);
         }
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            // Convert from string
-            if (value is string valueString) return MyNCalc.ConvertFromString(valueString, ConvertToCurrentUnits);
+            if (value is string valueString)
+            {
+                double valueDouble;
+                valueString = valueString.Trim();
+                //
+                if (valueString.Length == 0 || valueString == "=") return 0;   // empty string -> 0
+                if (!double.TryParse(valueString, out valueDouble))
+                {
+                    if (valueString.StartsWith("="))
+                    {
+                        valueString = valueString.Substring(1, valueString.Length - 1);
+                        NCalc.Expression e = MyNCalc.GetExpression(valueString);
+                        if (!e.HasErrors())
+                        {
+                            object result = e.Evaluate();
+                            if (result is int) valueDouble = (int)result;
+                            else if (result is double) valueDouble = (double)result;
+                        }
+                        else
+                        {
+                            throw new CaeException("Equation error:" + Environment.NewLine + e.Error);
+                        }
+                    }
+                    else throw new Exception(valueString + " is not a valid value for Int.");
+                }
+                //
+                return (int)Math.Round(valueDouble);
+            }
             else return base.ConvertFrom(context, culture, value);
         }
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
@@ -45,10 +70,7 @@ namespace CaeGlobals
             {
                 if (destinationType == typeof(string))
                 {
-                    if (value is double valueDouble)
-                    {
-                        return valueDouble.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
-                    }
+                    return value.ToString();
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
             }
@@ -57,22 +79,6 @@ namespace CaeGlobals
                 return base.ConvertTo(context, culture, value, destinationType);
             }
         }
-        //
-        public static double ConvertToCurrentUnits(string valueWithUnitString)
-        {
-            try
-            {
-                Angle angle = Angle.Parse(valueWithUnitString).ToUnit(_angleUnit);
-                return angle.Value;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message + Environment.NewLine + Environment.NewLine + SupportedUnitAbbreviations());
-            }
-        }
-        public static string SupportedUnitAbbreviations()
-        {
-            return StringAngleConverter.SupportedUnitAbbreviations();
-        }
     }
+
 }

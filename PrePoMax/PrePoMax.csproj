@@ -362,6 +362,7 @@
     </Compile>
     <Compile Include="Forms\37_Amplitude\ViewAmplitude.cs" />
     <Compile Include="Forms\37_Amplitude\ViewAmplitudeTabular.cs" />
+    <Compile Include="Forms\41_Step\ViewSteadyStateDynamisc.cs" />
     <Compile Include="Forms\41_Step\ViewCoupledTempDispStep.cs" />
     <Compile Include="Forms\41_Step\ViewDynamicStep.cs" />
     <Compile Include="Forms\41_Step\ViewSlipWearStep.cs" />

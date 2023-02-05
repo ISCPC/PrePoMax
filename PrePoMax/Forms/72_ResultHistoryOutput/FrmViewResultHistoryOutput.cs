@@ -65,8 +65,8 @@ namespace PrePoMax
             //
             if (columnNames.Length > maxNumCol + 1)
             {
-                CaeGlobals.MessageBoxes.ShowWarning("Only first " + maxNumCol + " columns of " + columnNames.Length
-                                                    + " will be displayed.");
+                CaeGlobals.MessageBoxes.ShowWarning("Only first " + maxNumCol + " columns of " + columnNames.Length + 
+                                                    " will be displayed.");
             }
             //
             for (int i = 0; i < Math.Min(columnNames.Length, maxNumCol + 1); i++)
@@ -75,6 +75,8 @@ namespace PrePoMax
                 column.HeaderText = columnNames[i];
                 column.FillWeight = 1;
                 column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                // Enable sorting of time/frequency
+                if (i == 0) column.SortMode = DataGridViewColumnSortMode.Automatic;
                 //column.CellType = typeof(double);
                 dgvHistory.Columns.Add(column);
             }

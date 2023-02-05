@@ -853,6 +853,11 @@ namespace FileInOut.Output
                         CalBuckleStep calBuckleStep = new CalBuckleStep(buckleStep);
                         calStep.AddKeyword(calBuckleStep);
                     }
+                    else if (step is SteadyStateDynamics steadyStep)
+                    {
+                        CalSteadyStateDynamics calSteadyStep = new CalSteadyStateDynamics(steadyStep);
+                        calStep.AddKeyword(calSteadyStep);
+                    }
                     else if (step.GetType() == typeof(DynamicStep))
                     {
                         DynamicStep dynamicStep = step as DynamicStep;

@@ -12,6 +12,7 @@ namespace vtkControl
         Frequency,
         FrequencySensitivity,
         Buckling,
+        SteadyStateDynamic,
         LastIterations
     }
 }

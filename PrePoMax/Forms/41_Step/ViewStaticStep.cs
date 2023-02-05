@@ -43,6 +43,7 @@ namespace PrePoMax
         [CategoryAttribute("Incrementation")]
         [OrderedDisplayName(2, 10, "Max increments")]
         [DescriptionAttribute("The maximum number of increments in the step.")]
+        [TypeConverter(typeof(StringIntegerConverter))]
         public int MaxIncrements { get { return _staticStep.MaxIncrements; } set { _staticStep.MaxIncrements = value; } }
         //
         [CategoryAttribute("Incrementation")]

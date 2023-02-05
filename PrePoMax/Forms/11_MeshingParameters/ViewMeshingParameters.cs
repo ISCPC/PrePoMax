@@ -37,7 +37,7 @@ namespace PrePoMax.Forms
             set
             {
                 _parameters.RelativeSize = value;
-                UpdatePropertiesVisibility();
+                UpdateVisibility();
             }
         }
         //
@@ -127,7 +127,7 @@ namespace PrePoMax.Forms
             set
             {
                 _parameters.SecondOrder = value;
-                UpdatePropertiesVisibility();
+                UpdateVisibility();
             }
         }
         //
@@ -173,7 +173,7 @@ namespace PrePoMax.Forms
             _dctd.RenameBooleanPropertyToYesNo(nameof(SplitCompoundMesh));
             _dctd.RenameBooleanPropertyToYesNo(nameof(KeepModelEdges));
             //
-            UpdatePropertiesVisibility();
+            UpdateVisibility();
         }
 
 
@@ -182,7 +182,7 @@ namespace PrePoMax.Forms
         {
             return _parameters;
         }
-        protected void UpdatePropertiesVisibility()
+        protected void UpdateVisibility()
         {
             bool visible = _parameters.RelativeSize || _settingsView;
             _dctd.GetProperty(nameof(FactorMax)).SetIsBrowsable(visible);

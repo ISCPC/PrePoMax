@@ -432,6 +432,7 @@ namespace CaeResults
             {
                 case FOFieldNames.Disp:
                 case FOFieldNames.Dispi:
+                //case FOFieldNames.PDisp:
                 case FOFieldNames.Forc:
                 case FOFieldNames.Forci:
                 //
@@ -444,6 +445,7 @@ namespace CaeResults
                     break;
                 case FOFieldNames.Stress:
                 case FOFieldNames.Stressi:
+                //case FOFieldNames.PStress:
                 case FOFieldNames.ToStrain:
                 case FOFieldNames.ToStraii:
                 case FOFieldNames.MeStrain:
@@ -467,7 +469,32 @@ namespace CaeResults
                                                out FieldData fieldData, out int numOfVal)
         {
             {
+
                 // STATIC STEP
+
+                // 1. Record:
+                // Format:(1X,' 100','C',6A1,E12.5,I12,20A1,I2,I5,10A1,I2)
+                // Values: KEY,CODE,SETNAME,VALUE,NUMNOD,TEXT,ICTYPE,NUMSTP,ANALYS,
+                //         FORMAT
+                // Where: KEY    = 100
+                //        CODE   = C
+                //        SETNAME= Name (not used)
+                //        VALUE  = Could be frequency, time or any numerical value
+                //        NUMNOD = Number of nodes in this nodal results block
+                //        TEXT   = Any text
+                //        ICTYPE = Analysis type
+                //                 0  static
+                //                 1  time step
+                //                 2  frequency
+                //                 3  load step
+                //                 4  user named
+                //        NUMSTP = Step number
+                //        ANALYS = Type of analysis (description)
+                //        FORMAT = Format indicator
+                //                 0  short format
+                //                 1  long format 
+                //                 2  binary format 
+
 
                 //                              field#  stepIncrement#       step#            - COMMENTS
                 //    1PSTEP                        25               1           2           
@@ -508,6 +535,16 @@ namespace CaeResults
                 //  -5  D2          1    2    2    0                                         
                 //  -5  D3          1    2    3    0                                         
                 //  -5  ALL         1    2    0    0    1ALL                                 
+
+                // STEADY STATE DYNAMICS STEP
+
+                //    1PSTEP                         3           0           2               
+                //  100CL  103 0.00000E+00          21                     1    3           1
+                // -4  DISP        4    1                                                    
+                // -5  D1          1    2    1    0                                          
+                // -5  D2          1    2    2    0                                          
+                // -5  D3          1    2    3    0                                          
+                // -5  ALL         1    2    0    0    1ALL                                  
 
                 // LAST ITERATIONS
 
@@ -551,8 +588,8 @@ namespace CaeResults
             }
             else
             {
-                stepId = int.Parse(record[3]);
                 stepIncrementId = int.Parse(record[2]);
+                stepId = int.Parse(record[3]);
             }
             // Find 100C line - user field data
             while (!lines[lineNum].TrimStart().StartsWith("100C")) lineNum++;
@@ -567,16 +604,21 @@ namespace CaeResults
             time = float.Parse(record[2]);
             numOfVal = int.Parse(record[3]);
             methodId = int.Parse(record[4]);
+            // Steady state dynamics
+            if (methodId == 1 && stepIncrementId == 0)
+                type = StepType.SteadyStateDynamics;
             // Sensitivity
-            if (type == StepType.Static && methodId == 3)   // method 3 is also usef for last iterations type
+            if (type == StepType.Static && methodId == 3)   // method 3 is also used for last iterations type
             {
                 if (prevFieldData.Type == StepType.Frequency || prevFieldData.Type == StepType.FrequencySensitivity)
                     type = StepType.FrequencySensitivity;
             }
             //
-            if (int.Parse(record[4]) == 4) type = StepType.Buckling;                                // buckling switch
+            if (methodId == 4) type = StepType.Buckling;                                            // buckling switch
             //
             if (type == StepType.Buckling)
+                GetStepAndStepIncrementIds(type, 1, globalIncrementId, prevFieldData, out stepId, out stepIncrementId);
+            else if (type == StepType.SteadyStateDynamics)
                 GetStepAndStepIncrementIds(type, 1, globalIncrementId, prevFieldData, out stepId, out stepIncrementId);
             else if (type == StepType.FrequencySensitivity)
                 GetStepAndStepIncrementIds(type, 0, globalIncrementId, prevFieldData, out stepId, out stepIncrementId);
@@ -793,7 +835,7 @@ namespace CaeResults
         {
             Field field = new Field(name);
             //
-            if (values.Length == 6)
+            if (values.Length == 6 || values.Length == 12)  // 12 for PStress
             {
                 float[] vonMises = new float[values[0].Length];
                 for (int i = 0; i < vonMises.Length; i++)
@@ -815,13 +857,15 @@ namespace CaeResults
                 float[] tresca = new float[values[0].Length];
                 field.AddComponent("TRESCA", tresca, true);
                 //
-                for (int i = 0; i < components.Count; i++) field.AddComponent(components[i], values[i]);
+                for (int i = 0; i < 6; i++) field.AddComponent(components[i], values[i]);                   // first 6 components
                 //
                 ComputeAndAddPrincipalVariables(field, values);
                 //
                 float[] eMax = field.GetComponentValues("PRINCIPAL-MAX");
                 float[] eMin = field.GetComponentValues("PRINCIPAL-MIN");
                 for (int i = 0; i < tresca.Length; i++) tresca[i] = eMax[i] - eMin[i];
+                //
+                for (int i = 6; i < components.Count; i++) field.AddComponent(components[i], values[i]);    // next 6 components
             }
             //
             return field;

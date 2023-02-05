@@ -20,6 +20,8 @@ namespace CaeResults
         private static readonly string[] componentsSplitter = new string[] { " ", "," };
         private static readonly string[] dataSplitter = new string[] { " ", "for set", "and time" };
         private static readonly string[] signSplitter = new string[] { "-", "+" };
+        private static readonly string steadyStateDynamicsKey =
+            "P A R T I C I P A T I O N   F A C T O R S   F O R   F R E Q U E N C Y";        
         //
         private static readonly Dictionary<string, string> compMapRP = new Dictionary<string, string>()
         {
@@ -42,7 +44,7 @@ namespace CaeResults
         {
             if (fileName != null && File.Exists(fileName))
             {
-                string[] lines = Tools.ReadAllLines(fileName);
+                string[] lines = Tools.ReadAllLines(fileName, true);
                 //
                 List<string> dataSetNames = new List<string>();
                 // Nodal                                                                
@@ -85,14 +87,24 @@ namespace CaeResults
                 //                                                                      
                 Dictionary<string, string> repairedSetNames = new Dictionary<string, string>();
                 //
-                List<string[]> dataSetLinesList = SplitToDataSetLinesList(dataSetNames, lines, repairedSetNames);
+                bool steadyStateDynamics;
+                List<string[]> dataSetLinesList = SplitToDataSetLinesList(dataSetNames, lines, repairedSetNames,
+                                                                          out steadyStateDynamics);
                 Repair(dataSetLinesList, dataSetNames);
                 //
                 DatDataSet dataSet;
                 List<DatDataSet> dataSets = new List<DatDataSet>();
+                HashSet<string> existingDataSets = new HashSet<string>();
                 foreach (string[] dataSetLines in dataSetLinesList)
                 {
                     dataSet = GetDatDataSet(dataSetNames, dataSetLines, repairedSetNames);
+                    // Steady state dynamics
+                    if (steadyStateDynamics && !existingDataSets.Add(dataSet.GetHashKey()))
+                    {
+                        dataSet.FieldName += HOFieldNames.SteadyStateDynamicsSuffix;
+                        existingDataSets.Add(dataSet.GetHashKey());
+                    }
+                    //
                     if (dataSet.FieldName != HOFieldNames.Error) dataSets.Add(dataSet);
                 }
                 //
@@ -105,7 +117,8 @@ namespace CaeResults
             return null;
         }
         static private List<string[]> SplitToDataSetLinesList(List<string> dataSetNames, string[] lines,
-                                                              Dictionary<string, string> repairedSetNames)
+                                                              Dictionary<string, string> repairedSetNames,
+                                                              out bool steadyStateDynamics)
         {
             // displacements (vx, vy, vz) for set DISP and time  0.1000000E+00
             //         5   5.080202E+00  0.000000E+00  0.000000E+00
@@ -121,14 +134,16 @@ namespace CaeResults
             List<string[]> dataSets = new List<string[]>();
             //
             string theName;
+            steadyStateDynamics = false;
             for (int i = 0; i < lines.Length; i++)
             {
                 if (lines[i].Length == 0) continue;
+                if (!steadyStateDynamics && lines[i].ToUpper().StartsWith(steadyStateDynamicsKey)) steadyStateDynamics = true;
                 //
                 theName = null;
                 foreach (var name in dataSetNames)
                 {
-                    if (lines[i].ToLower().Trim().StartsWith(name.ToLower()))
+                    if (lines[i].ToLower().StartsWith(name.ToLower()))
                     {
                         theName = name;
                         break;
@@ -140,7 +155,7 @@ namespace CaeResults
                     dataSet = new List<string>();
                     for (int j = 0; j <= 8 && i < lines.Length; j++)
                     {
-                        if (lines[i].Trim().Length != 0) dataSet.Add(lines[i]);
+                        if (lines[i].Length != 0) dataSet.Add(lines[i]);
                         i+=2;
                     }
                     // At the end reduce the i for 1 since it will be increased next time in the loop
@@ -152,15 +167,14 @@ namespace CaeResults
                 }
                 else if (theName != null)
                 {
-                    dataSet = new List<string>();
-                    dataSet.Add(lines[i]);
+                    dataSet = new List<string> { lines[i] };
                     i++;
                     //
-                    while (i < lines.Length && lines[i].Trim().Length == 0) i++;    // skip empty lines
+                    while (i < lines.Length && lines[i].Length == 0) i++;    // skip empty lines
                     //
                     while (i < lines.Length)
                     {
-                        if (lines[i].Trim().Length == 0 || lines[i].Contains("time")) break;    // last line is empty
+                        if (lines[i].Length == 0 || lines[i].Contains("time")) break;    // last line is empty
                         else dataSet.Add(lines[i]);
                         i++;
                     }
@@ -267,7 +281,7 @@ namespace CaeResults
                 {
                     foreach (var name in dataSetNames)
                     {
-                        if (lines[0].ToUpper().Trim().StartsWith(name.ToUpper()))
+                        if (lines[0].ToUpper().StartsWith(name.ToUpper()))
                         {
                             if (name == HOFieldNames.Displacements)
                             {
@@ -384,6 +398,9 @@ namespace CaeResults
                                 //      3068   1  4.313000E-01
                                 lines[0] = lines[0].Replace("(elem, integ.pnt.,eneset ",
                                                             "(Id,Int.Pnt.,ENER) for set ");
+                                // internal energy density (elem, integ.pnt.,energy) for set INTERNAL_SELECTION-1_EH_OUTPUT-1 and time  0.6000000E+04
+                                lines[0] = lines[0].Replace("(elem, integ.pnt.,energy",
+                                                            "(Id,Int.Pnt.,ENER");
                             }
                             else if (name == HOFieldNames.InternalEnergy)
                             {
@@ -493,7 +510,7 @@ namespace CaeResults
                 string firstLine = dataSetLines[0];
                 foreach (var name in dataSetNames)
                 {
-                    if (firstLine.ToLower().Trim().StartsWith(name.ToLower()))
+                    if (firstLine.ToLower().StartsWith(name.ToLower()))
                     {
                         dataSet.FieldName = name;
                         break;
@@ -578,6 +595,7 @@ namespace CaeResults
             string id;
             double time;
             double[] values;
+            string noSuffixName;
             //
             foreach (var dataSet in dataSets)
             {
@@ -595,8 +613,10 @@ namespace CaeResults
                 {
                     field = new HistoryResultField(repairedDataSet.FieldName);
                     set.Fields.Add(field.Name, field);
-                    // Add MISES component
-                    if (field.Name == HOFieldNames.Stresses)
+                    // Add MISES and TRESCA component
+                    noSuffixName = HOFieldNames.GetNoSuffixName(field.Name);
+                    if (noSuffixName == HOFieldNames.Stresses || noSuffixName == HOFieldNames.Strains ||
+                        noSuffixName == HOFieldNames.MechanicalStrains)
                     {
                         component = new HistoryResultComponent(HOComponentNames.Mises);
                         field.Components.Add(component.Name, component);
@@ -655,7 +675,6 @@ namespace CaeResults
                              field.Name == HOFieldNames.ContactPrintEnergy) && entries.Time.Contains(time))
                         {
                             entries.SumValue(values[j + offset]);
-                            //entries.Values[entries.Values.Count - 1] += values[j + offset];
                         }
                         // Skip repeating
                         else if (field.Name == HOFieldNames.TotalNumberOfContactElements && entries.Time.Contains(time)) 
@@ -664,8 +683,6 @@ namespace CaeResults
                         else
                         {
                             entries.Add(time, values[j + offset]);
-                            //entries.Time.Add(time);
-                            //entries.Values.Add(values[j + offset]);
                         }
                     }
                 }
@@ -717,7 +734,9 @@ namespace CaeResults
             {
                 foreach (var fieldEntry in setsEntry.Value.Fields)
                 {
-                    if (fieldEntry.Key == HOFieldNames.Stresses)
+                    string noSuffixName = HOFieldNames.GetNoSuffixName(fieldEntry.Key);
+                    //
+                    if (noSuffixName == HOFieldNames.Stresses)
                     {
                         HistoryResultComponent vonMisesCom = fieldEntry.Value.Components[HOComponentNames.Mises];
                         HistoryResultComponent trescaCom = fieldEntry.Value.Components[HOComponentNames.Tresca];
@@ -802,6 +821,7 @@ namespace CaeResults
                                 prinMaxArray[i] = sp1;
                                 prinMidArray[i] = sp2;
                                 prinMinArray[i] = sp3;
+                                //
                                 trescaArray[i] = sp1 - sp3;
                             }
                             //
@@ -854,6 +874,8 @@ namespace CaeResults
                 {
                     if (fieldEntry.Key == HOFieldNames.Strains || fieldEntry.Key == HOFieldNames.MechanicalStrains)
                     {
+                        HistoryResultComponent vonMisesCom = fieldEntry.Value.Components[HOComponentNames.Mises];
+                        HistoryResultComponent trescaCom = fieldEntry.Value.Components[HOComponentNames.Tresca];
                         HistoryResultComponent sgnMaxAbsPrinCom = new HistoryResultComponent(HOComponentNames.SgnMaxAbsPri);
                         HistoryResultComponent prinMaxCom = new HistoryResultComponent(HOComponentNames.PrincipalMax);
                         HistoryResultComponent prinMidCom = new HistoryResultComponent(HOComponentNames.PrincipalMid);
@@ -861,6 +883,8 @@ namespace CaeResults
                         //
                         string[] entryNames = fieldEntry.Value.Components[HOComponentNames.E11].Entries.Keys.ToArray();
                         double[][] values = new double[6][];
+                        double[] vmArray;
+                        double[] trescaArray;
                         double[] sgnMaxAbsPrinArray;
                         double[] prinMaxArray;
                         double[] prinMidArray;
@@ -887,6 +911,8 @@ namespace CaeResults
                             values[4] = fieldEntry.Value.Components[HOComponentNames.E23].Entries[entryName].Values.ToArray();
                             values[5] = fieldEntry.Value.Components[HOComponentNames.E13].Entries[entryName].Values.ToArray();
                             //
+                            vmArray = new double[values[0].Length];
+                            trescaArray = new double[values[0].Length];
                             sgnMaxAbsPrinArray = new double[values[0].Length];
                             prinMaxArray = new double[values[0].Length];
                             prinMidArray = new double[values[0].Length];
@@ -894,6 +920,18 @@ namespace CaeResults
                             //
                             for (int i = 0; i < values[0].Length; i++)
                             {
+                                vmArray[i] = Math.Sqrt(0.5 * (
+                                                              Math.Pow(values[0][i] - values[1][i], 2)
+                                                            + Math.Pow(values[1][i] - values[2][i], 2)
+                                                            + Math.Pow(values[2][i] - values[0][i], 2)
+                                                            + 6 * (
+                                                                     Math.Pow(values[3][i], 2)
+                                                                   + Math.Pow(values[4][i], 2)
+                                                                   + Math.Pow(values[5][i], 2)
+                                                                  )
+                                                           )
+                                                    );
+                                //
                                 e11 = values[0][i];
                                 e22 = values[1][i];
                                 e33 = values[2][i];
@@ -919,7 +957,19 @@ namespace CaeResults
                                 prinMaxArray[i] = ep1;
                                 prinMidArray[i] = ep2;
                                 prinMinArray[i] = ep3;
+                                //
+                                trescaArray[i] = ep1 - ep3;
                             }
+                            //
+                            hrEntries = new HistoryResultEntries(entryName, false);
+                            hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.E11].Entries[entryName].Time;
+                            hrEntries.Values = vmArray.ToList();
+                            vonMisesCom.Entries.Add(entryName, hrEntries);
+                            //
+                            hrEntries = new HistoryResultEntries(entryName, false);
+                            hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.E11].Entries[entryName].Time;
+                            hrEntries.Values = trescaArray.ToList();
+                            trescaCom.Entries.Add(entryName, hrEntries);
                             //
                             hrEntries = new HistoryResultEntries(entryName, false);
                             hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.E11].Entries[entryName].Time;
@@ -942,6 +992,8 @@ namespace CaeResults
                             prinMinCom.Entries.Add(entryName, hrEntries);
                         }
                         //
+                        fieldEntry.Value.Components[HOComponentNames.Mises] = vonMisesCom;
+                        fieldEntry.Value.Components[HOComponentNames.Tresca] = trescaCom;
                         fieldEntry.Value.Components.Add(sgnMaxAbsPrinCom.Name, sgnMaxAbsPrinCom);
                         fieldEntry.Value.Components.Add(prinMaxCom.Name, prinMaxCom);
                         fieldEntry.Value.Components.Add(prinMidCom.Name, prinMidCom);

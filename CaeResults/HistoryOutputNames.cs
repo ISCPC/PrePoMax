@@ -13,6 +13,8 @@ namespace CaeResults
     }
     class HOFieldNames
     {
+        public const string SteadyStateDynamicsSuffix = " IM";
+        //
         public const string Time = "TIME";
         // Nodal
         public const string Displacements = "DISPLACEMENTS";
@@ -56,6 +58,15 @@ namespace CaeResults
         public const string SurfaceNormal = "SURFACE NORMAL";
         // Error
         public const string Error = "ERROR";
+
+
+        // Methods
+        public static string GetNoSuffixName(string name)
+        {
+            if (name.EndsWith(SteadyStateDynamicsSuffix))
+                return name.Substring(0, name.Length - SteadyStateDynamicsSuffix.Length);
+            else return name;
+        }
     }
     //
     class HOComponentNames

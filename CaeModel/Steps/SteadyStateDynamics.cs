@@ -32,7 +32,7 @@ namespace CaeModel
             set
             {
                 _numDataPoints = value;
-                if (_numDataPoints < 2) _numDataPoints = 2;
+                if (_numDataPoints != int.MinValue && _numDataPoints < 2) _numDataPoints = 2;
             }
         }
         public double Bias
@@ -41,7 +41,7 @@ namespace CaeModel
             set
             {
                 _bias = value;
-                if (_bias < 1) _bias = 1;
+                if (_bias != double.NaN && _bias < 1) _bias = 1;
             }
         }
         public int NumFourierTerms

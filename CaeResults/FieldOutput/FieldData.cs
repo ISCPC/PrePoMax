@@ -14,6 +14,7 @@ namespace CaeResults
         Frequency,
         FrequencySensitivity,
         Buckling,
+        SteadyStateDynamics,
         LastIterations
     }
 

@@ -101,6 +101,11 @@ namespace vtkControl
             {
                 line2 = "Step: #" + _stepNumber + "   Buckling factor: " + _analysisTime.ToString();
             }
+            else if (_fieldType == DataFieldType.SteadyStateDynamic)
+            {
+                line2 = "Step: #" + _stepNumber + "   Data point: #" + _incrementNumber + "   Frequency: " +
+                        _analysisTime.ToString() + " " + _analysisTimeUnit;
+            }
             else if (_fieldType == DataFieldType.LastIterations)
             {
                 line2 = "Increment: #" + _stepNumber + "   Iteration: #" + _incrementNumber +

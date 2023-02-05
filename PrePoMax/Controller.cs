@@ -14002,13 +14002,15 @@ namespace PrePoMax
                 unit = _allResults.CurrentResult.UnitSystem.FrequencyUnitAbbreviation;
             else if (_currentFieldData.Type == StepType.Buckling)
                 unit = "";
+            else if (_currentFieldData.Type == StepType.SteadyStateDynamics)
+                unit = _allResults.CurrentResult.UnitSystem.FrequencyUnitAbbreviation;
             else if (_currentFieldData.Type == StepType.LastIterations)
                 unit = _allResults.CurrentResult.UnitSystem.TimeUnitAbbreviation;
             else throw new NotSupportedException();
             // Deformation variable
             string deformationVariable = _form.GetDeformationVariable();
             //
-            vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
+            DataFieldType fieldType = ConvertStepType(_currentFieldData);
             //
             int stepNumber = _currentFieldData.StepId;
             int incrementNumber = _currentFieldData.StepIncrementId;
@@ -14016,14 +14018,15 @@ namespace PrePoMax
             _form.SetStatusBlock(Path.GetFileName(_allResults.CurrentResult.FileName), _allResults.CurrentResult.DateTime,
                                  _currentFieldData.Time, unit, deformationVariable, scale, fieldType, stepNumber, incrementNumber);
         }
-        private vtkControl.DataFieldType ConvertStepType(FieldData fieldData)
+        private DataFieldType ConvertStepType(FieldData fieldData)
         {
-            vtkControl.DataFieldType fieldType;
-            if (fieldData.Type == StepType.Static) fieldType = vtkControl.DataFieldType.Static;
-            else if (fieldData.Type == StepType.Frequency) fieldType = vtkControl.DataFieldType.Frequency;
-            else if (fieldData.Type == StepType.FrequencySensitivity) fieldType = vtkControl.DataFieldType.FrequencySensitivity;
-            else if (fieldData.Type == StepType.Buckling) fieldType = vtkControl.DataFieldType.Buckling;
-            else if (fieldData.Type == StepType.LastIterations) fieldType = vtkControl.DataFieldType.LastIterations;
+            DataFieldType fieldType;
+            if (fieldData.Type == StepType.Static) fieldType = DataFieldType.Static;
+            else if (fieldData.Type == StepType.Frequency) fieldType = DataFieldType.Frequency;
+            else if (fieldData.Type == StepType.FrequencySensitivity) fieldType = DataFieldType.FrequencySensitivity;
+            else if (fieldData.Type == StepType.Buckling) fieldType = DataFieldType.Buckling;
+            else if (fieldData.Type == StepType.SteadyStateDynamics) fieldType = DataFieldType.SteadyStateDynamic;
+            else if (fieldData.Type == StepType.LastIterations) fieldType = DataFieldType.LastIterations;
             else throw new NotSupportedException();
             return fieldType;
         }
@@ -14059,10 +14062,10 @@ namespace PrePoMax
             _form.UpdateScalarsAndRedraw();
         }
         public void DrawUndeformedPartCopy(BasePart part, UndeformedModelTypeEnum undeformedModelType,
-                                           Color color, vtkControl.vtkRendererLayer layer)
+                                           Color color, vtkRendererLayer layer)
         {
-            vtkControl.vtkMaxActorData data;
-            data = new vtkControl.vtkMaxActorData();
+            vtkMaxActorData data;
+            data = new vtkMaxActorData();
             data.Name = part.Name + "_undeformed";
             data.Color = color;
             data.Layer = layer;
@@ -14111,8 +14114,8 @@ namespace PrePoMax
             }
         }
         //
-        private vtkControl.vtkMaxActorData GetVtkData(PartExchangeData actorData, PartExchangeData modelEdgesData,
-                                                      PartExchangeData locatorData)
+        private vtkMaxActorData GetVtkData(PartExchangeData actorData, PartExchangeData modelEdgesData,
+                                           PartExchangeData locatorData)
         {
             vtkControl.vtkMaxActorData vtkData = new vtkControl.vtkMaxActorData();
             
