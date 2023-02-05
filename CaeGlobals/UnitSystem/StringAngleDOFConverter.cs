@@ -36,7 +36,6 @@ namespace CaeGlobals
         public StringAngleDOFConverter()
         {
             // Initializes the standard values list with defaults.
-            //values = new ArrayList(new double[] { double.NaN, double.PositiveInfinity, 0 });
             values = new ArrayList(new double[] { double.NaN, /*double.PositiveInfinity,*/ 0 });
         }
 
