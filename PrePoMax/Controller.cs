@@ -808,6 +808,17 @@ namespace PrePoMax
             _form.Clear3D();
             if (_allResults.Count == 0) ClearResults();
             //
+
+
+
+            if (_allResults.ContainsResult(results.FileName))
+            {
+                _allResults.SetCurrentResult(results.FileName);
+                _allResults.RemoveCurrentResult();
+            }
+            
+            
+            
             _allResults.Add(results.FileName, results);
             // Check if the meshes are the same and rename the parts
             if (_model.Mesh != null && _allResults.CurrentResult.Mesh != null &&
@@ -841,7 +852,7 @@ namespace PrePoMax
                 }
                 //
                 ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
-            }
+            }            
             // Model changed
             _modelChanged = true;
             // Open .cel file
@@ -1544,7 +1555,7 @@ namespace PrePoMax
                     if (saveResults == false)
                     {
                         allResults = _allResults;
-                        _allResults = null;
+                        _allResults = new ResultsCollection();
                     }
                     // Controller
                     data.DumpToStream(bw);                    

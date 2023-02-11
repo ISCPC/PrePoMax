@@ -1404,7 +1404,7 @@ namespace PrePoMax
             {
                 SetResultNames();
                 // Reset the previous step and increment
-                SetAllStepAndIncrementIds();
+                SetAllStepAndIncrementIds(true);
                 // Set last increment
                 SetDefaultStepAndIncrementIds();
                 // Show the selection in the results tree
@@ -6937,11 +6937,10 @@ namespace PrePoMax
                 }
             });
         }
-        private void SetResult(string resultName)
+        public void SetResult(string resultName)
         {
             // Clear
             Clear3D();
-            //_controller.RemoveExplodedView(false);
             // Set results
             _controller.AllResults.SetCurrentResult(resultName);
             // Regenerate tree
@@ -6957,7 +6956,6 @@ namespace PrePoMax
                 // Set last increment
                 SetDefaultStepAndIncrementIds();
                 // Show the selection in the results tree
-                //return;
                 SelectFirstComponentOfFirstFieldOutput();
                 //
                 _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
@@ -7774,15 +7772,17 @@ namespace PrePoMax
                 this.ActiveControl = null;
             }
         }
-        public void SetAllStepAndIncrementIds()
+        public void SetAllStepAndIncrementIds(bool reset = false)
         {
             InvokeIfRequired(() =>
             {
                 // Save current step and increment id
                 string currentStepIncrement = (string)tscbStepAndIncrement.SelectedItem;
                 string[] prevStepIncrementIds = null;
-                if (currentStepIncrement != null)
+                if (!reset && currentStepIncrement != null)
+                {
                     prevStepIncrementIds = currentStepIncrement.Split(new string[] { ",", " " }, StringSplitOptions.RemoveEmptyEntries);
+                }
                 // Set all increments
                 tscbStepAndIncrement.SelectedIndexChanged -= FieldOutput_SelectionChanged;  // detach event
                 tscbStepAndIncrement.Items.Clear();
