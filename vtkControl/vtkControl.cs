@@ -4807,9 +4807,10 @@ namespace vtkControl
         {
             _scalarBarWidget.SetLabelFormat(numberFormat);
         }
-        public void SetScalarBarText(string fieldName, string componentName, string unitAbbreviation, string minMaxType)
+        public void SetScalarBarText(string fieldName, string componentName, string unitAbbreviation, string complexComponent,
+                                     string minMaxType)
         {
-            _scalarBarWidget.SetText(fieldName, componentName, unitAbbreviation, minMaxType);
+            _scalarBarWidget.SetText(fieldName, componentName, unitAbbreviation, complexComponent, minMaxType);
             //
             UpdateScalarFormatting();
         }

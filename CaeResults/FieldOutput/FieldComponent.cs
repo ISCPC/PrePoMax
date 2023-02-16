@@ -23,14 +23,14 @@ namespace CaeResults
         {
             _checkName = false;
             Name = name;
-
+            //
             Values = values;
-
+            //
             Invariant = invariant;
-
+            //
             Max = new IDValuePair { Id = 0, Value = values[0] };
             Min = new IDValuePair { Id = 0, Value = values[0] };
-
+            //
             for (int i = 0; i < values.Length; i++)
             {
                 if (values[i] > Max.Value)
@@ -44,6 +44,14 @@ namespace CaeResults
                     Min.Id = i;
                 }
             }
+        }
+        public FieldComponent(FieldComponent component)
+            : base(component)
+        {
+            if (component.Values != null) Values = component.Values.ToArray();
+            Invariant = component.Invariant;
+            Max = component.Max;
+            Min = component.Min;
         }
 
         

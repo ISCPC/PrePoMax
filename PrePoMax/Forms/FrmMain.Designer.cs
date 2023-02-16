@@ -73,7 +73,12 @@
             this.tslDeformationType = new System.Windows.Forms.ToolStripLabel();
             this.tscbDeformationType = new System.Windows.Forms.ToolStripComboBox();
             this.tslDeformationFactor = new System.Windows.Forms.ToolStripLabel();
-            this.tstbDeformationFactor = new UserControls.NumericToolStripTextBox();
+            this.tstbDeformationFactor = new UserControls.UnitAwareToolStripTextBox();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.tslComplex = new System.Windows.Forms.ToolStripLabel();
+            this.tscbComplex = new System.Windows.Forms.ToolStripComboBox();
+            this.tslAngle = new System.Windows.Forms.ToolStripLabel();
+            this.tstbAngle = new UserControls.UnitAwareToolStripTextBox();
             this.tsResults = new UserControls.ToolStripFocus();
             this.tsbResultsUndeformed = new System.Windows.Forms.ToolStripButton();
             this.tsbResultsDeformed = new System.Windows.Forms.ToolStripButton();
@@ -821,10 +826,15 @@
             this.tslDeformationType,
             this.tscbDeformationType,
             this.tslDeformationFactor,
-            this.tstbDeformationFactor});
+            this.tstbDeformationFactor,
+            this.toolStripSeparator3,
+            this.tslComplex,
+            this.tscbComplex,
+            this.tslAngle,
+            this.tstbAngle});
             this.tsDeformationFactor.Location = new System.Drawing.Point(3, 25);
             this.tsDeformationFactor.Name = "tsDeformationFactor";
-            this.tsDeformationFactor.Size = new System.Drawing.Size(591, 25);
+            this.tsDeformationFactor.Size = new System.Drawing.Size(844, 25);
             this.tsDeformationFactor.TabIndex = 8;
             // 
             // tslResultName
@@ -853,7 +863,7 @@
             this.tscbDeformationVariable.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.tscbDeformationVariable.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.tscbDeformationVariable.Name = "tscbDeformationVariable";
-            this.tscbDeformationVariable.Size = new System.Drawing.Size(121, 25);
+            this.tscbDeformationVariable.Size = new System.Drawing.Size(123, 25);
             this.tscbDeformationVariable.ToolTipText = "Select the deformation variable";
             this.tscbDeformationVariable.SelectedIndexChanged += new System.EventHandler(this.tscbDeformationVariable_SelectedIndexChanged);
             // 
@@ -868,7 +878,7 @@
             this.tscbDeformationType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.tscbDeformationType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.tscbDeformationType.Name = "tscbDeformationType";
-            this.tscbDeformationType.Size = new System.Drawing.Size(121, 25);
+            this.tscbDeformationType.Size = new System.Drawing.Size(113, 25);
             this.tscbDeformationType.ToolTipText = "Select the deformation type";
             this.tscbDeformationType.SelectedIndexChanged += new System.EventHandler(this.tscbDeformationType_SelectedIndexChanged);
             // 
@@ -883,12 +893,48 @@
             this.tstbDeformationFactor.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.tstbDeformationFactor.Name = "tstbDeformationFactor";
             this.tstbDeformationFactor.ShortcutsEnabled = false;
-            this.tstbDeformationFactor.Size = new System.Drawing.Size(50, 25);
+            this.tstbDeformationFactor.Size = new System.Drawing.Size(45, 25);
             this.tstbDeformationFactor.Text = "10";
             this.tstbDeformationFactor.TextBoxTextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tstbDeformationFactor.ToolTipText = "Enter the deformation scale factor";
+            this.tstbDeformationFactor.UnitConverter = null;
             this.tstbDeformationFactor.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tstbDeformationFactor_KeyDown);
             this.tstbDeformationFactor.EnabledChanged += new System.EventHandler(this.tstbDeformationFactor_EnabledChanged);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tslComplex
+            // 
+            this.tslComplex.Name = "tslComplex";
+            this.tslComplex.Size = new System.Drawing.Size(55, 22);
+            this.tslComplex.Text = "Complex";
+            // 
+            // tscbComplex
+            // 
+            this.tscbComplex.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tscbComplex.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.tscbComplex.Name = "tscbComplex";
+            this.tscbComplex.Size = new System.Drawing.Size(85, 25);
+            this.tscbComplex.SelectedIndexChanged += new System.EventHandler(this.tscbComplex_SelectedIndexChanged);
+            // 
+            // tslAngle
+            // 
+            this.tslAngle.Name = "tslAngle";
+            this.tslAngle.Size = new System.Drawing.Size(38, 22);
+            this.tslAngle.Text = "Angle";
+            // 
+            // tstbAngle
+            // 
+            this.tstbAngle.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.tstbAngle.Name = "tstbAngle";
+            this.tstbAngle.Size = new System.Drawing.Size(45, 25);
+            this.tstbAngle.Text = "45 °";
+            this.tstbAngle.TextBoxTextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tstbAngle.UnitConverter = null;
+            this.tstbAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tstbAngle_KeyDown);
             // 
             // tsResults
             // 
@@ -4202,7 +4248,7 @@
         private System.Windows.Forms.ToolStripComboBox tscbDeformationVariable;
         private System.Windows.Forms.ToolStripLabel tslDeformationType;
         private System.Windows.Forms.ToolStripComboBox tscbDeformationType;
-        private UserControls.NumericToolStripTextBox tstbDeformationFactor;
+        private UserControls.UnitAwareToolStripTextBox tstbDeformationFactor;
         private System.Windows.Forms.ToolStripLabel tslDeformationFactor;
         private System.Windows.Forms.ToolStripButton tsbQuery;
         private System.Windows.Forms.ToolStripButton tsbRemoveAnnotations;
@@ -4221,6 +4267,11 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEditMeshingParameters;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerMeshingParameters1;
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteMeshingParameters;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripLabel tslComplex;
+        private System.Windows.Forms.ToolStripComboBox tscbComplex;
+        private System.Windows.Forms.ToolStripLabel tslAngle;
+        private UserControls.UnitAwareToolStripTextBox tstbAngle;
     }
 }
 

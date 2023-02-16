@@ -71,6 +71,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums\ComplexResultTypeEnum.cs" />
     <Compile Include="Enums\DeformationScaleFactorTypeEnum.cs" />
     <Compile Include="Enums\SlipWearResultsEnum.cs" />
     <Compile Include="FeResults.cs" />

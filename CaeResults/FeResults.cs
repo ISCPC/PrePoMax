@@ -7,6 +7,8 @@ using CaeMesh;
 using CaeGlobals;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+using System.Security.AccessControl;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 namespace CaeResults
 {
@@ -17,7 +19,7 @@ namespace CaeResults
         [NonSerialized]
         private Dictionary<int, int> _nodeIdsLookUp;            // [globalId][resultsId] for values
         [NonSerialized]
-        private Dictionary<FieldData, Field> _fields;
+        private OrderedDictionary<FieldData, Field> _fields;
         [NonSerialized]
         private Dictionary<int, FeNode> _undeformedNodes;
         [NonSerialized]
@@ -25,8 +27,34 @@ namespace CaeResults
         [NonSerialized]
         private int _stepId;
         [NonSerialized]
-        private int _stepIncrementId;
+        private int _stepIncrementId;        
+        [NonSerialized]
+        private bool _complexAngleChanged;
         //
+        public static readonly string[][] ComplexFieldNames = new string[][] { new string[] { FOFieldNames.Disp,
+                                                                                              FOFieldNames.DispR,
+                                                                                              FOFieldNames.DispI },
+                                                                               new string[] { FOFieldNames.Stress,
+                                                                                              FOFieldNames.StressR,
+                                                                                              FOFieldNames.StressI },
+                                                                               new string[] { FOFieldNames.ZZStr,
+                                                                                              FOFieldNames.ZZStrR,
+                                                                                              FOFieldNames.ZZStrI },
+                                                                               new string[] { FOFieldNames.ToStrain,
+                                                                                              FOFieldNames.ToStraiR,
+                                                                                              FOFieldNames.ToStraiI },
+                                                                               new string[] { FOFieldNames.MeStrain,
+                                                                                              FOFieldNames.MeStraiR,
+                                                                                              FOFieldNames.MeStraiI },
+                                                                               new string[] { FOFieldNames.Forc,
+                                                                                              FOFieldNames.ForcR,
+                                                                                              FOFieldNames.ForcI },
+                                                                               new string[] { FOFieldNames.HError,
+                                                                                              FOFieldNames.HErrorR,
+                                                                                              FOFieldNames.HErrorI },
+                                                                               new string[] { FOFieldNames.Error,
+                                                                                              FOFieldNames.ErrorR,
+                                                                                              FOFieldNames.ErrorI } };
         private string _hashName;
         private string _fileName;
         private FeMesh _mesh;
@@ -34,6 +62,9 @@ namespace CaeResults
         private DateTime _dateTime;
         private UnitSystem _unitSystem;
         private string _deformationFieldOutputName;
+        private ComplexResultTypeEnum _complexResultType;
+        private float _complexAngleDeg;
+
 
 
         // Properties                                                                                                               
@@ -77,10 +108,11 @@ namespace CaeResults
             _hashName = Tools.GetRandomString(8);
             _mesh = null;
             _nodeIdsLookUp = null;
-            _fields = new Dictionary<FieldData, Field>();
+            _fields = new OrderedDictionary<FieldData, Field>("Fields");
             _history = null;
             _unitSystem = new UnitSystem();
             _deformationFieldOutputName = FOFieldNames.Disp;
+            _complexAngleChanged = false;
         }
         //public FeResults(SerializationInfo info, StreamingContext context)
         //{
@@ -170,11 +202,11 @@ namespace CaeResults
                 if (exist == 1)
                 {
                     numItems = br.ReadInt32();
-                    results._fields = new Dictionary<FieldData, Field>();
+                    results._fields = new OrderedDictionary<FieldData, Field>("Fields");
                     for (int i = 0; i < numItems; i++)
                     {
                         fieldData = FieldData.ReadFromFile(br, version);
-                        field = Field.ReadFromFile(br);
+                        field = Field.ReadFromFile(br, version);
                         results._fields.Add(fieldData, field);
                     }
                 }
@@ -183,6 +215,11 @@ namespace CaeResults
 
 
         // Methods                                                                                                                  
+        public void Preprocess()
+        {
+            ComputeAllFieldInvariants();
+            PrepareComplexResults();
+        }
         // Mesh                                     
         public void SetMesh(FeMesh mesh, Dictionary<int, int> nodeIdsLookUp)
         {
@@ -234,7 +271,7 @@ namespace CaeResults
         {
             int[] stepIds = GetAllStepIds();
             int lastStepId = stepIds.Last();
-            int[] stepIncrementIds = GetIncrementIds(lastStepId);
+            int[] stepIncrementIds = GetStepIncrementIds(lastStepId);
             int lastStepIncrementId = stepIncrementIds.Last();
             string[] fieldNames = GetAllFieldNames();
             string[] componentNames;
@@ -318,7 +355,7 @@ namespace CaeResults
                     currentField.AddComponent(fc2);
                     currentField.AddComponent(fc3);
                     // Replace field
-                    results.ReplaceField(fieldData, currentField);
+                    results.ReplaceOrAddField(fieldData, currentField);
                 }
                 else if (fieldData.Name == FOFieldNames.MeshDeformation || fieldData.Name == FOFieldNames.DispDeformationDepth)
                 {
@@ -356,7 +393,7 @@ namespace CaeResults
                     currentField.AddComponent(fc2);
                     currentField.AddComponent(fc3);
                     // Replace field
-                    results.ReplaceField(fieldData, currentField);
+                    results.ReplaceOrAddField(fieldData, currentField);
                 }
             }
             // Copy all fields
@@ -423,13 +460,29 @@ namespace CaeResults
             else  return null;
         }
         // Mesh deformation                         
+        private string GetInternalDeformationFieldOutputName(int stepId, int stepIncrementId)
+        {
+            if (_deformationFieldOutputName == FOFieldNames.Disp)
+            {
+                if (_complexResultType == ComplexResultTypeEnum.Imaginary ||
+                    _complexResultType == ComplexResultTypeEnum.Magnitude ||
+                    _complexResultType == ComplexResultTypeEnum.Phase)
+                {
+                    FieldData fieldData = new FieldData(FOFieldNames.DispR, null, stepId, stepIncrementId);
+                    Field field = GetField(fieldData);
+                    if (field != null) return FOFieldNames.DispR;
+                }
+            }
+            return _deformationFieldOutputName;
+        }
         public void SetMeshDeformation(float scale, int stepId, int stepIncrementId)
         {
-            if (scale != _scale || stepId != _stepId || stepIncrementId != _stepIncrementId)
+            if (scale != _scale || stepId != _stepId || stepIncrementId != _stepIncrementId || _complexAngleChanged)
             {
                 _scale = scale;
                 _stepId = stepId;
                 _stepIncrementId = stepIncrementId;
+                _complexAngleChanged = false;
                 //
                 int resultNodeId;
                 double[] offset;
@@ -561,7 +614,8 @@ namespace CaeResults
         }
         public float[][] GetNodalMeshDeformations(int stepId, int stepIncrementId)
         {
-            return GetNodalMeshDeformations(_deformationFieldOutputName, stepId, stepIncrementId);
+            string deformationFieldOutputName = GetInternalDeformationFieldOutputName(stepId, stepIncrementId);
+            return GetNodalMeshDeformations(deformationFieldOutputName, stepId, stepIncrementId);
         }
         public float[][] GetNodalMeshDeformations(string deformationFieldOutputName, int stepId, int stepIncrementId)
         {
@@ -617,7 +671,7 @@ namespace CaeResults
         private string[] GetDeformationFieldOutputComponentNames(string deformationFieldOutputName)
         {
             string[] componentNames = null;
-            if (deformationFieldOutputName == FOFieldNames.Disp)
+            if (deformationFieldOutputName == FOFieldNames.Disp || deformationFieldOutputName == FOFieldNames.DispR)
             {
                 componentNames = new string[] { FOComponentNames.U1, FOComponentNames.U2, FOComponentNames.U3 };
             }
@@ -643,6 +697,407 @@ namespace CaeResults
             }
             return componentNames;
         }
+        // Complex                                  
+        public static string[] GetPossibleComplexResultTypeNames()
+        {
+            return Enum.GetNames(typeof(ComplexResultTypeEnum)).ToArray();
+        }
+        public bool ContainsComplexResults()
+        {
+            foreach (var entry in _fields)
+            {
+                if (entry.Value.Complex) return true;
+            }
+            return false;
+        }
+        public void SetComplexResultTypeAndAngle(ComplexResultTypeEnum complexResultType, float complexAngleDeg)
+        {
+            if (complexResultType != _complexResultType ||
+                (_complexResultType == ComplexResultTypeEnum.Angle && complexAngleDeg != _complexAngleDeg))
+            {
+                if (complexAngleDeg != _complexAngleDeg) _complexAngleChanged = true;
+                //
+                _complexResultType = complexResultType;
+                _complexAngleDeg = complexAngleDeg;
+                //
+                SetComplexResult();
+            }
+        }
+        public void PrepareComplexResults()
+        {
+            int stepId;
+            int incrementId;
+            int[] stepIds = GetAllStepIds();
+            int[] incrementIds;
+            FieldData fieldData;
+            FieldData fieldDataR;
+            FieldData fieldDataI;
+            Field field;
+            Field fieldR;
+            Field fieldI;
+            //
+            for (int i = 0; i < stepIds.Length; i++)
+            {
+                stepId = stepIds[i];
+                incrementIds = GetStepIncrementIds(stepId);
+                for (int j = 0; j < incrementIds.Length; j++)
+                {
+                    incrementId = incrementIds[j];
+                    //
+                    foreach (var complexFieldNames in ComplexFieldNames)
+                    {
+                        fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
+                        field = GetField(fieldData);
+                        fieldDataI = GetFieldData(complexFieldNames[2], null, stepId, incrementId);
+                        fieldI = GetField(fieldDataI);
+                        //
+                        if (field != null && fieldI != null)
+                        {
+                            fieldR = new Field(field);  // copy
+                            fieldR.Name = complexFieldNames[1];
+                            //
+                            fieldDataR = new FieldData(fieldData); // copy
+                            fieldDataR.Name = complexFieldNames[1];
+                            //
+                            ReplaceOrAddField(fieldDataR, fieldR);
+                            //
+                            field.Complex = true;
+                            fieldData.Complex = true;
+                            ReplaceOrAddField(fieldData, field);
+                        }
+                    }
+                }
+            }
+        }
+        public void SetComplexResult()
+        {
+            if (_complexResultType == ComplexResultTypeEnum.Real) SetComplexResultToReal();
+            else if (_complexResultType == ComplexResultTypeEnum.Imaginary) SetComplexResultToImaginary();
+            else if (_complexResultType == ComplexResultTypeEnum.Magnitude) SetComplexResultToMagnitude();
+            else if (_complexResultType == ComplexResultTypeEnum.Phase) SetComplexResultToPhase();
+            else if (_complexResultType == ComplexResultTypeEnum.Angle) SetComplexResultToAngle();
+            else throw new NotSupportedException();
+        }
+        public void SetComplexResultToReal()
+        {
+            int stepId;
+            int incrementId;
+            int[] stepIds = GetAllStepIds();
+            int[] incrementIds;
+            FieldData fieldData;
+            FieldData fieldDataR;
+            FieldData fieldDataI;
+            Field field;
+            Field fieldR;
+            Field fieldI;
+            //
+            for (int i = 0; i < stepIds.Length; i++)
+            {
+                stepId = stepIds[i];
+                incrementIds = GetStepIncrementIds(stepId);
+                for (int j = 0; j < incrementIds.Length; j++)
+                {
+                    incrementId = incrementIds[j];
+                    //
+                    foreach (var complexFieldNames in ComplexFieldNames)
+                    {
+                        fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
+                        field = GetField(fieldData);
+                        fieldDataR = GetFieldData(complexFieldNames[1], null, stepId, incrementId);
+                        fieldR = GetField(fieldDataR);
+                        fieldDataI = GetFieldData(complexFieldNames[2], null, stepId, incrementId);
+                        fieldI = GetField(fieldDataI);
+                        //
+                        if (fieldR != null)
+                        {
+                            field = new Field(fieldR);
+                            field.Name = complexFieldNames[0];
+                            field.Complex = true;
+                            //
+                            fieldData = new FieldData(fieldDataR);
+                            fieldData.Name = complexFieldNames[0];
+                            fieldData.Complex = true;
+                            //
+                            ReplaceOrAddField(fieldData, field);
+                        }
+                    }
+                }
+            }
+        }
+        public void SetComplexResultToImaginary()
+        {
+            int stepId;
+            int incrementId;
+            int[] stepIds = GetAllStepIds();
+            int[] incrementIds;
+            FieldData fieldData;
+            FieldData fieldDataR;
+            FieldData fieldDataI;
+            Field field;
+            Field fieldR;
+            Field fieldI;
+            //
+            for (int i = 0; i < stepIds.Length; i++)
+            {
+                stepId = stepIds[i];
+                incrementIds = GetStepIncrementIds(stepId);
+                for (int j = 0; j < incrementIds.Length; j++)
+                {
+                    incrementId = incrementIds[j];
+                    //
+                    foreach (var complexFieldNames in ComplexFieldNames)
+                    {
+                        fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
+                        field = GetField(fieldData);
+                        fieldDataR = GetFieldData(complexFieldNames[1], null, stepId, incrementId);
+                        fieldR = GetField(fieldDataR);
+                        fieldDataI = GetFieldData(complexFieldNames[2], null, stepId, incrementId);
+                        fieldI = GetField(fieldDataI);
+                        //
+                        if (fieldI != null)
+                        {
+                            field = new Field(fieldI);
+                            field.Name = complexFieldNames[0];
+                            field.Complex = true;
+                            //
+                            fieldData = new FieldData(fieldDataI);
+                            fieldData.Name = complexFieldNames[0];
+                            fieldData.Complex = true;
+                            //
+                            ReplaceOrAddField(fieldData, field);
+                        }
+                    }
+                }
+            }
+        }
+        public void SetComplexResultToMagnitude()
+        {
+            int stepId;
+            int incrementId;
+            int[] stepIds = GetAllStepIds();
+            int[] incrementIds;
+            FieldData fieldData;
+            FieldData fieldDataR;
+            FieldData fieldDataI;
+            Field field;
+            Field fieldR;
+            Field fieldI;
+            float[] valuesR;
+            float[] valuesI;
+            float[] valuesMag;
+            //
+            for (int i = 0; i < stepIds.Length; i++)
+            {
+                stepId = stepIds[i];
+                incrementIds = GetStepIncrementIds(stepId);
+                for (int j = 0; j < incrementIds.Length; j++)
+                {
+                    incrementId = incrementIds[j];
+                    //
+                    foreach (var complexFieldNames in ComplexFieldNames)
+                    {
+                        fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
+                        field = GetField(fieldData);
+                        fieldDataR = GetFieldData(complexFieldNames[1], null, stepId, incrementId);
+                        fieldR = GetField(fieldDataR);
+                        fieldDataI = GetFieldData(complexFieldNames[2], null, stepId, incrementId);
+                        fieldI = GetField(fieldDataI);
+                        //
+                        if (fieldR != null && fieldI != null)
+                        {
+                            field = new Field(fieldI);
+                            field.Name = complexFieldNames[0];
+                            field.Complex = true;
+                            //
+                            fieldData = new FieldData(fieldDataI);
+                            fieldData.Name = complexFieldNames[0];
+                            fieldData.Complex = true;
+                            //
+                            string[] componentNames = field.GetComponentNames();
+                            foreach (var componentName in componentNames)
+                            {
+                                if (!field.IsComponentInvariant(componentName))
+                                {
+                                    valuesR = fieldR.GetComponentValues(componentName);
+                                    valuesI = fieldI.GetComponentValues(componentName);
+                                    valuesMag = new float[valuesR.Length];
+                                    //
+                                    for (int k = 0; k < valuesR.Length; k++)
+                                    {
+                                        valuesMag[k] = GetComplexMagnitude(valuesR[k], valuesI[k]);
+                                    }
+                                    field.ReplaceComponent(componentName, new FieldComponent(componentName, valuesMag));
+                                    field.ClearInvariants();
+                                }
+                            }
+                            //
+                            ReplaceOrAddField(fieldData, field);
+                        }
+                    }
+                }
+            }
+        }
+        public void SetComplexResultToPhase()
+        {
+            int stepId;
+            int incrementId;
+            int[] stepIds = GetAllStepIds();
+            int[] incrementIds;
+            FieldData fieldData;
+            FieldData fieldDataR;
+            FieldData fieldDataI;
+            Field field;
+            Field fieldR;
+            Field fieldI;
+            float[] valuesR;
+            float[] valuesI;
+            float[] valuesPhase;
+            //
+            for (int i = 0; i < stepIds.Length; i++)
+            {
+                stepId = stepIds[i];
+                incrementIds = GetStepIncrementIds(stepId);
+                for (int j = 0; j < incrementIds.Length; j++)
+                {
+                    incrementId = incrementIds[j];
+                    //
+                    foreach (var complexFieldNames in ComplexFieldNames)
+                    {
+                        fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
+                        field = GetField(fieldData);
+                        fieldDataR = GetFieldData(complexFieldNames[1], null, stepId, incrementId);
+                        fieldR = GetField(fieldDataR);
+                        fieldDataI = GetFieldData(complexFieldNames[2], null, stepId, incrementId);
+                        fieldI = GetField(fieldDataI);
+                        //
+                        if (fieldR != null && fieldI != null)
+                        {
+                            field = new Field(fieldI);
+                            field.Name = complexFieldNames[0];
+                            field.Complex = true;
+                            //
+                            fieldData = new FieldData(fieldDataI);
+                            fieldData.Name = complexFieldNames[0];
+                            fieldData.Complex = true;
+                            //
+                            string[] componentNames = field.GetComponentNames();
+                            foreach (var componentName in componentNames)
+                            {
+                                if (!field.IsComponentInvariant(componentName))
+                                {
+                                    valuesR = fieldR.GetComponentValues(componentName);
+                                    valuesI = fieldI.GetComponentValues(componentName);
+                                    valuesPhase = new float[valuesR.Length];
+                                    //
+                                    for (int k = 0; k < valuesR.Length; k++)
+                                    {
+                                        valuesPhase[k] = GetComplexPhaseDeg(valuesR[k], valuesI[k]);
+                                    }
+                                    field.ReplaceComponent(componentName, new FieldComponent(componentName, valuesPhase));
+                                    field.ClearInvariants();
+                                }
+                            }
+                            //
+                            ReplaceOrAddField(fieldData, field);
+                        }
+                    }
+                }
+            }
+        }
+        public void SetComplexResultToAngle()
+        {
+            int stepId;
+            int incrementId;
+            int[] stepIds = GetAllStepIds();
+            int[] incrementIds;
+            FieldData fieldData;
+            FieldData fieldDataR;
+            FieldData fieldDataI;
+            Field field;
+            Field fieldR;
+            Field fieldI;
+            float[] valuesR;
+            float[] valuesI;
+            float[] valuesAngle;
+            //
+            for (int i = 0; i < stepIds.Length; i++)
+            {
+                stepId = stepIds[i];
+                incrementIds = GetStepIncrementIds(stepId);
+                for (int j = 0; j < incrementIds.Length; j++)
+                {
+                    incrementId = incrementIds[j];
+                    //
+                    foreach (var complexFieldNames in ComplexFieldNames)
+                    {
+                        fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
+                        field = GetField(fieldData);
+                        fieldDataR = GetFieldData(complexFieldNames[1], null, stepId, incrementId);
+                        fieldR = GetField(fieldDataR);
+                        fieldDataI = GetFieldData(complexFieldNames[2], null, stepId, incrementId);
+                        fieldI = GetField(fieldDataI);
+                        //
+                        if (fieldR != null && fieldI != null)
+                        {
+                            field = new Field(fieldI);
+                            field.Name = complexFieldNames[0];
+                            field.Complex = true;
+                            //
+                            fieldData = new FieldData(fieldDataI);
+                            fieldData.Name = complexFieldNames[0];
+                            fieldData.Complex = true;
+                            //
+                            string[] componentNames = field.GetComponentNames();
+                            foreach (var componentName in componentNames)
+                            {
+                                if (!field.IsComponentInvariant(componentName))
+                                {
+                                    valuesR = fieldR.GetComponentValues(componentName);
+                                    valuesI = fieldI.GetComponentValues(componentName);
+                                    valuesAngle = new float[valuesR.Length];
+                                    //
+                                    for (int k = 0; k < valuesR.Length; k++)
+                                    {
+                                        valuesAngle[k] = GetComplexRealAtAngle(valuesR[k], valuesI[k], (float)_complexAngleDeg);
+                                    }
+                                    field.ReplaceComponent(componentName, new FieldComponent(componentName, valuesAngle));
+                                    field.ComputeInvariants();
+                                }
+                            }
+                            //
+                            ReplaceOrAddField(fieldData, field);
+                        }
+                    }
+                }
+            }
+        }
+        //
+        private float GetComplexMagnitude(float real, float imaginary)
+        {
+            return (float)Math.Sqrt(Math.Pow(real, 2) + Math.Pow(imaginary, 2));
+        }
+        private float GetComplexPhaseDeg(float real, float imaginary)
+        {
+            float result;
+            if (real == 0)
+            {
+                if (imaginary > 0) result = 90;
+                else if ((imaginary < 0)) result = 270;
+                else result = 0;
+            }
+            else
+            {
+                result = (float)(Math.Atan(imaginary / real) * 180 / Math.PI);
+                if (real < 0) result += 180;
+            }
+            return result;
+        }
+        private float GetComplexRealAtAngle(float real, float imaginary, float angleDeg)
+        {
+            float magnitude = GetComplexMagnitude(real, imaginary);
+            float phaseDeg = GetComplexPhaseDeg(real, imaginary);
+            return (float)(magnitude * Math.Cos((phaseDeg + angleDeg) * Math.PI / 180));
+        }
         // History                                  
         public HistoryResults GetHistory()
         {
@@ -653,21 +1108,38 @@ namespace CaeResults
             _history = historyResults;            
         }
         // Units                                    
-        public TypeConverter GetFieldUnitConverter(string fieldDataName, string componentName)
+        public TypeConverter GetFieldUnitConverter(string fieldDataName, string componentName, int stepId, int incrementId)
         {
-            GetFieldUnitConverterAndAbbrevation(fieldDataName, componentName, out TypeConverter unitConverter,
-                                                  out string unitAbbreviation);
+            GetFieldUnitConverterAndAbbrevation(fieldDataName, componentName, stepId, incrementId,
+                                                out TypeConverter unitConverter, out string unitAbbreviation);
             return unitConverter;
         }
-        public string GetFieldUnitAbbrevation(string fieldDataName, string componentName)
+        public string GetFieldUnitAbbrevation(string fieldDataName, string componentName, int stepId, int incrementId)
         {
-            GetFieldUnitConverterAndAbbrevation(fieldDataName, componentName, out TypeConverter unitConverter,
-                                                out string unitAbbreviation);
+            GetFieldUnitConverterAndAbbrevation(fieldDataName, componentName, stepId, incrementId,
+                                                out TypeConverter unitConverter, out string unitAbbreviation);
             return unitAbbreviation;
         }
-        public void GetFieldUnitConverterAndAbbrevation(string fieldDataName, string componentName, out TypeConverter unitConverter,
+        public void GetFieldUnitConverterAndAbbrevation(string fieldDataName, string componentName,
+                                                        int stepId, int incrementId,
+                                                        out TypeConverter unitConverter,
                                                         out string unitAbbreviation)
         {
+            if (_complexResultType == ComplexResultTypeEnum.Phase)  // speed up
+            {
+                FieldData fieldData = GetFieldData(fieldDataName, componentName, stepId, incrementId);
+                if (fieldData.Type == StepType.SteadyStateDynamics)
+                {
+                    Field field = GetField(fieldData);
+                    if (field.Complex)
+                    {
+                        unitConverter = new StringAngleDegConverter();
+                        unitAbbreviation = "°";
+                        return;
+                    }
+                }
+            }
+            //
             unitConverter = new DoubleConverter();
             unitAbbreviation = "?";
             try
@@ -679,7 +1151,8 @@ namespace CaeResults
                         unitAbbreviation = "";
                         break;
                     case FOFieldNames.Disp:
-                    case FOFieldNames.Dispi:
+                    case FOFieldNames.DispR:
+                    case FOFieldNames.DispI:
                     case FOFieldNames.Distance: // Imported pressure
                         unitConverter = new StringLengthConverter();
                         unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
@@ -706,9 +1179,11 @@ namespace CaeResults
                         unitAbbreviation = _unitSystem.VelocityUnitAbbreviation;
                         break;
                     case FOFieldNames.Stress:
-                    case FOFieldNames.Stressi:
+                    case FOFieldNames.StressR:
+                    case FOFieldNames.StressI:
                     case FOFieldNames.ZZStr:
-                    case FOFieldNames.ZZStri:
+                    case FOFieldNames.ZZStrR:
+                    case FOFieldNames.ZZStrI:
                     case FOFieldNames.Imported: // Imported pressure
                         unitConverter = new StringPressureConverter();
                         unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
@@ -737,15 +1212,18 @@ namespace CaeResults
                         }
                         break;
                     case FOFieldNames.ToStrain:
-                    case FOFieldNames.ToStraii:
+                    case FOFieldNames.ToStraiR:
+                    case FOFieldNames.ToStraiI:
                     case FOFieldNames.MeStrain:
-                    case FOFieldNames.MeStraii:
+                    case FOFieldNames.MeStraiR:
+                    case FOFieldNames.MeStraiI:
                     case FOFieldNames.Pe:
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "/";
                         break;
                     case FOFieldNames.Forc:
-                    case FOFieldNames.Forci:
+                    case FOFieldNames.ForcR:
+                    case FOFieldNames.ForcI:
                         unitConverter = new StringForceConverter();
                         unitAbbreviation = _unitSystem.ForceUnitAbbreviation;
                         break;
@@ -754,7 +1232,8 @@ namespace CaeResults
                         unitAbbreviation = _unitSystem.EnergyPerVolumeUnitAbbreviation;
                         break;
                     case FOFieldNames.Error:
-                    case FOFieldNames.Errori:
+                    case FOFieldNames.ErrorR:
+                    case FOFieldNames.ErrorI:
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "%";
                         break;
@@ -802,7 +1281,8 @@ namespace CaeResults
                         unitAbbreviation = _unitSystem.PowerUnitAbbreviation;
                         break;
                     case FOFieldNames.HError:
-                    case FOFieldNames.HErrori:
+                    case FOFieldNames.HErrorI:
+                    case FOFieldNames.HErrorR:
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "%";
                         break;
@@ -831,19 +1311,21 @@ namespace CaeResults
             }
         }
         //
-        public TypeConverter GetHistoryUnitConverter(string fieldName, string componentName)
+        public TypeConverter GetHistoryUnitConverter(string fieldName, string componentName, int stepId, int incrementId)
         {
-            GetHistoryUnitConverterAndAbbrevation(fieldName, componentName, out TypeConverter unitConverter,
-                                                  out string unitAbbreviation);
+            GetHistoryUnitConverterAndAbbrevation(fieldName, componentName, stepId, incrementId,
+                                                  out TypeConverter unitConverter, out string unitAbbreviation);
             return unitConverter;
         }
-        public string GetHistoryUnitAbbrevation(string fieldName, string componentName)
+        public string GetHistoryUnitAbbrevation(string fieldName, string componentName, int stepId, int incrementId)
         {
-            GetHistoryUnitConverterAndAbbrevation(fieldName, componentName, out TypeConverter unitConverter,
-                                                  out string unitAbbreviation);
+            GetHistoryUnitConverterAndAbbrevation(fieldName, componentName, stepId, incrementId ,
+                                                  out TypeConverter unitConverter, out string unitAbbreviation);
             return unitAbbreviation;
         }
-        public void GetHistoryUnitConverterAndAbbrevation(string fieldName, string componentName, out TypeConverter unitConverter,
+        public void GetHistoryUnitConverterAndAbbrevation(string fieldName, string componentName,
+                                                          int stepId, int incrementId,
+                                                          out TypeConverter unitConverter,
                                                           out string unitAbbreviation)
         {
             unitConverter = new DoubleConverter();
@@ -952,7 +1434,7 @@ namespace CaeResults
                     case FOFieldNames.Error:
                     default:
                         string noSpacesName = noSuffixName.Replace(' ', '_');
-                        GetFieldUnitConverterAndAbbrevation(noSpacesName.ToUpper(), componentName,
+                        GetFieldUnitConverterAndAbbrevation(noSpacesName.ToUpper(), componentName, stepId, incrementId,
                                                             out unitConverter, out unitAbbreviation);
                         if (unitAbbreviation == "?" && System.Diagnostics.Debugger.IsAttached)
                             throw new NotSupportedException();
@@ -977,7 +1459,7 @@ namespace CaeResults
                 foreach (var elementId in part.Labels) _mesh.Elements[elementId].PartId = part.PartId;
             }
         }
-        public void CopyMeshitemsFromMesh(FeMesh mesh)
+        public void CopyMeshItemsFromMesh(FeMesh mesh)
         {
             foreach (var nodeSet in mesh.NodeSets)
             {
@@ -999,6 +1481,12 @@ namespace CaeResults
         {
             fieldData = new FieldData(fieldData);   // copy
             _fields.Add(fieldData, field);
+            // Hide complex fields
+            if (fieldData.Type == StepType.SteadyStateDynamics && FOFieldNames.IsCompex(field.Name))
+            {
+                field.Internal = true;
+                fieldData.Internal = true;
+            }
         }
         public Field GetField(FieldData fieldData)
         {
@@ -1013,7 +1501,7 @@ namespace CaeResults
             }
             return null;
         }
-        public bool ReplaceField(FieldData fieldData, Field field)
+        public void ReplaceOrAddField(FieldData fieldData, Field field)
         {
             // Find the result
             FieldData key = null;
@@ -1030,10 +1518,16 @@ namespace CaeResults
             //
             if (key != null)
             {
-                _fields[key] = field;
-                return true;
+                _fields.Replace(key, fieldData, field);
             }
-            else return false;
+            else AddFiled(fieldData, field);
+        }
+        public void ComputeAllFieldInvariants()
+        {
+            foreach (var entry in _fields)
+            {
+                entry.Value.ComputeInvariants();
+            }
         }
         //
         public HistoryResultSet AddResultHistoryOutput(ResultHistoryOutput resultHistoryOutput)
@@ -1116,7 +1610,7 @@ namespace CaeResults
             HashSet<string> componentNames = new HashSet<string>();
             foreach (var entry in _fields)
             {
-                componentNames.UnionWith(entry.Value.GetCmponentNames());
+                componentNames.UnionWith(entry.Value.GetComponentNames());
             }
             return componentNames.ToArray();
         }
@@ -1126,7 +1620,7 @@ namespace CaeResults
             {
                 if (entry.Key.Name.ToUpper() == fieldName.ToUpper())
                 {
-                    return entry.Value.GetCmponentNames();
+                    return entry.Value.GetComponentNames();
                 }
             }
             return null;
@@ -1135,7 +1629,7 @@ namespace CaeResults
         {
             return _fields.Keys.ToArray();
         }
-        public FieldData GetFieldData(string name, string component, int stepId, int stepIncrementId)
+        public FieldData GetFieldData(string name, string component, int stepId, int stepIncrementId, bool exactComponent = false)
         {
             FieldData result;
             // Empty results
@@ -1158,9 +1652,21 @@ namespace CaeResults
             {
                 if (entry.Key.Name == name && entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId)
                 {
-                    result = new FieldData(entry.Key);
-                    result.Component = component;
-                    return result;
+                    if (exactComponent)
+                    {
+                        if (entry.Value.ContainsComponent(component))
+                        {
+                            result = new FieldData(entry.Key);
+                            result.Component = component;
+                            return result;
+                        }
+                    }
+                    else
+                    {
+                        result = new FieldData(entry.Key);
+                        result.Component = component;
+                        return result;
+                    }
                 }
             }
             // Find other existing result
@@ -1187,7 +1693,7 @@ namespace CaeResults
             string name = GetAllFieldNames()[0];
             string component = GetFieldComponentNames(name)[0];
             int stepId = GetAllStepIds().Last();
-            int stepIncrementId = GetIncrementIds(stepId).Last();
+            int stepIncrementId = GetStepIncrementIds(stepId).Last();
             //
             return GetFieldData(name, component, stepId, stepIncrementId);
         }
@@ -1204,7 +1710,7 @@ namespace CaeResults
             else
             {
                 int stepId = GetAllStepIds().Last();
-                int stepIncrementId = GetIncrementIds(stepId).Last();
+                int stepIncrementId = GetStepIncrementIds(stepId).Last();
                 string name = GetStepFieldNames(stepId)[0];
                 string component = GetFieldComponentNames(name)[0];
                 //
@@ -1216,7 +1722,7 @@ namespace CaeResults
                 }
                 else if (fieldData.Type == StepType.Frequency)
                 {
-                    stepIncrementId = GetIncrementIds(stepId).First();
+                    stepIncrementId = GetStepIncrementIds(stepId).First();
                     fieldData = GetFieldData(name, component, stepId, stepIncrementId);
                 }
             }
@@ -1224,10 +1730,21 @@ namespace CaeResults
         }
         public string[] GetAllFieldNames()
         {
+            // Use list for order
             List<string> names = new List<string>();
             foreach (var entry in _fields)
             {
                 if (!names.Contains(entry.Key.Name)) names.Add(entry.Key.Name);
+            }
+            return names.ToArray();
+        }
+        public string[] GetVisibleFieldNames()
+        {
+            // Use list for order
+            List<string> names = new List<string>();
+            foreach (var entry in _fields)
+            {
+                if (!entry.Value.Internal && !names.Contains(entry.Key.Name)) names.Add(entry.Key.Name);
             }
             return names.ToArray();
         }
@@ -1261,7 +1778,7 @@ namespace CaeResults
             //
             return sortedIds;
         }
-        public int[] GetIncrementIds(int stepId)
+        public int[] GetStepIncrementIds(int stepId)
         {
             HashSet<int> ids = new HashSet<int>();
             foreach (var entry in _fields)
@@ -1297,7 +1814,7 @@ namespace CaeResults
                 foreach (int stepId in stepIds)
                 {
                     stepIncrementIds = new List<int>();
-                    foreach (int incrementId in GetIncrementIds(stepId))
+                    foreach (int incrementId in GetStepIncrementIds(stepId))
                     {
                         fieldHash = GetFieldHash(fieldName, component, stepId, incrementId);
                         //if (FieldExists(fieldName, component, stepId, incrementId)) stepIncrementIds.Add(incrementId);
@@ -1324,7 +1841,7 @@ namespace CaeResults
                 }
                 foreach (int stepId in stepIds)
                 {
-                    existingIncrementIds.Add(stepId, GetIncrementIds(stepId));
+                    existingIncrementIds.Add(stepId, GetStepIncrementIds(stepId));
                 }
             }
             return existingIncrementIds;
@@ -1359,9 +1876,9 @@ namespace CaeResults
             foreach (var entry in _fields)
             {
                 if (filedNameComponentNames.TryGetValue(entry.Key.Name, out componentNames))
-                    componentNames.UnionWith(entry.Value.GetCmponentNames());
+                    componentNames.UnionWith(entry.Value.GetComponentNames());
                 else
-                    filedNameComponentNames.Add(entry.Key.Name, new HashSet<string>(entry.Value.GetCmponentNames()));
+                    filedNameComponentNames.Add(entry.Key.Name, new HashSet<string>(entry.Value.GetComponentNames()));
             }
             //
             Dictionary<string, string[]> filedNameComponentNamesArr = new Dictionary<string, string[]>();
@@ -1392,7 +1909,7 @@ namespace CaeResults
             HashSet<string> fieldHashes = new HashSet<string>();
             foreach (var fieldEntry in _fields)
             {
-                foreach (var componentName in fieldEntry.Value.GetCmponentNames())
+                foreach (var componentName in fieldEntry.Value.GetComponentNames())
                 {
                     fieldHashes.Add(GetFieldHash(fieldEntry.Key.Name, componentName, 1, 0));
                     fieldHashes.Add(GetFieldHash(fieldEntry.Key.Name, componentName, fieldEntry.Key.StepId,
@@ -1703,8 +2220,8 @@ namespace CaeResults
             HistoryResultSet set = _history.Sets[historyData.SetName];
             HistoryResultField field = set.Fields[historyData.FieldName];
             HistoryResultComponent component = field.Components[historyData.ComponentName];
-            string unit = "\n[" + GetHistoryUnitAbbrevation(field.Name, component.Name) + "]";
-            string timeUnit = "\n[" + GetHistoryUnitAbbrevation("Time", null) + "]";
+            string unit = "\n[" + GetHistoryUnitAbbrevation(field.Name, component.Name, -1, -1) + "]";
+            string timeUnit = "\n[" + GetHistoryUnitAbbrevation("Time", null, -1, -1) + "]";
             // Sorted time
             double[] sortedTime;
             Dictionary<double, int> timeRowId;
@@ -2151,7 +2668,9 @@ namespace CaeResults
         public void ScaleNodeCoordinates(string deformationFieldOutputName, float scale, int stepId, int stepIncrementId,
                                          int[] globalNodeIds, ref double[][] nodes)
         {
-            if (deformationFieldOutputName == FOFieldNames.Default) deformationFieldOutputName = _deformationFieldOutputName;
+            if (deformationFieldOutputName == FOFieldNames.Default)
+                deformationFieldOutputName = GetInternalDeformationFieldOutputName(stepId, stepIncrementId);
+            //
             if (scale != 0)
             {
                 float[][] deformations = GetNodalMeshDeformations(deformationFieldOutputName, stepId, stepIncrementId);
@@ -2193,16 +2712,22 @@ namespace CaeResults
         {
             double fieldMax;
             double max = -double.MaxValue;
+            double value;
+            string deformationFieldOutputName;
             string[] componentNames = GetFieldComponentNames(_deformationFieldOutputName);
             //
             foreach (var entry in _fields)
             {
-                if (entry.Key.Name == _deformationFieldOutputName)
+                deformationFieldOutputName = GetInternalDeformationFieldOutputName(entry.Key.StepId, entry.Key.StepIncrementId);
+                if (entry.Key.Name == deformationFieldOutputName)
                 {
                     fieldMax = 0;
                     //
                     foreach (var componentName in componentNames)
-                        fieldMax += Math.Pow(entry.Value.GetComponentAbsMax(componentName), 2);
+                    {
+                        value = Math.Pow(entry.Value.GetComponentAbsMax(componentName), 2);
+                        if (!double.IsNaN(value)) max += value;
+                    }
                     //
                     if (fieldMax > 0) fieldMax = Math.Sqrt(fieldMax);
                     //
@@ -2214,16 +2739,23 @@ namespace CaeResults
         public float GetMaxDeformation(int stepId, int stepIncrementId)
         {
             double max = -double.MaxValue;
+            double value;
+            string deformationFieldOutputName;
             foreach (var entry in _fields)
             {
+                deformationFieldOutputName = GetInternalDeformationFieldOutputName(entry.Key.StepId, entry.Key.StepIncrementId);
+                //
                 if (entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId &&
-                    entry.Key.Name == _deformationFieldOutputName)
+                    entry.Key.Name == deformationFieldOutputName)
                 {
                     max = 0;
-                    string[] componentNames = GetFieldComponentNames(_deformationFieldOutputName);
+                    string[] componentNames = GetFieldComponentNames(deformationFieldOutputName);
                     //
                     foreach (var componentName in componentNames)
-                        max += Math.Pow(entry.Value.GetComponentAbsMax(componentName), 2);
+                    {
+                        value = Math.Pow(entry.Value.GetComponentAbsMax(componentName), 2);
+                        if (!double.IsNaN(value)) max += value;
+                    }
                     //
                     if (max > 0) max = Math.Sqrt(max);
                     //
@@ -2293,7 +2825,7 @@ namespace CaeResults
                     int[] stepIds = GetAllStepIds();
                     for (int i = 0; i < stepIds.Length; i++)
                     {
-                        int[] stepIncrementIds = GetIncrementIds(stepIds[i]);
+                        int[] stepIncrementIds = GetStepIncrementIds(stepIds[i]);
                         count += stepIncrementIds.Length;
                     }
                     //
@@ -2395,7 +2927,7 @@ namespace CaeResults
                 //
                 for (int i = 0; i < slipStepIds.Length; i++)
                 {
-                    int[] stepIncrementIds = GetIncrementIds(slipStepIds[i]);
+                    int[] stepIncrementIds = GetStepIncrementIds(slipStepIds[i]);
                     //
                     for (int j = 0; j < stepIncrementIds.Length; j++)
                     {
@@ -2524,7 +3056,7 @@ namespace CaeResults
             //
             int[] stepIds = GetAllStepIds();
             int stepId = stepIds.Last();
-            int[] stepIncrementIds = GetIncrementIds(stepId);
+            int[] stepIncrementIds = GetStepIncrementIds(stepId);
             int stepIncrementId = stepIncrementIds.Last();
             //
             float[][] vectors = GetNodalMeshDeformations(stepId, stepIncrementId);
@@ -2710,7 +3242,7 @@ namespace CaeResults
                 //
                 for (int i = 0; i < stepIds.Length; i++)
                 {
-                    stepIncrementIds = GetIncrementIds(stepIds[i]);
+                    stepIncrementIds = GetStepIncrementIds(stepIds[i]);
                     //
                     for (int j = 0; j < stepIncrementIds.Length; j++)
                     {
@@ -2853,7 +3385,7 @@ namespace CaeResults
             if (slipWearResultsToKeep == SlipWearResultsEnum.All) { }
             else if (slipWearResultsToKeep == SlipWearResultsEnum.SlipWearSteps)
             {
-                Dictionary<FieldData, Field> fields = new Dictionary<FieldData, Field>();
+                OrderedDictionary<FieldData, Field> fields = new OrderedDictionary<FieldData, Field>("Fields");
                 //
                 foreach (var entry in _fields)
                 {
@@ -2867,13 +3399,13 @@ namespace CaeResults
             else if (slipWearResultsToKeep == SlipWearResultsEnum.LastIncrementOfSlipWearSteps)
             {
                 int lastIncrementId;
-                Dictionary<FieldData, Field> fields = new Dictionary<FieldData, Field>();
+                OrderedDictionary<FieldData, Field> fields = new OrderedDictionary<FieldData, Field>("Fields");
                 //
                 foreach (var entry in _fields)
                 {
                     if (slipStepIdsHash.Contains(entry.Key.StepId))
                     {
-                        lastIncrementId = GetIncrementIds(entry.Key.StepId).Last();
+                        lastIncrementId = GetStepIncrementIds(entry.Key.StepId).Last();
                         //
                         if (entry.Key.StepIncrementId == lastIncrementId)
                             fields.Add(entry.Key, entry.Value);
@@ -2885,7 +3417,7 @@ namespace CaeResults
             {
                 int lastIncrementId;
                 int lastStepId = slipStepIds.Last();
-                Dictionary<FieldData, Field> fields = new Dictionary<FieldData, Field>();
+                OrderedDictionary<FieldData, Field> fields = new OrderedDictionary<FieldData, Field>("Fields");
                 //
                 foreach (var entry in _fields)
                 {
@@ -2893,7 +3425,7 @@ namespace CaeResults
                     {
                         if (entry.Key.StepId == lastStepId)
                         {
-                            lastIncrementId = GetIncrementIds(entry.Key.StepId).Last();
+                            lastIncrementId = GetStepIncrementIds(entry.Key.StepId).Last();
                             //
                             if (entry.Key.StepIncrementId == lastIncrementId)
                                 fields.Add(entry.Key, entry.Value);

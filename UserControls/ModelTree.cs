@@ -1828,6 +1828,7 @@ namespace UserControls
                     // Analyses
                     AddObjectsToNode<string, AnalysisJob>(_analysesName, _analyses, jobs);
                     _analyses.ExpandAll();
+                    // Results
                     if (results != null)
                     {
                         if (results.Mesh != null)
@@ -1844,7 +1845,7 @@ namespace UserControls
                             string[] fieldNames;
                             string[][] allComponents;
                             //
-                            fieldNames = results.GetAllFieldNames();
+                            fieldNames = results.GetVisibleFieldNames();
                             //
                             allComponents = new string[fieldNames.Length][];
                             for (int i = 0; i < fieldNames.Length; i++)

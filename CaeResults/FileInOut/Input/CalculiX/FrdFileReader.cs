@@ -92,6 +92,8 @@ namespace CaeResults
                     }
                 }
                 //
+                result.Preprocess();
+                //
                 RemoveErrorElements(nodes, ref elements);
                 //
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Results);
@@ -428,40 +430,10 @@ namespace CaeResults
             GetFieldHeaderData(lines, ref lineNum, prevFieldData, out fieldData, out numOfVal);
             float[][] values = GetFieldValuesData(lines, ref lineNum, constantWidth, numOfVal, nodeIdsLookUp, out components);
             //
-            switch (fieldData.Name)
+            field = new Field(fieldData.Name);
+            for (int i = 0; i < components.Count; i++)
             {
-                case FOFieldNames.Disp:
-                case FOFieldNames.Dispi:
-                //case FOFieldNames.PDisp:
-                case FOFieldNames.Forc:
-                case FOFieldNames.Forci:
-                //
-                case FOFieldNames.Velo:
-                // Thermal
-                case FOFieldNames.Flux:
-                // Sensitivity
-                case FOFieldNames.Norm:
-                    field = CreateVectorField(fieldData.Name, components, values);
-                    break;
-                case FOFieldNames.Stress:
-                case FOFieldNames.Stressi:
-                //case FOFieldNames.PStress:
-                case FOFieldNames.ToStrain:
-                case FOFieldNames.ToStraii:
-                case FOFieldNames.MeStrain:
-                case FOFieldNames.MeStraii:
-                // Error
-                case FOFieldNames.ZZStr:
-                case FOFieldNames.ZZStri:
-                    field = CreateStressField(fieldData.Name, components, values);
-                    break;
-                default:
-                    field = new Field(fieldData.Name);
-                    for (int i = 0; i < components.Count; i++)
-                    {
-                        field.AddComponent(components[i], values[i]);
-                    }
-                    break;
+                field.AddComponent(components[i], values[i]);
             }
         }
 
@@ -811,134 +783,8 @@ namespace CaeResults
             }
             return values;
         }
-
-        static private Field CreateVectorField(string name, List<string> components, float[][] values)
-        {
-            Field field = new Field(name);
-            //
-            float[] magnitude = new float[values[0].Length];
-            for (int i = 0; i < magnitude.Length; i++)
-            {
-                magnitude[i] = (float)Math.Sqrt(Math.Pow(values[0][i], 2) + Math.Pow(values[1][i], 2) + Math.Pow(values[2][i], 2));
-            }
-            field.AddComponent("ALL", magnitude, true);
-            //
-            for (int i = 0; i < components.Count; i++)
-            {
-                // Field ALL is allready added
-                if (components[i] != "ALL") field.AddComponent(components[i], values[i]);
-            }
-            //
-            return field;
-        }
-        static private Field CreateStressField(string name, List<string> components, float[][] values)
-        {
-            Field field = new Field(name);
-            //
-            if (values.Length == 6 || values.Length == 12)  // 12 for PStress
-            {
-                float[] vonMises = new float[values[0].Length];
-                for (int i = 0; i < vonMises.Length; i++)
-                {
-                    vonMises[i] = (float)Math.Sqrt(0.5f * (
-                                                             Math.Pow(values[0][i] - values[1][i], 2)
-                                                           + Math.Pow(values[1][i] - values[2][i], 2)
-                                                           + Math.Pow(values[2][i] - values[0][i], 2)
-                                                           + 6 * (
-                                                                    Math.Pow(values[3][i], 2)
-                                                                  + Math.Pow(values[4][i], 2)
-                                                                  + Math.Pow(values[5][i], 2)
-                                                                  )
-                                                           )
-                                                  );
-                }
-                field.AddComponent("MISES", vonMises, true);
-                //
-                float[] tresca = new float[values[0].Length];
-                field.AddComponent("TRESCA", tresca, true);
-                //
-                for (int i = 0; i < 6; i++) field.AddComponent(components[i], values[i]);                   // first 6 components
-                //
-                ComputeAndAddPrincipalVariables(field, values);
-                //
-                float[] eMax = field.GetComponentValues("PRINCIPAL-MAX");
-                float[] eMin = field.GetComponentValues("PRINCIPAL-MIN");
-                for (int i = 0; i < tresca.Length; i++) tresca[i] = eMax[i] - eMin[i];
-                //
-                for (int i = 6; i < components.Count; i++) field.AddComponent(components[i], values[i]);    // next 6 components
-            }
-            //
-            return field;
-        }
-        static private Field CreateStrainField(string name, List<string> components, float[][] values)
-        {
-            Field field = new Field(name);
-            //
-            for (int i = 0; i < components.Count; i++) field.AddComponent(components[i], values[i]);
-            //
-            if (values.Length == 6) ComputeAndAddPrincipalVariables(field, values);
-            //
-            return field;
-        }
-        static private void ComputeAndAddPrincipalVariables(Field field, float[][] values)
-        {
-            // https://en.wikipedia.org/wiki/Cubic_function#General_solution_to_the_cubic_equation_with_arbitrary_coefficients
-            // https://en.wikiversity.org/wiki/Principal_stresses
-            //
-            float[] s0 = new float[values[0].Length];
-            float[] s1 = new float[values[0].Length];
-            float[] s2 = new float[values[0].Length];
-            float[] s3 = new float[values[0].Length];
-            //
-            float s11;
-            float s22;
-            float s33;
-            float s12;
-            float s23;
-            float s31;
-            //
-            double I1;
-            double I2;
-            double I3;
-            //
-            double sp1, sp2, sp3;
-            sp1 = sp2 = sp3 = 0;
-            //
-            for (int i = 0; i < s1.Length; i++)
-            {
-                s11 = values[0][i];
-                s22 = values[1][i];
-                s33 = values[2][i];
-                s12 = values[3][i];
-                s23 = values[4][i];
-                s31 = values[5][i];
-                //
-                I1 = s11 + s22 + s33;
-                I2 = s11 * s22 + s22 * s33 + s33 * s11 - Math.Pow(s12, 2.0) - Math.Pow(s23, 2.0) - Math.Pow(s31, 2.0);
-                I3 = s11 * s22 * s33 - s11 * Math.Pow(s23, 2.0) - s22 * Math.Pow(s31, 2.0) - s33 * Math.Pow(s12, 2.0) +
-                     2.0 * s12 * s23 * s31;
-                //
-                Tools.SolveQubicEquationDepressedCubic(1.0, -I1, I2, -I3, ref sp1, ref sp2, ref sp3);
-                Tools.Sort3_descending(ref sp1, ref sp2, ref sp3);
-                //
-                s0[i] = Math.Abs(sp1) > Math.Abs(sp3) ? (float)sp1 : (float)sp3;
-                s1[i] = (float)sp1;
-                s2[i] = (float)sp2;
-                s3[i] = (float)sp3;
-                //
-                if (float.IsNaN(s0[i])) s0[i] = 0;
-                if (float.IsNaN(s1[i])) s1[i] = 0;
-                if (float.IsNaN(s2[i])) s2[i] = 0;
-                if (float.IsNaN(s3[i])) s3[i] = 0;
-            }
-            //
-            field.AddComponent("SGN-MAX-ABS-PRI", s0, true);
-            field.AddComponent("PRINCIPAL-MAX", s1, true);
-            field.AddComponent("PRINCIPAL-MID", s2, true);
-            field.AddComponent("PRINCIPAL-MIN", s3, true);
-        }
-
-
+        
+        
         // LINEAR ELEMENTS                                                                                              
         static private bool TryGetLinearBeamElement(int id, string[] record, out FeElement element)
         {

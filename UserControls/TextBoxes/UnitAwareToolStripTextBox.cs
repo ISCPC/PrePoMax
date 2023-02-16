@@ -7,14 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using CaeModel;
 
 namespace UserControls
 {
-    public partial class UnitAwareTextBox : TextBox
+    public partial class UnitAwareToolStripTextBox : ToolStripTextBox
     {
         // Variables                                                                                                                
         private TypeConverter _converter;
+        private string _previousValue;
 
 
         // Properties                                                                                                               
@@ -52,7 +52,7 @@ namespace UserControls
 
 
         // Constructors                                                                                                             
-        public UnitAwareTextBox()
+        public UnitAwareToolStripTextBox()
         {
             InitializeComponent();
             //
@@ -61,7 +61,7 @@ namespace UserControls
 
 
         // Event handlers                                                                                                           
-        private void UnitAwareTextBox_KeyDown(object sender, KeyEventArgs e)
+        private void UnitAwareToolStripTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
@@ -71,9 +71,17 @@ namespace UserControls
                 e.SuppressKeyPress = true;  // no beep
             }
         }
-        private void UnitAwareTextBox_Leave(object sender, EventArgs e)
+        private void UnitAwareToolStripTextBox_Leave(object sender, EventArgs e)
         {
             TryConvertText();
+        }
+        private void UnitAwareToolStripTextBox_GotFocus(object sender, EventArgs e)
+        {
+            _previousValue = Text;
+        }
+        private void UnitAwareToolStripTextBox_LostFocus(object sender, EventArgs e)
+        {
+            if (Text != _previousValue) Text = _previousValue;
         }
         public override string Text
         {
@@ -90,7 +98,7 @@ namespace UserControls
 
 
         // Methods                                                                                                                  
-        private void TryConvertText()
+        public void TryConvertText()
         {
             try
             {
@@ -99,7 +107,8 @@ namespace UserControls
                     // Convert
                     if (Text.Trim().Length == 0) Text = "0";
                     double value = (double)_converter.ConvertFromString(this.Text);
-                    this.Text = _converter.ConvertToString(value);
+                    Text = _converter.ConvertToString(value);
+                    _previousValue = Text;
                 }
             }
             catch (Exception ex)
@@ -109,7 +118,5 @@ namespace UserControls
                 this.Focus();
             }
         }
-
-        
     }
 }

@@ -29,6 +29,7 @@ namespace CaeResults
         public float Time;
         public int StepId;
         public int StepIncrementId;
+        public bool Complex;
 
 
         // Constructors                                                                                                              
@@ -44,6 +45,7 @@ namespace CaeResults
             Time = -1;
             StepId = -1;
             StepIncrementId = -1;
+            Complex = false;
         }
         public FieldData(string name, string component, int stepId, int stepIncrementId)
            : base(name)
@@ -56,6 +58,7 @@ namespace CaeResults
             Time = -1;
             StepId = stepId;
             StepIncrementId = stepIncrementId;
+            Complex = false;
         }
         public FieldData(FieldData fieldData)
             : base(fieldData.Name)
@@ -67,6 +70,7 @@ namespace CaeResults
             Time = fieldData.Time;
             StepId = fieldData.StepId;
             StepIncrementId = fieldData.StepIncrementId;
+            Complex = fieldData.Complex;
         }
 
 
@@ -80,7 +84,7 @@ namespace CaeResults
             else
             {
                 bw.Write((int)1);
-
+                //
                 bw.Write(fieldData.Name);
                 if (fieldData.Component == null)
                 {
@@ -97,6 +101,12 @@ namespace CaeResults
                 bw.Write(fieldData.Time);
                 bw.Write(fieldData.StepId);
                 bw.Write(fieldData.StepIncrementId);
+                //
+                bw.Write(fieldData.Complex);
+                bw.Write(fieldData.Active);
+                bw.Write(fieldData.Visible);
+                bw.Write(fieldData.Valid);
+                bw.Write(fieldData.Internal);
             }
         }
         public static FieldData ReadFromFile(System.IO.BinaryReader br, int version)
@@ -116,6 +126,15 @@ namespace CaeResults
                 fieldData.Time = br.ReadSingle();
                 fieldData.StepId = br.ReadInt32();
                 fieldData.StepIncrementId = br.ReadInt32();
+                //
+                if (version >= 1_004_000)
+                {
+                    fieldData.Complex = br.ReadBoolean();
+                    fieldData.Active = br.ReadBoolean();
+                    fieldData.Visible = br.ReadBoolean();
+                    fieldData.Valid = br.ReadBoolean();
+                    fieldData.Internal = br.ReadBoolean();
+                }
                 return fieldData;
             }
             return null;
@@ -129,7 +148,7 @@ namespace CaeResults
         }
         public bool Equals(FieldData data)
         {
-            return  Name == data.Name &&
+            return Name == data.Name &&
                     Component == data.Component &&
                     StepId == data.StepId &&
                     StepIncrementId == data.StepIncrementId;

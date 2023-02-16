@@ -15,6 +15,7 @@ using CaeJob;
 using System.Reflection;
 using CaeModel;
 using CaeMesh;
+using CaeResults;
 
 namespace PrePoMax
 {
@@ -434,7 +435,10 @@ namespace PrePoMax
                 _vtk.Enabled = false;
                 // Deformation toolstrip
                 InitializeDeformationComboBoxes();
-                //
+                InitializeComplexComboBoxes();
+                // Converters
+                tstbDeformationFactor.UnitConverter = new StringDoubleConverter();
+                tstbAngle.UnitConverter = new StringAngleDegConverter();
                 // Create the Keyboard Hook
                 _keyboardHook = new KeyboardHook();
                 // Capture the events
@@ -1258,6 +1262,8 @@ namespace PrePoMax
                 tsbSectionView.Checked = _controller.IsSectionViewActive();
                 tsbExplodedView.Checked = _controller.IsExplodedViewActive();
                 tsbTransformation.Checked = _controller.AreTransformationsActive();
+                //
+                UpdateComplexControlStates();
                 //
                 _vtk.Visible = vtkVisible;
             });
@@ -6904,7 +6910,7 @@ namespace PrePoMax
                 if (e.KeyCode == Keys.Enter)
                 {
                     _controller.Redraw();
-                    this.ActiveControl = _vtk;
+                    this.ActiveControl = null;
                     // No beep
                     e.SuppressKeyPress = true;
                 }
@@ -6917,6 +6923,41 @@ namespace PrePoMax
         private void tstbDeformationFactor_EnabledChanged(object sender, EventArgs e)
         {
             if (tstbDeformationFactor.Enabled) UpdateScaleFactorTextBoxState();
+        }
+        // Complex
+        private void tscbComplex_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                // Enable angle text box if needed
+                UpdateAngleTextBoxState();
+                //
+                _controller.Redraw();
+                this.ActiveControl = null;
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tstbAngle_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    tstbAngle.Text = ((tstbAngle.Value % 360 + 360) % 360).ToString();
+                    //
+                    _controller.Redraw();
+                    this.ActiveControl = null;
+                    // No beep
+                    e.SuppressKeyPress = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
         }
         //
         public void SetResultNames()
@@ -6972,7 +7013,7 @@ namespace PrePoMax
             // Control width
             currentWidth += 20; // to account for the drop down arrow
             if (currentWidth < 125) currentWidth = 125;
-            else if (currentWidth > 500) currentWidth = 500;
+            else if (currentWidth > 400) currentWidth = 400;
             tscbResultNames.Size = new Size(currentWidth, tscbResultNames.Height);
             //
             Application.DoEvents();
@@ -7007,7 +7048,6 @@ namespace PrePoMax
             tscbDeformationType.Items.AddRange(typeNames);
             tscbDeformationType.SelectedIndex = 2;      // Automatic
 
-
             //if (controller.Results != null)
             //    vps.PopulateDropDownList(controller.Results.GetExistingDeformationFieldOutputNames());
             //else
@@ -7015,7 +7055,9 @@ namespace PrePoMax
         }
         private void UpdateScaleFactorTextBoxState()
         {
-            tstbDeformationFactor.Enabled = GetDeformationType() == CaeResults.DeformationScaleFactorTypeEnum.UserDefined;
+            tslDeformationFactor.Enabled = GetDeformationType() == DeformationScaleFactorTypeEnum.UserDefined;
+            tstbDeformationFactor.Enabled = tslDeformationFactor.Enabled;
+
         }
         public string GetDeformationVariable()
         {
@@ -7023,16 +7065,15 @@ namespace PrePoMax
             //
             return tscbDeformationVariable.SelectedItem.ToString();
         }
-        public CaeResults.DeformationScaleFactorTypeEnum GetDeformationType()
+        public DeformationScaleFactorTypeEnum GetDeformationType()
         {
             // Invoke
             if (InvokeRequired)
-                return (CaeResults.DeformationScaleFactorTypeEnum)Invoke(
-                    new Func<CaeResults.DeformationScaleFactorTypeEnum>(GetDeformationType));
+                return (DeformationScaleFactorTypeEnum)Invoke(new Func<DeformationScaleFactorTypeEnum>(GetDeformationType));
             //
             string displayName = tscbDeformationType.SelectedItem.ToString();
-            CaeResults.DeformationScaleFactorTypeEnum[] scaleFactorTypes =
-                (CaeResults.DeformationScaleFactorTypeEnum[])Enum.GetValues(typeof(CaeResults.DeformationScaleFactorTypeEnum));
+            DeformationScaleFactorTypeEnum[] scaleFactorTypes =
+                (DeformationScaleFactorTypeEnum[])Enum.GetValues(typeof(DeformationScaleFactorTypeEnum));
             //
             for (int i = 0; i < scaleFactorTypes.Length; i++)
             {
@@ -7043,8 +7084,76 @@ namespace PrePoMax
         }
         public float GetDeformationFactor()
         {
-            return float.Parse(tstbDeformationFactor.Text);
+            return (float)tstbDeformationFactor.Value;
         }
+        // Complex
+        private void InitializeComplexComboBoxes()
+        {
+            tscbComplex.Items.Clear();
+            string[] variableNames = FeResults.GetPossibleComplexResultTypeNames();
+            tscbComplex.Items.AddRange(variableNames);
+            tscbComplex.SelectedIndex = 0;  // Real
+            //
+            UpdateComplexControlStates();
+        }
+        private void UpdateComplexControlStates()
+        {
+            bool visible;
+            if (_controller.ContainsComplexResults)
+            {
+                visible = true;
+                //
+                bool enabled;
+                if (_controller.CurrentFieldData != null)
+                    enabled = _controller.CurrentFieldData.Type == StepType.SteadyStateDynamics;
+                else enabled = false;
+                //
+                tslComplex.Enabled = enabled;
+                tscbComplex.Enabled = enabled;
+                if (enabled) UpdateAngleTextBoxState();
+                else
+                {
+                    tslAngle.Enabled = false;
+                    tstbAngle.Enabled = false;
+                }
+            }
+            else
+            {
+                visible = false;
+            }
+            //
+            SetComplexControlsVisibility(visible);
+        }
+        private void SetComplexControlsVisibility(bool visible)
+        {
+            tslComplex.Visible = visible;
+            tscbComplex.Visible = visible;
+            tslAngle.Visible = visible;
+            tstbAngle.Visible = visible;
+        }
+        private void UpdateAngleTextBoxState()
+        {
+            bool enabled = GetComplexResultType() == ComplexResultTypeEnum.Angle;
+            tslAngle.Enabled = enabled;
+            tstbAngle.Enabled = enabled;
+        }
+        public ComplexResultTypeEnum GetComplexResultType()
+        {
+            // Invoke
+            if (InvokeRequired)
+                return (ComplexResultTypeEnum)Invoke(new Func<ComplexResultTypeEnum>(GetComplexResultType));
+            //
+            string displayName = tscbComplex.SelectedItem.ToString();
+            ComplexResultTypeEnum complexResultType;
+            if (Enum.TryParse(displayName, out complexResultType)) return complexResultType;
+            else return ComplexResultTypeEnum.Real;
+        }
+        public double GetComplexAngleDeg()
+        {
+            return tstbAngle.Value;
+        }
+
+
 
         #endregion  ################################################################################################################
 
@@ -7086,8 +7195,10 @@ namespace PrePoMax
         {
             try
             {
-                CaeResults.FieldData current = _controller.CurrentFieldData;
+                FieldData current = _controller.CurrentFieldData;
                 SetFieldData(current.Name, current.Component, GetCurrentFieldOutputStepId(), GetCurrentFieldOutputStepIncrementId());
+                //
+                UpdateComplexControlStates();
             }
             catch
             { }
@@ -7618,9 +7729,10 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetScalarBarNumberFormat, numberFormat);
         }
-        public void SetScalarBarText(string fieldName, string componentName, string unitAbbreviation, string minMaxType)
+        public void SetScalarBarText(string fieldName, string componentName, string unitAbbreviation, string complexComponent,
+                                     string minMaxType)
         {
-            InvokeIfRequired(_vtk.SetScalarBarText, fieldName, componentName, unitAbbreviation, minMaxType);
+            InvokeIfRequired(_vtk.SetScalarBarText, fieldName, componentName, unitAbbreviation, complexComponent, minMaxType);
         }
         public void DrawLegendBackground(bool drawBackground)
         {
@@ -7726,8 +7838,8 @@ namespace PrePoMax
 
         public void SetFieldData(string name, string component, int stepId, int stepIncrementId)
         {
-            CaeResults.FieldData fieldData = new CaeResults.FieldData(name, component, stepId, stepIncrementId);
-            CaeResults.FieldData currentData = _controller.CurrentFieldData;
+            FieldData fieldData = new FieldData(name, component, stepId, stepIncrementId);
+            FieldData currentData = _controller.CurrentFieldData;
             // In case the currentData is null exit
             if (currentData == null) return;
             //
@@ -7738,13 +7850,14 @@ namespace PrePoMax
                 //
                 if (fieldData.Name == currentData.Name && fieldData.Component == currentData.Component)
                 {
-                    // the step id or increment id changed                                              
+                    // Step id or increment id changed                                              
 
                     // find the choosen data; also contains info about type of step ...
                     fieldData = _controller.CurrentResult.GetFieldData(fieldData.Name,
-                                                                 fieldData.Component,
-                                                                 fieldData.StepId,
-                                                                 fieldData.StepIncrementId);
+                                                                       fieldData.Component,
+                                                                       fieldData.StepId,
+                                                                       fieldData.StepIncrementId,
+                                                                       true);
                     // update controller field data
                     _controller.CurrentFieldData = fieldData;
                     // draw deformation or field data
@@ -7760,9 +7873,10 @@ namespace PrePoMax
                     //SetAllStepAndIncrementIds();
                     // find the existing choosen data; also contains info about type of step ...
                     fieldData = _controller.CurrentResult.GetFieldData(fieldData.Name,
-                                                                 fieldData.Component,
-                                                                 fieldData.StepId,
-                                                                 fieldData.StepIncrementId);
+                                                                       fieldData.Component,
+                                                                       fieldData.StepId,
+                                                                       fieldData.StepIncrementId,
+                                                                       true);
                     // update controller field data
                     _controller.CurrentFieldData = fieldData;
                     // draw field data
@@ -8498,6 +8612,6 @@ namespace PrePoMax
             }
         }
 
-       
+        
     }
 }

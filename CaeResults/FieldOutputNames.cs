@@ -12,25 +12,31 @@ namespace CaeResults
         public const string Default = "DEFAULT";
         //
         public const string Disp = "DISP";
-        public const string Dispi = "DISPI";
+        public const string DispR = "DISPR";
+        public const string DispI = "DISPI";
         public const string PDisp = "PDISP";
         // Velocity
         public const string Velo = "VELO";
         // Stress
         public const string Stress = "STRESS";
-        public const string Stressi = "STRESSI";
+        public const string StressR = "STRESSR";
+        public const string StressI = "STRESSI";
         public const string PStress = "PSTRESS";
         public const string ZZStr = "ZZSTR";
-        public const string ZZStri = "ZZSTRI";
+        public const string ZZStrR = "ZZSTRR";
+        public const string ZZStrI = "ZZSTRI";
         // Strain
         public const string ToStrain = "TOSTRAIN";
-        public const string ToStraii = "TOSTRAII";
+        public const string ToStraiR = "TOSTRAIR";
+        public const string ToStraiI = "TOSTRAII";
         public const string MeStrain = "MESTRAIN";
-        public const string MeStraii = "MESTRAII";
+        public const string MeStraiR = "MESTRAIR";
+        public const string MeStraiI = "MESTRAII";
         public const string Pe = "PE";
         //
         public const string Forc = "FORC";
-        public const string Forci = "FORCI";
+        public const string ForcR = "FORCR";
+        public const string ForcI = "FORCI";
         public const string Ener = "ENER";
         public const string Contact = "CONTACT";
         // Thermal
@@ -39,7 +45,8 @@ namespace CaeResults
         public const string Flux = "FLUX";
         public const string Rfl = "RFL";
         public const string HError = "HERROR";
-        public const string HErrori = "HERRORI";
+        public const string HErrorR = "HERRORR";
+        public const string HErrorI = "HERRORI";
         // Sensitivity
         public const string Norm = "NORM";
         public const string SenFreq = "SENFREQ";
@@ -54,7 +61,36 @@ namespace CaeResults
         public const string Imported = "IMPORTED";
         //
         public const string Error = "ERROR";
-        public const string Errori = "ERRORI";
+        public const string ErrorR = "ERRORR";
+        public const string ErrorI = "ERRORI";
+
+
+        // Methods
+        public static bool IsCompex(string fieldName)
+        {
+            switch (fieldName)
+            {
+                case DispR:
+                case DispI:
+                case StressR:
+                case StressI:
+                case ZZStrR:
+                case ZZStrI:
+                case ToStraiR:
+                case ToStraiI:
+                case MeStraiR:
+                case MeStraiI:
+                case ForcR:
+                case ForcI:
+                case HErrorR:
+                case HErrorI:
+                case ErrorR:
+                case ErrorI:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 
     public class FOComponentNames
@@ -90,6 +126,10 @@ namespace CaeResults
         public const string S12 = "S12";
         public const string S23 = "S23";
         public const string S13 = "S13";
+        public const string SgnMaxAbsPri = "SGN-MAX-ABS-PRI";
+        public const string PrincipalMax = "PRINCIPAL-MAX";
+        public const string PrincipalMid = "PRINCIPAL-MID";
+        public const string PrincipalMin = "PRINCIPAL-MIN";
         //
         public const string MAGXX = "MAGXX";
         public const string MAGYY = "MAGYY";

@@ -411,11 +411,16 @@ namespace vtkControl
                 if (_scalarBarColorsActor != null) _renderer.RemoveActor(_scalarBarColorsActor);
             }
         }
-        public void SetText(string fieldName, string componentName, string unitAbbreviation, string minMaxType)
+        public void SetText(string fieldName, string componentName, string unitAbbreviation, string complexComponent,
+                            string minMaxType)
         {
             _unitAbbreviation = unitAbbreviation;
+            string complexLabel;
+            if (complexComponent == null || complexComponent.Length == 0) complexLabel = "";
+            else complexLabel = "Complex: " + complexComponent + Environment.NewLine;
             //
-            string text = fieldName + ": " + componentName + Environment.NewLine +
+            string text = complexLabel + 
+                          fieldName + ": " + componentName + Environment.NewLine +
                           "Unit: " + _unitAbbreviation + Environment.NewLine +
                           minMaxType;
             //

@@ -102,6 +102,10 @@ namespace PrePoMax
                        _allResults.CurrentResult.Mesh != null && _allResults.CurrentResult.Mesh.Nodes.Count > 0;
             }
         }
+        public bool ContainsComplexResults
+        {
+            get { return _allResults.ContainsComplexResults(); }
+        }
         public bool ModelChanged { get { return _modelChanged; } set { _modelChanged = value; } }
         public bool SavingFile { get { return _savingFile; } }
         public FeModel Model { get { return _model; } }
@@ -252,13 +256,10 @@ namespace PrePoMax
                                                                                     _currentFieldData.StepIncrementId);
             }
         }
-        public TypeConverter GetCurrentResultsUnitConverter()
-        {
-            return _allResults.CurrentResult.GetFieldUnitConverter(CurrentFieldData.Name, CurrentFieldData.Component);
-        }
         public string GetCurrentResultsUnitAbbreviation()
         {
-            return _allResults.CurrentResult.GetFieldUnitAbbrevation(CurrentFieldData.Name, CurrentFieldData.Component);
+            return _allResults.CurrentResult.GetFieldUnitAbbrevation(CurrentFieldData.Name, CurrentFieldData.Component,
+                                                                     CurrentFieldData.StepId, CurrentFieldData.StepIncrementId);
         }
         public bool AreTransformationsActive()
         {
@@ -807,18 +808,6 @@ namespace PrePoMax
             // Load results
             _form.Clear3D();
             if (_allResults.Count == 0) ClearResults();
-            //
-
-
-
-            if (_allResults.ContainsResult(results.FileName))
-            {
-                _allResults.SetCurrentResult(results.FileName);
-                _allResults.RemoveCurrentResult();
-            }
-            
-            
-            
             _allResults.Add(results.FileName, results);
             // Check if the meshes are the same and rename the parts
             if (_model.Mesh != null && _allResults.CurrentResult.Mesh != null &&
@@ -843,7 +832,7 @@ namespace PrePoMax
                     if (similarity == 1)
                     {
                         _allResults.CurrentResult.CopyPartsFromMesh(_model.Mesh);
-                        _allResults.CurrentResult.CopyMeshitemsFromMesh(_model.Mesh);
+                        _allResults.CurrentResult.CopyMeshItemsFromMesh(_model.Mesh);
                     }
                     else if (similarity == 2)
                     {
@@ -8094,7 +8083,15 @@ namespace PrePoMax
         #endregion #################################################################################################################
 
         #region Results  ###########################################################################################################
-
+        private void UpdateCurrentFieldData()
+        {
+            // Check validity of the field data
+            _currentFieldData = CurrentResult.GetFieldData(_currentFieldData.Name,
+                                                           _currentFieldData.Component,
+                                                           _currentFieldData.StepId,
+                                                           _currentFieldData.StepIncrementId,
+                                                           true);
+        }
         public List<Transformation> GetTransformations()
         {
             return _transformations.GetCurrentTransformations();
@@ -8364,7 +8361,7 @@ namespace PrePoMax
         }
         public int[] GetResultStepIncrementIds(int stepId)
         {
-            return _allResults.CurrentResult.GetIncrementIds(stepId);
+            return _allResults.CurrentResult.GetStepIncrementIds(stepId);
         }
         // Remove
         public void RemoveResultFieldOutputs(string[] fieldOutputNames)
@@ -13741,7 +13738,7 @@ namespace PrePoMax
         }
         private void DrawResultPart(ResultPart part, FieldData fieldData, bool update)
         {
-            vtkControl.vtkMaxActorData data = GetResultPartActorData(part, fieldData);
+            vtkMaxActorData data = GetResultPartActorData(part, fieldData);
             //
             if (data != null)
             {
@@ -13749,7 +13746,7 @@ namespace PrePoMax
                 _form.AddScalarFieldOn3DCells(data, update);
             }
         }
-        private vtkControl.vtkMaxActorData GetResultPartActorData(ResultPart part, FieldData fieldData)
+        private vtkMaxActorData GetResultPartActorData(ResultPart part, FieldData fieldData)
         {
             if (part.Labels.Length == 0) return null;
             // Get visualization nodes and renumbered elements           
@@ -13763,7 +13760,7 @@ namespace PrePoMax
             // Get all needed nodes and elements - renumbered               
             PartExchangeData locatorResultData = _allResults.CurrentResult.GetSetNodesCellsAndValues(part, fieldData);
             //
-            vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
+            vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
             GetPartColor(part, ref data.Color, ref data.BackfaceColor);
             data.ColorContours = part.ColorContours;
@@ -13791,8 +13788,8 @@ namespace PrePoMax
             SetPostLegendAndStatusBlockSettings();
             SetStatusBlock(scale);
             //
-            vtkControl.vtkMaxActorData data;
-            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
+            vtkMaxActorData data;
+            vtkRendererLayer layer = vtkRendererLayer.Base;
             //
             bool result = true;
             PostSettings postSettings = _settings.Post;
@@ -13942,8 +13939,8 @@ namespace PrePoMax
             //
             return result;
         }        
-        private vtkControl.vtkMaxActorData GetScaleFactorAnimationDataFromPart(ResultPart part, FieldData fieldData,
-                                                                               float scale, int numFrames)
+        private vtkMaxActorData GetScaleFactorAnimationDataFromPart(ResultPart part, FieldData fieldData,
+                                                                    float scale, int numFrames)
         {
             // Get visualization nodes and renumbered elements
             PartExchangeData modelResultData;
@@ -13967,8 +13964,8 @@ namespace PrePoMax
             //
             return data;
         }
-        private vtkControl.vtkMaxActorData GetTimeIncrementAnimationDataFromPart(ResultPart part, FieldData fieldData,
-                                                                                 float scale)
+        private vtkMaxActorData GetTimeIncrementAnimationDataFromPart(ResultPart part, FieldData fieldData,
+                                                                      float scale)
         {
             // Get visualization nodes and renumbered elements
             PartExchangeData modelResultData;
@@ -13996,7 +13993,12 @@ namespace PrePoMax
         private void SetPostLegendAndStatusBlockSettings()
         {
             if (_allResults.CurrentResult != null)
+            {
                 _allResults.CurrentResult.DeformationFieldOutputName = _form.GetDeformationVariable();
+                _allResults.CurrentResult.SetComplexResultTypeAndAngle(_form.GetComplexResultType(),
+                                                                       (float)_form.GetComplexAngleDeg());
+                UpdateCurrentFieldData();
+            }
             //
             if (_viewResultsType == ViewResultsType.ColorContours)
             {
@@ -14004,8 +14006,23 @@ namespace PrePoMax
                 StatusBlockSettings statusBlockSettings = _settings.StatusBlock;
                 // Legend settings
                 _form.SetScalarBarColorSpectrum(legendSettings.ColorSpectrum);
+                string complexComponent;
+                if (_currentFieldData.Complex)
+                {
+                    ComplexResultTypeEnum resultType = _form.GetComplexResultType();
+                    complexComponent = resultType.ToString();
+                    if (resultType == ComplexResultTypeEnum.Angle)
+                    {
+                        StringAngleDegConverter sadc = new StringAngleDegConverter();
+                        string angle = sadc.ConvertToString(_form.GetComplexAngleDeg());
+                        complexComponent += " " + angle;
+                    }
+                }
+                else complexComponent = null;
+                //
                 _form.SetScalarBarText(_currentFieldData.Name, _currentFieldData.Component,
                                        GetCurrentResultsUnitAbbreviation(),
+                                       complexComponent,
                                        legendSettings.ColorSpectrum.MinMaxType.ToString());
                 //
                 _form.SetScalarBarNumberFormat(legendSettings.GetColorChartNumberFormat());
@@ -14245,8 +14262,8 @@ namespace PrePoMax
         // Tools
         public float GetScale()
         {
-            float maxDisplacement =
-                _allResults.CurrentResult.GetMaxDeformation(_currentFieldData.StepId, _currentFieldData.StepIncrementId);
+            float maxDisplacement = _allResults.CurrentResult.GetMaxDeformation(_currentFieldData.StepId,
+                                                                                _currentFieldData.StepIncrementId);
             return GetScale(maxDisplacement);
         }
         public float GetScaleForAllStepsAndIncrements()

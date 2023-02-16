@@ -45,8 +45,9 @@ namespace CaeGlobals
             {
                 if (destinationType == typeof(string))
                 {
-                    if (value is double valueDouble)
+                    if (value is double || value is float || value is int)
                     {
+                        double valueDouble = Convert.ToDouble(value);
                         return valueDouble.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
                     }
                 }
