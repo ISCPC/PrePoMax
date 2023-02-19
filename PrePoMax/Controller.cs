@@ -967,11 +967,11 @@ namespace PrePoMax
                         int major;
                         int minor;
                         int build;
-                        int.TryParse(versions[versions.Length - 3], out major);
-                        int.TryParse(versions[versions.Length - 2], out minor);
-                        int.TryParse(versions[versions.Length - 1], out build);
+                        int.TryParse(versions[1], out major);
+                        int.TryParse(versions[2], out minor);
+                        int.TryParse(versions[3], out build);
                         //
-                        int version = major * 1000 * 1000 + minor * 1000 + build;
+                        int version = major * 1_000_000 + minor * 1000 + build;
                         FeModel.ReadFromFile(model, br, version);
                         if (oldResults) FeResults.ReadFromFile(allResults.CurrentResult, br, version);
                         else ResultsCollection.ReadFromFile(allResults, br, version);
