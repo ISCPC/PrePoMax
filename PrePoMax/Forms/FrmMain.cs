@@ -7104,8 +7104,7 @@ namespace PrePoMax
                 visible = true;
                 //
                 bool enabled;
-                if (_controller.CurrentFieldData != null)
-                    enabled = _controller.CurrentFieldData.Type == StepType.SteadyStateDynamics;
+                if (_controller.CurrentFieldData != null) enabled = _controller.CurrentFieldData.Complex;
                 else enabled = false;
                 //
                 tslComplex.Enabled = enabled;
@@ -7197,8 +7196,6 @@ namespace PrePoMax
             {
                 FieldData current = _controller.CurrentFieldData;
                 SetFieldData(current.Name, current.Component, GetCurrentFieldOutputStepId(), GetCurrentFieldOutputStepIncrementId());
-                //
-                UpdateComplexControlStates();
             }
             catch
             { }
@@ -7272,6 +7269,15 @@ namespace PrePoMax
             tscbDeformationVariable.Enabled = enable;   // must be here
             tscbDeformationType.Enabled = enable;       // must be here
             tstbDeformationFactor.Enabled = enable;     // must be here
+            //
+            if (enable) UpdateComplexControlStates();
+            else
+            {
+                tslComplex.Enabled = false;
+                tscbComplex.Enabled = false;
+                tslAngle.Enabled = false;
+                tstbAngle.Enabled = false;
+            }
             //
             tsResults.DisableMouseButtons = !enable;
             tscbStepAndIncrement.Enabled = enable;      // must be here despite the tsResults.DisableMouseButtons = !enable;
@@ -7882,6 +7888,8 @@ namespace PrePoMax
                     // draw field data
                     if (_controller.ViewResultsType == ViewResultsType.ColorContours) _controller.UpdatePartsScalarFields();
                 }
+                //
+                UpdateComplexControlStates();
                 // Move focus from step and step increment dropdown menus
                 this.ActiveControl = null;
             }

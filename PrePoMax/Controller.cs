@@ -13702,7 +13702,7 @@ namespace PrePoMax
         private void DrawAllResultParts(FieldData fieldData, UndeformedModelTypeEnum undeformedModelType,
                                         Color undeformedModelColor)
         {
-            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
+            vtkRendererLayer layer = vtkRendererLayer.Base;
             List<string> hiddenActors = new List<string>();
             //
             _form.InitializeResultWidgetPositions(); // reset the widget position after setting the status block content
@@ -13938,7 +13938,141 @@ namespace PrePoMax
             numFrames = data.Geometry.NodesAnimation.Length;
             //
             return result;
-        }        
+        }
+        public bool DrawHarmonicAnimation(int numFrames)
+        {
+            _form.Clear3D();
+            //
+            if (_allResults.CurrentResult == null || _allResults.CurrentResult.Mesh == null) return false;
+            if (_allResults.CurrentResult.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
+            //
+            ApplyResultsUnitSystem();
+            // Settings - must be here before drawing parts to correctly set the numer of colors
+            float scale = GetScale();
+            SetPostLegendAndStatusBlockSettings();
+            SetStatusBlock(scale);
+            //
+            vtkMaxActorData data;
+            vtkRendererLayer layer = vtkRendererLayer.Base;
+            //
+            bool result = true;
+            PostSettings postSettings = _settings.Post;
+            List<string> hiddenActors = new List<string>();
+            double[] allFramesScalarRange = new double[] { double.MaxValue, -double.MaxValue };
+            // Angles
+            float delta = 360 / (numFrames);
+            float[] angles = new float[numFrames];
+            for (int i = 0; i < numFrames; i++) angles[i] = i * delta;
+            //
+            vtkMaxActorData frameData;
+            vtkMaxActorData existingData;
+            Dictionary<ResultPart, vtkMaxActorData> partData = new Dictionary<ResultPart, vtkMaxActorData>();
+            for (int i = 0; i < angles.Length; i++)
+            {
+                CurrentResult.SetComplexResultTypeAndAngle(ComplexResultTypeEnum.Angle, angles[i], _currentFieldData);
+                //
+                _allResults.CurrentResult.SetMeshDeformation(scale, _currentFieldData.StepId,
+                                                             _currentFieldData.StepIncrementId);
+                //
+                foreach (var entry in _allResults.CurrentResult.Mesh.Parts)
+                {
+                    if (entry.Value is ResultPart resultPart)
+                    {
+                        frameData = GetResultPartActorData(resultPart, _currentFieldData);
+                        //
+                        if (i == 0)
+                        {
+                            frameData.Geometry.NodesAnimation = new NodesExchangeData[numFrames];
+                            frameData.Geometry.ExtremeNodesAnimation = new NodesExchangeData[numFrames];
+                            frameData.CellLocator.NodesAnimation = new NodesExchangeData[numFrames];
+                            frameData.ModelEdges.NodesAnimation = new NodesExchangeData[numFrames];
+                            //
+                            frameData.Geometry.NodesAnimation[i] = frameData.Geometry.Nodes;
+                            frameData.Geometry.ExtremeNodesAnimation[i] = frameData.Geometry.ExtremeNodes;
+                            frameData.CellLocator.NodesAnimation[i] = frameData.CellLocator.Nodes;
+                            frameData.ModelEdges.NodesAnimation[i] = frameData.ModelEdges.Nodes;
+                            //
+                            partData.Add(resultPart, frameData);
+                        }
+                        else
+                        {
+                            if (partData.TryGetValue(resultPart, out existingData))
+                            {
+                                existingData.Geometry.NodesAnimation[i] = frameData.Geometry.Nodes;
+                                existingData.Geometry.ExtremeNodesAnimation[i] = frameData.Geometry.ExtremeNodes;
+                                existingData.CellLocator.NodesAnimation[i] = frameData.CellLocator.Nodes;
+                                existingData.ModelEdges.NodesAnimation[i] = frameData.ModelEdges.Nodes;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            foreach (var entry in _allResults.CurrentResult.Mesh.Parts)
+            {
+                if (entry.Value is ResultPart resultPart)
+                {
+                    // Udeformed
+                    if (postSettings.UndeformedModelType != UndeformedModelTypeEnum.None)
+                        DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelType,
+                                               postSettings.UndeformedModelColor, layer);
+                    // Deformed
+                    //data = GetScaleFactorAnimationDataFromPart(resultPart, _currentFieldData, scale, numFrames);
+
+                    data = partData[resultPart];
+
+                    // Min max
+                    if (entry.Value.Visible)
+                    {
+                        foreach (NodesExchangeData nData in data.Geometry.ExtremeNodesAnimation)
+                        {
+                            if (nData != null)
+                            {
+                                if (nData.Values[0] < allFramesScalarRange[0]) allFramesScalarRange[0] = nData.Values[0];
+                                if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
+                            }
+                        }
+                    }
+                    //
+                    ApplyLighting(data);
+                    result = _form.AddAnimatedScalarFieldOn3DCells(data);
+                    if (result == false) { _form.Clear3D(); return false; }
+                }
+                else if (entry.Value is GeometryPart)
+                {
+                    // For the Section view to work: pickable = true 
+                    DrawGeomPart(_allResults.CurrentResult.Mesh, entry.Value, layer, false, true);
+                }
+                if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
+            }
+
+            if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
+            // Transformation
+            ApplyTransformation();
+            // Annotations
+            _annotations.DrawAnnotations(true);
+            // Section view
+            Octree.Plane plane = _sectionViews.GetCurrentSectionViewPlane();
+            if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
+            // Animation field data
+            float[] time = new float[numFrames];
+            int[] stepId = new int[numFrames];
+            int[] stepIncrementId = new int[numFrames];
+            float[] animationScale = new float[numFrames];
+            float ratio = 1f / (numFrames - 1);
+            for (int i = 0; i < numFrames; i++)
+            {
+                time[i] = _currentFieldData.Time;
+                stepId[i] = _currentFieldData.StepId;
+                stepIncrementId[i] = _currentFieldData.StepIncrementId;
+                animationScale[i] = i * ratio;
+            }
+            //
+            _form.SetAnimationFrameData(time, stepId, stepIncrementId, animationScale, allFramesScalarRange);
+            //
+            return result;
+        }
         private vtkMaxActorData GetScaleFactorAnimationDataFromPart(ResultPart part, FieldData fieldData,
                                                                     float scale, int numFrames)
         {
@@ -13996,7 +14130,8 @@ namespace PrePoMax
             {
                 _allResults.CurrentResult.DeformationFieldOutputName = _form.GetDeformationVariable();
                 _allResults.CurrentResult.SetComplexResultTypeAndAngle(_form.GetComplexResultType(),
-                                                                       (float)_form.GetComplexAngleDeg());
+                                                                       (float)_form.GetComplexAngleDeg(),
+                                                                       null);
                 UpdateCurrentFieldData();
             }
             //

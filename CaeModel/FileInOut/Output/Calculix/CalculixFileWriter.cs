@@ -857,6 +857,14 @@ namespace FileInOut.Output
                     {
                         CalSteadyStateDynamics calSteadyStep = new CalSteadyStateDynamics(steadyStep);
                         calStep.AddKeyword(calSteadyStep);
+                        // Damping
+                        if (steadyStep.ModalDamping.DampingType != ModalDampingTypeEnum.Off)
+                        {
+                            CalTitle damping = new CalTitle("Damping", "");
+                            CalModalDamping calModalDamping = new CalModalDamping(steadyStep.ModalDamping);
+                            damping.AddKeyword(calModalDamping);
+                            calStep.AddKeyword(damping);
+                        }
                     }
                     else if (step.GetType() == typeof(DynamicStep))
                     {
@@ -885,7 +893,6 @@ namespace FileInOut.Output
                     else throw new NotImplementedException();
                 }
                 else calStep.AddKeyword(new CalDeactivated(step.GetType().ToString()));
-                //
                 // Boundary conditions
                 if (step.Active) title = new CalTitle("Boundary conditions", "*Boundary, op=New");
                 else title = new CalTitle("Boundary conditions", "");

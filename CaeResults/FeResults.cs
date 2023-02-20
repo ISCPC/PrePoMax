@@ -710,7 +710,8 @@ namespace CaeResults
             }
             return false;
         }
-        public void SetComplexResultTypeAndAngle(ComplexResultTypeEnum complexResultType, float complexAngleDeg)
+        public void SetComplexResultTypeAndAngle(ComplexResultTypeEnum complexResultType, float complexAngleDeg,
+                                                 FieldData onlyThisField)
         {
             if (complexResultType != _complexResultType ||
                 (_complexResultType == ComplexResultTypeEnum.Angle && complexAngleDeg != _complexAngleDeg))
@@ -720,7 +721,7 @@ namespace CaeResults
                 _complexResultType = complexResultType;
                 _complexAngleDeg = complexAngleDeg;
                 //
-                SetComplexResult();
+                SetComplexResult(onlyThisField);
             }
         }
         public void PrepareComplexResults()
@@ -769,16 +770,16 @@ namespace CaeResults
                 }
             }
         }
-        public void SetComplexResult()
+        public void SetComplexResult(FieldData onlyThisField)
         {
-            if (_complexResultType == ComplexResultTypeEnum.Real) SetComplexResultToReal();
-            else if (_complexResultType == ComplexResultTypeEnum.Imaginary) SetComplexResultToImaginary();
-            else if (_complexResultType == ComplexResultTypeEnum.Magnitude) SetComplexResultToMagnitude();
-            else if (_complexResultType == ComplexResultTypeEnum.Phase) SetComplexResultToPhase();
-            else if (_complexResultType == ComplexResultTypeEnum.Angle) SetComplexResultToAngle();
+            if (_complexResultType == ComplexResultTypeEnum.Real) SetComplexResultToReal(onlyThisField);
+            else if (_complexResultType == ComplexResultTypeEnum.Imaginary) SetComplexResultToImaginary(onlyThisField);
+            else if (_complexResultType == ComplexResultTypeEnum.Magnitude) SetComplexResultToMagnitude(onlyThisField);
+            else if (_complexResultType == ComplexResultTypeEnum.Phase) SetComplexResultToPhase(onlyThisField);
+            else if (_complexResultType == ComplexResultTypeEnum.Angle) SetComplexResultToAngle(onlyThisField);
             else throw new NotSupportedException();
         }
-        public void SetComplexResultToReal()
+        public void SetComplexResultToReal(FieldData onlyThisField)
         {
             int stepId;
             int incrementId;
@@ -824,7 +825,7 @@ namespace CaeResults
                 }
             }
         }
-        public void SetComplexResultToImaginary()
+        public void SetComplexResultToImaginary(FieldData onlyThisField)
         {
             int stepId;
             int incrementId;
@@ -870,7 +871,7 @@ namespace CaeResults
                 }
             }
         }
-        public void SetComplexResultToMagnitude()
+        public void SetComplexResultToMagnitude(FieldData onlyThisField)
         {
             int stepId;
             int incrementId;
@@ -937,7 +938,7 @@ namespace CaeResults
                 }
             }
         }
-        public void SetComplexResultToPhase()
+        public void SetComplexResultToPhase(FieldData onlyThisField)
         {
             int stepId;
             int incrementId;
@@ -1004,7 +1005,7 @@ namespace CaeResults
                 }
             }
         }
-        public void SetComplexResultToAngle()
+        public void SetComplexResultToAngle(FieldData onlyThisField)
         {
             int stepId;
             int incrementId;
@@ -1023,13 +1024,18 @@ namespace CaeResults
             for (int i = 0; i < stepIds.Length; i++)
             {
                 stepId = stepIds[i];
+                if (onlyThisField != null && onlyThisField.StepId != stepId) continue;
+                //
                 incrementIds = GetStepIncrementIds(stepId);
                 for (int j = 0; j < incrementIds.Length; j++)
                 {
                     incrementId = incrementIds[j];
+                    if (onlyThisField != null && onlyThisField.StepIncrementId != incrementId) continue;
                     //
                     foreach (var complexFieldNames in ComplexFieldNames)
                     {
+                        if (onlyThisField != null && onlyThisField.Name != complexFieldNames[0]) continue;
+                        //
                         fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
                         field = GetField(fieldData);
                         fieldDataR = GetFieldData(complexFieldNames[1], null, stepId, incrementId);
@@ -2009,7 +2015,8 @@ namespace CaeResults
                     entry.Key.StepId == fieldData.StepId && 
                     entry.Key.StepIncrementId == fieldData.StepIncrementId)
                 {
-                    return entry.Value.IsComponentInvariant(fieldData.Component);
+                    return entry.Value.ContainsComponent(fieldData.Component) &&
+                           entry.Value.IsComponentInvariant(fieldData.Component);
                 }
             }
             return false;

@@ -23,11 +23,13 @@ namespace PrePoMax
         [DescriptionAttribute("Enter the value between -1/3 and 0 to control the dissipation of the high frequency response " +
                               "(numerical damping).")]
         [TypeConverter(typeof(StringDoubleConverter))]
+        [Id(5, 1)]
         public double Alpha { get { return _dynamicStep.Alpha; } set { _dynamicStep.Alpha = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(5, 10, "Solution procedure")]
         [DescriptionAttribute("Select the solution procedure for structural/fluid computations.")]
+        [Id(6, 1)]
         public SolutionProcedureEnum SolutionProcedure
         {
             get { return _dynamicStep.SolutionProcedure; }
@@ -38,6 +40,7 @@ namespace PrePoMax
         [OrderedDisplayName(6, 10, "Relative to absolute")]
         [DescriptionAttribute("Set to yes if in the previous step the coordinate system was attached to a rotating system and " + 
                               "the coordinate system in the present dynamic step should be absolute.")]
+        [Id(7, 1)]
         public bool RelativeToAbsolute
         {
             get { return _dynamicStep.RelativeToAbsolute; }

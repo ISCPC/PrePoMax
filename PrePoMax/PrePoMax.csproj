@@ -362,6 +362,13 @@
     </Compile>
     <Compile Include="Forms\37_Amplitude\ViewAmplitude.cs" />
     <Compile Include="Forms\37_Amplitude\ViewAmplitudeTabular.cs" />
+    <Compile Include="Forms\41_Step\DampingRatiosAndValuesUIEditor.cs" />
+    <Compile Include="Forms\41_Step\FrmGetDampingRatios.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\41_Step\FrmGetDampingRatios.Designer.cs">
+      <DependentUpon>FrmGetDampingRatios.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\41_Step\ViewSteadyStateDynamisc.cs" />
     <Compile Include="Forms\41_Step\ViewCoupledTempDispStep.cs" />
     <Compile Include="Forms\41_Step\ViewDynamicStep.cs" />
@@ -484,7 +491,7 @@
     <Compile Include="Forms\45_Load\FrmLoad.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\61_Analysis\EnvVarsUIEditor.cs" />
+    <Compile Include="Forms\51_Settings\EnvVarsUIEditor.cs" />
     <Compile Include="Forms\72_ResultHistoryOutput\FrmViewResultHistoryOutput.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -685,6 +692,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\37_Amplitude\FrmAmplitude.resx">
       <DependentUpon>FrmAmplitude.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\41_Step\FrmGetDampingRatios.resx">
+      <DependentUpon>FrmGetDampingRatios.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\42_HistoryOutput\FrmHistoryOutput.resx">
       <DependentUpon>FrmHistoryOutput.cs</DependentUpon>

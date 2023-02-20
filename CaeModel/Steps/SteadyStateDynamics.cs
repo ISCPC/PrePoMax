@@ -20,12 +20,31 @@ namespace CaeModel
         private int _numFourierTerms;       //ISerializable
         private double _timeLower;          //ISerializable
         private double _timeUpper;          //ISerializable
+        private ModalDamping _modalDamping; //ISerializable
 
 
         // Properties                                                                                                               
         public bool Harmonic { get { return _harmonic; } set { _harmonic = value; } }
-        public double FrequencyLower { get { return _frequencyLower; } set { _frequencyLower = value; } }
-        public double FrequencyUpper { get { return _frequencyUpper; } set { _frequencyUpper = value; } }
+        public double FrequencyLower
+        {
+            get { return _frequencyLower; }
+            set
+            {
+                if (value > _frequencyUpper)
+                    throw new CaeGlobals.CaeException("The lower frequency value must be smaller than the upper frequency value.");
+                _frequencyLower = value;
+            }
+        }
+        public double FrequencyUpper
+        {
+            get { return _frequencyUpper; }
+            set
+            {
+                if (value < _frequencyLower)
+                    throw new CaeGlobals.CaeException("The upper frequency value must be larger than the lower frequency value.");
+                _frequencyUpper = value;
+            }
+        }
         public int NumDataPoints
         {
             get { return _numDataPoints; }
@@ -55,6 +74,7 @@ namespace CaeModel
         }
         public double TimeLower { get { return _timeLower; } set { _timeLower = value; } }
         public double TimeUpper { get { return _timeUpper; } set { _timeUpper = value; } }
+        public ModalDamping ModalDamping { get { return _modalDamping; } set { _modalDamping = value; } }
 
 
         // Constructors                                                                                                             
@@ -69,6 +89,7 @@ namespace CaeModel
             _numFourierTerms = 20;
             _timeLower = 0;
             _timeUpper = 1;
+            _modalDamping = new ModalDamping();
             //
             AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.U | NodalFieldVariable.RF));
             AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S));
@@ -97,6 +118,8 @@ namespace CaeModel
                         _timeLower = (double)entry.Value; break;
                     case "_timeUpper":
                         _timeUpper = (double)entry.Value; break;
+                    case "_modalDamping":
+                        _modalDamping = (ModalDamping)entry.Value; break;
                 }
             }
         }
@@ -158,6 +181,7 @@ namespace CaeModel
             info.AddValue("_numFourierTerms", _numFourierTerms, typeof(int));
             info.AddValue("_timeLower", _timeLower, typeof(double));
             info.AddValue("_timeUpper", _timeUpper, typeof(double));
+            info.AddValue("_modalDamping", _modalDamping, typeof(ModalDamping));
         }
     }
 }

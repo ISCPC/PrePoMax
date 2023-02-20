@@ -21,12 +21,14 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(0, 10, "Name")]
         [DescriptionAttribute("Name of the step.")]
+        [Id(1, 1)]
         public string Name { get { return _step.Name; } set { _step.Name = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Procedure")]
         [DescriptionAttribute("Select Check model to only check the input deck and geometry. The set of equations is built " +
                               "but not solved (the Jacobian determinant is checked).")]
+        [Id(2, 1)]
         public bool RunAnalysis
         {
             get { return _step.RunAnalysis; }
@@ -36,6 +38,7 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Solver")]
         [DescriptionAttribute("Select the matrix solver type.")]
+        [Id(3, 1)]
         public CaeModel.SolverTypeEnum SolverType
         {
             get { return _step.SolverType; }

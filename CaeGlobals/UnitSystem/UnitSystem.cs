@@ -554,6 +554,7 @@ namespace CaeGlobals
                 StringPowerPerVolumeConverter.SetVolumeUnit = VolumeUnitAbbreviation;
             }
             StringFrequencyConverter.SetUnit = FrequencyUnitAbbreviation;
+            StringReciprocalTimeConverter.SetUnit = TimeUnitAbbreviation;
             // Contact
             StringForcePerVolumeConverter.SetForceUnit = ForceUnitAbbreviation;
             StringForcePerVolumeConverter.SetVolumeUnit = VolumeUnitAbbreviation;
