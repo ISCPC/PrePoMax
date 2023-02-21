@@ -92,23 +92,26 @@ namespace CaeResults
                                                                           out steadyStateDynamics);
                 Repair(dataSetLinesList, dataSetNames);
                 //
-                DatDataSet dataSet;
-                List<DatDataSet> dataSets = new List<DatDataSet>();
-                HashSet<string> existingDataSets = new HashSet<string>();
+                DatDataSet newDataSet;
+                DatDataSet existingDataSet;
+                OrderedDictionary<string, DatDataSet> dataSets = new OrderedDictionary<string, DatDataSet>("DataSets");
                 foreach (string[] dataSetLines in dataSetLinesList)
                 {
-                    dataSet = GetDatDataSet(dataSetNames, dataSetLines, repairedSetNames);
+                    newDataSet = GetDatDataSet(dataSetNames, dataSetLines, repairedSetNames);
                     // Steady state dynamics
-                    if (steadyStateDynamics && !existingDataSets.Add(dataSet.GetHashKey()))
+                    if (steadyStateDynamics && dataSets.TryGetValue(newDataSet.GetHashKey(), out existingDataSet))
                     {
-                        dataSet.FieldName += HOFieldNames.SteadyStateDynamicsSuffix;
-                        existingDataSets.Add(dataSet.GetHashKey());
+                        existingDataSet.FieldName += HOFieldNames.ComplexRealSuffix;
+                        dataSets.Replace(newDataSet.GetHashKey(), existingDataSet.GetHashKey(), existingDataSet);
+                        //
+                        newDataSet.FieldName += HOFieldNames.ComplexImaginarySuffix;
                     }
                     //
-                    if (dataSet.FieldName != HOFieldNames.Error) dataSets.Add(dataSet);
+                    if (newDataSet.FieldName != HOFieldNames.Error) dataSets.Add(newDataSet.GetHashKey(), newDataSet);
                 }
                 //
-                HistoryResults historyOutput = GetHistoryOutput(dataSets);
+                HistoryResults historyOutput = GetHistoryOutput(dataSets.Values);
+                AddComplexFields(historyOutput);
                 AddStressComponents(historyOutput);
                 AddStrainComponents(historyOutput);
                 return historyOutput;
@@ -138,7 +141,11 @@ namespace CaeResults
             for (int i = 0; i < lines.Length; i++)
             {
                 if (lines[i].Length == 0) continue;
-                if (!steadyStateDynamics && lines[i].ToUpper().StartsWith(steadyStateDynamicsKey)) steadyStateDynamics = true;
+                if (!steadyStateDynamics && lines[i].ToUpper().StartsWith(steadyStateDynamicsKey))
+                {
+                    steadyStateDynamics = true;
+                    dataSets.Clear();   // clear everything until this point
+                }
                 //
                 theName = null;
                 foreach (var name in dataSetNames)
@@ -581,7 +588,7 @@ namespace CaeResults
                 return new DatDataSet() { FieldName = HOFieldNames.Error };
             }
         }
-        static private HistoryResults GetHistoryOutput(List<DatDataSet> dataSets)
+        static private HistoryResults GetHistoryOutput(IEnumerable<DatDataSet> dataSets)
         {
             HistoryResults historyOutput = new HistoryResults("HistoryOutput");
             HistoryResultSet set;
@@ -613,16 +620,6 @@ namespace CaeResults
                 {
                     field = new HistoryResultField(repairedDataSet.FieldName);
                     set.Fields.Add(field.Name, field);
-                    // Add MISES and TRESCA component
-                    noSuffixName = HOFieldNames.GetNoSuffixName(field.Name);
-                    if (noSuffixName == HOFieldNames.Stresses || noSuffixName == HOFieldNames.Strains ||
-                        noSuffixName == HOFieldNames.MechanicalStrains)
-                    {
-                        component = new HistoryResultComponent(HOComponentNames.Mises);
-                        field.Components.Add(component.Name, component);
-                        component = new HistoryResultComponent(HOComponentNames.Tresca);
-                        field.Components.Add(component.Name, component);
-                    }
                 }
                 // For each value line in data set: id x y z
                 for (int i = 0; i < repairedDataSet.Values.Length; i++)
@@ -727,7 +724,91 @@ namespace CaeResults
             //
             return dataSet;
         }
+
         //
+        static private void AddComplexFields(HistoryResults historyOutput)
+        {
+            HistoryResultField fieldR;
+            HistoryResultField fieldI;
+            HistoryResultField fieldMag;
+            HistoryResultField fieldPha;
+            HistoryResultComponent compR;
+            HistoryResultComponent compI;
+            HistoryResultComponent compMag;
+            HistoryResultComponent compPha;
+            HistoryResultEntries entryR;
+            HistoryResultEntries entryI;
+            HistoryResultEntries entryMag;
+            HistoryResultEntries entryPha;
+            double[] real;
+            double[] imaginary;
+            double[] mag;
+            double[] pha;
+            HashSet<string> complexFieldNames = new HashSet<string>();
+            foreach (var setsEntry in historyOutput.Sets)
+            {
+                complexFieldNames.Clear();
+                foreach (var fieldEntry in setsEntry.Value.Fields)
+                {
+                    if (HOFieldNames.HasComplexSuffix(fieldEntry.Key))
+                        complexFieldNames.Add(HOFieldNames.GetNoSuffixName(fieldEntry.Key));
+                }
+                //
+                foreach (var complexFieldName in complexFieldNames)
+                {
+                    if (setsEntry.Value.Fields.TryGetValue(complexFieldName + HOFieldNames.ComplexRealSuffix, out fieldR) &&
+                        setsEntry.Value.Fields.TryGetValue(complexFieldName + HOFieldNames.ComplexImaginarySuffix, out fieldI))
+                    {
+                        fieldMag = new HistoryResultField(complexFieldName + HOFieldNames.ComplexMagnitudeSuffix);
+                        fieldPha = new HistoryResultField(complexFieldName + HOFieldNames.ComplexPhaseSuffix);
+                        //
+                        foreach (var componentName in fieldR.Components.Keys)
+                        {
+                            compMag = new HistoryResultComponent(componentName);
+                            compPha = new HistoryResultComponent(componentName);
+                            compPha.Unit = StringAngleDegConverter.GetUnitAbbreviation();
+                            //
+                            if (fieldR.Components.TryGetValue(componentName, out compR) &&
+                                fieldI.Components.TryGetValue(componentName, out compI))
+                            {
+                                foreach (var entryName in compR.Entries.Keys)
+                                {
+                                    entryMag = new HistoryResultEntries(entryName, false);
+                                    entryPha = new HistoryResultEntries(entryName, false);
+                                    //
+                                    if (compR.Entries.TryGetValue(entryName, out entryR) &&
+                                        compI.Entries.TryGetValue(entryName, out entryI))
+                                    {
+                                        real = entryR.Values.ToArray();
+                                        imaginary = entryI.Values.ToArray();
+                                        mag = new double[Math.Min(real.Length, imaginary.Length)];
+                                        pha = new double[mag.Length];
+                                        for (int i = 0; i < mag.Length; i++)
+                                        {
+                                            mag[i] = Tools.GetComplexMagnitude(real[i], imaginary[i]);
+                                            pha[i] = Tools.GetComplexPhaseDeg(real[i], imaginary[i]);
+                                        }
+                                        //
+                                        entryMag.Time = entryR.Time;
+                                        entryMag.Values = mag.ToList();
+                                        compMag.Entries.Add(entryMag.Name, entryMag);
+                                        //
+                                        entryPha.Time = entryR.Time;
+                                        entryPha.Values = pha.ToList();
+                                        compPha.Entries.Add(entryPha.Name, entryPha);
+                                    }
+                                }
+                            }
+                            fieldMag.Components.Add(compMag.Name, compMag);
+                            fieldPha.Components.Add(compPha.Name, compPha);
+                        }
+                        //
+                        setsEntry.Value.Fields.Add(fieldMag.Name, fieldMag);
+                        setsEntry.Value.Fields.Add(fieldPha.Name, fieldPha);
+                    }
+                }
+            }
+        }
         static private void AddStressComponents(HistoryResults historyOutput)
         {
             foreach (var setsEntry in historyOutput.Sets)
@@ -736,10 +817,10 @@ namespace CaeResults
                 {
                     string noSuffixName = HOFieldNames.GetNoSuffixName(fieldEntry.Key);
                     //
-                    if (noSuffixName == HOFieldNames.Stresses)
+                    if (noSuffixName == HOFieldNames.Stresses && HOFieldNames.HasRealComplexSuffix(fieldEntry.Key))
                     {
-                        HistoryResultComponent vonMisesCom = fieldEntry.Value.Components[HOComponentNames.Mises];
-                        HistoryResultComponent trescaCom = fieldEntry.Value.Components[HOComponentNames.Tresca];
+                        HistoryResultComponent vonMisesCom = new HistoryResultComponent(HOComponentNames.Mises);
+                        HistoryResultComponent trescaCom = new HistoryResultComponent(HOComponentNames.Tresca);
                         HistoryResultComponent sgnMaxAbsPrinCom = new HistoryResultComponent(HOComponentNames.SgnMaxAbsPri);
                         HistoryResultComponent prinMaxCom = new HistoryResultComponent(HOComponentNames.PrincipalMax);
                         HistoryResultComponent prinMidCom = new HistoryResultComponent(HOComponentNames.PrincipalMid);
@@ -856,8 +937,8 @@ namespace CaeResults
                             prinMinCom.Entries.Add(entryName, hrEntries);
                         }
                         //
-                        fieldEntry.Value.Components[HOComponentNames.Mises] = vonMisesCom;
-                        fieldEntry.Value.Components[HOComponentNames.Tresca] = trescaCom;
+                        fieldEntry.Value.Components.Insert(0, vonMisesCom.Name, vonMisesCom);
+                        fieldEntry.Value.Components.Insert(1, trescaCom.Name, trescaCom);
                         fieldEntry.Value.Components.Add(sgnMaxAbsPrinCom.Name, sgnMaxAbsPrinCom);
                         fieldEntry.Value.Components.Add(prinMaxCom.Name, prinMaxCom);
                         fieldEntry.Value.Components.Add(prinMidCom.Name, prinMidCom);
@@ -872,10 +953,13 @@ namespace CaeResults
             {
                 foreach (var fieldEntry in setsEntry.Value.Fields)
                 {
-                    if (fieldEntry.Key == HOFieldNames.Strains || fieldEntry.Key == HOFieldNames.MechanicalStrains)
+                    string noSuffixName = HOFieldNames.GetNoSuffixName(fieldEntry.Key);
+                    //
+                    if ((noSuffixName == HOFieldNames.Strains || noSuffixName == HOFieldNames.MechanicalStrains) &&
+                        HOFieldNames.HasRealComplexSuffix(fieldEntry.Key))
                     {
-                        HistoryResultComponent vonMisesCom = fieldEntry.Value.Components[HOComponentNames.Mises];
-                        HistoryResultComponent trescaCom = fieldEntry.Value.Components[HOComponentNames.Tresca];
+                        HistoryResultComponent vonMisesCom = new HistoryResultComponent(HOComponentNames.Mises);
+                        HistoryResultComponent trescaCom = new HistoryResultComponent(HOComponentNames.Tresca);
                         HistoryResultComponent sgnMaxAbsPrinCom = new HistoryResultComponent(HOComponentNames.SgnMaxAbsPri);
                         HistoryResultComponent prinMaxCom = new HistoryResultComponent(HOComponentNames.PrincipalMax);
                         HistoryResultComponent prinMidCom = new HistoryResultComponent(HOComponentNames.PrincipalMid);
@@ -992,8 +1076,8 @@ namespace CaeResults
                             prinMinCom.Entries.Add(entryName, hrEntries);
                         }
                         //
-                        fieldEntry.Value.Components[HOComponentNames.Mises] = vonMisesCom;
-                        fieldEntry.Value.Components[HOComponentNames.Tresca] = trescaCom;
+                        fieldEntry.Value.Components.Insert(0, vonMisesCom.Name, vonMisesCom);
+                        fieldEntry.Value.Components.Insert(1, trescaCom.Name, trescaCom);
                         fieldEntry.Value.Components.Add(sgnMaxAbsPrinCom.Name, sgnMaxAbsPrinCom);
                         fieldEntry.Value.Components.Add(prinMaxCom.Name, prinMaxCom);
                         fieldEntry.Value.Components.Add(prinMidCom.Name, prinMidCom);

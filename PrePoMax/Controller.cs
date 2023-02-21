@@ -13851,7 +13851,8 @@ namespace PrePoMax
                 animationScale[i] = i * ratio;
             }
             //
-             _form.SetAnimationFrameData(time, stepId, stepIncrementId, animationScale, allFramesScalarRange);
+             _form.SetAnimationFrameData(time, stepId, stepIncrementId, animationScale, allFramesScalarRange,
+                                         vtkMaxAnimationType.ScaleFactor);
             //
             return result;
         }
@@ -13869,8 +13870,8 @@ namespace PrePoMax
             SetPostLegendAndStatusBlockSettings();
             SetStatusBlock(scale);
             //
-            vtkControl.vtkMaxActorData data = null;
-            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
+            vtkMaxActorData data = null;
+            vtkRendererLayer layer = vtkRendererLayer.Base;
             //
             bool result = true;
             PostSettings postSettings = _settings.Post;
@@ -13933,7 +13934,7 @@ namespace PrePoMax
                 }
             }
             _form.SetAnimationFrameData(time.ToArray(), stepId.ToArray(), stepIncrementId.ToArray(), animationScale.ToArray(),
-                                        allFramesScalarRange);
+                                        allFramesScalarRange, vtkMaxAnimationType.TimeIncrements);
             //
             numFrames = data.Geometry.NodesAnimation.Length;
             //
@@ -13941,25 +13942,11 @@ namespace PrePoMax
         }
         public bool DrawHarmonicAnimation(int numFrames)
         {
-            _form.Clear3D();
-            //
             if (_allResults.CurrentResult == null || _allResults.CurrentResult.Mesh == null) return false;
             if (_allResults.CurrentResult.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
             //
-            ApplyResultsUnitSystem();
-            // Settings - must be here before drawing parts to correctly set the numer of colors
             float scale = GetScale();
-            SetPostLegendAndStatusBlockSettings();
-            SetStatusBlock(scale);
-            //
-            vtkMaxActorData data;
-            vtkRendererLayer layer = vtkRendererLayer.Base;
-            //
-            bool result = true;
-            PostSettings postSettings = _settings.Post;
-            List<string> hiddenActors = new List<string>();
-            double[] allFramesScalarRange = new double[] { double.MaxValue, -double.MaxValue };
-            // Angles
+            // Prepare data - first prepare data, than clear the vtk data
             float delta = 360 / (numFrames);
             float[] angles = new float[numFrames];
             for (int i = 0; i < numFrames; i++) angles[i] = i * delta;
@@ -14007,8 +13994,22 @@ namespace PrePoMax
                     }
                 }
             }
-
-
+            // Start drawing
+            _form.Clear3D();
+            //
+            ApplyResultsUnitSystem();
+            // Settings - must be here before drawing parts to correctly set the numer of colors
+            SetPostLegendAndStatusBlockSettings();
+            SetStatusBlock(scale);
+            //
+            vtkMaxActorData data;
+            vtkRendererLayer layer = vtkRendererLayer.Base;
+            //
+            bool result = true;
+            PostSettings postSettings = _settings.Post;
+            List<string> hiddenActors = new List<string>();
+            double[] allFramesScalarRange = new double[] { double.MaxValue, -double.MaxValue };
+            //
             foreach (var entry in _allResults.CurrentResult.Mesh.Parts)
             {
                 if (entry.Value is ResultPart resultPart)
@@ -14018,10 +14019,7 @@ namespace PrePoMax
                         DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelType,
                                                postSettings.UndeformedModelColor, layer);
                     // Deformed
-                    //data = GetScaleFactorAnimationDataFromPart(resultPart, _currentFieldData, scale, numFrames);
-
                     data = partData[resultPart];
-
                     // Min max
                     if (entry.Value.Visible)
                     {
@@ -14046,7 +14044,6 @@ namespace PrePoMax
                 }
                 if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
             }
-
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
             // Transformation
             ApplyTransformation();
@@ -14059,17 +14056,17 @@ namespace PrePoMax
             float[] time = new float[numFrames];
             int[] stepId = new int[numFrames];
             int[] stepIncrementId = new int[numFrames];
-            float[] animationScale = new float[numFrames];
+            float[] animationScale = angles;
             float ratio = 1f / (numFrames - 1);
             for (int i = 0; i < numFrames; i++)
             {
                 time[i] = _currentFieldData.Time;
                 stepId[i] = _currentFieldData.StepId;
                 stepIncrementId[i] = _currentFieldData.StepIncrementId;
-                animationScale[i] = i * ratio;
             }
             //
-            _form.SetAnimationFrameData(time, stepId, stepIncrementId, animationScale, allFramesScalarRange);
+            _form.SetAnimationFrameData(time, stepId, stepIncrementId, animationScale, allFramesScalarRange,
+                                        vtkMaxAnimationType.Harmonic);
             //
             return result;
         }
@@ -14130,8 +14127,7 @@ namespace PrePoMax
             {
                 _allResults.CurrentResult.DeformationFieldOutputName = _form.GetDeformationVariable();
                 _allResults.CurrentResult.SetComplexResultTypeAndAngle(_form.GetComplexResultType(),
-                                                                       (float)_form.GetComplexAngleDeg(),
-                                                                       null);
+                                                                       (float)_form.GetComplexAngleDeg());
                 UpdateCurrentFieldData();
             }
             //
@@ -14148,9 +14144,8 @@ namespace PrePoMax
                     complexComponent = resultType.ToString();
                     if (resultType == ComplexResultTypeEnum.Angle)
                     {
-                        StringAngleDegConverter sadc = new StringAngleDegConverter();
-                        string angle = sadc.ConvertToString(_form.GetComplexAngleDeg());
-                        complexComponent += " " + angle;
+                        complexComponent += " " + _form.GetComplexAngleDeg() + " " +
+                                            StringAngleDegConverter.GetUnitAbbreviation();
                     }
                 }
                 else complexComponent = null;
@@ -14190,7 +14185,7 @@ namespace PrePoMax
             // Deformation variable
             string deformationVariable = _form.GetDeformationVariable();
             //
-            DataFieldType fieldType = ConvertStepType(_currentFieldData);
+            vtkMaxFieldDataType fieldType = ConvertStepType(_currentFieldData);
             //
             int stepNumber = _currentFieldData.StepId;
             int incrementNumber = _currentFieldData.StepIncrementId;
@@ -14198,15 +14193,15 @@ namespace PrePoMax
             _form.SetStatusBlock(Path.GetFileName(_allResults.CurrentResult.FileName), _allResults.CurrentResult.DateTime,
                                  _currentFieldData.Time, unit, deformationVariable, scale, fieldType, stepNumber, incrementNumber);
         }
-        private DataFieldType ConvertStepType(FieldData fieldData)
+        private vtkMaxFieldDataType ConvertStepType(FieldData fieldData)
         {
-            DataFieldType fieldType;
-            if (fieldData.Type == StepType.Static) fieldType = DataFieldType.Static;
-            else if (fieldData.Type == StepType.Frequency) fieldType = DataFieldType.Frequency;
-            else if (fieldData.Type == StepType.FrequencySensitivity) fieldType = DataFieldType.FrequencySensitivity;
-            else if (fieldData.Type == StepType.Buckling) fieldType = DataFieldType.Buckling;
-            else if (fieldData.Type == StepType.SteadyStateDynamics) fieldType = DataFieldType.SteadyStateDynamic;
-            else if (fieldData.Type == StepType.LastIterations) fieldType = DataFieldType.LastIterations;
+            vtkMaxFieldDataType fieldType;
+            if (fieldData.Type == StepType.Static) fieldType = vtkMaxFieldDataType.Static;
+            else if (fieldData.Type == StepType.Frequency) fieldType = vtkMaxFieldDataType.Frequency;
+            else if (fieldData.Type == StepType.FrequencySensitivity) fieldType = vtkMaxFieldDataType.FrequencySensitivity;
+            else if (fieldData.Type == StepType.Buckling) fieldType = vtkMaxFieldDataType.Buckling;
+            else if (fieldData.Type == StepType.SteadyStateDynamics) fieldType = vtkMaxFieldDataType.SteadyStateDynamic;
+            else if (fieldData.Type == StepType.LastIterations) fieldType = vtkMaxFieldDataType.LastIterations;
             else throw new NotSupportedException();
             return fieldType;
         }

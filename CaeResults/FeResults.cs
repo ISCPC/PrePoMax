@@ -55,6 +55,7 @@ namespace CaeResults
                                                                                new string[] { FOFieldNames.Error,
                                                                                               FOFieldNames.ErrorR,
                                                                                               FOFieldNames.ErrorI } };
+        //
         private string _hashName;
         private string _fileName;
         private FeMesh _mesh;
@@ -706,12 +707,12 @@ namespace CaeResults
         {
             foreach (var entry in _fields)
             {
-                if (entry.Value.Complex) return true;
+                if (entry.Key.Complex) return true;
             }
             return false;
         }
         public void SetComplexResultTypeAndAngle(ComplexResultTypeEnum complexResultType, float complexAngleDeg,
-                                                 FieldData onlyThisField)
+                                                 FieldData fieldData = null)
         {
             if (complexResultType != _complexResultType ||
                 (_complexResultType == ComplexResultTypeEnum.Angle && complexAngleDeg != _complexAngleDeg))
@@ -720,8 +721,18 @@ namespace CaeResults
                 //
                 _complexResultType = complexResultType;
                 _complexAngleDeg = complexAngleDeg;
-                //
-                SetComplexResult(onlyThisField);
+                // Compute the complex result
+                SetComplexResult(fieldData);
+                // If onlyThisField is used (animation) then also compute the deformations
+                if (fieldData != null)
+                {
+                    string defFieldName = GetInternalDeformationFieldOutputName(fieldData.StepId, fieldData.StepIncrementId);
+                    if (defFieldName != fieldData.Name)
+                    {
+                        fieldData = GetFieldData(defFieldName, null, fieldData.StepId, fieldData.StepIncrementId);
+                        SetComplexResult(fieldData);
+                    }
+                }
             }
         }
         public void PrepareComplexResults()
@@ -754,6 +765,12 @@ namespace CaeResults
                         //
                         if (field != null && fieldI != null)
                         {
+                            fieldData.Complex = true;
+                            ReplaceOrAddField(fieldData, field);
+                            //
+                            fieldDataI.Complex = true;
+                            ReplaceOrAddField(fieldDataI, fieldI);
+                            //
                             fieldR = new Field(field);  // copy
                             fieldR.Name = complexFieldNames[1];
                             //
@@ -761,10 +778,6 @@ namespace CaeResults
                             fieldDataR.Name = complexFieldNames[1];
                             //
                             ReplaceOrAddField(fieldDataR, fieldR);
-                            //
-                            field.Complex = true;
-                            fieldData.Complex = true;
-                            ReplaceOrAddField(fieldData, field);
                         }
                     }
                 }
@@ -776,7 +789,7 @@ namespace CaeResults
             else if (_complexResultType == ComplexResultTypeEnum.Imaginary) SetComplexResultToImaginary(onlyThisField);
             else if (_complexResultType == ComplexResultTypeEnum.Magnitude) SetComplexResultToMagnitude(onlyThisField);
             else if (_complexResultType == ComplexResultTypeEnum.Phase) SetComplexResultToPhase(onlyThisField);
-            else if (_complexResultType == ComplexResultTypeEnum.Angle) SetComplexResultToAngle(onlyThisField);
+            else if (_complexResultType == ComplexResultTypeEnum.Angle) SetComplexResultToAngleP(onlyThisField);
             else throw new NotSupportedException();
         }
         public void SetComplexResultToReal(FieldData onlyThisField)
@@ -802,18 +815,17 @@ namespace CaeResults
                     //
                     foreach (var complexFieldNames in ComplexFieldNames)
                     {
-                        fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
-                        field = GetField(fieldData);
+                        //fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
+                        //field = GetField(fieldData);
                         fieldDataR = GetFieldData(complexFieldNames[1], null, stepId, incrementId);
                         fieldR = GetField(fieldDataR);
-                        fieldDataI = GetFieldData(complexFieldNames[2], null, stepId, incrementId);
-                        fieldI = GetField(fieldDataI);
+                        //fieldDataI = GetFieldData(complexFieldNames[2], null, stepId, incrementId);
+                        //fieldI = GetField(fieldDataI);
                         //
                         if (fieldR != null)
                         {
                             field = new Field(fieldR);
                             field.Name = complexFieldNames[0];
-                            field.Complex = true;
                             //
                             fieldData = new FieldData(fieldDataR);
                             fieldData.Name = complexFieldNames[0];
@@ -848,10 +860,10 @@ namespace CaeResults
                     //
                     foreach (var complexFieldNames in ComplexFieldNames)
                     {
-                        fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
-                        field = GetField(fieldData);
-                        fieldDataR = GetFieldData(complexFieldNames[1], null, stepId, incrementId);
-                        fieldR = GetField(fieldDataR);
+                        //fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
+                        //field = GetField(fieldData);
+                        //fieldDataR = GetFieldData(complexFieldNames[1], null, stepId, incrementId);
+                        //fieldR = GetField(fieldDataR);
                         fieldDataI = GetFieldData(complexFieldNames[2], null, stepId, incrementId);
                         fieldI = GetField(fieldDataI);
                         //
@@ -859,7 +871,6 @@ namespace CaeResults
                         {
                             field = new Field(fieldI);
                             field.Name = complexFieldNames[0];
-                            field.Complex = true;
                             //
                             fieldData = new FieldData(fieldDataI);
                             fieldData.Name = complexFieldNames[0];
@@ -897,8 +908,8 @@ namespace CaeResults
                     //
                     foreach (var complexFieldNames in ComplexFieldNames)
                     {
-                        fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
-                        field = GetField(fieldData);
+                        //fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
+                        //field = GetField(fieldData);
                         fieldDataR = GetFieldData(complexFieldNames[1], null, stepId, incrementId);
                         fieldR = GetField(fieldDataR);
                         fieldDataI = GetFieldData(complexFieldNames[2], null, stepId, incrementId);
@@ -908,7 +919,6 @@ namespace CaeResults
                         {
                             field = new Field(fieldI);
                             field.Name = complexFieldNames[0];
-                            field.Complex = true;
                             //
                             fieldData = new FieldData(fieldDataI);
                             fieldData.Name = complexFieldNames[0];
@@ -925,12 +935,12 @@ namespace CaeResults
                                     //
                                     for (int k = 0; k < valuesR.Length; k++)
                                     {
-                                        valuesMag[k] = GetComplexMagnitude(valuesR[k], valuesI[k]);
+                                        valuesMag[k] = Tools.GetComplexMagnitude(valuesR[k], valuesI[k]);
                                     }
                                     field.ReplaceComponent(componentName, new FieldComponent(componentName, valuesMag));
-                                    field.ClearInvariants();
                                 }
                             }
+                            field.ClearInvariants();
                             //
                             ReplaceOrAddField(fieldData, field);
                         }
@@ -964,8 +974,8 @@ namespace CaeResults
                     //
                     foreach (var complexFieldNames in ComplexFieldNames)
                     {
-                        fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
-                        field = GetField(fieldData);
+                        //fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
+                        //field = GetField(fieldData);
                         fieldDataR = GetFieldData(complexFieldNames[1], null, stepId, incrementId);
                         fieldR = GetField(fieldDataR);
                         fieldDataI = GetFieldData(complexFieldNames[2], null, stepId, incrementId);
@@ -975,7 +985,6 @@ namespace CaeResults
                         {
                             field = new Field(fieldI);
                             field.Name = complexFieldNames[0];
-                            field.Complex = true;
                             //
                             fieldData = new FieldData(fieldDataI);
                             fieldData.Name = complexFieldNames[0];
@@ -992,12 +1001,12 @@ namespace CaeResults
                                     //
                                     for (int k = 0; k < valuesR.Length; k++)
                                     {
-                                        valuesPhase[k] = GetComplexPhaseDeg(valuesR[k], valuesI[k]);
+                                        valuesPhase[k] = Tools.GetComplexPhaseDeg(valuesR[k], valuesI[k]);
                                     }
                                     field.ReplaceComponent(componentName, new FieldComponent(componentName, valuesPhase));
-                                    field.ClearInvariants();
                                 }
                             }
+                            field.ClearInvariants();
                             //
                             ReplaceOrAddField(fieldData, field);
                         }
@@ -1036,8 +1045,8 @@ namespace CaeResults
                     {
                         if (onlyThisField != null && onlyThisField.Name != complexFieldNames[0]) continue;
                         //
-                        fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
-                        field = GetField(fieldData);
+                        //fieldData = GetFieldData(complexFieldNames[0], null, stepId, incrementId);
+                        //field = GetField(fieldData);
                         fieldDataR = GetFieldData(complexFieldNames[1], null, stepId, incrementId);
                         fieldR = GetField(fieldDataR);
                         fieldDataI = GetFieldData(complexFieldNames[2], null, stepId, incrementId);
@@ -1047,7 +1056,6 @@ namespace CaeResults
                         {
                             field = new Field(fieldI);
                             field.Name = complexFieldNames[0];
-                            field.Complex = true;
                             //
                             fieldData = new FieldData(fieldDataI);
                             fieldData.Name = complexFieldNames[0];
@@ -1064,12 +1072,12 @@ namespace CaeResults
                                     //
                                     for (int k = 0; k < valuesR.Length; k++)
                                     {
-                                        valuesAngle[k] = GetComplexRealAtAngle(valuesR[k], valuesI[k], (float)_complexAngleDeg);
+                                        valuesAngle[k] = Tools.GetComplexRealAtAngle(valuesR[k], valuesI[k], _complexAngleDeg);
                                     }
                                     field.ReplaceComponent(componentName, new FieldComponent(componentName, valuesAngle));
-                                    field.ComputeInvariants();
                                 }
                             }
+                            field.ComputeInvariants();
                             //
                             ReplaceOrAddField(fieldData, field);
                         }
@@ -1077,32 +1085,94 @@ namespace CaeResults
                 }
             }
         }
-        //
-        private float GetComplexMagnitude(float real, float imaginary)
+        public void SetComplexResultToAngleP(FieldData onlyThisField)
         {
-            return (float)Math.Sqrt(Math.Pow(real, 2) + Math.Pow(imaginary, 2));
-        }
-        private float GetComplexPhaseDeg(float real, float imaginary)
-        {
-            float result;
-            if (real == 0)
+            int stepId;
+            int incrementId;
+            int[] stepIds = GetAllStepIds();
+            int[] incrementIds;
+            // Collect all stepId, stepIncrementId and fieldName pairs
+            List<Tuple<int, int, int>> stepIdIncrementIdNameId = new List<Tuple<int, int, int>>();
+            for (int i = 0; i < stepIds.Length; i++)
             {
-                if (imaginary > 0) result = 90;
-                else if ((imaginary < 0)) result = 270;
-                else result = 0;
+                stepId = stepIds[i];
+                if (onlyThisField != null && onlyThisField.StepId != stepId) continue;
+                //
+                incrementIds = GetStepIncrementIds(stepId);
+                for (int j = 0; j < incrementIds.Length; j++)
+                {
+                    incrementId = incrementIds[j];
+                    if (onlyThisField != null && onlyThisField.StepIncrementId != incrementId) continue;
+                    //
+                    for (int k = 0; k < ComplexFieldNames.Length; k++)
+                    {
+                        if (onlyThisField != null && onlyThisField.Name != ComplexFieldNames[k][0]) continue;
+                        //
+                        stepIdIncrementIdNameId.Add(new Tuple<int, int, int>(stepId, incrementId, k));
+                    }
+                }
             }
-            else
+            // Compute all fields
+            List<Tuple<FieldData, Field>> fieldFieldData = new List<Tuple<FieldData, Field>>();
+            Parallel.ForEach(stepIdIncrementIdNameId, tuple =>
+            //foreach (var tuple in stepIdIncrementIdNameId)
             {
-                result = (float)(Math.Atan(imaginary / real) * 180 / Math.PI);
-                if (real < 0) result += 180;
+                FieldData fieldData;
+                FieldData fieldDataR;
+                FieldData fieldDataI;
+                Field field;
+                Field fieldR;
+                Field fieldI;
+                float[] valuesR;
+                float[] valuesI;
+                float[] valuesAngle;
+                //
+                int stepIdP = tuple.Item1;
+                int incrementIdP = tuple.Item2;
+                int nameIdP = tuple.Item3;
+                //
+                fieldDataR = GetFieldData(ComplexFieldNames[nameIdP][1], null, stepIdP, incrementIdP);
+                fieldR = GetField(fieldDataR);
+                fieldDataI = GetFieldData(ComplexFieldNames[nameIdP][2], null, stepIdP, incrementIdP);
+                fieldI = GetField(fieldDataI);
+                //
+                if (fieldR != null && fieldI != null)
+                {
+                    field = new Field(fieldI);
+                    field.Name = ComplexFieldNames[nameIdP][0];
+                    //
+                    fieldData = new FieldData(fieldDataI);
+                    fieldData.Name = ComplexFieldNames[nameIdP][0];
+                    fieldData.Complex = true;
+                    //
+                    string[] componentNames = field.GetComponentNames();
+                    foreach (var componentName in componentNames)
+                    {
+                        if (!field.IsComponentInvariant(componentName))
+                        {
+                            valuesR = fieldR.GetComponentValues(componentName);
+                            valuesI = fieldI.GetComponentValues(componentName);
+                            valuesAngle = new float[valuesR.Length];
+                            //
+                            for (int i = 0; i < valuesR.Length; i++)
+                            {
+                                valuesAngle[i] = Tools.GetComplexRealAtAngle(valuesR[i], valuesI[i], _complexAngleDeg);
+                            }
+                            field.ReplaceComponent(componentName, new FieldComponent(componentName, valuesAngle));
+                        }
+                    }
+                    field.ComputeInvariants();
+                    //
+                    fieldFieldData.Add(new Tuple<FieldData, Field>(fieldData, field));
+                    
+                }
             }
-            return result;
-        }
-        private float GetComplexRealAtAngle(float real, float imaginary, float angleDeg)
-        {
-            float magnitude = GetComplexMagnitude(real, imaginary);
-            float phaseDeg = GetComplexPhaseDeg(real, imaginary);
-            return (float)(magnitude * Math.Cos((phaseDeg + angleDeg) * Math.PI / 180));
+            );
+            // Add all fields
+            foreach (var tuple in fieldFieldData)
+            {
+                ReplaceOrAddField(tuple.Item1, tuple.Item2);
+            }
         }
         // History                                  
         public HistoryResults GetHistory()
@@ -1134,15 +1204,11 @@ namespace CaeResults
             if (_complexResultType == ComplexResultTypeEnum.Phase)  // speed up
             {
                 FieldData fieldData = GetFieldData(fieldDataName, componentName, stepId, incrementId);
-                if (fieldData.Type == StepType.SteadyStateDynamics)
+                if (fieldData.Type == StepType.SteadyStateDynamics && fieldData.Complex)
                 {
-                    Field field = GetField(fieldData);
-                    if (field.Complex)
-                    {
-                        unitConverter = new StringAngleDegConverter();
-                        unitAbbreviation = "°";
-                        return;
-                    }
+                    unitConverter = new StringAngleDegConverter();
+                    unitAbbreviation = StringAngleDegConverter.GetUnitAbbreviation();
+                    return;
                 }
             }
             //
@@ -1176,7 +1242,7 @@ namespace CaeResults
                             case FOComponentNames.PHA2:
                             case FOComponentNames.PHA3:
                                 unitConverter = new StringAngleDegConverter();
-                                unitAbbreviation = "°";
+                                unitAbbreviation = StringAngleDegConverter.GetUnitAbbreviation();
                                 break;
                         }
                         break;
@@ -1213,7 +1279,7 @@ namespace CaeResults
                             case FOComponentNames.PHAYZ:
                             case FOComponentNames.PHAZX:
                                 unitConverter = new StringAngleDegConverter();
-                                unitAbbreviation = "°";
+                                unitAbbreviation = StringAngleDegConverter.GetUnitAbbreviation();
                                 break;
                         }
                         break;
@@ -1345,6 +1411,10 @@ namespace CaeResults
                     case HOFieldNames.Time:
                         unitConverter = new StringTimeConverter();
                         unitAbbreviation = _unitSystem.TimeUnitAbbreviation;
+                        break;
+                    case HOFieldNames.Frequency:
+                        unitConverter = new StringFrequencyConverter();
+                        unitAbbreviation = _unitSystem.FrequencyUnitAbbreviation;
                         break;
                     case HOFieldNames.Displacements:
                     case HOFieldNames.RelativeContactDisplacement:
@@ -1486,13 +1556,12 @@ namespace CaeResults
         public void AddFiled(FieldData fieldData, Field field)
         {
             fieldData = new FieldData(fieldData);   // copy
-            _fields.Add(fieldData, field);
             // Hide complex fields
-            if (fieldData.Type == StepType.SteadyStateDynamics && FOFieldNames.IsCompex(field.Name))
+            if (fieldData.Type == StepType.SteadyStateDynamics && FOFieldNames.IsComplex(fieldData.Name))
             {
-                field.Internal = true;
                 fieldData.Internal = true;
             }
+            _fields.Add(fieldData, field);
         }
         public Field GetField(FieldData fieldData)
         {
@@ -1664,6 +1733,7 @@ namespace CaeResults
                         {
                             result = new FieldData(entry.Key);
                             result.Component = component;
+                            result.Internal = entry.Key.Internal;
                             return result;
                         }
                     }
@@ -1671,6 +1741,7 @@ namespace CaeResults
                     {
                         result = new FieldData(entry.Key);
                         result.Component = component;
+                        result.Internal = entry.Key.Internal;
                         return result;
                     }
                 }
@@ -1683,6 +1754,7 @@ namespace CaeResults
                     result = new FieldData(entry.Key);
                     result.Name = name;
                     result.Component = component;
+                    result.Internal = entry.Key.Internal;
                     result.Valid = false;
                     return result;
                 }
@@ -1750,7 +1822,7 @@ namespace CaeResults
             List<string> names = new List<string>();
             foreach (var entry in _fields)
             {
-                if (!entry.Value.Internal && !names.Contains(entry.Key.Name)) names.Add(entry.Key.Name);
+                if (!entry.Key.Internal && !names.Contains(entry.Key.Name)) names.Add(entry.Key.Name);
             }
             return names.ToArray();
         }
@@ -2227,8 +2299,12 @@ namespace CaeResults
             HistoryResultSet set = _history.Sets[historyData.SetName];
             HistoryResultField field = set.Fields[historyData.FieldName];
             HistoryResultComponent component = field.Components[historyData.ComponentName];
-            string unit = "\n[" + GetHistoryUnitAbbrevation(field.Name, component.Name, -1, -1) + "]";
-            string timeUnit = "\n[" + GetHistoryUnitAbbrevation("Time", null, -1, -1) + "]";
+            string unit;
+            if (component.Unit != null) unit = component.Unit;
+            else unit = GetHistoryUnitAbbrevation(field.Name, component.Name, -1, -1);
+            unit = "\n[" + unit + "]";
+            string timeUnit = " [" + GetHistoryUnitAbbrevation("Time", null, -1, -1) + "]";
+            string frequencyUnit = " [" + GetHistoryUnitAbbrevation("Frequency", null, -1, -1) + "]";
             // Sorted time
             double[] sortedTime;
             Dictionary<double, int> timeRowId;
@@ -2242,7 +2318,7 @@ namespace CaeResults
             // Create rows
             for (int i = 0; i < numRow; i++) rowBasedData[i] = new object[numCol];
             // Add time column name
-            columnNames[0] = "Time" + timeUnit;
+            columnNames[0] = "Time" + timeUnit + Environment.NewLine + "Frequency" + frequencyUnit;
             // Fill the data array
             for (int i = 0; i < sortedTime.Length; i++) rowBasedData[i][0] = sortedTime[i];
             // Add data column

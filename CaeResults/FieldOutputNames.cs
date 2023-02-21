@@ -66,7 +66,7 @@ namespace CaeResults
 
 
         // Methods
-        public static bool IsCompex(string fieldName)
+        public static bool IsComplex(string fieldName)
         {
             switch (fieldName)
             {

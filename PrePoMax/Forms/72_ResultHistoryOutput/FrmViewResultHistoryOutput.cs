@@ -76,7 +76,11 @@ namespace PrePoMax
                 column.FillWeight = 1;
                 column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
                 // Enable sorting of time/frequency
-                if (i == 0) column.SortMode = DataGridViewColumnSortMode.Automatic;
+                if (i == 0)
+                {
+                    column.SortMode = DataGridViewColumnSortMode.Automatic;
+                    column.Width = 110;
+                }
                 //column.CellType = typeof(double);
                 dgvHistory.Columns.Add(column);
             }

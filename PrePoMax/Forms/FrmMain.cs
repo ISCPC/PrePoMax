@@ -16,6 +16,7 @@ using System.Reflection;
 using CaeModel;
 using CaeMesh;
 using CaeResults;
+using vtkControl;
 
 namespace PrePoMax
 {
@@ -7783,7 +7784,7 @@ namespace PrePoMax
             InvokeIfRequired(_vtk.DrawStatusBlockBorder, drawBorder);
         }
         public void SetStatusBlock(string name, DateTime dateTime, float analysisTime, string unit, string deformationVariable,
-                                   float scaleFactor, vtkControl.DataFieldType fieldType, int stepNumber, int incrementNumber)
+                                   float scaleFactor, vtkControl.vtkMaxFieldDataType fieldType, int stepNumber, int incrementNumber)
         {
             InvokeIfRequired(_vtk.SetStatusBlock, name, dateTime, analysisTime, unit, deformationVariable, scaleFactor,
                              fieldType, stepNumber, incrementNumber);
@@ -7988,9 +7989,10 @@ namespace PrePoMax
             InvokeIfRequired(_vtk.SetAnimationAcceleration, animationAcceleration);
         }
         public void SetAnimationFrameData(float[] time, int[] stepId, int[] stepIncrementId, float[] scale,
-                                          double[] allFramesScalarRange)
+                                          double[] allFramesScalarRange, vtkMaxAnimationType animationType)
         {
-            InvokeIfRequired(_vtk.SetAnimationFrameData, time, stepId, stepIncrementId, scale, allFramesScalarRange);
+            InvokeIfRequired(_vtk.SetAnimationFrameData, time, stepId, stepIncrementId, scale, allFramesScalarRange,
+                             animationType);
         }
         public void SetAnimationFrame(int frameNum, bool scalarRangeFromAllFrames)
         {
@@ -8002,7 +8004,8 @@ namespace PrePoMax
             InvokeIfRequired(_vtk.SaveAnimationAsAVI, fileName, firstLastFrame, step, fps, scalarRangeFromAllFrames,
                              swing, encoderOptions);
         }
-        public void SaveAnimationAsImages(string fileName, int[] firstLastFrame, int step, bool scalarRangeFromAllFrames, bool swing)
+        public void SaveAnimationAsImages(string fileName, int[] firstLastFrame, int step, bool scalarRangeFromAllFrames,
+                                          bool swing)
         {
             InvokeIfRequired(_vtk.SaveAnimationAsImages, fileName, firstLastFrame, step, scalarRangeFromAllFrames, swing);
         }

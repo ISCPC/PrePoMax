@@ -54,6 +54,7 @@ namespace CaeMesh
             set
             {
                 if (value <= 0) throw new Exception("The value must be larger than 0.");
+                if (value > 1) throw new Exception("The value must be smaller than 1.");
                 _factorMax = value;
                 if (value < _factorMin) _factorMin = _factorMax;
             }
@@ -64,6 +65,7 @@ namespace CaeMesh
             set
             {
                 if (value <= 0) throw new Exception("The value must be larger than 0.");
+                if (value > 1) throw new Exception("The value must be smaller than 1.");
                 _factorMin = value;
                 if (value > _factorMax) _factorMax = _factorMin;
             }

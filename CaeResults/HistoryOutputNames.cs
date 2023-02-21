@@ -13,9 +13,13 @@ namespace CaeResults
     }
     class HOFieldNames
     {
-        public const string SteadyStateDynamicsSuffix = " IM";
+        public const string ComplexRealSuffix = " RE";
+        public const string ComplexImaginarySuffix = " IM";
+        public const string ComplexMagnitudeSuffix = " MAG";
+        public const string ComplexPhaseSuffix = " PHA";
         //
         public const string Time = "TIME";
+        public const string Frequency = "FREQUENCY";
         // Nodal
         public const string Displacements = "DISPLACEMENTS";
         public const string Velocities = "VELOCITIES";
@@ -63,9 +67,29 @@ namespace CaeResults
         // Methods
         public static string GetNoSuffixName(string name)
         {
-            if (name.EndsWith(SteadyStateDynamicsSuffix))
-                return name.Substring(0, name.Length - SteadyStateDynamicsSuffix.Length);
+            if (name.EndsWith(ComplexRealSuffix))
+                return name.Substring(0, name.Length - ComplexRealSuffix.Length);
+            else if (name.EndsWith(ComplexImaginarySuffix))
+                return name.Substring(0, name.Length - ComplexImaginarySuffix.Length);
+            else if (name.EndsWith(ComplexMagnitudeSuffix))
+                return name.Substring(0, name.Length - ComplexMagnitudeSuffix.Length);
+            else if (name.EndsWith(ComplexPhaseSuffix))
+                return name.Substring(0, name.Length - ComplexPhaseSuffix.Length);
             else return name;
+        }
+        public static bool HasRealComplexSuffix(string name)
+        {
+            if (name.EndsWith(ComplexRealSuffix)) return true;
+            else return false;
+        }
+        public static bool HasComplexSuffix(string name)
+        {
+            if (name.EndsWith(ComplexRealSuffix) ||
+                name.EndsWith(ComplexImaginarySuffix) ||
+                name.EndsWith(ComplexMagnitudeSuffix) ||
+                name.EndsWith(ComplexPhaseSuffix))
+                return true;
+            else return false;
         }
     }
     //

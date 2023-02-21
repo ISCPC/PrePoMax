@@ -18,6 +18,10 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
+        public static string GetUnitAbbreviation()
+        {
+            return Angle.GetAbbreviation(_angleUnit);
+        }
 
 
         // Constructors                                                                                                             
@@ -48,7 +52,7 @@ namespace CaeGlobals
                     if (value is double || value is float || value is int)
                     {
                         double valueDouble = Convert.ToDouble(value);
-                        return valueDouble.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
+                        return valueDouble.ToString() + " " + GetUnitAbbreviation();
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

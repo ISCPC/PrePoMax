@@ -5,18 +5,23 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
+using System.Runtime.Serialization;
 
 namespace CaeResults
 {
     [Serializable]
-    public class HistoryResultField : NamedClass
+    public class HistoryResultField : NamedClass, ISerializable
     {
         // Variables                                                                                                                
-        protected Dictionary<string, HistoryResultComponent> _components;
+        protected OrderedDictionary<string, HistoryResultComponent> _components;        //ISerializable
 
 
         // Properties                                                                                                               
-        public Dictionary<string, HistoryResultComponent> Components { get { return _components; } set { _components = value; } }
+        public OrderedDictionary<string, HistoryResultComponent> Components
+        {
+            get { return _components; }
+            set { _components = value; }
+        }
         
 
         // Constructor                                                                                                              
@@ -25,7 +30,27 @@ namespace CaeResults
         {
             _checkName = false;
             _name = name;
-            _components = new Dictionary<string, HistoryResultComponent>();
+            _components = new OrderedDictionary<string, HistoryResultComponent>("Components");
+        }
+        //ISerializable
+        public HistoryResultField(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_components":
+                        // Compatibility v1.3.5
+                        if (entry.Value is Dictionary<string, HistoryResultComponent> oldComponents)
+                        {
+                            _components = new OrderedDictionary<string, HistoryResultComponent>("Components");
+                            _components.AddRange(oldComponents);
+                        }
+                        else _components = (OrderedDictionary<string, HistoryResultComponent>)entry.Value;
+                        break;
+                }
+            }
         }
 
 
@@ -33,7 +58,15 @@ namespace CaeResults
 
 
         // Methods                                                                                                                  
-       
+
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // Using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_components", _components, typeof(OrderedDictionary<string, HistoryResultComponent>));
+        }
 
     }
 }

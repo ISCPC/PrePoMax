@@ -4886,7 +4886,7 @@ namespace vtkControl
             else _statusBlockWidget.BorderVisibilityOff();
         }
         public void SetStatusBlock(string name, DateTime dateTime, float analysisTimeOrFrequency, string unit,
-                                   string deformationVariable, float scaleFactor, DataFieldType fieldType, int stepNumber,
+                                   string deformationVariable, float scaleFactor, vtkMaxFieldDataType fieldType, int stepNumber,
                                    int incrementNumber)
         {
             if (_statusBlockWidget == null) return;
@@ -5458,13 +5458,14 @@ namespace vtkControl
 
         #region Animation ##########################################################################################################
         public void SetAnimationFrameData(float[] time, int[] stepId, int[] stepIncrementId, float[] scale,
-                                          double[] allFramesScalarRange)
+                                          double[] allFramesScalarRange, vtkMaxAnimationType animationType)
         {
             _animationFrameData.Time = time;
             _animationFrameData.StepId = stepId;
             _animationFrameData.StepIncrementId = stepIncrementId;
             _animationFrameData.ScaleFactor = scale;
             _animationFrameData.AllFramesScalarRange = allFramesScalarRange;
+            _animationFrameData.AnimationType = animationType;
         }
         //
         public void SetAnimationFrame(int frameNumber, bool scalarRangeFromAllFrames)
@@ -5482,6 +5483,7 @@ namespace vtkControl
                 _statusBlockWidget.IncrementNumber = _animationFrameData.StepIncrementId[frameNumber];
                 _statusBlockWidget.AnalysisTime = _animationFrameData.Time[frameNumber];
                 _statusBlockWidget.AnimationScaleFactor = _animationFrameData.ScaleFactor[frameNumber];
+                _statusBlockWidget.AnimationType = _animationFrameData.AnimationType;
             }
             //
             List<string> visibleActors = new List<string>();
@@ -5550,6 +5552,7 @@ namespace vtkControl
                 _statusBlockWidget.IncrementNumber = _animationFrameData.StepIncrementId[frameNumber];
                 _statusBlockWidget.AnalysisTime = _animationFrameData.Time[frameNumber];
                 _statusBlockWidget.AnimationScaleFactor = _animationFrameData.ScaleFactor[frameNumber];
+                _statusBlockWidget.AnimationType = _animationFrameData.AnimationType;
             }
             //
             bool visible;

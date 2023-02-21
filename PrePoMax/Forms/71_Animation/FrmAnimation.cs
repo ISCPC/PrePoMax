@@ -196,7 +196,11 @@ namespace PrePoMax.Forms
                 //
                 numFirstFrame.Value = 1;
                 numLastFrame.Value = _numFrames;
-                if (_currFrame > _numFrames || setCurrentToLast) tbarFrameSelector.Value = _numFrames;
+                if (_currFrame > _numFrames || setCurrentToLast)
+                {
+                    _currFrame = _numFrames;
+                    tbarFrameSelector.Value = _numFrames;
+                }
                 //
                 _updateAnimation = true;
             }

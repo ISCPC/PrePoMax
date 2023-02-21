@@ -17,6 +17,13 @@ namespace CaeGlobals
     [Serializable]
     public static class Tools
     {
+        private static readonly float _oneThird = 1f / 3f;
+        private static readonly float _twoPiThirds = 2f * (float)Math.PI / 3f;
+        private static readonly float _fourPiThirds = 4f * (float)Math.PI / 3f;
+        //
+        private static readonly float _radToDeg = (float)(180f / Math.PI);
+        private static readonly float _degToRad = (float)(Math.PI / 180f);
+        //
         public static string GetEnumStandardValueDescription(Enum value)
         {
             System.Reflection.FieldInfo fi = value.GetType().GetField(value.ToString());
@@ -394,63 +401,9 @@ namespace CaeGlobals
                 arr2 = arr121;
             } // else
         }
-        public static int SolveQubicEquationNotWorking(double a1, double b, double c, double d, ref double x1, ref double x2, ref double x3)
-        {
-            // https://www.codeproject.com/Articles/798474/To-Solve-a-Cubic-Equation
-            double a, x2imag, x3imag;
-            double p, q, u, v;
-            double r, alpha;
-            int res;
-            res = 0;
-            if (a1 != 0)
-            {
-                a = b / a1;
-                b = c / a1;
-                c = d / a1;
-
-                p = -(a * a / 3.0) + b;
-                q = (2.0 / 27.0 * a * a * a) - (a * b / 3.0) + c;
-                d = q * q / 4.0 + p * p * p / 27.0;
-                if (Math.Abs(d) < Math.Pow(10.0, -11.0))
-                    d = 0;
-                // 3 cases D > 0, D == 0 and D < 0
-                if (d > 1e-20)
-                {
-                    u = Xroot(-q / 2.0 + Math.Sqrt(d), 3.0);
-                    v = Xroot(-q / 2.0 - Math.Sqrt(d), 3.0);
-                    x1 = u + v - a / 3.0;
-                    x2 = -(u + v) / 2.0 - a / 3.0;
-                    x2imag = Math.Sqrt(3.0) / 2.0 * (u - v);
-                    x3 = x2;
-                    x3imag = -x2imag;
-                    res = 1;
-                }
-                if (Math.Abs(d) <= 1e-20)
-                {
-                    u = Xroot(-q / 2.0, 3.0);
-                    v = Xroot(-q / 2.0, 3.0);
-                    x1 = u + v - a / 3.0;
-                    x2 = -(u + v) / 2.0 - a / 3.0;
-                    res = 2;
-                }
-                if (d < -1e-20)
-                {
-                    r = Math.Sqrt(-p * p * p / 27.0);
-                    alpha = Math.Atan(Math.Sqrt(-d) / -q * 2.0);
-                    if (q > 0)                         // if q > 0 the angle becomes 2 * PI - alpha
-                        alpha = 2.0 * Math.PI - alpha;
-
-                    x1 = Xroot(r, 3.0) * (Math.Cos((6.0 * Math.PI - alpha) / 3.0) + Math.Cos(alpha / 3.0)) - a / 3.0;
-                    x2 = Xroot(r, 3.0) * (Math.Cos((2.0 * Math.PI + alpha) / 3.0) + Math.Cos((4.0 * Math.PI - alpha) / 3.0)) - a / 3.0;
-                    x3 = Xroot(r, 3.0) * (Math.Cos((4.0 * Math.PI + alpha) / 3.0) + Math.Cos((2.0 * Math.PI - alpha) / 3.0)) - a / 3.0;
-                    res = 3;
-                }
-            }
-            else
-                res = 0;
-            return res;
-        }
-        public static void SolveQubicEquationDepressedCubic(double a, double b, double c, double d, ref double x1, ref double x2, ref double x3)
+        // Solve Qubic
+        public static void SolveQubicEquationDepressedCubic(double a, double b, double c, double d,
+                                                            ref double x1, ref double x2, ref double x3)
         {
             // https://en.wikipedia.org/wiki/Cubic_function
             double p;
@@ -480,11 +433,124 @@ namespace CaeGlobals
                 x3 = tmp1 * Math.Cos(alpha - 4.0 * Math.PI / 3.0) - tmp2;
             }
         }
-        public static double Xroot(double a, double x)
+        public static void SolveQubicEquationDepressedCubicF(float a, float b, float c, float d,
+                                                             ref float x1, ref float x2, ref float x3)
         {
-            double i = 1;
-            if (a < 0) i = -1;
-            return (i * Math.Exp(Math.Log(a * i) / x));
+            // https://en.wikipedia.org/wiki/Cubic_function
+            float p;
+            float q;
+            float tmp1;
+            float tmp2;
+            float alpha;
+            //
+            p = (3f * a * c - b * b) / (3f * a * a);
+            if (p > 0)
+            {
+                x1 = x2 = x3 = 0;
+            }
+            else
+            {
+                q = (2f * b * b * b - 9f * a * b * c + 27f * a * a * d) / (27f * a * a * a);
+                //
+                tmp1 = (3f * q) / (2f * p) * (float)Math.Sqrt(-3f / p);
+                if (tmp1 > 1f) tmp1 = 1f;
+                else if (tmp1 < -1f) tmp1 = -1f;
+                alpha = _oneThird * (float)Math.Acos(tmp1);
+
+                tmp1 = 2f * (float)Math.Sqrt(-p / 3f);
+                tmp2 = b / (3f * a);
+                x1 = tmp1 * (float)Math.Cos(alpha) - tmp2;
+                x2 = tmp1 * (float)Math.Cos(alpha - _twoPiThirds) - tmp2;
+                x3 = tmp1 * (float)Math.Cos(alpha - _fourPiThirds) - tmp2;
+            }
+        }
+        public static float Sin(float x) //x in radians
+        {
+            float sinn;
+            if (x < -3.14159265f)
+                x += 6.28318531f;
+            else
+            if (x > 3.14159265f)
+                x -= 6.28318531f;
+
+            if (x < 0)
+            {
+                sinn = 1.27323954f * x + 0.405284735f * x * x;
+
+                if (sinn < 0)
+                    sinn = 0.225f * (sinn * -sinn - sinn) + sinn;
+                else
+                    sinn = 0.225f * (sinn * sinn - sinn) + sinn;
+                return sinn;
+            }
+            else
+            {
+                sinn = 1.27323954f * x - 0.405284735f * x * x;
+
+                if (sinn < 0)
+                    sinn = 0.225f * (sinn * -sinn - sinn) + sinn;
+                else
+                    sinn = 0.225f * (sinn * sinn - sinn) + sinn;
+                return sinn;
+
+            }
+        }
+        public static float Cos(float x) //x in radians
+        {
+            return Sin(x + 1.5707963f);
+        }
+        // Complex
+        public static float GetComplexMagnitude(float real, float imaginary)
+        {
+            return (float)Math.Sqrt(real * real + imaginary * imaginary);
+        }
+        public static double GetComplexMagnitude(double real, double imaginary)
+        {
+            return Math.Sqrt(real * real + imaginary * imaginary);
+        }
+        public static float GetComplexPhaseDeg(float real, float imaginary)
+        {
+            float result;
+            if (real == 0)
+            {
+                if (imaginary > 0) result = 90;
+                else if ((imaginary < 0)) result = 270;
+                else result = 0;
+            }
+            else
+            {
+                result = (float)Math.Atan(imaginary / real) * _radToDeg;
+                if (real < 0) result += 180;
+            }
+            return result;
+        }
+        public static double GetComplexPhaseDeg(double real, double imaginary)
+        {
+            double result;
+            if (real == 0)
+            {
+                if (imaginary > 0) result = 90;
+                else if ((imaginary < 0)) result = 270;
+                else result = 0;
+            }
+            else
+            {
+                result = Math.Atan(imaginary / real) * _radToDeg;
+                if (real < 0) result += 180;
+            }
+            return result;
+        }
+        public static float GetComplexRealAtAngle(float real, float imaginary, float angleDeg)
+        {
+            float magnitude = GetComplexMagnitude(real, imaginary);
+            float phaseDeg = GetComplexPhaseDeg(real, imaginary);
+            return magnitude * (float)Math.Cos((phaseDeg + angleDeg) * _degToRad);
+        }
+        public static double GetComplexRealAtAngle(double real, double imaginary, double angleDeg)
+        {
+            double magnitude = GetComplexMagnitude(real, imaginary);
+            double phaseDeg = GetComplexPhaseDeg(real, imaginary);
+            return magnitude * Math.Cos((phaseDeg + angleDeg) * _degToRad);
         }
 
         // <summary>

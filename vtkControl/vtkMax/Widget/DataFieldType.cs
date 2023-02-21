@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace vtkControl
 {
-    public enum DataFieldType
+    public enum vtkMaxFieldDataType
     {
         Static,
         Frequency,
