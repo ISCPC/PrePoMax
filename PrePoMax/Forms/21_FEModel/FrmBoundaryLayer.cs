@@ -69,7 +69,7 @@ namespace PrePoMax.Forms
             _viewBoundaryLayer = (ViewBoundaryLayer)propertyGrid.SelectedObject;
             //
             if (_viewBoundaryLayer.GeometryIds == null || _viewBoundaryLayer.GeometryIds.Length == 0)
-                throw new CaeException("The boundary layer must contain at least one item.");
+                throw new CaeException("The boundary layer selection must contain at least one item.");
             // Create
             _controller.CreateBoundaryLayerCommand(_viewBoundaryLayer.GeometryIds, _viewBoundaryLayer.Thickness);
             //

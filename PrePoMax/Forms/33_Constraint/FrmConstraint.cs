@@ -179,7 +179,7 @@ namespace PrePoMax.Forms
             if (Constraint is PointSpring ps)
             {
                 if (ps.RegionType == RegionTypeEnum.Selection && (ps.CreationIds == null || ps.CreationIds.Length == 0))
-                    throw new CaeException("The point spring region must contain at least one item.");
+                    throw new CaeException("The point spring region selection must contain at least one item.");
                 //
                 if (ps.GetSpringStiffnessValues().Length == 0)
                     throw new CaeException("At least one stiffness must be larger than 0.");
@@ -188,7 +188,7 @@ namespace PrePoMax.Forms
             if (Constraint is SurfaceSpring ss)
             {
                 if (ss.RegionType == RegionTypeEnum.Selection && (ss.CreationIds == null || ss.CreationIds.Length == 0))
-                    throw new CaeException("The surface spring region must contain at least one item.");
+                    throw new CaeException("The surface spring region selection must contain at least one item.");
                 //
                 if (ss.GetSpringStiffnessValues().Length == 0)
                     throw new CaeException("At least one stiffness must be larger than 0.");
@@ -196,17 +196,17 @@ namespace PrePoMax.Forms
             //
             if (Constraint is RigidBody rb && rb.RegionType == RegionTypeEnum.Selection &&
                 (rb.CreationIds == null || rb.CreationIds.Length == 0))
-                throw new CaeException("The rigid body region must contain at least one item.");
+                throw new CaeException("The rigid body region selection must contain at least one item.");
             //
             if (Constraint is Tie tie)
             {
                 if (tie.MasterRegionType == RegionTypeEnum.Selection &&
                     (tie.MasterCreationIds == null || tie.MasterCreationIds.Length == 0))
-                    throw new CaeException("The tie master region must contain at least one item.");
+                    throw new CaeException("The tie master region selection must contain at least one item.");
                 //
                 if (tie.SlaveRegionType == RegionTypeEnum.Selection &&
                     (tie.SlaveCreationIds == null || tie.SlaveCreationIds.Length == 0))
-                    throw new CaeException("The tie slave region must contain at least one item.");
+                    throw new CaeException("The tie slave region selection must contain at least one item.");
                 // Check for errors with constructor
                 bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
                 var tmp = new Tie(tie.Name, tie.MasterRegionName, tie.MasterRegionType,

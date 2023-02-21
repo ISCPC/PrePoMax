@@ -160,7 +160,7 @@ namespace PrePoMax.Forms
             //
             if (BoundaryCondition.RegionType == RegionTypeEnum.Selection &&
                 (BoundaryCondition.CreationIds == null || BoundaryCondition.CreationIds.Length == 0))
-                throw new CaeException("The boundary condition must contain at least one item.");
+                throw new CaeException("The boundary condition selection must contain at least one item.");
             // Check if the name exists
             CheckName(_boundaryConditionToEditName, BoundaryCondition.Name, _boundaryConditionNames, "boundary condition");
             //

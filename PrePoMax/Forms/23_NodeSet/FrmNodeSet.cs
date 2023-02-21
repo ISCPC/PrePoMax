@@ -59,7 +59,7 @@ namespace PrePoMax.Forms
             //
             CheckName(_nodeSetToEditName, _viewNodeSet.Name, _nodeSetNames, "node set");
             //
-            if (NodeSet.Labels == null || NodeSet.Labels.Length <= 0) throw new CaeGlobals.CaeException("The node set must contain at least one item.");
+            if (NodeSet.Labels == null || NodeSet.Labels.Length <= 0) throw new CaeGlobals.CaeException("The node set selection must contain at least one item.");
             //
             if (_nodeSetToEditName == null)
             {

@@ -205,7 +205,7 @@ namespace PrePoMax.Forms
             //
             if (RemeshingParameters.RegionType == RegionTypeEnum.Selection &&
                 (RemeshingParameters.CreationIds == null || RemeshingParameters.CreationIds.Length == 0))
-                throw new CaeException("The element set for remeshing must contain at least one item.");
+                throw new CaeException("The element set for remeshing selection must contain at least one item.");
         }
         private void HighlightElementSet()
         {

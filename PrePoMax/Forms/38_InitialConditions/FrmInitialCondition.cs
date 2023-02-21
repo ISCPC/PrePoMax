@@ -130,7 +130,7 @@ namespace PrePoMax.Forms
             //
             if (InitialCondition.RegionType == RegionTypeEnum.Selection &&
                 (InitialCondition.CreationIds == null || InitialCondition.CreationIds.Length == 0))
-                throw new CaeException("The initial condition must contain at least one item.");
+                throw new CaeException("The initial condition selection must contain at least one item.");
             // Check if the name exists
             CheckName(_initialConditionToEditName, InitialCondition.Name, _initialConditionNames, "initial condition");
             // Create

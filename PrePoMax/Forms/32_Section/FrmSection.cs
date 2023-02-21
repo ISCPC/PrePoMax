@@ -105,7 +105,7 @@ namespace PrePoMax.Forms
             if (_viewSection == null) throw new CaeException("No section was selected.");
             //
             if (Section.RegionType == RegionTypeEnum.Selection && (Section.CreationIds == null || Section.CreationIds.Length == 0))
-                throw new CaeException("The section must contain at least one item.");
+                throw new CaeException("The section selection must contain at least one item.");
             //
             if (!CheckSectionElementTypes())
                 throw new CaeException("The section type and the section region are not compatible.");

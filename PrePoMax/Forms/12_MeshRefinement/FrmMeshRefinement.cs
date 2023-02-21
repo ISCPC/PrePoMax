@@ -133,7 +133,7 @@ namespace PrePoMax.Forms
             CheckName(_meshRefinementToEditName, MeshRefinement.Name, _meshRefinementNames, "mesh refinement");
             //
             if (MeshRefinement.GeometryIds == null || MeshRefinement.GeometryIds.Length == 0)
-                throw new CaeException("The mesh refinement must contain at least one item.");
+                throw new CaeException("The mesh refinement selection must contain at least one item.");
             //
             if (_meshRefinementToEditName == null)
             {

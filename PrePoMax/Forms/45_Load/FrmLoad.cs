@@ -309,7 +309,7 @@ namespace PrePoMax.Forms
             //
             if (FELoad.RegionType == RegionTypeEnum.Selection &&
                 (FELoad.CreationIds == null || FELoad.CreationIds.Length == 0))
-                throw new CaeException("The load must contain at least one item.");
+                throw new CaeException("The load selection must contain at least one item.");
             //
             // check for 0 values
             if (FELoad is CLoad cl)

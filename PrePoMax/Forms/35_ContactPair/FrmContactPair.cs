@@ -74,11 +74,11 @@ namespace PrePoMax.Forms
             //
             if (cp.MasterRegionType == RegionTypeEnum.Selection &&
                 (cp.MasterCreationIds == null || cp.MasterCreationIds.Length == 0))
-                throw new CaeException("The contact pair master region must contain at least one item.");
+                throw new CaeException("The contact pair master region selection must contain at least one item.");
             //
             if (cp.SlaveRegionType == RegionTypeEnum.Selection &&
                 (cp.SlaveCreationIds == null || cp.SlaveCreationIds.Length == 0))
-                throw new CaeException("The contact pair slave region must contain at least one item.");
+                throw new CaeException("The contact pair slave region selection must contain at least one item.");
             // Check for errors with constructor
             var tmp = new ContactPair(cp.Name, cp.SurfaceInteractionName, cp.MasterRegionName, cp.MasterRegionType,
                                       cp.SlaveRegionName, cp.SlaveRegionType);

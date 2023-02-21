@@ -192,7 +192,7 @@ namespace PrePoMax.Forms
             CheckName(_meshingParametersToEditName, MeshingParameters.Name, _meshingParametersNames, "meshing parameters");
             //
             if (MeshingParameters.CreationIds == null || MeshingParameters.CreationIds.Length == 0)
-                throw new CaeException("The meshing parameters must contain at least one item.");
+                throw new CaeException("The meshing parameters selection must contain at least one item.");
             //
             if (_meshingParametersToEditName == null)
             {

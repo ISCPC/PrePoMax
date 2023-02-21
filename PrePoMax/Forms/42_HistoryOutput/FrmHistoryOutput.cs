@@ -136,7 +136,7 @@ namespace PrePoMax.Forms
             //
             if (HistoryOutput.RegionType == RegionTypeEnum.Selection &&
                 (HistoryOutput.CreationIds == null || HistoryOutput.CreationIds.Length == 0))
-                throw new CaeException("The history output must contain at least one item.");
+                throw new CaeException("The history output selection must contain at least one item.");
             // Check if the name exists
             CheckName(_historyOutputToEditName, HistoryOutput.Name, _historyOutputNames, "history output");
             // Create
