@@ -14,20 +14,26 @@ namespace CaeResults
         // Variables                                                                                                                
         private string _fieldName;
         private string _componentName;
+        private int _stepId;
+        private int _stepIncrementId;
 
 
         // Properties                                                                                                               
         public string FieldName { get { return _fieldName; } set { _fieldName = value; } }
         public string ComponentName { get { return _componentName; } set { _componentName = value; } }
+        public int StepId { get { return _stepId; } set { _stepId = value; } }
+        public int StepIncrementId { get { return _stepIncrementId; } set { _stepIncrementId = value; } }
 
 
         // Constructors                                                                                                             
         public ResultHistoryOutputFromField(string name, string filedName, string componentName,
-                                            string regionName, RegionTypeEnum regionType)
+                                            int stepId, int incrementId, string regionName, RegionTypeEnum regionType)
             : base(name, regionName, regionType)
         {
             _fieldName = filedName;
             _componentName = componentName;
+            _stepId = stepId;
+            _stepIncrementId = incrementId;
         }
 
 

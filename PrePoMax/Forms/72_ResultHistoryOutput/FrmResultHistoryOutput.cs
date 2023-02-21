@@ -157,12 +157,14 @@ namespace PrePoMax.Forms
             _historyOutputToEditName = historyOutputToEditName;
             string[] nodeSetNames = _controller.GetResultUserNodeSetNames();
             string[] surfaceNames = _controller.GetResultUserSurfaceNames();
-            Dictionary<string, string[]> filedNameComponentNames = _controller.CurrentResult.GetAllFiledNameComponentNames();
+            Dictionary<string, string[]> filedNameComponentNames =
+                _controller.CurrentResult.GetAllVisibleFiledNameComponentNames();
+            Dictionary<int, int[]> stepIdStepIncrementIds = _controller.CurrentResult.GetAllExistingIncrementIds();
             //
             if (_historyOutputSetNames == null)
                 throw new CaeException("The history output names must be defined first.");
             // Populate list view
-            PopulateListOfHistoryOutputs(nodeSetNames, surfaceNames, filedNameComponentNames);
+            PopulateListOfHistoryOutputs(nodeSetNames, surfaceNames, filedNameComponentNames, stepIdStepIncrementIds);
             // Create new history output
             if (_historyOutputToEditName == null)
             {
@@ -184,7 +186,8 @@ namespace PrePoMax.Forms
 
         // Methods                                                                                                                  
         private void PopulateListOfHistoryOutputs(string[] nodeSetNames, string[] surfaceNames,
-                                                  Dictionary<string, string[]> filedNameComponentNames)
+                                                  Dictionary<string, string[]> filedNameComponentNames,
+                                                  Dictionary<int, int[]> stepIdStepIncrementIds) 
         {
             ListViewItem item;
             // Node output
@@ -192,9 +195,10 @@ namespace PrePoMax.Forms
             CaeResults.FieldData fieldData = _controller.CurrentFieldData;
             ResultHistoryOutputFromField rhoff = new ResultHistoryOutputFromField(GetHistoryOutputName("FF"),
                                                                                   fieldData.Name, fieldData.Component,
+                                                                                  -1, -1,
                                                                                   "", RegionTypeEnum.Selection);
             ViewResultHistoryOutputFromField vrhoff = new ViewResultHistoryOutputFromField(rhoff);
-            vrhoff.PopulateDropDownLists(nodeSetNames, surfaceNames, filedNameComponentNames);
+            vrhoff.PopulateDropDownLists(nodeSetNames, surfaceNames, filedNameComponentNames, stepIdStepIncrementIds);
             item.Tag = vrhoff;
             lvTypes.Items.Add(item);
         }

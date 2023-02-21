@@ -1642,7 +1642,7 @@ namespace CaeResults
                     }
                     // Get all existing increments
                     Dictionary<int, int[]> existingStepIncrementIds =
-                        GetExistingIncrementIds(rhoff.FieldName, rhoff.ComponentName);
+                        GetExistingIncrementIds(rhoff.FieldName, rhoff.ComponentName, rhoff.StepId, rhoff.StepIncrementId);
                     Field field;
                     float[] values;
                     int resultNodeId;
@@ -1875,9 +1875,13 @@ namespace CaeResults
             //
             return sortedIds;
         }
-        public Dictionary<int, int[]> GetExistingIncrementIds(string fieldName, string component)
+        public Dictionary<int, int[]> GetExistingIncrementIds(string fieldName, string component,
+                                                              int limitToStepId = -1, int limitTostepIncrementId = -1)
         {
-            int[] stepIds = GetAllStepIds();
+            int[] stepIds;
+            if (limitToStepId == -1) stepIds = GetAllStepIds();
+            else stepIds = new int[] { limitToStepId };
+            //
             Dictionary<int, int[]> existingIncrementIds = new Dictionary<int, int[]>();
             if (stepIds.Length == 0)
             {
@@ -1894,6 +1898,8 @@ namespace CaeResults
                     stepIncrementIds = new List<int>();
                     foreach (int incrementId in GetStepIncrementIds(stepId))
                     {
+                        if (limitTostepIncrementId != -1 && limitTostepIncrementId != incrementId) continue;
+                        //
                         fieldHash = GetFieldHash(fieldName, component, stepId, incrementId);
                         //if (FieldExists(fieldName, component, stepId, incrementId)) stepIncrementIds.Add(incrementId);
                         if (fieldHashes.Contains(fieldHash)) stepIncrementIds.Add(incrementId);
@@ -1953,6 +1959,27 @@ namespace CaeResults
             Dictionary<string, HashSet<string>> filedNameComponentNames = new Dictionary<string, HashSet<string>>();
             foreach (var entry in _fields)
             {
+                if (filedNameComponentNames.TryGetValue(entry.Key.Name, out componentNames))
+                    componentNames.UnionWith(entry.Value.GetComponentNames());
+                else
+                    filedNameComponentNames.Add(entry.Key.Name, new HashSet<string>(entry.Value.GetComponentNames()));
+            }
+            //
+            Dictionary<string, string[]> filedNameComponentNamesArr = new Dictionary<string, string[]>();
+            foreach (var entry in filedNameComponentNames)
+            {
+                filedNameComponentNamesArr.Add(entry.Key, entry.Value.ToArray());
+            }
+            return filedNameComponentNamesArr;
+        }
+        public Dictionary<string, string[]> GetAllVisibleFiledNameComponentNames()
+        {
+            HashSet<string> componentNames;
+            Dictionary<string, HashSet<string>> filedNameComponentNames = new Dictionary<string, HashSet<string>>();
+            foreach (var entry in _fields)
+            {
+                if (entry.Key.Internal) continue;
+                //
                 if (filedNameComponentNames.TryGetValue(entry.Key.Name, out componentNames))
                     componentNames.UnionWith(entry.Value.GetComponentNames());
                 else

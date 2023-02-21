@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
+using CaeResults;
 
 namespace PrePoMax
 {
@@ -13,8 +14,10 @@ namespace PrePoMax
     public class ViewResultHistoryOutputFromField : ViewResultHistoryOutput
     {
         // Variables                                                                                                                
+        private readonly static string _all = "ALL";
         private CaeResults.ResultHistoryOutputFromField _historyOutput;
         private Dictionary<string, string[]> _filedNameComponentNames;
+        private Dictionary<string, string[]> _stepIdStepIncrementIds;
 
         // Properties                                                                                                               
         public override string Name { get { return _historyOutput.Name; } set { _historyOutput.Name = value; } }
@@ -39,6 +42,49 @@ namespace PrePoMax
         [OrderedDisplayName(2, 10, "Component name")]
         [DescriptionAttribute("Component name for the history output.")]
         public string ComponentName { get { return _historyOutput.ComponentName; } set { _historyOutput.ComponentName = value; } }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(3, 10, "Step id")]
+        [DescriptionAttribute("Step id for the history output.")]
+        public string StepId
+        {
+            get
+            {
+                if (_historyOutput.StepId == -1) return _all;
+                else return _historyOutput.StepId.ToString();
+            }
+            set
+            {
+                if (value == _all) _historyOutput.StepId = -1;
+                else
+                {
+                    if (int.TryParse(value, out int stepId)) _historyOutput.StepId = stepId;
+                    else throw new NotSupportedException();
+                }
+                UpdateStepIncrements();
+            }
+        }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(4, 10, "Increment id")]
+        [DescriptionAttribute("Increment id for the history output.")]
+        public string StepIncrementId
+        {
+            get
+            {
+                if (_historyOutput.StepIncrementId == -1) return _all;
+                else return _historyOutput.StepIncrementId.ToString();
+            }
+            set
+            {
+                if (value == _all) _historyOutput.StepIncrementId = -1;
+                else
+                {
+                    if (int.TryParse(value, out int incrementId)) _historyOutput.StepIncrementId = incrementId;
+                    else throw new NotSupportedException();
+                }
+            }
+        }
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Node set")]
@@ -73,7 +119,8 @@ namespace PrePoMax
             return _historyOutput;
         }
         public void PopulateDropDownLists(string[] nodeSetNames, string[] surfaceNames,
-                                            Dictionary<string, string[]> filedNameComponentNames)
+                                          Dictionary<string, string[]> filedNameComponentNames,
+                                          Dictionary<int, int[]> stepIdStepIncrementIds)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
@@ -83,19 +130,42 @@ namespace PrePoMax
             //
             _filedNameComponentNames = filedNameComponentNames;
             DynamicCustomTypeDescriptor.PopulateProperty(nameof(FieldName), _filedNameComponentNames.Keys.ToArray());
-            //
             UpdateComponents();
+            //
+            List<string> incrementIds;
+            _stepIdStepIncrementIds = new Dictionary<string, string[]> { { _all, new string[] { _all } } };
+            foreach (var stepEntry in stepIdStepIncrementIds)
+            {
+                incrementIds = new List<string>() { _all };
+                foreach (var incrementId in stepEntry.Value) incrementIds.Add(incrementId.ToString());
+                _stepIdStepIncrementIds.Add(stepEntry.Key.ToString(), incrementIds.ToArray());
+            }
+            DynamicCustomTypeDescriptor.PopulateProperty(nameof(StepId), _stepIdStepIncrementIds.Keys.ToArray());
+            UpdateStepIncrements();
         }
-
         private void UpdateComponents()
         {
             string[] componentNames;
-            if (_filedNameComponentNames.TryGetValue(_historyOutput.FieldName, out componentNames) &&
-                componentNames.Length > 1)
+            if (_filedNameComponentNames.TryGetValue(FieldName, out componentNames) && componentNames.Length > 1)
             {
                 DynamicCustomTypeDescriptor.PopulateProperty(nameof(ComponentName), componentNames);
                 if (!componentNames.Contains(ComponentName)) ComponentName = componentNames[0];
             }
+        }
+        private void UpdateStepIncrements()
+        {
+            string[] incrementIds;
+            if (_stepIdStepIncrementIds.TryGetValue(StepId, out incrementIds) && incrementIds.Length > 1)
+            {
+                DynamicCustomTypeDescriptor.PopulateProperty(nameof(StepIncrementId), incrementIds);
+                if (!incrementIds.Contains(StepIncrementId)) StepIncrementId = incrementIds[0];
+            }
+            //
+            UpdateVisibility();
+        }
+        private void UpdateVisibility()
+        {
+            DynamicCustomTypeDescriptor.GetProperty(nameof(StepIncrementId)).SetIsBrowsable(StepId != _all);
         }
     }
 
