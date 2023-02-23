@@ -19,6 +19,15 @@ namespace CaeResults
     }
 
     [Serializable]
+    public enum DataType
+    {
+        None,
+        Scalar,
+        Vector,
+        Tensor
+    }
+
+    [Serializable]
     public class FieldData : CaeGlobals.NamedClass
     {
         // Variables                                                                                                                
@@ -135,6 +144,7 @@ namespace CaeResults
                     fieldData.Valid = br.ReadBoolean();
                     fieldData.Internal = br.ReadBoolean();
                 }
+                //
                 return fieldData;
             }
             return null;

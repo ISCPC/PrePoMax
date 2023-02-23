@@ -8,6 +8,7 @@ using CaeGlobals;
 using System.ComponentModel;
 using System.Xml.Linq;
 using System.Numerics;
+using System.Diagnostics.Eventing.Reader;
 
 namespace CaeResults
 {
@@ -23,6 +24,7 @@ namespace CaeResults
     {
         // Variables                                                                                                                
         private OrderedDictionary<string,  FieldComponent> _components;
+        public DataType _dataType;
 
 
         // Properties                                                                                                               
@@ -33,6 +35,9 @@ namespace CaeResults
             : base(name)
         {
             _components = new OrderedDictionary<string, FieldComponent>("Components");
+            _dataType = FOFieldNames.GetDataType(name);
+
+
         }
         public Field(Field field)
             : base(field)
@@ -166,49 +171,20 @@ namespace CaeResults
         //
         public void ComputeInvariants()
         {
-            bool isComplex = FOFieldNames.IsComplex(_name);
+            bool isComplex = FOFieldNames.IsVisible(_name);
             ComputeInvariants(isComplex);
         }
-        public void ClearInvariants()
+        public void RemoveInvariants()
         {
             ComputeInvariants(true);
         }
         public void ComputeInvariants(bool setToNaN)
         {
-            switch (_name)
-            {
-                case FOFieldNames.Disp:
-                //case FOFieldNames.PDisp:
-                case FOFieldNames.Forc:
-                //
-                case FOFieldNames.Velo:
-                // Thermal
-                case FOFieldNames.Flux:
-                // Sensitivity
-                case FOFieldNames.Norm:
-                    ComputeVectorFieldInvariantF(setToNaN);
-                    break;
-                case FOFieldNames.DispI:
-                case FOFieldNames.ForcI:
-                    ComputeVectorFieldInvariantF(true);  // always set to NaN
-                    break;
-                case FOFieldNames.Stress:
-                //case FOFieldNames.PStress:
-                case FOFieldNames.ToStrain:
-                case FOFieldNames.MeStrain:
-                // Error
-                case FOFieldNames.ZZStr:
-                    ComputeTensorFieldInvariantF(setToNaN);
-                    break;
-                case FOFieldNames.StressI:
-                case FOFieldNames.ToStraiI:
-                case FOFieldNames.MeStraiI:
-                case FOFieldNames.ZZStrI:
-                    ComputeTensorFieldInvariantF(true);  // always set to NaN
-                    break;
-                default:
-                    break;
-            }
+            DataType dataType = FOFieldNames.GetDataType(_name);
+            if (FOFieldNames.IsVisible(_name)) setToNaN = true; // always set to NaN
+            //
+            if (dataType == DataType.Vector) ComputeVectorFieldInvariantF(setToNaN);
+            else if (dataType == DataType.Tensor) ComputeTensorFieldInvariantF(setToNaN);
         }
         private void ComputeVectorFieldInvariant(bool setToNaN)
         {
@@ -454,5 +430,46 @@ namespace CaeResults
             AddComponent(FOComponentNames.PrincipalMid, s2, true);
             AddComponent(FOComponentNames.PrincipalMin, s3, true);
         }
+        //
+        public void RemoveNonInvariants()
+        {
+            DataType dataType = FOFieldNames.GetDataType(_name);
+            HashSet<string> componentNames = new HashSet<string>(_components.Keys);
+            //
+            if (dataType == DataType.Vector)
+            {
+                componentNames.Remove(FOComponentNames.All);
+            }
+            else if (dataType == DataType.Tensor)
+            {
+                componentNames.Remove(FOComponentNames.Mises);
+                componentNames.Remove(FOComponentNames.Tresca);
+                componentNames.Remove(FOComponentNames.SgnMaxAbsPri);
+                componentNames.Remove(FOComponentNames.PrincipalMax);
+                componentNames.Remove(FOComponentNames.PrincipalMid);
+                componentNames.Remove(FOComponentNames.PrincipalMin);
+            }
+            //
+            foreach (string componentName in componentNames) _components.Remove(componentName);
+        }
+        public void FindMax(Field field)
+        {
+            FieldComponent thisComponent;
+            FieldComponent otherComponent;
+            foreach (var entry in _components)
+            {
+                thisComponent = entry.Value;
+                if (field._components.TryGetValue(entry.Key, out otherComponent) &&
+                    thisComponent.Values.Length == otherComponent.Values.Length)
+                {
+                    for (int i = 0; i < thisComponent.Values.Length; i++)
+                    {
+                        if (otherComponent.Values[i] > thisComponent.Values[i])
+                            thisComponent.Values[i] = otherComponent.Values[i];
+                    }
+                }
+            }
+        }
     }
 }
+

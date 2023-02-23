@@ -13947,7 +13947,7 @@ namespace PrePoMax
             //
             float scale = GetScale();
             // Prepare data - first prepare data, than clear the vtk data
-            float delta = 360 / (numFrames);
+            float delta = 360f / numFrames; // skip the final anlge which is the same as the first angle
             float[] angles = new float[numFrames];
             for (int i = 0; i < numFrames; i++) angles[i] = i * delta;
             //

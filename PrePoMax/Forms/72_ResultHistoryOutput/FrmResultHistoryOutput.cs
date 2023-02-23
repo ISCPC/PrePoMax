@@ -25,7 +25,7 @@ namespace PrePoMax.Forms
             set
             {
                 if (value is ResultHistoryOutputFromField rhoff) _viewHistoryOutput =
-                        new ViewResultHistoryOutputFromField(rhoff.DeepClone());
+                        new ViewResultHistoryOutputFromField(rhoff.DeepClone(), _controller.CurrentResult.ContainsComplexResults());
                 else throw new NotImplementedException();
             }
         }
@@ -195,9 +195,9 @@ namespace PrePoMax.Forms
             CaeResults.FieldData fieldData = _controller.CurrentFieldData;
             ResultHistoryOutputFromField rhoff = new ResultHistoryOutputFromField(GetHistoryOutputName("FF"),
                                                                                   fieldData.Name, fieldData.Component,
-                                                                                  -1, -1,
                                                                                   "", RegionTypeEnum.Selection);
-            ViewResultHistoryOutputFromField vrhoff = new ViewResultHistoryOutputFromField(rhoff);
+            ViewResultHistoryOutputFromField vrhoff =
+                new ViewResultHistoryOutputFromField(rhoff, _controller.CurrentResult.ContainsComplexResults());
             vrhoff.PopulateDropDownLists(nodeSetNames, surfaceNames, filedNameComponentNames, stepIdStepIncrementIds);
             item.Tag = vrhoff;
             lvTypes.Items.Add(item);

@@ -552,6 +552,10 @@ namespace CaeGlobals
             double phaseDeg = GetComplexPhaseDeg(real, imaginary);
             return magnitude * Math.Cos((phaseDeg + angleDeg) * _degToRad);
         }
+        public static float GetComplexRealAtAngleFromMagAndPha(float magnitude, float phaseDeg, float angleDeg)
+        {
+            return magnitude * (float)Math.Cos((phaseDeg + angleDeg) * _degToRad);
+        }
 
         // <summary>
         // Get the name of a static or instance property from a property access lambda.

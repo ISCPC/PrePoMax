@@ -14,10 +14,11 @@ namespace PrePoMax
     public class ViewResultHistoryOutputFromField : ViewResultHistoryOutput
     {
         // Variables                                                                                                                
-        private readonly static string _all = "ALL";
-        private CaeResults.ResultHistoryOutputFromField _historyOutput;
+        private readonly static string _all = "All ids";
+        private ResultHistoryOutputFromField _historyOutput;
         private Dictionary<string, string[]> _filedNameComponentNames;
         private Dictionary<string, string[]> _stepIdStepIncrementIds;
+
 
         // Properties                                                                                                               
         public override string Name { get { return _historyOutput.Name; } set { _historyOutput.Name = value; } }
@@ -44,7 +45,30 @@ namespace PrePoMax
         public string ComponentName { get { return _historyOutput.ComponentName; } set { _historyOutput.ComponentName = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(3, 10, "Step id")]
+        [OrderedDisplayName(3, 10, "Complex")]
+        [DescriptionAttribute("Complex component for the history output.")]
+        public ComplexResultTypeEnum ComplexResultType
+        {
+            get { return _historyOutput.ComplexResultType; }
+            set
+            {
+                _historyOutput.ComplexResultType = value;
+                UpdateVisibility();
+            }
+        }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(4, 10, "Angle")]
+        [DescriptionAttribute("Angle for the history output.")]
+        [TypeConverter(typeof(StringAngleDegConverter))]
+        public double ComplexAngleDeg
+        {
+            get { return _historyOutput.ComplexAngleDeg; }
+            set { _historyOutput.ComplexAngleDeg = value; }
+        }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(5, 10, "Step id")]
         [DescriptionAttribute("Step id for the history output.")]
         public string StepId
         {
@@ -66,7 +90,7 @@ namespace PrePoMax
         }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(4, 10, "Increment id")]
+        [OrderedDisplayName(6, 10, "Increment id")]
         [DescriptionAttribute("Increment id for the history output.")]
         public string StepIncrementId
         {
@@ -98,7 +122,7 @@ namespace PrePoMax
 
        
         // Constructors                                                                                                             
-        public ViewResultHistoryOutputFromField(CaeResults.ResultHistoryOutputFromField historyOutput)
+        public ViewResultHistoryOutputFromField(ResultHistoryOutputFromField historyOutput, bool complexVisible)
         {
             // The order is important
             _historyOutput = historyOutput;
@@ -110,11 +134,13 @@ namespace PrePoMax
             //
             SetBase(_historyOutput, regionTypePropertyNamePairs);
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            DynamicCustomTypeDescriptor.GetProperty(nameof(ComplexResultType)).SetIsBrowsable(complexVisible);
         }
 
 
         // Methods                                                                                                                  
-        public override CaeResults.ResultHistoryOutput GetBase()
+        public override ResultHistoryOutput GetBase()
         {
             return _historyOutput;
         }
@@ -165,6 +191,8 @@ namespace PrePoMax
         }
         private void UpdateVisibility()
         {
+            CustomPropertyDescriptor cpd = DynamicCustomTypeDescriptor.GetProperty(nameof(ComplexAngleDeg));
+            cpd.SetIsBrowsable(ComplexResultType == ComplexResultTypeEnum.Angle);
             DynamicCustomTypeDescriptor.GetProperty(nameof(StepIncrementId)).SetIsBrowsable(StepId != _all);
         }
     }

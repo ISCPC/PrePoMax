@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,87 +9,194 @@ namespace CaeResults
 {
     public class FOFieldNames
     {
-        public const string None = "NONE";
-        public const string Default = "DEFAULT";
+        public const string None = "NONE";                              // none
+        public const string Default = "DEFAULT";                        // node: used for default scaling of nodes
         //
-        public const string Disp = "DISP";
-        public const string DispR = "DISPR";
-        public const string DispI = "DISPI";
-        public const string PDisp = "PDISP";
+        public const string Disp = "DISP";                              // scalar
+        public const string DispR = "DISPR";                            // scalar
+        public const string DispI = "DISPI";                            // scalar
+        public const string DispMag = "DISPMAG";                        // scalar
+        public const string DispPha = "DISPPHA";                        // scalar
+        public const string PDisp = "PDISP";                            // scalar - kind of
         // Velocity
-        public const string Velo = "VELO";
+        public const string Velo = "VELO";                              // vector
         // Stress
-        public const string Stress = "STRESS";
-        public const string StressR = "STRESSR";
-        public const string StressI = "STRESSI";
-        public const string PStress = "PSTRESS";
-        public const string ZZStr = "ZZSTR";
-        public const string ZZStrR = "ZZSTRR";
-        public const string ZZStrI = "ZZSTRI";
+        public const string Stress = "STRESS";                          // tensor
+        public const string StressR = "STRESSR";                        // tensor
+        public const string StressI = "STRESSI";                        // tensor
+        public const string StressMag = "STRESSMAG";                    // tensor
+        public const string StressPha = "STRESSPHA";                    // tensor
+        public const string PStress = "PSTRESS";                        // scalar - kind of
+        public const string ZZStr = "ZZSTR";                            // tensor
+        public const string ZZStrR = "ZZSTRR";                          // tensor
+        public const string ZZStrI = "ZZSTRI";                          // tensor
+        public const string ZZStrMag = "ZZSTRMAG";                      // tensor
+        public const string ZZStrPha = "ZZSTRPHA";                      // tensor
         // Strain
-        public const string ToStrain = "TOSTRAIN";
-        public const string ToStraiR = "TOSTRAIR";
-        public const string ToStraiI = "TOSTRAII";
-        public const string MeStrain = "MESTRAIN";
-        public const string MeStraiR = "MESTRAIR";
-        public const string MeStraiI = "MESTRAII";
-        public const string Pe = "PE";
+        public const string ToStrain = "TOSTRAIN";                      // tensor
+        public const string ToStraiR = "TOSTRAIR";                      // tensor
+        public const string ToStraiI = "TOSTRAII";                      // tensor
+        public const string ToStraiMag = "TOSTRAIMAG";                  // tensor
+        public const string ToStraiPha = "TOSTRAIPHA";                  // tensor
+        public const string MeStrain = "MESTRAIN";                      // tensor
+        public const string MeStraiR = "MESTRAIR";                      // tensor
+        public const string MeStraiI = "MESTRAII";                      // tensor
+        public const string MeStraiMag = "MESTRAIMAG";                  // tensor
+        public const string MeStraiPha = "MESTRAIPHA";                  // tensor
+        public const string Pe = "PE";                                  // scalar
         //
-        public const string Forc = "FORC";
-        public const string ForcR = "FORCR";
-        public const string ForcI = "FORCI";
-        public const string Ener = "ENER";
-        public const string Contact = "CONTACT";
+        public const string Forc = "FORC";                              // vector
+        public const string ForcR = "FORCR";                            // vector
+        public const string ForcI = "FORCI";                            // vector
+        public const string ForcMag = "FORCMAG";                        // vector
+        public const string ForcPha = "FORCPHA";                        // vector
+        public const string Ener = "ENER";                              // scalar
+        public const string Contact = "CONTACT";                        // scalar
         // Thermal
-        public const string NdTemp = "NDTEMP";
-        public const string PNdTemp = "PNDTEMP";
-        public const string Flux = "FLUX";
-        public const string Rfl = "RFL";
-        public const string HError = "HERROR";
-        public const string HErrorR = "HERRORR";
-        public const string HErrorI = "HERRORI";
+        public const string NdTemp = "NDTEMP";                          // scalar
+        public const string PNdTemp = "PNDTEMP";                        // scalar - kind of
+        public const string Flux = "FLUX";                              // vector
+        public const string Rfl = "RFL";                                // vector
+        public const string HError = "HERROR";                          // scalar
+        public const string HErrorR = "HERRORR";                        // scalar
+        public const string HErrorI = "HERRORI";                        // scalar
+        public const string HErrorMag = "HERRORMAG";                    // scalar
+        public const string HErrorPha = "HERRORPHA";                    // scalar
         // Sensitivity
-        public const string Norm = "NORM";
-        public const string SenFreq = "SENFREQ";
+        public const string Norm = "NORM";                              // vector
+        public const string SenFreq = "SENFREQ";                        // scalar - kind of
         // Wear
-        public const string SlidingDistance = "SLIDING_DISTANCE";
-        public const string SurfaceNormal = "SURFACE_NORMAL";
-        public const string WearDepth = "WEAR_DEPTH";
-        public const string MeshDeformation = "MESH_DEF";
-        public const string DispDeformationDepth = "DISP_DEF_DEPTH";
+        public const string SlidingDistance = "SLIDING_DISTANCE";       // scalar
+        public const string SurfaceNormal = "SURFACE_NORMAL";           // vector
+        public const string WearDepth = "WEAR_DEPTH";                   // vector
+        public const string MeshDeformation = "MESH_DEF";               // vector
+        public const string DispDeformationDepth = "DISP_DEF_DEPTH";    // vector
         // Imported pressure
-        public const string Distance = "DISTANCE";
-        public const string Imported = "IMPORTED";
+        public const string Distance = "DISTANCE";                      // vector
+        public const string Imported = "IMPORTED";                      // scalar
         //
-        public const string Error = "ERROR";
-        public const string ErrorR = "ERRORR";
-        public const string ErrorI = "ERRORI";
+        public const string Error = "ERROR";                            // scalar
+        public const string ErrorR = "ERRORR";                          // scalar
+        public const string ErrorI = "ERRORI";                          // scalar
+        public const string ErrorMag = "ERRORMAG";                      // scalar
+        public const string ErrorPha = "ERRORPHA";                      // scalar
 
 
         // Methods
-        public static bool IsComplex(string fieldName)
+        public static bool IsVisible(string fieldName)
         {
             switch (fieldName)
             {
                 case DispR:
                 case DispI:
+                case DispMag:
+                case DispPha:
                 case StressR:
                 case StressI:
+                case StressMag:
+                case StressPha:
                 case ZZStrR:
                 case ZZStrI:
+                case ZZStrMag:
+                case ZZStrPha:
                 case ToStraiR:
                 case ToStraiI:
+                case ToStraiMag:
+                case ToStraiPha:
                 case MeStraiR:
                 case MeStraiI:
+                case MeStraiMag:
+                case MeStraiPha:
                 case ForcR:
                 case ForcI:
+                case ForcMag:
+                case ForcPha:
                 case HErrorR:
                 case HErrorI:
+                case HErrorMag:
+                case HErrorPha:
                 case ErrorR:
                 case ErrorI:
+                case ErrorMag:
+                case ErrorPha:
                     return true;
                 default:
                     return false;
+            }
+        }
+        public static DataType GetDataType(string fieldName)
+        {
+            switch (fieldName)
+            {
+                case None:
+                case Default:
+                    return DataType.None;
+                //
+                case PDisp:
+                case PStress:
+                case Pe:
+                case Ener:
+                case Contact:
+                case NdTemp:
+                case PNdTemp:
+                case HError:
+                case HErrorR:
+                case HErrorI:
+                case HErrorMag:
+                case HErrorPha:
+                case SenFreq:
+                case Imported:
+                case Error:
+                case ErrorR:
+                case ErrorI:
+                case ErrorMag:
+                case ErrorPha:
+                    return DataType.Scalar;
+                //
+                case Disp:
+                case DispR:
+                case DispI:
+                case DispMag:
+                case DispPha:
+                case Velo:
+                case Forc:
+                case ForcR:
+                case ForcI:
+                case ForcMag:
+                case ForcPha:
+                case Flux:
+                case Rfl:
+                case Norm:
+                case SurfaceNormal:
+                case WearDepth:
+                case MeshDeformation:
+                case DispDeformationDepth:
+                case Distance:
+                    return DataType.Vector;
+                //
+                case Stress:
+                case StressR:
+                case StressI:
+                case StressMag:
+                case StressPha:
+                case ZZStr:
+                case ZZStrR:
+                case ZZStrI:
+                case ZZStrMag:
+                case ZZStrPha:
+                case ToStrain:
+                case ToStraiR:
+                case ToStraiI:
+                case ToStraiMag:
+                case ToStraiPha:
+                case MeStrain:
+                case MeStraiR:
+                case MeStraiI:
+                case MeStraiMag:
+                case MeStraiPha:
+                    return DataType.Tensor;
+                default:
+                    return DataType.None;
             }
         }
     }

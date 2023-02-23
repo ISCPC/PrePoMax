@@ -15,7 +15,8 @@ namespace CaeResults
         Imaginary,
         Magnitude,
         Phase,
-        Angle
+        Angle,
+        Max
     }
    
 }

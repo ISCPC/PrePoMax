@@ -931,7 +931,7 @@
             this.tstbAngle.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.tstbAngle.Name = "tstbAngle";
             this.tstbAngle.Size = new System.Drawing.Size(45, 25);
-            this.tstbAngle.Text = "45 °";
+            this.tstbAngle.Text = "0 °";
             this.tstbAngle.TextBoxTextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tstbAngle.UnitConverter = null;
             this.tstbAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tstbAngle_KeyDown);
