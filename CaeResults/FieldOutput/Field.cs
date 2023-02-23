@@ -452,24 +452,81 @@ namespace CaeResults
             //
             foreach (string componentName in componentNames) _components.Remove(componentName);
         }
-        public void FindMax(Field field)
+        public void SetComponentValuesToZero()
         {
-            FieldComponent thisComponent;
-            FieldComponent otherComponent;
-            foreach (var entry in _components)
+            foreach (var entr in _components) entr.Value.SetValuesToZero();
+        }
+        public static void FindMax(Field fieldMax, Field fieldAng, Field currentField, float angleDeg)
+        {
+            bool update;
+            FieldComponent fieldMaxComponent;
+            FieldComponent fieldAngComponent;
+            FieldComponent currentComponent;
+            //
+            foreach (var entry in fieldMax._components)
             {
-                thisComponent = entry.Value;
-                if (field._components.TryGetValue(entry.Key, out otherComponent) &&
-                    thisComponent.Values.Length == otherComponent.Values.Length)
+                update = false;
+                fieldMaxComponent = entry.Value;
+                //
+                if (fieldAng._components.TryGetValue(entry.Key, out fieldAngComponent) &&
+                    currentField._components.TryGetValue(entry.Key, out currentComponent) &&
+                    fieldMaxComponent.Values.Length == fieldAngComponent.Values.Length &&
+                    fieldMaxComponent.Values.Length == currentComponent.Values.Length)
                 {
-                    for (int i = 0; i < thisComponent.Values.Length; i++)
+                    for (int i = 0; i < fieldMaxComponent.Values.Length; i++)
                     {
-                        if (otherComponent.Values[i] > thisComponent.Values[i])
-                            thisComponent.Values[i] = otherComponent.Values[i];
+                        if (currentComponent.Values[i] > fieldMaxComponent.Values[i])
+                        {
+                            fieldMaxComponent.Values[i] = currentComponent.Values[i];
+                            fieldAngComponent.Values[i] = angleDeg;
+                            update = true;
+                        }
                     }
+                }
+                //
+                if (update)
+                {
+                    fieldMaxComponent.UpdateMaxMin();
+                    fieldAngComponent.UpdateMaxMin();
                 }
             }
         }
+        public static void FindMin(Field fieldMin, Field fieldAng, Field currentField, float angleDeg)
+        {
+            bool update;
+            FieldComponent fieldMinComponent;
+            FieldComponent fieldAngComponent;
+            FieldComponent currentComponent;
+            //
+            foreach (var entry in fieldMin._components)
+            {
+                update = false;
+                fieldMinComponent = entry.Value;
+                //
+                if (fieldAng._components.TryGetValue(entry.Key, out fieldAngComponent) &&
+                    currentField._components.TryGetValue(entry.Key, out currentComponent) &&
+                    fieldMinComponent.Values.Length == fieldAngComponent.Values.Length &&
+                    fieldMinComponent.Values.Length == currentComponent.Values.Length)
+                {
+                    for (int i = 0; i < fieldMinComponent.Values.Length; i++)
+                    {
+                        if (currentComponent.Values[i] < fieldMinComponent.Values[i])
+                        {
+                            fieldMinComponent.Values[i] = currentComponent.Values[i];
+                            fieldAngComponent.Values[i] = angleDeg;
+                            update = true;
+                        }
+                    }
+                }
+                //
+                if (update)
+                {
+                    fieldMinComponent.UpdateMaxMin();
+                    fieldAngComponent.UpdateMaxMin();
+                }
+            }
+        }
+
     }
 }
 

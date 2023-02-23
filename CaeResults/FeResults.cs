@@ -37,42 +37,74 @@ namespace CaeResults
                                                                                               FOFieldNames.DispR,
                                                                                               FOFieldNames.DispI,
                                                                                               FOFieldNames.DispMag,
-                                                                                              FOFieldNames.DispPha },
+                                                                                              FOFieldNames.DispPha,
+                                                                                              FOFieldNames.DispMax,
+                                                                                              FOFieldNames.DispMaxAng,
+                                                                                              FOFieldNames.DispMin,
+                                                                                              FOFieldNames.DispMinAng},
                                                                                new string[] { FOFieldNames.Stress,
                                                                                               FOFieldNames.StressR,
                                                                                               FOFieldNames.StressI,
                                                                                               FOFieldNames.StressMag,
-                                                                                              FOFieldNames.StressPha },
+                                                                                              FOFieldNames.StressPha,
+                                                                                              FOFieldNames.StressMax,
+                                                                                              FOFieldNames.StressMaxAng,
+                                                                                              FOFieldNames.StressMin,
+                                                                                              FOFieldNames.StressMinAng},
                                                                                new string[] { FOFieldNames.ZZStr,
                                                                                               FOFieldNames.ZZStrR,
                                                                                               FOFieldNames.ZZStrI ,
                                                                                               FOFieldNames.ZZStrMag,
-                                                                                              FOFieldNames.ZZStrPha },
+                                                                                              FOFieldNames.ZZStrPha,
+                                                                                              FOFieldNames.ZZStrMax,
+                                                                                              FOFieldNames.ZZStrMaxAng,
+                                                                                              FOFieldNames.ZZStrMin,
+                                                                                              FOFieldNames.ZZStrMinAng},
                                                                                new string[] { FOFieldNames.ToStrain,
                                                                                               FOFieldNames.ToStraiR,
                                                                                               FOFieldNames.ToStraiI,
                                                                                               FOFieldNames.ToStraiMag,
-                                                                                              FOFieldNames.ToStraiPha },
+                                                                                              FOFieldNames.ToStraiPha,
+                                                                                              FOFieldNames.ToStraiMax,
+                                                                                              FOFieldNames.ToStraiMaxAng,
+                                                                                              FOFieldNames.ToStraiMin,
+                                                                                              FOFieldNames.ToStraiMinAng},
                                                                                new string[] { FOFieldNames.MeStrain,
                                                                                               FOFieldNames.MeStraiR,
                                                                                               FOFieldNames.MeStraiI,
                                                                                               FOFieldNames.MeStraiMag,
-                                                                                              FOFieldNames.MeStraiPha },
+                                                                                              FOFieldNames.MeStraiPha,
+                                                                                              FOFieldNames.MeStraiMax,
+                                                                                              FOFieldNames.MeStraiMaxAng,
+                                                                                              FOFieldNames.MeStraiMin,
+                                                                                              FOFieldNames.MeStraiMinAng},
                                                                                new string[] { FOFieldNames.Forc,
                                                                                               FOFieldNames.ForcR,
                                                                                               FOFieldNames.ForcI,
                                                                                               FOFieldNames.ForcMag,
-                                                                                              FOFieldNames.ForcPha },
+                                                                                              FOFieldNames.ForcPha,
+                                                                                              FOFieldNames.ForcMax,
+                                                                                              FOFieldNames.ForcMaxAng,
+                                                                                              FOFieldNames.ForcMin,
+                                                                                              FOFieldNames.ForcMinAng},
                                                                                new string[] { FOFieldNames.HError,
                                                                                               FOFieldNames.HErrorR,
                                                                                               FOFieldNames.HErrorI,
                                                                                               FOFieldNames.HErrorMag,
-                                                                                              FOFieldNames.HErrorPha },
+                                                                                              FOFieldNames.HErrorPha,
+                                                                                              FOFieldNames.HErrorMax,
+                                                                                              FOFieldNames.HErrorMaxAng,
+                                                                                              FOFieldNames.HErrorMin,
+                                                                                              FOFieldNames.HErrorMinAng},
                                                                                new string[] { FOFieldNames.Error,
                                                                                               FOFieldNames.ErrorR,
                                                                                               FOFieldNames.ErrorI,
                                                                                               FOFieldNames.ErrorMag,
-                                                                                              FOFieldNames.ErrorPha } };
+                                                                                              FOFieldNames.ErrorPha,
+                                                                                              FOFieldNames.ErrorMax,
+                                                                                              FOFieldNames.ErrorMaxAng,
+                                                                                              FOFieldNames.ErrorMin,
+                                                                                              FOFieldNames.ErrorMinAng}};
         //
         private string _hashName;
         private string _fileName;
@@ -238,6 +270,7 @@ namespace CaeResults
         {
             ComputeAllFieldInvariants();
             PrepareComplexResults();
+            PrepareComplexMaxMin();
         }
         // Mesh                                     
         public void SetMesh(FeMesh mesh, Dictionary<int, int> nodeIdsLookUp)
@@ -486,7 +519,10 @@ namespace CaeResults
                 if (_complexResultType == ComplexResultTypeEnum.Imaginary ||
                     _complexResultType == ComplexResultTypeEnum.Magnitude ||
                     _complexResultType == ComplexResultTypeEnum.Phase ||
-                    _complexResultType == ComplexResultTypeEnum.Max) 
+                    _complexResultType == ComplexResultTypeEnum.Max ||
+                    _complexResultType == ComplexResultTypeEnum.AngleAtMax ||
+                    _complexResultType == ComplexResultTypeEnum.Min ||
+                    _complexResultType == ComplexResultTypeEnum.AngleAtMin)
                 {
                     FieldData fieldData = new FieldData(FOFieldNames.DispR, null, stepId, stepIncrementId);
                     Field field = GetField(fieldData);
@@ -855,9 +891,10 @@ namespace CaeResults
             else if (_complexResultType == ComplexResultTypeEnum.Magnitude) SetComplexResultTo(_complexResultType);
             else if (_complexResultType == ComplexResultTypeEnum.Phase) SetComplexResultTo(_complexResultType);
             else if (_complexResultType == ComplexResultTypeEnum.Angle) SetComplexResultToAngle(onlyThisField);
-            //
-            else if (_complexResultType == ComplexResultTypeEnum.Max)
-                SetComplexResultToMax(onlyThisField);
+            else if (_complexResultType == ComplexResultTypeEnum.Max) SetComplexResultTo(_complexResultType);
+            else if (_complexResultType == ComplexResultTypeEnum.AngleAtMax) SetComplexResultTo(_complexResultType);
+            else if (_complexResultType == ComplexResultTypeEnum.Min) SetComplexResultTo(_complexResultType);
+            else if (_complexResultType == ComplexResultTypeEnum.AngleAtMin) SetComplexResultTo(_complexResultType);
             else throw new NotSupportedException();
         }
         public void SetComplexResultTo(ComplexResultTypeEnum complexResultType)
@@ -876,6 +913,10 @@ namespace CaeResults
             else if (_complexResultType == ComplexResultTypeEnum.Imaginary) fieldNameId = 2;
             else if (_complexResultType == ComplexResultTypeEnum.Magnitude) fieldNameId = 3;
             else if (_complexResultType == ComplexResultTypeEnum.Phase) fieldNameId = 4;
+            else if (_complexResultType == ComplexResultTypeEnum.Max) fieldNameId = 5;
+            else if (_complexResultType == ComplexResultTypeEnum.AngleAtMax) fieldNameId = 6;
+            else if (_complexResultType == ComplexResultTypeEnum.Min) fieldNameId = 7;
+            else if (_complexResultType == ComplexResultTypeEnum.AngleAtMin) fieldNameId = 8;
             else throw new NotSupportedException();
             //
             for (int i = 0; i < stepIds.Length; i++)
@@ -978,7 +1019,7 @@ namespace CaeResults
                 }
             }
         }
-        public void SetComplexResultToMax(FieldData onlyThisField)
+        public void PrepareComplexMaxMin()
         {
             int stepId;
             int incrementId;
@@ -989,35 +1030,35 @@ namespace CaeResults
             for (int i = 0; i < stepIds.Length; i++)
             {
                 stepId = stepIds[i];
-                if (onlyThisField != null && onlyThisField.StepId != stepId) continue;
-                //
                 incrementIds = GetStepIncrementIds(stepId);
                 for (int j = 0; j < incrementIds.Length; j++)
                 {
                     incrementId = incrementIds[j];
-                    if (onlyThisField != null && onlyThisField.StepIncrementId != incrementId) continue;
-                    //
                     for (int k = 0; k < ComplexFieldNames.Length; k++)
                     {
-                        if (onlyThisField != null && onlyThisField.Name != ComplexFieldNames[k][0]) continue;
-                        //
                         stepIdIncrementIdNameId.Add(new Tuple<int, int, int>(stepId, incrementId, k));
                     }
                 }
             }
             // Compute all fields
             ConcurrentBag<Tuple<FieldData, Field>> fieldFieldData = new ConcurrentBag<Tuple<FieldData, Field>>();
-            //Parallel.ForEach(stepIdIncrementIdNameId, tuple =>
-            foreach (var tuple in stepIdIncrementIdNameId)
+            Parallel.ForEach(stepIdIncrementIdNameId, tuple =>
+            //foreach (var tuple in stepIdIncrementIdNameId)
             {
                 FieldData fieldData;
-                FieldData fieldDataMax;
                 FieldData fieldDataMag;
                 FieldData fieldDataPha;
+                FieldData fieldDataMax;
+                FieldData fieldDataMaxAng;
+                FieldData fieldDataMin;
+                FieldData fieldDataMinAng;
                 Field field;
-                Field fieldMax;
                 Field fieldMag;
                 Field fieldPha;
+                Field fieldMax;
+                Field fieldMaxAng;
+                Field fieldMin;
+                Field fieldMinAng;
                 float[] valuesMag;
                 float[] valuesPha;
                 float[] valuesAngle;
@@ -1035,17 +1076,42 @@ namespace CaeResults
                 //
                 if (fieldMag != null && fieldPha != null)
                 {
-                    fieldMax = new Field(field);
-                    fieldMax.Name = ComplexFieldNames[nameIdP][0];
-                    field.RemoveNonInvariants();
-                    //
+                    // Max value
                     fieldDataMax = new FieldData(fieldData);
-                    fieldDataMax.Name = ComplexFieldNames[nameIdP][0];
+                    fieldDataMax.Name = ComplexFieldNames[nameIdP][5];
                     fieldDataMax.Complex = true;
+                    //
+                    fieldMax = new Field(field);
+                    fieldMax.Name = fieldDataMax.Name;
+                    fieldMax.RemoveNonInvariants();
+                    // Max angle
+                    fieldDataMaxAng = new FieldData(fieldDataMax);
+                    fieldDataMaxAng.Name = ComplexFieldNames[nameIdP][6];
+                    fieldDataMaxAng.Complex = true;
+                    //
+                    fieldMaxAng = new Field(fieldMax);
+                    fieldMaxAng.Name = fieldDataMaxAng.Name;
+                    fieldMaxAng.SetComponentValuesToZero();
+                    // Min value
+                    fieldDataMin = new FieldData(fieldData);
+                    fieldDataMin.Name = ComplexFieldNames[nameIdP][7];
+                    fieldDataMin.Complex = true;
+                    //
+                    fieldMin = new Field(field);
+                    fieldMin.Name = fieldDataMin.Name;
+                    fieldMin.RemoveNonInvariants();
+                    // Min angle
+                    fieldDataMinAng = new FieldData(fieldDataMin);
+                    fieldDataMinAng.Name = ComplexFieldNames[nameIdP][8];
+                    fieldDataMinAng.Complex = true;
+                    //
+                    fieldMinAng = new Field(fieldMin);
+                    fieldMinAng.Name = fieldDataMinAng.Name;
+                    fieldMinAng.SetComponentValuesToZero();
                     //
                     if (fieldMax.GetComponentNames().Length > 0)
                     {
-                        field = new Field(fieldMax);
+                        field = new Field(field);
                         field.Name = ComplexFieldNames[nameIdP][0];
                         //
                         fieldData = new FieldData(fieldDataMax);
@@ -1053,7 +1119,7 @@ namespace CaeResults
                         fieldData.Complex = true;
                         //
                         float angle;
-                        int numOfAngles = 36;
+                        int numOfAngles = 360;
                         float delta = 360f / numOfAngles;       // skip the final anlge which is the same as the first angle
                         for (int i = 1; i < numOfAngles; i++)   // skip the first angle which is the real result
                         {
@@ -1078,14 +1144,18 @@ namespace CaeResults
                             }
                             field.ComputeInvariants();
                             //
-                            fieldMax.FindMax(field);
+                            Field.FindMax(fieldMax, fieldMaxAng, field, angle);
+                            Field.FindMin(fieldMin, fieldMinAng, field, angle);
                         }
                     }
                     //
                     fieldFieldData.Add(new Tuple<FieldData, Field>(fieldDataMax, fieldMax));
+                    fieldFieldData.Add(new Tuple<FieldData, Field>(fieldDataMaxAng, fieldMaxAng));
+                    fieldFieldData.Add(new Tuple<FieldData, Field>(fieldDataMin, fieldMin));
+                    fieldFieldData.Add(new Tuple<FieldData, Field>(fieldDataMinAng, fieldMinAng));
                 }
             }
-            //);
+            );
             // Add all fields
             foreach (var tuple in fieldFieldData)
             {
@@ -1119,7 +1189,9 @@ namespace CaeResults
                                                         out TypeConverter unitConverter,
                                                         out string unitAbbreviation)
         {
-            if (_complexResultType == ComplexResultTypeEnum.Phase)  // speed up
+            if (_complexResultType == ComplexResultTypeEnum.Phase ||
+                _complexResultType == ComplexResultTypeEnum.AngleAtMax ||
+                _complexResultType == ComplexResultTypeEnum.AngleAtMin)  // speed up
             {
                 FieldData fieldData = GetFieldData(fieldDataName, componentName, stepId, incrementId);
                 if (fieldData.Type == StepType.SteadyStateDynamics && fieldData.Complex)
@@ -1590,8 +1662,12 @@ namespace CaeResults
                         }
                     }
                     // Set phase unit
-                    if (rhoff.ComplexResultType == ComplexResultTypeEnum.Phase)
+                    if (rhoff.ComplexResultType == ComplexResultTypeEnum.Phase ||
+                        rhoff.ComplexResultType == ComplexResultTypeEnum.AngleAtMax ||
+                        rhoff.ComplexResultType == ComplexResultTypeEnum.AngleAtMin)
+                    {
                         historyResultComponent.Unit = StringAngleDegConverter.GetUnitAbbreviation();
+                    }
                     // Reset complex
                     SetComplexResultTypeAndAngle(prevComplexResultType, prevComplexAngleDeg);
                     //

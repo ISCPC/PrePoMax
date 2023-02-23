@@ -16,7 +16,10 @@ namespace CaeResults
         Magnitude,
         Phase,
         Angle,
-        Max
+        Max,
+        AngleAtMax,
+        Min,
+        AngleAtMin
     }
    
 }
