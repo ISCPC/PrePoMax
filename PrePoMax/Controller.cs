@@ -14138,10 +14138,11 @@ namespace PrePoMax
                 // Legend settings
                 _form.SetScalarBarColorSpectrum(legendSettings.ColorSpectrum);
                 string complexComponent;
-                if (_currentFieldData.Complex)
+                Field field = _allResults.CurrentResult.GetField(_currentFieldData);
+                if (field.Complex)
                 {
                     ComplexResultTypeEnum resultType = _form.GetComplexResultType();
-                    complexComponent = resultType.ToString();
+                    complexComponent = resultType.GetDisplayedName();
                     if (resultType == ComplexResultTypeEnum.Angle)
                     {
                         complexComponent += " " + _form.GetComplexAngleDeg() + " " +
@@ -14169,17 +14170,17 @@ namespace PrePoMax
         private void SetStatusBlock(float scale)
         {
             string unit;
-            if (_currentFieldData.Type == StepType.Static)
+            if (_currentFieldData.StepType == StepTypeEnum.Static)
                 unit = _allResults.CurrentResult.UnitSystem.TimeUnitAbbreviation;
-            else if (_currentFieldData.Type == StepType.Frequency)
+            else if (_currentFieldData.StepType == StepTypeEnum.Frequency)
                 unit = _allResults.CurrentResult.UnitSystem.FrequencyUnitAbbreviation;
-            else if (_currentFieldData.Type == StepType.FrequencySensitivity)
+            else if (_currentFieldData.StepType == StepTypeEnum.FrequencySensitivity)
                 unit = _allResults.CurrentResult.UnitSystem.FrequencyUnitAbbreviation;
-            else if (_currentFieldData.Type == StepType.Buckling)
+            else if (_currentFieldData.StepType == StepTypeEnum.Buckling)
                 unit = "";
-            else if (_currentFieldData.Type == StepType.SteadyStateDynamics)
+            else if (_currentFieldData.StepType == StepTypeEnum.SteadyStateDynamics)
                 unit = _allResults.CurrentResult.UnitSystem.FrequencyUnitAbbreviation;
-            else if (_currentFieldData.Type == StepType.LastIterations)
+            else if (_currentFieldData.StepType == StepTypeEnum.LastIterations)
                 unit = _allResults.CurrentResult.UnitSystem.TimeUnitAbbreviation;
             else throw new NotSupportedException();
             // Deformation variable
@@ -14196,12 +14197,12 @@ namespace PrePoMax
         private vtkMaxFieldDataType ConvertStepType(FieldData fieldData)
         {
             vtkMaxFieldDataType fieldType;
-            if (fieldData.Type == StepType.Static) fieldType = vtkMaxFieldDataType.Static;
-            else if (fieldData.Type == StepType.Frequency) fieldType = vtkMaxFieldDataType.Frequency;
-            else if (fieldData.Type == StepType.FrequencySensitivity) fieldType = vtkMaxFieldDataType.FrequencySensitivity;
-            else if (fieldData.Type == StepType.Buckling) fieldType = vtkMaxFieldDataType.Buckling;
-            else if (fieldData.Type == StepType.SteadyStateDynamics) fieldType = vtkMaxFieldDataType.SteadyStateDynamic;
-            else if (fieldData.Type == StepType.LastIterations) fieldType = vtkMaxFieldDataType.LastIterations;
+            if (fieldData.StepType == StepTypeEnum.Static) fieldType = vtkMaxFieldDataType.Static;
+            else if (fieldData.StepType == StepTypeEnum.Frequency) fieldType = vtkMaxFieldDataType.Frequency;
+            else if (fieldData.StepType == StepTypeEnum.FrequencySensitivity) fieldType = vtkMaxFieldDataType.FrequencySensitivity;
+            else if (fieldData.StepType == StepTypeEnum.Buckling) fieldType = vtkMaxFieldDataType.Buckling;
+            else if (fieldData.StepType == StepTypeEnum.SteadyStateDynamics) fieldType = vtkMaxFieldDataType.SteadyStateDynamic;
+            else if (fieldData.StepType == StepTypeEnum.LastIterations) fieldType = vtkMaxFieldDataType.LastIterations;
             else throw new NotSupportedException();
             return fieldType;
         }

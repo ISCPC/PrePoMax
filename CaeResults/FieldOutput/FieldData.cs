@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace CaeResults
 {
     [Serializable]
-    public enum StepType
+    public enum StepTypeEnum
     {
         None,
         Static,
@@ -19,12 +19,10 @@ namespace CaeResults
     }
 
     [Serializable]
-    public enum DataType
+    public enum DataStateEnum
     {
-        None,
-        Scalar,
-        Vector,
-        Tensor
+        OK,
+        UpdateComplexMinMax
     }
 
     [Serializable]
@@ -34,11 +32,11 @@ namespace CaeResults
         public string Component;
         public int GlobalIncrementId;
         public int MethodId;
-        public StepType Type;
+        public StepTypeEnum StepType;
         public float Time;
         public int StepId;
-        public int StepIncrementId;
-        public bool Complex;
+        public int StepIncrementId;        
+        
 
 
         // Constructors                                                                                                              
@@ -50,11 +48,10 @@ namespace CaeResults
             Component = null;
             GlobalIncrementId = -1;
             MethodId = -1;
-            Type = StepType.None;
+            StepType = StepTypeEnum.None;
             Time = -1;
             StepId = -1;
             StepIncrementId = -1;
-            Complex = false;
         }
         public FieldData(string name, string component, int stepId, int stepIncrementId)
            : base(name)
@@ -63,11 +60,10 @@ namespace CaeResults
             Component = component;
             GlobalIncrementId = -1;
             MethodId = -1;
-            Type = StepType.None;
+            StepType = StepTypeEnum.None;
             Time = -1;
             StepId = stepId;
             StepIncrementId = stepIncrementId;
-            Complex = false;
         }
         public FieldData(FieldData fieldData)
             : base(fieldData.Name)
@@ -75,11 +71,10 @@ namespace CaeResults
             Component = fieldData.Component;
             GlobalIncrementId = fieldData.GlobalIncrementId;
             MethodId = fieldData.MethodId;
-            Type = fieldData.Type;
+            StepType = fieldData.StepType;
             Time = fieldData.Time;
             StepId = fieldData.StepId;
             StepIncrementId = fieldData.StepIncrementId;
-            Complex = fieldData.Complex;
         }
 
 
@@ -106,12 +101,13 @@ namespace CaeResults
                 }
                 bw.Write(fieldData.GlobalIncrementId);
                 bw.Write(fieldData.MethodId);
-                bw.Write((int)fieldData.Type);
+                bw.Write((int)fieldData.StepType);
                 bw.Write(fieldData.Time);
                 bw.Write(fieldData.StepId);
                 bw.Write(fieldData.StepIncrementId);
                 //
-                bw.Write(fieldData.Complex);
+                //bw.Write((int)fieldData.DataState);
+                //
                 bw.Write(fieldData.Active);
                 bw.Write(fieldData.Visible);
                 bw.Write(fieldData.Valid);
@@ -131,14 +127,13 @@ namespace CaeResults
                 //
                 fieldData.GlobalIncrementId = br.ReadInt32();
                 if (version >= 1_003_000) fieldData.MethodId = br.ReadInt32();
-                fieldData.Type = (StepType)br.ReadInt32();
+                fieldData.StepType = (StepTypeEnum)br.ReadInt32();
                 fieldData.Time = br.ReadSingle();
                 fieldData.StepId = br.ReadInt32();
                 fieldData.StepIncrementId = br.ReadInt32();
                 //
                 if (version >= 1_004_000)
                 {
-                    fieldData.Complex = br.ReadBoolean();
                     fieldData.Active = br.ReadBoolean();
                     fieldData.Visible = br.ReadBoolean();
                     fieldData.Valid = br.ReadBoolean();
@@ -154,11 +149,11 @@ namespace CaeResults
         // Methods                                                                                                                  
         public string GetHashKey()
         {
-            return Name + "_" + StepId.ToString() + "_" + StepIncrementId.ToString();
+            return Name.ToUpper() + "_" + StepId.ToString() + "_" + StepIncrementId.ToString();
         }
         public bool Equals(FieldData data)
         {
-            return Name == data.Name &&
+            return Name.ToUpper() == data.Name.ToUpper() &&
                     Component == data.Component &&
                     StepId == data.StepId &&
                     StepIncrementId == data.StepIncrementId;

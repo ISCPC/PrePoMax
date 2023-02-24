@@ -834,7 +834,7 @@
             this.tstbAngle});
             this.tsDeformationFactor.Location = new System.Drawing.Point(3, 25);
             this.tsDeformationFactor.Name = "tsDeformationFactor";
-            this.tsDeformationFactor.Size = new System.Drawing.Size(844, 25);
+            this.tsDeformationFactor.Size = new System.Drawing.Size(854, 25);
             this.tsDeformationFactor.TabIndex = 8;
             // 
             // tslResultName
@@ -917,7 +917,7 @@
             this.tscbComplex.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.tscbComplex.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.tscbComplex.Name = "tscbComplex";
-            this.tscbComplex.Size = new System.Drawing.Size(85, 25);
+            this.tscbComplex.Size = new System.Drawing.Size(95, 25);
             this.tscbComplex.SelectedIndexChanged += new System.EventHandler(this.tscbComplex_SelectedIndexChanged);
             // 
             // tslAngle

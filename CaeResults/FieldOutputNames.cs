@@ -184,18 +184,18 @@ namespace CaeResults
                 case ErrorMaxAng:
                 case ErrorMin:
                 case ErrorMinAng:
-                    return true;
-                default:
                     return false;
+                default:
+                    return true;
             }
         }
-        public static DataType GetDataType(string fieldName)
+        public static DataTypeEnum GetDataType(string fieldName)
         {
             switch (fieldName)
             {
                 case None:
                 case Default:
-                    return DataType.None;
+                    return DataTypeEnum.None;
                 //
                 case PDisp:
                 case PStress:
@@ -224,7 +224,7 @@ namespace CaeResults
                 case ErrorMaxAng:
                 case ErrorMin:
                 case ErrorMinAng:
-                    return DataType.Scalar;
+                    return DataTypeEnum.Scalar;
                 //
                 case Disp:
                 case DispR:
@@ -253,7 +253,7 @@ namespace CaeResults
                 case MeshDeformation:
                 case DispDeformationDepth:
                 case Distance:
-                    return DataType.Vector;
+                    return DataTypeEnum.Vector;
                 //
                 case Stress:
                 case StressR:
@@ -291,9 +291,9 @@ namespace CaeResults
                 case MeStraiMaxAng:
                 case MeStraiMin:
                 case MeStraiMinAng:
-                    return DataType.Tensor;
+                    return DataTypeEnum.Tensor;
                 default:
-                    return DataType.None;
+                    return DataTypeEnum.None;
             }
         }
     }

@@ -88,6 +88,10 @@ namespace CaeResults
         {
             for (int i = 0; i < Values.Length; i++) Values[i] = 0;
         }
+        public void SetValuesTo(float value)
+        {
+            for (int i = 0; i < Values.Length; i++) Values[i] = value;
+        }
 
     }
 }

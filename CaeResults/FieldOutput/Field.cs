@@ -13,6 +13,15 @@ using System.Diagnostics.Eventing.Reader;
 namespace CaeResults
 {
     [Serializable]
+    public enum DataTypeEnum
+    {
+        None,
+        Scalar,
+        Vector,
+        Tensor
+    }
+
+    [Serializable]
     public struct IDValuePair
     {
         public int Id;
@@ -24,10 +33,13 @@ namespace CaeResults
     {
         // Variables                                                                                                                
         private OrderedDictionary<string,  FieldComponent> _components;
-        public DataType _dataType;
+        private bool _complex;
+        private DataStateEnum _dataState;
 
 
         // Properties                                                                                                               
+        public bool Complex { get { return _complex; } set { _complex = value; } }
+        public DataStateEnum DataState { get { return _dataState; } set { _dataState = value; } }
 
 
         // Constructor                                                                                                              
@@ -35,15 +47,18 @@ namespace CaeResults
             : base(name)
         {
             _components = new OrderedDictionary<string, FieldComponent>("Components");
-            _dataType = FOFieldNames.GetDataType(name);
-
-
+            //
+            _complex = false;
+            _dataState = DataStateEnum.OK;
         }
         public Field(Field field)
             : base(field)
         {
             _components = new OrderedDictionary<string, FieldComponent>("Components");
             foreach (var entry in field._components) _components.Add(entry.Key, new FieldComponent(entry.Value));   // copy
+            //
+            _complex = field._complex;
+            _dataState = field._dataState;
         }
 
 
@@ -68,6 +83,9 @@ namespace CaeResults
                     bw.Write(field._components.Count);
                     foreach (var entry in field._components) FieldComponent.WriteToFile(entry.Value, bw);
                 }
+                //
+                bw.Write(field.Complex);
+                bw.Write((int)field.DataState);
                 //
                 bw.Write(field.Active);
                 bw.Write(field.Visible);
@@ -101,6 +119,9 @@ namespace CaeResults
                 //
                 if (version >= 1_004_000)
                 {
+                    field.Complex = br.ReadBoolean();
+                    field.DataState = (DataStateEnum)br.ReadInt32();
+                    //
                     field.Active = br.ReadBoolean();
                     field.Visible = br.ReadBoolean();
                     field.Valid = br.ReadBoolean();
@@ -169,54 +190,34 @@ namespace CaeResults
             _components.Remove(name);
         }
         //
-        public void ComputeInvariants()
-        {
-            bool isComplex = FOFieldNames.IsVisible(_name);
-            ComputeInvariants(isComplex);
-        }
         public void RemoveInvariants()
         {
-            ComputeInvariants(true);
-        }
-        public void ComputeInvariants(bool setToNaN)
-        {
-            DataType dataType = FOFieldNames.GetDataType(_name);
-            if (FOFieldNames.IsVisible(_name)) setToNaN = true; // always set to NaN
+            DataTypeEnum dataType = FOFieldNames.GetDataType(_name);
             //
-            if (dataType == DataType.Vector) ComputeVectorFieldInvariantF(setToNaN);
-            else if (dataType == DataType.Tensor) ComputeTensorFieldInvariantF(setToNaN);
+            if (dataType == DataTypeEnum.Vector)
+            {
+                _components.Remove(FOComponentNames.All);
+            }
+            else if (dataType == DataTypeEnum.Tensor)
+            {
+                _components.Remove(FOComponentNames.Mises);
+                _components.Remove(FOComponentNames.Tresca);
+                _components.Remove(FOComponentNames.SgnMaxAbsPri);
+                _components.Remove(FOComponentNames.PrincipalMax);
+                _components.Remove(FOComponentNames.PrincipalMid);
+                _components.Remove(FOComponentNames.PrincipalMin);
+            }
         }
-        private void ComputeVectorFieldInvariant(bool setToNaN)
+        public void ComputeInvariants()
+        {
+            DataTypeEnum dataType = FOFieldNames.GetDataType(_name);
+            if (dataType == DataTypeEnum.Vector) ComputeVectorFieldInvariant();
+            else if (dataType == DataTypeEnum.Tensor) ComputeTensorFieldInvariant();
+        }
+        private void ComputeVectorFieldInvariant()
         {
             _components.Remove(FOComponentNames.All);
             if (_components.Count != 3) throw new NotSupportedException();
-            //
-            if (setToNaN) return;
-            //
-            int count = 0;
-            float[][] values = new float[3][];
-            foreach (var entry in _components)
-            {
-                values[count++] = entry.Value.Values;
-            }
-            //
-            
-            float[] magnitude = new float[values[0].Length];
-            for (int i = 0; i < magnitude.Length; i++)
-            {
-                magnitude[i] = (float)Math.Sqrt(Math.Pow(values[0][i], 2) +
-                                                Math.Pow(values[1][i], 2) +
-                                                Math.Pow(values[2][i], 2));
-                    
-            }
-            _components.Insert(0, FOComponentNames.All, new FieldComponent(FOComponentNames.All, magnitude, true));
-        }
-        private void ComputeVectorFieldInvariantF(bool setToNaN)
-        {
-            _components.Remove(FOComponentNames.All);
-            if (_components.Count != 3) throw new NotSupportedException();
-            //
-            if (setToNaN) return;
             //
             int count = 0;
             float[][] values = new float[3][];
@@ -235,7 +236,7 @@ namespace CaeResults
             }
             _components.Insert(0, FOComponentNames.All, new FieldComponent(FOComponentNames.All, magnitude, true));
         }
-        private void ComputeTensorFieldInvariant(bool setToNaN)
+        private void ComputeTensorFieldInvariant()
         {
             _components.Remove(FOComponentNames.Mises);
             _components.Remove(FOComponentNames.Tresca);
@@ -245,49 +246,6 @@ namespace CaeResults
             _components.Remove(FOComponentNames.PrincipalMin);
             if (_components.Count != 6) throw new NotSupportedException();
             //
-            if (setToNaN) return;
-
-            int count = 0;
-            float[][] values = new float[6][];
-            foreach (var entry in _components)
-            {
-                values[count++] = entry.Value.Values;
-            }
-            //
-            float[] vonMises = new float[values[0].Length];
-            for (int i = 0; i < vonMises.Length; i++)
-            {
-                vonMises[i] = (float)Math.Sqrt(0.5f * (Math.Pow(values[0][i] - values[1][i], 2) +
-                                                       Math.Pow(values[1][i] - values[2][i], 2) +
-                                                       Math.Pow(values[2][i] - values[0][i], 2) +
-                                                       6 * (Math.Pow(values[3][i], 2) +
-                                                            Math.Pow(values[4][i], 2) +
-                                                            Math.Pow(values[5][i], 2))));
-            }
-            // Mises
-            _components.Insert(0, FOComponentNames.Mises, new FieldComponent(FOComponentNames.Mises, vonMises, true));
-            // Principal
-            ComputeAndAddPrincipalInvariants(values);
-            // Tresca
-            float[] tresca = new float[values[0].Length];
-            float[] eMax = GetComponentValues(FOComponentNames.PrincipalMax);
-            float[] eMin = GetComponentValues(FOComponentNames.PrincipalMin);
-            for (int i = 0; i < tresca.Length; i++) tresca[i] = eMax[i] - eMin[i];
-            //
-            _components.Insert(1, FOComponentNames.Tresca, new FieldComponent(FOComponentNames.Tresca, tresca, true));
-        }
-        private void ComputeTensorFieldInvariantF(bool setToNaN)
-        {
-            _components.Remove(FOComponentNames.Mises);
-            _components.Remove(FOComponentNames.Tresca);
-            _components.Remove(FOComponentNames.SgnMaxAbsPri);
-            _components.Remove(FOComponentNames.PrincipalMax);
-            _components.Remove(FOComponentNames.PrincipalMid);
-            _components.Remove(FOComponentNames.PrincipalMin);
-            if (_components.Count != 6) throw new NotSupportedException();
-            //
-            if (setToNaN) return;
-
             int count = 0;
             float[][] values = new float[6][];
             foreach (var entry in _components)
@@ -308,7 +266,7 @@ namespace CaeResults
             // Mises
             _components.Insert(0, FOComponentNames.Mises, new FieldComponent(FOComponentNames.Mises, vonMises, true));
             // Principal
-            ComputeAndAddPrincipalInvariantsF(values);
+            ComputeAndAddPrincipalInvariants(values);
             // Tresca
             float[] tresca = new float[values[0].Length];
             float[] eMax = GetComponentValues(FOComponentNames.PrincipalMax);
@@ -318,63 +276,6 @@ namespace CaeResults
             _components.Insert(1, FOComponentNames.Tresca, new FieldComponent(FOComponentNames.Tresca, tresca, true));
         }
         private void ComputeAndAddPrincipalInvariants(float[][] values)
-        {
-            // https://en.wikipedia.org/wiki/Cubic_function#General_solution_to_the_cubic_equation_with_arbitrary_coefficients
-            // https://en.wikiversity.org/wiki/Principal_stresses
-            //
-            float[] s0 = new float[values[0].Length];
-            float[] s1 = new float[values[0].Length];
-            float[] s2 = new float[values[0].Length];
-            float[] s3 = new float[values[0].Length];
-            //
-            float s11;
-            float s22;
-            float s33;
-            float s12;
-            float s23;
-            float s31;
-            //
-            double I1;
-            double I2;
-            double I3;
-            //
-            double sp1, sp2, sp3;
-            sp1 = sp2 = sp3 = 0;
-            //
-            for (int i = 0; i < s1.Length; i++)
-            {
-                s11 = values[0][i];
-                s22 = values[1][i];
-                s33 = values[2][i];
-                s12 = values[3][i];
-                s23 = values[4][i];
-                s31 = values[5][i];
-                //
-                I1 = s11 + s22 + s33;
-                I2 = s11 * s22 + s22 * s33 + s33 * s11 - Math.Pow(s12, 2.0) - Math.Pow(s23, 2.0) - Math.Pow(s31, 2.0);
-                I3 = s11 * s22 * s33 - s11 * Math.Pow(s23, 2.0) - s22 * Math.Pow(s31, 2.0) - s33 * Math.Pow(s12, 2.0) +
-                        2.0 * s12 * s23 * s31;
-                //
-                Tools.SolveQubicEquationDepressedCubic(1.0, -I1, I2, -I3, ref sp1, ref sp2, ref sp3);
-                Tools.Sort3_descending(ref sp1, ref sp2, ref sp3);
-                //
-                s0[i] = Math.Abs(sp1) > Math.Abs(sp3) ? (float)sp1 : (float)sp3;
-                s1[i] = (float)sp1;
-                s2[i] = (float)sp2;
-                s3[i] = (float)sp3;
-                //
-                if (float.IsNaN(s0[i])) s0[i] = 0;
-                if (float.IsNaN(s1[i])) s1[i] = 0;
-                if (float.IsNaN(s2[i])) s2[i] = 0;
-                if (float.IsNaN(s3[i])) s3[i] = 0;
-            }
-            //
-            AddComponent(FOComponentNames.SgnMaxAbsPri, s0, true);
-            AddComponent(FOComponentNames.PrincipalMax, s1, true);
-            AddComponent(FOComponentNames.PrincipalMid, s2, true);
-            AddComponent(FOComponentNames.PrincipalMin, s3, true);
-        }
-        private void ComputeAndAddPrincipalInvariantsF(float[][] values)
         {
             // https://en.wikipedia.org/wiki/Cubic_function#General_solution_to_the_cubic_equation_with_arbitrary_coefficients
             // https://en.wikiversity.org/wiki/Principal_stresses
@@ -433,14 +334,14 @@ namespace CaeResults
         //
         public void RemoveNonInvariants()
         {
-            DataType dataType = FOFieldNames.GetDataType(_name);
+            DataTypeEnum dataType = FOFieldNames.GetDataType(_name);
             HashSet<string> componentNames = new HashSet<string>(_components.Keys);
             //
-            if (dataType == DataType.Vector)
+            if (dataType == DataTypeEnum.Vector)
             {
                 componentNames.Remove(FOComponentNames.All);
             }
-            else if (dataType == DataType.Tensor)
+            else if (dataType == DataTypeEnum.Tensor)
             {
                 componentNames.Remove(FOComponentNames.Mises);
                 componentNames.Remove(FOComponentNames.Tresca);
@@ -455,6 +356,10 @@ namespace CaeResults
         public void SetComponentValuesToZero()
         {
             foreach (var entr in _components) entr.Value.SetValuesToZero();
+        }
+        public void SetComponentValuesTo(float value)
+        {
+            foreach (var entr in _components) entr.Value.SetValuesTo(value);
         }
         public static void FindMax(Field fieldMax, Field fieldAng, Field currentField, float angleDeg)
         {

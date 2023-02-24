@@ -181,7 +181,7 @@ namespace CaeModel
             // Add distances
             FieldData fieldData = new FieldData(FOFieldNames.Distance);
             fieldData.GlobalIncrementId = 1;
-            fieldData.Type = StepType.Static;
+            fieldData.StepType = StepTypeEnum.Static;
             fieldData.Time = 1;
             fieldData.MethodId = 1;
             fieldData.StepId = 1;
@@ -192,14 +192,14 @@ namespace CaeModel
             field.AddComponent(FOComponentNames.D1, distances1);
             field.AddComponent(FOComponentNames.D2, distances2);
             field.AddComponent(FOComponentNames.D3, distances3);
-            results.AddFiled(fieldData, field);
+            results.AddField(fieldData, field);
             // Add values
             fieldData = new FieldData(fieldData);
             fieldData.Name = FOFieldNames.Imported;
             //
             field = new Field(fieldData.Name);
             field.AddComponent(FOComponentNames.PRESS, values);
-            results.AddFiled(fieldData, field);
+            results.AddField(fieldData, field);
             // Unit system
             results.UnitSystem = new UnitSystem(unitSystemType);
             //

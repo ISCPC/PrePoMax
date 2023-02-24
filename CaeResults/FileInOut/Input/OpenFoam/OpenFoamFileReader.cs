@@ -95,7 +95,7 @@ namespace CaeResults
                                     GetField(resultFileName, sortedTime, globalIncrementId, stepId, numOfAllNodes,
                                              cellIdNodeIds, nodeIdsLookUp, nodeIdCellCount, out fieldData, out field);                                    
                                     //
-                                    if (field != null) result.AddFiled(fieldData, field);
+                                    if (field != null) result.AddField(fieldData, field);
                                 }
                                 catch
                                 { }
@@ -166,7 +166,7 @@ namespace CaeResults
                                     GetField(resultFileName, time, globalIncrementId, stepId, numOfAllNodes, cellIdNodeIds,
                                              nodeIdsLookUp, nodeIdCellCount, out fieldData, out field);
                                     //
-                                    if (field != null) result.AddFiled(fieldData, field);
+                                    if (field != null) result.AddField(fieldData, field);
                                 }
                             }
                             catch
@@ -672,7 +672,7 @@ namespace CaeResults
         {
             fieldData = new FieldData(Path.GetFileNameWithoutExtension(fileName));
             fieldData.GlobalIncrementId = globalIncrementId;
-            fieldData.Type = StepType.Static;
+            fieldData.StepType = StepTypeEnum.Static;
             fieldData.Time = (float)time;
             fieldData.MethodId = 1;
             fieldData.StepId = stepId;

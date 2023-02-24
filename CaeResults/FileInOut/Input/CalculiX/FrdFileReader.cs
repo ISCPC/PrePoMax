@@ -87,7 +87,7 @@ namespace CaeResults
                     else if (setID.StartsWith("    1PSTEP")) // Fields
                     {
                         GetField(dataSet, constantWidth, prevFieldData, nodeIdsLookUp, out fieldData, out field);
-                        result.AddFiled(fieldData, field);
+                        result.AddField(fieldData, field);
                         prevFieldData = fieldData.DeepClone();
                     }
                 }
@@ -545,7 +545,7 @@ namespace CaeResults
             //
             string name;
             int globalIncrementId = -1;
-            StepType type = StepType.Static;
+            StepTypeEnum type = StepTypeEnum.Static;
             float time;
             int stepId;
             int stepIncrementId = -1;
@@ -555,7 +555,7 @@ namespace CaeResults
             // Last iterations
             if (record[2].Contains("INC"))
             {
-                type = StepType.LastIterations;
+                type = StepTypeEnum.LastIterations;
                 stepId = int.Parse(record[record.Length - 1]);
             }
             else
@@ -578,31 +578,31 @@ namespace CaeResults
             methodId = int.Parse(record[4]);
             // Steady state dynamics
             if (methodId == 1 && stepIncrementId == 0)
-                type = StepType.SteadyStateDynamics;
+                type = StepTypeEnum.SteadyStateDynamics;
             // Sensitivity
-            if (type == StepType.Static && methodId == 3)   // method 3 is also used for last iterations type
+            if (type == StepTypeEnum.Static && methodId == 3)   // method 3 is also used for last iterations type
             {
-                if (prevFieldData.Type == StepType.Frequency || prevFieldData.Type == StepType.FrequencySensitivity)
-                    type = StepType.FrequencySensitivity;
+                if (prevFieldData.StepType == StepTypeEnum.Frequency || prevFieldData.StepType == StepTypeEnum.FrequencySensitivity)
+                    type = StepTypeEnum.FrequencySensitivity;
             }
             //
-            if (methodId == 4) type = StepType.Buckling;                                            // buckling switch
+            if (methodId == 4) type = StepTypeEnum.Buckling;                                            // buckling switch
             //
-            if (type == StepType.Buckling)
+            if (type == StepTypeEnum.Buckling)
                 GetStepAndStepIncrementIds(type, 1, globalIncrementId, prevFieldData, out stepId, out stepIncrementId);
-            else if (type == StepType.SteadyStateDynamics)
+            else if (type == StepTypeEnum.SteadyStateDynamics)
                 GetStepAndStepIncrementIds(type, 1, globalIncrementId, prevFieldData, out stepId, out stepIncrementId);
-            else if (type == StepType.FrequencySensitivity)
+            else if (type == StepTypeEnum.FrequencySensitivity)
                 GetStepAndStepIncrementIds(type, 0, globalIncrementId, prevFieldData, out stepId, out stepIncrementId);
             // Check for modal analysis
             else if (record.Length > 5 && record[5].Contains("MODAL"))
             {
-                type = StepType.Frequency;
+                type = StepTypeEnum.Frequency;
                 record = lines[lineNum - 2].Split(splitter, StringSplitOptions.RemoveEmptyEntries); // 1PMODE
                 int freqNum = int.Parse(record[1]);
                 stepIncrementId = freqNum;
             }
-            else if (type == StepType.LastIterations)
+            else if (type == StepTypeEnum.LastIterations)
             {
                 stepIncrementId = int.Parse(record[5]);
             }
@@ -612,13 +612,13 @@ namespace CaeResults
             //
             fieldData = new FieldData(name);
             fieldData.GlobalIncrementId = globalIncrementId;
-            fieldData.Type = type;
+            fieldData.StepType = type;
             fieldData.Time = time;
             fieldData.MethodId = methodId;
             fieldData.StepId = stepId;
             fieldData.StepIncrementId = stepIncrementId;
         }
-        static private void GetStepAndStepIncrementIds(StepType type, int startIncrementId, int globalIncrementId,
+        static private void GetStepAndStepIncrementIds(StepTypeEnum type, int startIncrementId, int globalIncrementId,
                                                        FieldData prevFieldData, out int stepId, out int stepIncrementId)
         {
             if (prevFieldData == null) // this is the first step
@@ -626,7 +626,7 @@ namespace CaeResults
                 stepId = 1;
                 stepIncrementId = startIncrementId;
             }
-            else if (prevFieldData.Type != type)   // this is the first increment in the new type step
+            else if (prevFieldData.StepType != type)   // this is the first increment in the new type step
             {
                 stepId = prevFieldData.StepId + 1;
                 stepIncrementId = startIncrementId;

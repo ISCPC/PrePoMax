@@ -320,8 +320,9 @@ namespace PrePoMax.Forms
             }
             // Harmonic
             FieldData fieldData = _controller.CurrentFieldData;
+            Field field = _controller.CurrentResult.GetField(fieldData);
             ComplexResultTypeEnum resultType = _form.GetComplexResultType();
-            rbHarmonic.Enabled = fieldData.Complex && resultType == ComplexResultTypeEnum.Real;
+            rbHarmonic.Enabled = field.Complex && resultType == ComplexResultTypeEnum.Real;
             if (rbHarmonic.Checked && !rbHarmonic.Enabled) rbScaleFactor.Checked = true;
             //
             _controller.SetSelectByToOff();

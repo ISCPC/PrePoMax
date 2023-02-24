@@ -7035,16 +7035,16 @@ namespace PrePoMax
         private void InitializeDeformationComboBoxes()
         {
             tscbDeformationVariable.Items.Clear();
-            string[] variableNames = CaeResults.FeResults.GetPossibleDeformationFieldOutputNames();
+            string[] variableNames = FeResults.GetPossibleDeformationFieldOutputNames();
             tscbDeformationVariable.Items.AddRange(variableNames);
             tscbDeformationVariable.SelectedIndex = 0;  // Displacements
             //
             tscbDeformationType.Items.Clear();
-            Type type = typeof(CaeResults.DeformationScaleFactorTypeEnum);
+            Type type = typeof(DeformationScaleFactorTypeEnum);
             string[] typeNames = Enum.GetNames(type);
             for (int i = 0; i < typeNames.Length; i++)
             {
-                typeNames[i] = ((CaeResults.DeformationScaleFactorTypeEnum)Enum.Parse(type, typeNames[i])).GetDisplayedName();
+                typeNames[i] = ((DeformationScaleFactorTypeEnum)Enum.Parse(type, typeNames[i])).GetDisplayedName();
             }
             tscbDeformationType.Items.AddRange(typeNames);
             tscbDeformationType.SelectedIndex = 2;      // Automatic
@@ -7091,8 +7091,14 @@ namespace PrePoMax
         private void InitializeComplexComboBoxes()
         {
             tscbComplex.Items.Clear();
-            string[] variableNames = FeResults.GetPossibleComplexResultTypeNames();
-            tscbComplex.Items.AddRange(variableNames);
+            //
+            Type type = typeof(ComplexResultTypeEnum);
+            string[] typeNames = Enum.GetNames(type);
+            for (int i = 0; i < typeNames.Length; i++)
+            {
+                typeNames[i] = ((ComplexResultTypeEnum)Enum.Parse(type, typeNames[i])).GetDisplayedName();
+            }
+            tscbComplex.Items.AddRange(typeNames);
             tscbComplex.SelectedIndex = 0;  // Real
             //
             UpdateComplexControlStates();
@@ -7105,7 +7111,11 @@ namespace PrePoMax
                 visible = true;
                 //
                 bool enabled;
-                if (_controller.CurrentFieldData != null) enabled = _controller.CurrentFieldData.Complex;
+                if (_controller.CurrentFieldData != null)
+                {
+                    Field field = _controller.CurrentResult.GetField(_controller.CurrentFieldData);
+                    enabled = field.Complex;
+                }
                 else enabled = false;
                 //
                 tslComplex.Enabled = enabled;
@@ -7144,9 +7154,14 @@ namespace PrePoMax
                 return (ComplexResultTypeEnum)Invoke(new Func<ComplexResultTypeEnum>(GetComplexResultType));
             //
             string displayName = tscbComplex.SelectedItem.ToString();
-            ComplexResultTypeEnum complexResultType;
-            if (Enum.TryParse(displayName, out complexResultType)) return complexResultType;
-            else return ComplexResultTypeEnum.Real;
+            ComplexResultTypeEnum[] complexResultTypes = (ComplexResultTypeEnum[])Enum.GetValues(typeof(ComplexResultTypeEnum));
+            //
+            for (int i = 0; i < complexResultTypes.Length; i++)
+            {
+                if (displayName == complexResultTypes[i].GetDisplayedName()) return complexResultTypes[i];
+            }
+            //
+            throw new NotSupportedException();
         }
         public double GetComplexAngleDeg()
         {
@@ -7961,7 +7976,7 @@ namespace PrePoMax
             //
             return;
             //
-            if (_controller.CurrentFieldData.Type == CaeResults.StepType.Frequency)
+            if (_controller.CurrentFieldData.StepType == CaeResults.StepTypeEnum.Frequency)
             {
                 string firstStepIncrement = (string)tscbStepAndIncrement.Items[tscbStepAndIncrement.Items.Count - 1];
             }
@@ -8450,7 +8465,7 @@ namespace PrePoMax
             // Add distances
             CaeResults.FieldData fieldData = new CaeResults.FieldData(CaeResults.FOFieldNames.Distance);
             fieldData.GlobalIncrementId = 1;
-            fieldData.Type = CaeResults.StepType.Static;
+            fieldData.StepType = CaeResults.StepTypeEnum.Static;
             fieldData.Time = 1;
             fieldData.MethodId = 1;
             fieldData.StepId = 1;
@@ -8461,14 +8476,14 @@ namespace PrePoMax
             field.AddComponent(CaeResults.FOComponentNames.D1, distances1);
             field.AddComponent(CaeResults.FOComponentNames.D2, distances2);
             field.AddComponent(CaeResults.FOComponentNames.D3, distances3);
-            outResults.AddFiled(fieldData, field);
+            outResults.AddField(fieldData, field);
             // Add values
             fieldData = new CaeResults.FieldData(fieldData);
             fieldData.Name = CaeResults.FOFieldNames.Imported;
             //
             field = new CaeResults.Field(fieldData.Name);
             field.AddComponent(CaeResults.FOComponentNames.PRESS, values);
-            outResults.AddFiled(fieldData, field);
+            outResults.AddField(fieldData, field);
             // Unit system
             outResults.UnitSystem = new UnitSystem(_controller.Model.UnitSystem.UnitSystemType);
             _controller.SetResults(outResults);
