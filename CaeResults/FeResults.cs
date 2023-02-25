@@ -34,7 +34,7 @@ namespace CaeResults
         [NonSerialized]
         private int _stepIncrementId;        
         [NonSerialized]
-        private bool _complexAngleChanged;
+        private bool _complexResultChanged;
         //
         public static readonly string[][] ComplexFieldNames = new string[][] { new string[] { FOFieldNames.Disp,
                                                                                               FOFieldNames.DispR,
@@ -167,7 +167,7 @@ namespace CaeResults
             _history = null;
             _unitSystem = new UnitSystem();
             _deformationFieldOutputName = FOFieldNames.Disp;
-            _complexAngleChanged = false;
+            _complexResultChanged = false;
         }
         //public FeResults(SerializationInfo info, StreamingContext context)
         //{
@@ -221,14 +221,29 @@ namespace CaeResults
                 if (results._fields == null) bw.Write(-1);
                 else
                 {
+                    // Set complex real
+                    ComplexResultTypeEnum prevComplexResultType = results._complexResultType;
+                    float prevComplexAngleDeg = results._complexAngleDeg;
+                    results.SetComplexResultTypeAndAngle(ComplexResultTypeEnum.Real, 0);
+                    // Delete complex
+                    results.RemoveComplexResults();
+                    //
                     bw.Write(1);
                     //
                     bw.Write(results._fields.Count);
                     foreach (var entry in results._fields)
                     {
+                        entry.Value.RemoveInvariants();
+                        //
                         FieldData.WriteToFile(entry.Key, bw);
                         Field.WriteToFile(entry.Value, bw);
+                        //
+                        entry.Value.ComputeInvariants();
                     }
+                    // Prepare complex
+                    results.PrepareComplexResults();
+                    // Reset complex
+                    results.SetComplexResultTypeAndAngle(prevComplexResultType, prevComplexAngleDeg);
                 }
             }
         }
@@ -263,8 +278,13 @@ namespace CaeResults
                     {
                         fieldData = FieldData.ReadFromFile(br, version);
                         field = Field.ReadFromFile(br, version);
+                        //
+                        field.ComputeInvariants();
+                        //
                         results.AddField(fieldData, field);
                     }
+                    // Prepare complex
+                    results.PrepareComplexResults();
                 }
             }
         }
@@ -537,12 +557,12 @@ namespace CaeResults
         }
         public void SetMeshDeformation(float scale, int stepId, int stepIncrementId)
         {
-            if (scale != _scale || stepId != _stepId || stepIncrementId != _stepIncrementId || _complexAngleChanged)
+            if (scale != _scale || stepId != _stepId || stepIncrementId != _stepIncrementId || _complexResultChanged)
             {
                 _scale = scale;
                 _stepId = stepId;
                 _stepIncrementId = stepIncrementId;
-                _complexAngleChanged = false;
+                _complexResultChanged = false;
                 //
                 int resultNodeId;
                 double[] offset;
@@ -772,10 +792,9 @@ namespace CaeResults
             if (complexResultType != _complexResultType ||
                 (_complexResultType == ComplexResultTypeEnum.Angle && complexAngleDeg != _complexAngleDeg))
             {
-                if (complexAngleDeg != _complexAngleDeg) _complexAngleChanged = true;
-                //
                 _complexResultType = complexResultType;
                 _complexAngleDeg = complexAngleDeg;
+                _complexResultChanged = true;
                 // Compute the complex result
                 SetComplexResult(fieldData);
                 // If onlyThisField is used (animation) then also compute the deformations
@@ -948,6 +967,18 @@ namespace CaeResults
                 }
             }
         }
+        public void RemoveComplexResults()
+        {
+            HashSet<string> fieldNamesToRemove = new HashSet<string>();
+            for (int i = 0; i < ComplexFieldNames.Length; i++)
+            {
+                for (int j = 0; j < ComplexFieldNames[i].Length; j++)
+                {
+                    if (j != 0 && j != 2) fieldNamesToRemove.Add(ComplexFieldNames[i][j]);
+                }
+            }
+            RemoveResultFieldOutputs(fieldNamesToRemove.ToArray());
+        }
         public void SetComplexResult(FieldData onlyThisField)
         {
             if (_complexResultType == ComplexResultTypeEnum.Angle) SetComplexResultToAngle(onlyThisField);
@@ -1071,7 +1102,7 @@ namespace CaeResults
                 }
             }
         }
-        public void PrepareComplexMaxMin(FieldData onlyThisField)
+        public void ComputeComplexMaxMin(FieldData onlyThisField)
         {
             if (onlyThisField == null) throw new NotSupportedException();
             //
@@ -1089,9 +1120,7 @@ namespace CaeResults
             Field fieldMaxAng;
             Field fieldMin;
             Field fieldMinAng;
-            float[] valuesMag;
-            float[] valuesPha;
-            float[] valuesAngle;
+           
             //
             int stepId = onlyThisField.StepId;
             int incrementId = onlyThisField.StepIncrementId;
@@ -1125,17 +1154,22 @@ namespace CaeResults
                             fieldData = GetFieldData(complexFieldNames[1], null, stepId, incrementId);  // take real
                             field = new Field(GetField(fieldData, false));                              // copy real
                             //
-                            float angle;
+                            object myLock = new object();
                             int numOfAngles = 360;
                             float delta = 360f / numOfAngles;       // skip the final anlge which is the same as the first angle
-                            for (int j = 0; j < numOfAngles; j++)
+                            Parallel.For(0, numOfAngles, j =>
+                            //for (int j = 0; j < numOfAngles; j++)
                             {
-                                angle = j * delta;
+                                float[] valuesMag;
+                                float[] valuesPha;
+                                float[] valuesAngle;
+                                float angle = j * delta;
+                                Field fieldP = new Field(field);
                                 //
-                                string[] componentNames = field.GetComponentNames();
+                                string[] componentNames = fieldP.GetComponentNames();
                                 foreach (var componentName in componentNames)
                                 {
-                                    if (!field.IsComponentInvariant(componentName))
+                                    if (!fieldP.IsComponentInvariant(componentName))
                                     {
                                         valuesMag = fieldMag.GetComponentValues(componentName);
                                         valuesPha = fieldPha.GetComponentValues(componentName);
@@ -1146,14 +1180,18 @@ namespace CaeResults
                                             valuesAngle[k] = Tools.GetComplexRealAtAngleFromMagAndPha(valuesMag[k],
                                                                                                       valuesPha[k], angle);
                                         }
-                                        field.ReplaceComponent(componentName, new FieldComponent(componentName, valuesAngle));
+                                        fieldP.ReplaceComponent(componentName, new FieldComponent(componentName, valuesAngle));
                                     }
                                 }
-                                field.ComputeInvariants();
+                                fieldP.ComputeInvariants();
                                 //
-                                Field.FindMax(fieldMax, fieldMaxAng, field, angle);
-                                Field.FindMin(fieldMin, fieldMinAng, field, angle);
+                                lock (myLock)
+                                {
+                                    Field.FindMax(fieldMax, fieldMaxAng, fieldP, angle);
+                                    Field.FindMin(fieldMin, fieldMinAng, fieldP, angle);
+                                }
                             }
+                            );
                         }
                         //
                         fieldMax.DataState = DataStateEnum.OK;
@@ -1169,8 +1207,6 @@ namespace CaeResults
                 }
                         
             }
-                
-            
         }
         // History                                  
         public HistoryResults GetHistory()
@@ -1574,7 +1610,7 @@ namespace CaeResults
                     if (field.DataState == DataStateEnum.OK) { }
                     else if (field.DataState == DataStateEnum.UpdateComplexMinMax)
                     {
-                        PrepareComplexMaxMin(fieldData);    // compute max/min
+                        ComputeComplexMaxMin(fieldData);    // compute max/min
                         SetComplexResult(fieldData);        // set computed values to default field
                         //
                         if (_fieldDataHashField.TryGetValue(hash, out field))
@@ -1613,99 +1649,6 @@ namespace CaeResults
             {
                 if (FOFieldNames.IsVisible(entry.Key.Name)) entry.Value.ComputeInvariants();
             }
-        }
-        //
-        public HistoryResultSet AddResultHistoryOutput(ResultHistoryOutput resultHistoryOutput)
-        {
-            // Compatibility for version v1.2.1
-            if (_history == null) _history = new HistoryResults("Tmp");
-            //
-            HistoryResultSet historyResultSet = null;
-            //
-            if (resultHistoryOutput is ResultHistoryOutputFromField rhoff)
-            {
-                int[] nodeIds = null;
-                if (rhoff.RegionType == RegionTypeEnum.NodeSetName)
-                {
-                    nodeIds = _mesh.NodeSets[rhoff.RegionName].Labels;
-                }
-                else if (rhoff.RegionType == RegionTypeEnum.SurfaceName)
-                {
-                    string nodeSetName = _mesh.Surfaces[rhoff.RegionName].NodeSetName;
-                    nodeIds = _mesh.NodeSets[nodeSetName].Labels;
-                }
-                else if (rhoff.RegionType == RegionTypeEnum.Selection)
-                {
-                    nodeIds = rhoff.CreationIds;
-                }
-                //
-                if (nodeIds != null)
-                {                    
-                    // Prepare entries
-                    string name;
-                    HistoryResultComponent historyResultComponent = new HistoryResultComponent(rhoff.ComponentName);
-                    historyResultComponent.Entries = new Dictionary<string, HistoryResultEntries>();
-                    for (int i = 0; i < nodeIds.Length; i++)
-                    {
-                        name = nodeIds[i].ToString();
-                        historyResultComponent.Entries.Add(name, new HistoryResultEntries(name, false));
-                    }
-                    // Get all existing increments
-                    Dictionary<int, int[]> existingStepIncrementIds =
-                        GetExistingIncrementIds(rhoff.FieldName, rhoff.ComponentName, rhoff.StepId, rhoff.StepIncrementId);
-                    Field field;
-                    float[] values;
-                    int resultNodeId;
-                    FieldData fieldData;
-                    // Set complex
-                    ComplexResultTypeEnum prevComplexResultType = _complexResultType;
-                    float prevComplexAngleDeg = _complexAngleDeg;
-                    SetComplexResultTypeAndAngle(rhoff.ComplexResultType, (float)rhoff.ComplexAngleDeg);
-                    //
-                    foreach (var entry in existingStepIncrementIds)
-                    {
-                        foreach (var incrementId in entry.Value)
-                        {
-                            fieldData = GetFieldData(rhoff.FieldName, rhoff.ComponentName, entry.Key, incrementId);
-                            field = GetField(fieldData);
-                            // Filter complex components only to complex field outputs
-                            if (rhoff.ComplexResultType != ComplexResultTypeEnum.Real && !field.Complex) continue;
-                            //
-                            if (field != null)
-                            {
-                                values = field.GetComponentValues(rhoff.ComponentName);
-                                if (values != null)
-                                {
-                                    for (int i = 0; i < nodeIds.Length; i++)
-                                    {
-                                        name = nodeIds[i].ToString();
-                                        resultNodeId = _nodeIdsLookUp[nodeIds[i]];
-                                        historyResultComponent.Entries[name].Add(fieldData.Time, values[resultNodeId]);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // Set phase unit
-                    if (rhoff.ComplexResultType == ComplexResultTypeEnum.Phase ||
-                        rhoff.ComplexResultType == ComplexResultTypeEnum.AngleAtMax ||
-                        rhoff.ComplexResultType == ComplexResultTypeEnum.AngleAtMin)
-                    {
-                        historyResultComponent.Unit = StringAngleDegConverter.GetUnitAbbreviation();
-                    }
-                    // Reset complex
-                    SetComplexResultTypeAndAngle(prevComplexResultType, prevComplexAngleDeg);
-                    //
-                    HistoryResultField historyResultField = new HistoryResultField(rhoff.FieldName);
-                    historyResultField.Components.Add(historyResultComponent.Name, historyResultComponent);
-                    //
-                    historyResultSet = new HistoryResultSet(rhoff.Name);
-                    historyResultSet.Fields.Add(historyResultField.Name, historyResultField);
-                    //
-                    _history.Sets.Add(historyResultSet.Name, historyResultSet);
-                }
-            }
-            return historyResultSet;
         }
         //
         public string[] GetAllComponentNames()
@@ -2261,6 +2204,99 @@ namespace CaeResults
             return nodesData;
         }
         // History
+        public HistoryResultSet AddResultHistoryOutput(ResultHistoryOutput resultHistoryOutput)
+        {
+            // Compatibility for version v1.2.1
+            if (_history == null) _history = new HistoryResults("Tmp");
+            //
+            HistoryResultSet historyResultSet = null;
+            //
+            if (resultHistoryOutput is ResultHistoryOutputFromField rhoff)
+            {
+                int[] nodeIds = null;
+                if (rhoff.RegionType == RegionTypeEnum.NodeSetName)
+                {
+                    nodeIds = _mesh.NodeSets[rhoff.RegionName].Labels;
+                }
+                else if (rhoff.RegionType == RegionTypeEnum.SurfaceName)
+                {
+                    string nodeSetName = _mesh.Surfaces[rhoff.RegionName].NodeSetName;
+                    nodeIds = _mesh.NodeSets[nodeSetName].Labels;
+                }
+                else if (rhoff.RegionType == RegionTypeEnum.Selection)
+                {
+                    nodeIds = rhoff.CreationIds;
+                }
+                //
+                if (nodeIds != null)
+                {
+                    // Prepare entries
+                    string name;
+                    HistoryResultComponent historyResultComponent = new HistoryResultComponent(rhoff.ComponentName);
+                    historyResultComponent.Entries = new Dictionary<string, HistoryResultEntries>();
+                    for (int i = 0; i < nodeIds.Length; i++)
+                    {
+                        name = nodeIds[i].ToString();
+                        historyResultComponent.Entries.Add(name, new HistoryResultEntries(name, false));
+                    }
+                    // Get all existing increments
+                    Dictionary<int, int[]> existingStepIncrementIds =
+                        GetExistingIncrementIds(rhoff.FieldName, rhoff.ComponentName, rhoff.StepId, rhoff.StepIncrementId);
+                    Field field;
+                    float[] values;
+                    int resultNodeId;
+                    FieldData fieldData;
+                    // Set complex
+                    ComplexResultTypeEnum prevComplexResultType = _complexResultType;
+                    float prevComplexAngleDeg = _complexAngleDeg;
+                    SetComplexResultTypeAndAngle(rhoff.ComplexResultType, (float)rhoff.ComplexAngleDeg);
+                    //
+                    foreach (var entry in existingStepIncrementIds)
+                    {
+                        foreach (var incrementId in entry.Value)
+                        {
+                            fieldData = GetFieldData(rhoff.FieldName, rhoff.ComponentName, entry.Key, incrementId);
+                            field = GetField(fieldData);
+                            // Filter complex components only to complex field outputs
+                            if (rhoff.ComplexResultType != ComplexResultTypeEnum.Real && !field.Complex) continue;
+                            //
+                            if (field != null)
+                            {
+                                values = field.GetComponentValues(rhoff.ComponentName);
+                                if (values != null)
+                                {
+                                    for (int i = 0; i < nodeIds.Length; i++)
+                                    {
+                                        name = nodeIds[i].ToString();
+                                        resultNodeId = _nodeIdsLookUp[nodeIds[i]];
+                                        historyResultComponent.Entries[name].Add(fieldData.Time, values[resultNodeId]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // Set phase unit
+                    if (rhoff.ComplexResultType == ComplexResultTypeEnum.Phase ||
+                        rhoff.ComplexResultType == ComplexResultTypeEnum.AngleAtMax ||
+                        rhoff.ComplexResultType == ComplexResultTypeEnum.AngleAtMin)
+                    {
+                        historyResultComponent.Unit = StringAngleDegConverter.GetUnitAbbreviation();
+                    }
+                    // Reset complex
+                    SetComplexResultTypeAndAngle(prevComplexResultType, prevComplexAngleDeg);
+                    //
+                    HistoryResultField historyResultField = new HistoryResultField(rhoff.FieldName);
+                    historyResultField.Components.Add(historyResultComponent.Name, historyResultComponent);
+                    //
+                    historyResultSet = new HistoryResultSet(rhoff.Name);
+                    historyResultSet.Fields.Add(historyResultField.Name, historyResultField);
+                    //
+                    _history.Sets.Add(historyResultSet.Name, historyResultSet);
+                }
+            }
+            return historyResultSet;
+        }
+        //
         public HistoryResultSet GetHistoryResultSet(string setName)
         {
             HistoryResultSet set = null;

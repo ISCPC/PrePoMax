@@ -50,8 +50,6 @@ namespace PrePoMax
         // Methods                                                                                                                  
         public void SetData(string[] columnNames, object[][] rowBasedData)
         {
-            if (rowBasedData.Length <= 0) return;
-            //
             dgvHistory.Rows.Clear();
             dgvHistory.Columns.Clear();
             //
@@ -62,6 +60,8 @@ namespace PrePoMax
             if (maxNumCol < 1)
                 throw new NotSupportedException("The maximum number of history output entries to show is too small." +
                                                 " Use Tools -> Settings to increase it.");
+            //
+            if (columnNames == null) return;
             //
             if (columnNames.Length > maxNumCol + 1)
             {
@@ -84,6 +84,8 @@ namespace PrePoMax
                 //column.CellType = typeof(double);
                 dgvHistory.Columns.Add(column);
             }
+            //
+            if (rowBasedData.Length <= 0) return;
             foreach (var row in rowBasedData) dgvHistory.Rows.Add(row);
             //
             return;
