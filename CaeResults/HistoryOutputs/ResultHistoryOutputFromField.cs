@@ -18,6 +18,7 @@ namespace CaeResults
         private double _complexAngleDeg;    // must be double
         private int _stepId;
         private int _stepIncrementId;
+        private bool _harmonic;
 
 
         // Properties                                                                                                               
@@ -27,6 +28,7 @@ namespace CaeResults
         public double ComplexAngleDeg { get { return _complexAngleDeg; } set { _complexAngleDeg = value; } }
         public int StepId { get { return _stepId; } set { _stepId = value; } }
         public int StepIncrementId { get { return _stepIncrementId; } set { _stepIncrementId = value; } }
+        public bool Harmonic { get { return _harmonic; } set { _harmonic = value; } }
 
 
         // Constructors                                                                                                             
@@ -39,6 +41,7 @@ namespace CaeResults
             _complexResultType = ComplexResultTypeEnum.Real;
             _stepId = -1;
             _stepIncrementId = -1;
+            _harmonic = false;
         }
 
 

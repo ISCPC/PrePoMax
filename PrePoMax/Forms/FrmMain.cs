@@ -6036,7 +6036,7 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Results  ###########################################################################################################
-        public void ViewResultHistoryOutputData(CaeResults.HistoryResultData historyData)
+        public void ViewResultHistoryOutputData(HistoryResultData historyData)
         {
             try
             {
@@ -6869,6 +6869,7 @@ namespace PrePoMax
                 if (newResultName != currentResultName)
                 {
                     SetResult(newResultName);
+                    UpdateComplexControlStates();
                 }
                 this.ActiveControl = null;
             }
@@ -7114,7 +7115,8 @@ namespace PrePoMax
                 if (_controller.CurrentFieldData != null)
                 {
                     Field field = _controller.CurrentResult.GetField(_controller.CurrentFieldData);
-                    enabled = field.Complex;
+                    if (field != null) enabled = field.Complex;
+                    else enabled = false;
                 }
                 else enabled = false;
                 //

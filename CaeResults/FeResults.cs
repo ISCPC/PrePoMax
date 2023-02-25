@@ -12,6 +12,7 @@ using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Collections.Concurrent;
 using System.Data;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 
 namespace CaeResults
 {
@@ -1157,12 +1158,13 @@ namespace CaeResults
                             object myLock = new object();
                             int numOfAngles = 360;
                             float delta = 360f / numOfAngles;       // skip the final anlge which is the same as the first angle
-                            Parallel.For(0, numOfAngles, j =>
+                            Parallel.For(0, numOfAngles + 1, j =>
                             //for (int j = 0; j < numOfAngles; j++)
                             {
                                 float[] valuesMag;
                                 float[] valuesPha;
                                 float[] valuesAngle;
+                                //
                                 float angle = j * delta;
                                 Field fieldP = new Field(field);
                                 //
@@ -2239,62 +2241,106 @@ namespace CaeResults
                         name = nodeIds[i].ToString();
                         historyResultComponent.Entries.Add(name, new HistoryResultEntries(name, false));
                     }
-                    // Get all existing increments
-                    Dictionary<int, int[]> existingStepIncrementIds =
-                        GetExistingIncrementIds(rhoff.FieldName, rhoff.ComponentName, rhoff.StepId, rhoff.StepIncrementId);
-                    Field field;
-                    float[] values;
-                    int resultNodeId;
-                    FieldData fieldData;
-                    // Set complex
-                    ComplexResultTypeEnum prevComplexResultType = _complexResultType;
-                    float prevComplexAngleDeg = _complexAngleDeg;
-                    SetComplexResultTypeAndAngle(rhoff.ComplexResultType, (float)rhoff.ComplexAngleDeg);
                     //
-                    foreach (var entry in existingStepIncrementIds)
+                    if (rhoff.Harmonic) GetHarmonicFromHistoryOutut(rhoff, historyResultComponent, nodeIds);
+                    else
                     {
-                        foreach (var incrementId in entry.Value)
+
+                        // Get all existing increments
+                        Dictionary<int, int[]> existingStepIncrementIds =
+                            GetExistingIncrementIds(rhoff.FieldName, rhoff.ComponentName, rhoff.StepId, rhoff.StepIncrementId);
+                        float[] values;
+                        int resultNodeId;
+                        Field field;
+                        FieldData fieldData;
+                        // Set complex
+                        ComplexResultTypeEnum prevComplexResultType = _complexResultType;
+                        float prevComplexAngleDeg = _complexAngleDeg;
+                        SetComplexResultTypeAndAngle(rhoff.ComplexResultType, (float)rhoff.ComplexAngleDeg);
+                        //
+                        foreach (var entry in existingStepIncrementIds)
                         {
-                            fieldData = GetFieldData(rhoff.FieldName, rhoff.ComponentName, entry.Key, incrementId);
-                            field = GetField(fieldData);
-                            // Filter complex components only to complex field outputs
-                            if (rhoff.ComplexResultType != ComplexResultTypeEnum.Real && !field.Complex) continue;
-                            //
-                            if (field != null)
+                            foreach (var incrementId in entry.Value)
                             {
-                                values = field.GetComponentValues(rhoff.ComponentName);
-                                if (values != null)
+                                fieldData = GetFieldData(rhoff.FieldName, rhoff.ComponentName, entry.Key, incrementId);
+                                field = GetField(fieldData);
+                                // Filter complex components only to complex field outputs
+                                if (rhoff.ComplexResultType != ComplexResultTypeEnum.Real && !field.Complex) continue;
+                                //
+                                if (field != null)
                                 {
-                                    for (int i = 0; i < nodeIds.Length; i++)
+                                    values = field.GetComponentValues(rhoff.ComponentName);
+                                    if (values != null)
                                     {
-                                        name = nodeIds[i].ToString();
-                                        resultNodeId = _nodeIdsLookUp[nodeIds[i]];
-                                        historyResultComponent.Entries[name].Add(fieldData.Time, values[resultNodeId]);
+                                        for (int i = 0; i < nodeIds.Length; i++)
+                                        {
+                                            name = nodeIds[i].ToString();
+                                            resultNodeId = _nodeIdsLookUp[nodeIds[i]];
+                                            historyResultComponent.Entries[name].Add(fieldData.Time, values[resultNodeId]);
+                                        }
                                     }
                                 }
                             }
                         }
+                        // Reset complex
+                        SetComplexResultTypeAndAngle(prevComplexResultType, prevComplexAngleDeg);
+                        // Set phase unit
+                        if (rhoff.ComplexResultType == ComplexResultTypeEnum.Phase ||
+                            rhoff.ComplexResultType == ComplexResultTypeEnum.AngleAtMax ||
+                            rhoff.ComplexResultType == ComplexResultTypeEnum.AngleAtMin)
+                        {
+                            historyResultComponent.Unit = StringAngleDegConverter.GetUnitAbbreviation();
+                        }
                     }
-                    // Set phase unit
-                    if (rhoff.ComplexResultType == ComplexResultTypeEnum.Phase ||
-                        rhoff.ComplexResultType == ComplexResultTypeEnum.AngleAtMax ||
-                        rhoff.ComplexResultType == ComplexResultTypeEnum.AngleAtMin)
-                    {
-                        historyResultComponent.Unit = StringAngleDegConverter.GetUnitAbbreviation();
-                    }
-                    // Reset complex
-                    SetComplexResultTypeAndAngle(prevComplexResultType, prevComplexAngleDeg);
                     //
                     HistoryResultField historyResultField = new HistoryResultField(rhoff.FieldName);
                     historyResultField.Components.Add(historyResultComponent.Name, historyResultComponent);
                     //
                     historyResultSet = new HistoryResultSet(rhoff.Name);
+                    historyResultSet.Harmonic = rhoff.Harmonic;
                     historyResultSet.Fields.Add(historyResultField.Name, historyResultField);
                     //
                     _history.Sets.Add(historyResultSet.Name, historyResultSet);
                 }
             }
             return historyResultSet;
+        }
+        public void GetHarmonicFromHistoryOutut(ResultHistoryOutputFromField rhoff, HistoryResultComponent historyResultComponent,
+                                                int[] nodeIds)
+        {
+            int resultNodeId;
+            string name;
+            float[] values;
+            Field field;
+            FieldData fieldData = GetFieldData(rhoff.FieldName, rhoff.ComponentName, rhoff.StepId, rhoff.StepIncrementId);
+            // Set complex
+            ComplexResultTypeEnum prevComplexResultType = _complexResultType;
+            float prevComplexAngleDeg = _complexAngleDeg;
+            //
+            for (int i = 0; i <= 360; i++)
+            {
+                SetComplexResultTypeAndAngle(ComplexResultTypeEnum.Angle, i, fieldData);
+                //
+                field = GetField(fieldData);
+                // Filter complex components only to complex field outputs
+                if (rhoff.ComplexResultType != ComplexResultTypeEnum.Real && !field.Complex) continue;
+                //
+                if (field != null)
+                {
+                    values = field.GetComponentValues(rhoff.ComponentName);
+                    if (values != null)
+                    {
+                        for (int j = 0; j < nodeIds.Length; j++)
+                        {
+                            name = nodeIds[j].ToString();
+                            resultNodeId = _nodeIdsLookUp[nodeIds[j]];
+                            historyResultComponent.Entries[name].Add(i, values[resultNodeId]);
+                        }
+                    }
+                }
+            }
+            // Reset complex
+            SetComplexResultTypeAndAngle(prevComplexResultType, prevComplexAngleDeg);
         }
         //
         public HistoryResultSet GetHistoryResultSet(string setName)
@@ -2388,8 +2434,9 @@ namespace CaeResults
             if (component.Unit != null) unit = component.Unit;
             else unit = GetHistoryUnitAbbrevation(field.Name, component.Name, -1, -1);
             unit = "\n[" + unit + "]";
-            string timeUnit = " [" + GetHistoryUnitAbbrevation("Time", null, -1, -1) + "]";
-            string frequencyUnit = " [" + GetHistoryUnitAbbrevation("Frequency", null, -1, -1) + "]";
+            string timeUnit = "[" + GetHistoryUnitAbbrevation("Time", null, -1, -1) + "]";
+            string frequencyUnit = "[" + GetHistoryUnitAbbrevation("Frequency", null, -1, -1) + "]";
+            string angleUnit = "[" + StringAngleDegConverter.GetUnitAbbreviation() + "]";
             // Sorted time
             double[] sortedTime;
             Dictionary<double, int> timeRowId;
@@ -2403,7 +2450,8 @@ namespace CaeResults
             // Create rows
             for (int i = 0; i < numRow; i++) rowBasedData[i] = new object[numCol];
             // Add time column name
-            columnNames[0] = "Time" + timeUnit + Environment.NewLine + "Frequency" + frequencyUnit;
+            if (set.Harmonic) columnNames[0] = "Angle" + Environment.NewLine + angleUnit;
+            else columnNames[0] = "Time " + timeUnit + Environment.NewLine + "Frequency " + frequencyUnit;
             // Fill the data array
             for (int i = 0; i < sortedTime.Length; i++) rowBasedData[i][0] = sortedTime[i];
             // Add data column

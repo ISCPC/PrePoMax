@@ -14,7 +14,8 @@ namespace PrePoMax
     public class ViewResultHistoryOutputFromField : ViewResultHistoryOutput
     {
         // Variables                                                                                                                
-        private readonly static string _all = "All ids";
+        private readonly static string _all = "All";
+        private bool _complexVisible;
         private ResultHistoryOutputFromField _historyOutput;
         private Dictionary<string, string[]> _filedNameComponentNames;
         private Dictionary<string, string[]> _stepIdStepIncrementIds;
@@ -106,9 +107,16 @@ namespace PrePoMax
                 {
                     if (int.TryParse(value, out int incrementId)) _historyOutput.StepIncrementId = incrementId;
                     else throw new NotSupportedException();
+                    //
+                    UpdateVisibility();
                 }
             }
         }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(7, 10, "Harmonic")]
+        [DescriptionAttribute("Output harmonic oscillations as the history output.")]
+        public bool Harmonic { get { return _historyOutput.Harmonic; } set { _historyOutput.Harmonic = value; } }
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Node set")]
@@ -126,6 +134,7 @@ namespace PrePoMax
         {
             // The order is important
             _historyOutput = historyOutput;
+            _complexVisible = complexVisible;
             //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
             regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
@@ -135,7 +144,9 @@ namespace PrePoMax
             SetBase(_historyOutput, regionTypePropertyNamePairs);
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             //
-            DynamicCustomTypeDescriptor.GetProperty(nameof(ComplexResultType)).SetIsBrowsable(complexVisible);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(ComplexResultType)).SetIsBrowsable(_complexVisible);
+            //
+            DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo(nameof(Harmonic));
         }
 
 
@@ -191,9 +202,15 @@ namespace PrePoMax
         }
         private void UpdateVisibility()
         {
-            CustomPropertyDescriptor cpd = DynamicCustomTypeDescriptor.GetProperty(nameof(ComplexAngleDeg));
-            cpd.SetIsBrowsable(ComplexResultType == ComplexResultTypeEnum.Angle);
-            DynamicCustomTypeDescriptor.GetProperty(nameof(StepIncrementId)).SetIsBrowsable(StepId != _all);
+            DynamicCustomTypeDescriptor dctd = DynamicCustomTypeDescriptor;
+            bool visible = ComplexResultType == ComplexResultTypeEnum.Angle;
+            //
+            dctd.GetProperty(nameof(ComplexAngleDeg)).SetIsBrowsable(visible);
+            visible = StepId != _all;
+            dctd.GetProperty(nameof(StepIncrementId)).SetIsBrowsable(visible);
+            visible = _complexVisible && ComplexResultType == ComplexResultTypeEnum.Real &&
+                      visible && StepIncrementId != _all;
+            dctd.GetProperty(nameof(Harmonic)).SetIsBrowsable(visible);
         }
     }
 
