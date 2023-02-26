@@ -262,8 +262,7 @@ namespace UserControls
                                 if (i == 0)
                                 {
                                     yData[yIndex] = new double[values.Count];
-                                    yNames[yIndex] = Columns[colIndices[j]].HeaderText;
-                                    yNames[yIndex] = yNames[yIndex].Replace("\n", " ");
+                                    yNames[yIndex] = Columns[colIndices[j]].HeaderText.Replace("\n", " ");
                                 }
                                 // Get y data
                                 yData[yIndex][i] = rowValues[colIndices[j]];                                

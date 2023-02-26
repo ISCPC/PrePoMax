@@ -791,7 +791,7 @@ namespace CaeResults
                                                  FieldData fieldData = null)
         {
             if (complexResultType != _complexResultType ||
-                (_complexResultType == ComplexResultTypeEnum.Angle && complexAngleDeg != _complexAngleDeg))
+                (_complexResultType == ComplexResultTypeEnum.RealAtAngle && complexAngleDeg != _complexAngleDeg))
             {
                 _complexResultType = complexResultType;
                 _complexAngleDeg = complexAngleDeg;
@@ -816,7 +816,7 @@ namespace CaeResults
             else if (_complexResultType == ComplexResultTypeEnum.Imaginary) return 2;
             else if (_complexResultType == ComplexResultTypeEnum.Magnitude) return 3;
             else if (_complexResultType == ComplexResultTypeEnum.Phase) return 4;
-            else if (_complexResultType == ComplexResultTypeEnum.Angle) return -1;
+            else if (_complexResultType == ComplexResultTypeEnum.RealAtAngle) return -1;
             else if (_complexResultType == ComplexResultTypeEnum.Max) return 5;
             else if (_complexResultType == ComplexResultTypeEnum.AngleAtMax) return 6;
             else if (_complexResultType == ComplexResultTypeEnum.Min) return 7;
@@ -982,7 +982,7 @@ namespace CaeResults
         }
         public void SetComplexResult(FieldData onlyThisField)
         {
-            if (_complexResultType == ComplexResultTypeEnum.Angle) SetComplexResultToAngle(onlyThisField);
+            if (_complexResultType == ComplexResultTypeEnum.RealAtAngle) SetComplexResultToAngle(onlyThisField);
             else SetToExistingComplexResult(onlyThisField);
         }
         private void SetToExistingComplexResult(FieldData onlyThisField)
@@ -2319,7 +2319,7 @@ namespace CaeResults
             //
             for (int i = 0; i <= 360; i++)
             {
-                SetComplexResultTypeAndAngle(ComplexResultTypeEnum.Angle, i, fieldData);
+                SetComplexResultTypeAndAngle(ComplexResultTypeEnum.RealAtAngle, i, fieldData);
                 //
                 field = GetField(fieldData);
                 // Filter complex components only to complex field outputs
@@ -2450,7 +2450,7 @@ namespace CaeResults
             // Create rows
             for (int i = 0; i < numRow; i++) rowBasedData[i] = new object[numCol];
             // Add time column name
-            if (set.Harmonic) columnNames[0] = "Angle" + Environment.NewLine + angleUnit;
+            if (set.Harmonic) columnNames[0] = "Angle " + angleUnit;
             else columnNames[0] = "Time " + timeUnit + Environment.NewLine + "Frequency " + frequencyUnit;
             // Fill the data array
             for (int i = 0; i < sortedTime.Length; i++) rowBasedData[i][0] = sortedTime[i];

@@ -19,8 +19,8 @@ namespace CaeResults
         Magnitude,
         [StandardValue("Phase", DisplayName = "Phase", Description = "Phase")]
         Phase,
-        [StandardValue("Angle", DisplayName = "Angle", Description = "Angle")]
-        Angle,
+        [StandardValue("Angle", DisplayName = "Real at angle", Description = "Real at angle")]
+        RealAtAngle,
         [StandardValue("Max", DisplayName = "Max", Description = "Max")]
         Max,
         [StandardValue("AngleAtMax", DisplayName = "Angle at max", Description = "Angle at max")]

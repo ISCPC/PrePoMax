@@ -203,7 +203,7 @@ namespace PrePoMax
         private void UpdateVisibility()
         {
             DynamicCustomTypeDescriptor dctd = DynamicCustomTypeDescriptor;
-            bool visible = ComplexResultType == ComplexResultTypeEnum.Angle;
+            bool visible = ComplexResultType == ComplexResultTypeEnum.RealAtAngle;
             //
             dctd.GetProperty(nameof(ComplexAngleDeg)).SetIsBrowsable(visible);
             visible = StepId != _all;

@@ -7145,7 +7145,7 @@ namespace PrePoMax
         }
         private void UpdateAngleTextBoxState()
         {
-            bool enabled = GetComplexResultType() == ComplexResultTypeEnum.Angle;
+            bool enabled = GetComplexResultType() == ComplexResultTypeEnum.RealAtAngle;
             tslAngle.Enabled = enabled;
             tstbAngle.Enabled = enabled;
         }

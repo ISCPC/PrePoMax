@@ -13956,7 +13956,7 @@ namespace PrePoMax
             Dictionary<ResultPart, vtkMaxActorData> partData = new Dictionary<ResultPart, vtkMaxActorData>();
             for (int i = 0; i < angles.Length; i++)
             {
-                CurrentResult.SetComplexResultTypeAndAngle(ComplexResultTypeEnum.Angle, angles[i], _currentFieldData);
+                CurrentResult.SetComplexResultTypeAndAngle(ComplexResultTypeEnum.RealAtAngle, angles[i], _currentFieldData);
                 //
                 _allResults.CurrentResult.SetMeshDeformation(scale, _currentFieldData.StepId,
                                                              _currentFieldData.StepIncrementId);
@@ -14143,7 +14143,7 @@ namespace PrePoMax
                 {
                     ComplexResultTypeEnum resultType = _form.GetComplexResultType();
                     complexComponent = resultType.GetDisplayedName();
-                    if (resultType == ComplexResultTypeEnum.Angle)
+                    if (resultType == ComplexResultTypeEnum.RealAtAngle)
                     {
                         complexComponent += " " + _form.GetComplexAngleDeg() + " " +
                                             StringAngleDegConverter.GetUnitAbbreviation();
