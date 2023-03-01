@@ -7136,7 +7136,7 @@ namespace PrePoMax
             if (!_model.StepCollection.MulitRegionSelectionExists(stepName, boundaryCondition))
                 ConvertSelectionBasedBoundaryCondition(boundaryCondition);
             //
-            _model.StepCollection.AddBoundaryCondition(boundaryCondition, stepName);
+            _model.StepCollection.GetStep(stepName).AddBoundaryCondition(boundaryCondition);
             //
             _form.AddTreeNode(ViewGeometryModelResults.Model, boundaryCondition, stepName);
             //
@@ -7153,9 +7153,7 @@ namespace PrePoMax
                 ConvertSelectionBasedBoundaryCondition(boundaryCondition);
             }
             //
-            _model.StepCollection.GetStep(stepName).BoundaryConditions.Replace(oldBoundaryConditionName, 
-                                                                               boundaryCondition.Name, 
-                                                                               boundaryCondition);
+            _model.StepCollection.GetStep(stepName).ReplaceBoundaryCondition(oldBoundaryConditionName, boundaryCondition);
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldBoundaryConditionName, boundaryCondition, stepName);
             //
@@ -7312,7 +7310,7 @@ namespace PrePoMax
             if (!_model.StepCollection.MulitRegionSelectionExists(stepName, load))
                 ConvertSelectionBasedLoad(load);
             //
-            _model.StepCollection.GetStep(stepName).Loads.Add(load.Name, load);
+            _model.StepCollection.GetStep(stepName).AddLoad(load);
             //
             _form.AddTreeNode(ViewGeometryModelResults.Model, load, stepName);
             //
@@ -7328,7 +7326,7 @@ namespace PrePoMax
                 ConvertSelectionBasedLoad(load);
             }
             //
-            _model.StepCollection.GetStep(stepName).Loads.Replace(oldLoadName, load.Name, load);
+            _model.StepCollection.GetStep(stepName).ReplaceLoad(oldLoadName, load);
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldLoadName, load, stepName);
             //
@@ -14139,7 +14137,7 @@ namespace PrePoMax
                 _form.SetScalarBarColorSpectrum(legendSettings.ColorSpectrum);
                 string complexComponent;
                 Field field = _allResults.CurrentResult.GetField(_currentFieldData);
-                if (field.Complex)
+                if (field != null && field.Complex)
                 {
                     ComplexResultTypeEnum resultType = _form.GetComplexResultType();
                     complexComponent = resultType.GetDisplayedName();

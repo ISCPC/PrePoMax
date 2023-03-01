@@ -633,7 +633,6 @@
     <Compile Include="Settings\PostSettings.cs" />
     <Compile Include="Settings\ISettings.cs" />
     <Compile Include="Settings\CalculixSettings.cs" />
-    <Compile Include="Tools.cs" />
     <Compile Include="Enums\UpdateModelType.cs" />
     <Compile Include="Annotations\AnnotationContainer.cs" />
     <EmbeddedResource Include="Forms\00_Common\FrmSelectGeometry.resx">

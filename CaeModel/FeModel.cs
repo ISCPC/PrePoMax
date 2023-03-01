@@ -1128,7 +1128,8 @@ namespace CaeModel
                                       load.F1 / area * entry.Value,
                                       load.F2 / area * entry.Value,
                                       load.F3 / area * entry.Value,
-                                      load.TwoD);
+                                      load.TwoD, load.Complex,
+                                      load.PhaseDeg);
                     cLoad.AmplitudeName = load.AmplitudeName;
                     loads.Add(cLoad);
                 }
@@ -1296,7 +1297,8 @@ namespace CaeModel
                                       entry.Value[0],
                                       entry.Value[1],
                                       entry.Value[2],
-                                      load.TwoD);
+                                      load.TwoD, load.Complex,
+                                      load.PhaseDeg);
                     cLoad.AmplitudeName = load.AmplitudeName;
                     loads.Add(cLoad);
                 }
@@ -1375,7 +1377,8 @@ namespace CaeModel
                     // Boundary condition
                     xyz = entry.Value;
                     name = staticStep.BoundaryConditions.GetNextNumberedKey("BDM-" + entry.Key);
-                    displacementRotation = new DisplacementRotation(name, nodeSet.Name, RegionTypeEnum.NodeSetName, twoD);
+                    displacementRotation = new DisplacementRotation(name, nodeSet.Name, RegionTypeEnum.NodeSetName, twoD,
+                                                                    false, 0);
                     if (xyz[0] != 0) displacementRotation.U1 = xyz[0];
                     if (xyz[1] != 0) displacementRotation.U2 = xyz[1];
                     if (xyz[2] != 0) displacementRotation.U3 = xyz[2];

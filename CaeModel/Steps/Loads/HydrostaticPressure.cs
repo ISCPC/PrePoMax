@@ -75,14 +75,16 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public HydrostaticPressure(string name, string regionName, RegionTypeEnum regionType, bool twoD)
-            : this(name, regionName, regionType, new double[] { 0, 0, 0 }, new double[] { 0, 0, 0 }, 0, 0, 0, 0, 0, twoD)
+        public HydrostaticPressure(string name, string regionName, RegionTypeEnum regionType, bool twoD,
+                                   bool complex, double phaseDeg)
+            : this(name, regionName, regionType, new double[] { 0, 0, 0 }, new double[] { 0, 0, 0 }, 0, 0, 0, 0, 0, twoD,
+                   complex, phaseDeg)
         {
         }
         public HydrostaticPressure(string name, string regionName, RegionTypeEnum regionType, double[] firstPointCoor,
                                    double[] secondPointCoor, double nx, double ny, double nz, double firstPointPressure,
-                                   double secondPointPressure, bool twoD)
-            : base(name, regionName, regionType, twoD)
+                                   double secondPointPressure, bool twoD, bool complex, double phaseDeg)
+            : base(name, regionName, regionType, twoD, complex, phaseDeg)
         {
             FirstPointCoor = firstPointCoor;           // account for 2D
             SecondPointCoor = secondPointCoor;         // account for 2D

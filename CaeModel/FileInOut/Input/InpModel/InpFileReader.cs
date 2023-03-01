@@ -1792,7 +1792,7 @@ namespace FileInOut.Input
                     {
                         name = allBCNames.GetNextNumberedKey("Displacement_rotation");
                         DisplacementRotation dispRotBC = new DisplacementRotation(name, regionName, RegionTypeEnum.NodeSetName,
-                                                                                  false);
+                                                                                  false, false, 0);
                         // Amplitude
                         if (amplitudeName != null) dispRotBC.AmplitudeName = amplitudeName;
                         // Assign DOF prescribed displacement
@@ -1952,8 +1952,9 @@ namespace FileInOut.Input
                     // Get degree of freedom and value
                     int dof = int.Parse(recordCL[1]); ;
                     double dofValue = double.Parse(recordCL[2]);
-                    CLoad cfLoad = new CLoad(nameCF, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0, false);
-                    MomentLoad momentLoad = new MomentLoad(nameMom, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0, false);
+                    CLoad cfLoad = new CLoad(nameCF, regionName, RegionTypeEnum.NodeSetName, 0, 0, 0, false, false, 0);
+                    MomentLoad momentLoad = new MomentLoad(nameMom, regionName, RegionTypeEnum.NodeSetName, 0, 0, 0,
+                                                           false, false, 0);
                     // Amplitude
                     if (amplitudeName != null)
                     {
@@ -2027,7 +2028,7 @@ namespace FileInOut.Input
                         name = step.Loads.GetNextNumberedKey("Grav");
                         //
                         GravityLoad gLoad = new GravityLoad(name, regionName, RegionTypeEnum.ElementSetName,
-                                                            0.0, 0.0, 0.0, false);
+                                                            0, 0, 0, false, false, 0);
                         //
                         gLoad.F1 = double.Parse(recordDL[3]) * gValue;
                         gLoad.F2 = double.Parse(recordDL[4]) * gValue;

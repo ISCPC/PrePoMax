@@ -707,6 +707,7 @@ namespace PrePoMax.Forms
             Step step = _controller.GetStep(_stepName);
             System.Drawing.Color color = _controller.Settings.Pre.LoadSymbolColor;
             bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
+            bool complex = step is SteadyStateDynamics;
             // Populate list view
             ListViewItem item;
             string name;
@@ -715,7 +716,7 @@ namespace PrePoMax.Forms
             name = "Concentrated Force";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            CLoad cLoad = new CLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0, twoD);
+            CLoad cLoad = new CLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0, twoD, complex, 0);
             if (step.IsLoadSupported(cLoad))
             {
                 ViewCLoad vcl = new ViewCLoad(cLoad);
@@ -728,7 +729,7 @@ namespace PrePoMax.Forms
             name = "Moment";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            MomentLoad momentLoad = new MomentLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0, twoD);
+            MomentLoad momentLoad = new MomentLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0, twoD, complex, 0);
             if (step.IsLoadSupported(cLoad))
             {
                 ViewMomentLoad vml = new ViewMomentLoad(momentLoad);
@@ -741,7 +742,7 @@ namespace PrePoMax.Forms
             name = "Uniform Pressure";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            DLoad dLoad = new DLoad(loadName, "", RegionTypeEnum.Selection, 0, twoD);
+            DLoad dLoad = new DLoad(loadName, "", RegionTypeEnum.Selection, 0, twoD, complex, 0);
             if (step.IsLoadSupported(dLoad))
             {
                 string[] surfaceNames;
@@ -758,7 +759,7 @@ namespace PrePoMax.Forms
             name = "Hydrostatic Pressure";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            HydrostaticPressure hpLoad = new HydrostaticPressure(loadName, "", RegionTypeEnum.Selection, twoD);
+            HydrostaticPressure hpLoad = new HydrostaticPressure(loadName, "", RegionTypeEnum.Selection, twoD, complex, 0);
             if (step.IsLoadSupported(hpLoad))
             {
                 string[] surfaceNames;
@@ -775,7 +776,7 @@ namespace PrePoMax.Forms
             name = "Imported Pressure";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ImportedPressure ipLoad = new ImportedPressure(loadName, "", RegionTypeEnum.Selection, twoD);
+            ImportedPressure ipLoad = new ImportedPressure(loadName, "", RegionTypeEnum.Selection, twoD, complex, 0);
             if (step.IsLoadSupported(ipLoad))
             {
                 string[] surfaceNames;
@@ -792,7 +793,7 @@ namespace PrePoMax.Forms
             name = "Surface Traction";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            STLoad sTLoad = new STLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0, twoD);
+            STLoad sTLoad = new STLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0, twoD, complex, 0);
             if (step.IsLoadSupported(sTLoad))
             {
                 string[] surfaceNames;
@@ -809,7 +810,7 @@ namespace PrePoMax.Forms
             name = "Normal Shell Edge Load";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ShellEdgeLoad shellEdgeLoad = new ShellEdgeLoad(loadName, "", RegionTypeEnum.Selection, 0, twoD);
+            ShellEdgeLoad shellEdgeLoad = new ShellEdgeLoad(loadName, "", RegionTypeEnum.Selection, 0, twoD, complex, 0);
             if (step.IsLoadSupported(shellEdgeLoad) && !twoD)
             {
                 ViewShellEdgeLoad vsel = new ViewShellEdgeLoad(shellEdgeLoad);
@@ -822,7 +823,7 @@ namespace PrePoMax.Forms
             name = "Gravity";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            GravityLoad gravityLoad = new GravityLoad(loadName, "", RegionTypeEnum.Selection, twoD);
+            GravityLoad gravityLoad = new GravityLoad(loadName, "", RegionTypeEnum.Selection, twoD, complex, 0);
             if (step.IsLoadSupported(gravityLoad))
             {
                 ViewGravityLoad vgl = new ViewGravityLoad(gravityLoad);
@@ -835,7 +836,7 @@ namespace PrePoMax.Forms
             name = "Centrifugal Load";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            CentrifLoad centrifLoad = new CentrifLoad(loadName, "", RegionTypeEnum.Selection, twoD);
+            CentrifLoad centrifLoad = new CentrifLoad(loadName, "", RegionTypeEnum.Selection, twoD, complex, 0);
             ViewCentrifLoad vcfl = new ViewCentrifLoad(centrifLoad);
             if (step.IsLoadSupported(gravityLoad))
             {

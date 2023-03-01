@@ -901,7 +901,7 @@ namespace FileInOut.Output
                 foreach (var bcEntry in step.BoundaryConditions)
                 {
                     if (step.Active && bcEntry.Value.Active)
-                        AppendBoundaryCondition(model, bcEntry.Value, referencePointsNodeIds, title);
+                        AppendBoundaryCondition(model, step, bcEntry.Value, referencePointsNodeIds, title);
                     else title.AddKeyword(new CalDeactivated(bcEntry.Value.Name));
                 }
                 // Loads
@@ -942,7 +942,8 @@ namespace FileInOut.Output
                 //
                 foreach (var loadEntry in step.Loads)
                 {
-                    if (step.Active && loadEntry.Value.Active) AppendLoad(model, loadEntry.Value, referencePointsNodeIds, title);
+                    if (step.Active && loadEntry.Value.Active) AppendLoad(model, step, loadEntry.Value, referencePointsNodeIds,
+                                                                          title);
                     else title.AddKeyword(new CalDeactivated(loadEntry.Value.Name));
                 }
                 // Defined fields
@@ -961,7 +962,8 @@ namespace FileInOut.Output
                 //
                 foreach (var historyOutputEntry in step.HistoryOutputs)
                 {
-                    if (step.Active && historyOutputEntry.Value.Active) AppendHistoryOutput(model, historyOutputEntry.Value, title);
+                    if (step.Active && historyOutputEntry.Value.Active) AppendHistoryOutput(model, historyOutputEntry.Value,
+                                                                                            title);
                     else title.AddKeyword(new CalDeactivated(historyOutputEntry.Value.Name));
                 }
                 // Field outputs
@@ -984,8 +986,21 @@ namespace FileInOut.Output
                 else title.AddKeyword(new CalDeactivated(step.Name));
             }
         }
-        static private void AppendBoundaryCondition(FeModel model, BoundaryCondition boundaryCondition,
+        static private void AppendBoundaryCondition(FeModel model, Step step, BoundaryCondition boundaryCondition,
                                                     Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
+        {
+            ComplexLoadTypeEnum complexLoadType;
+            if (boundaryCondition.Complex) complexLoadType = ComplexLoadTypeEnum.Real;
+            else complexLoadType = ComplexLoadTypeEnum.None;
+            //
+            AppendBoundaryCondition(model, boundaryCondition, referencePointsNodeIds, complexLoadType, parent);
+            // Load case=2 - Imaginary component
+            if (step is SteadyStateDynamics && boundaryCondition.Complex && boundaryCondition.PhaseDeg != 0)
+                AppendBoundaryCondition(model, boundaryCondition, referencePointsNodeIds, ComplexLoadTypeEnum.Imaginary, parent);
+        }
+        static private void AppendBoundaryCondition(FeModel model, BoundaryCondition boundaryCondition,
+                                                    Dictionary<string, int[]> referencePointsNodeIds,
+                                                    ComplexLoadTypeEnum complexLoadType, CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
@@ -1003,7 +1018,7 @@ namespace FileInOut.Output
                     if (dispRot.RegionType == RegionTypeEnum.SurfaceName)
                         nodeSetNameOfSurface = model.Mesh.Surfaces[dispRot.RegionName].NodeSetName;
                     CalDisplacementRotation calDisplacementRotation =
-                        new CalDisplacementRotation(dispRot, referencePointsNodeIds, nodeSetNameOfSurface);
+                        new CalDisplacementRotation(dispRot, referencePointsNodeIds, nodeSetNameOfSurface, complexLoadType);
                     parent.AddKeyword(calDisplacementRotation);
                 }
                 else if (boundaryCondition is SubmodelBC sm)
@@ -1025,54 +1040,66 @@ namespace FileInOut.Output
                 else throw new NotImplementedException();
             }
         }
-        static private void AppendLoad(FeModel model, Load load, Dictionary<string, int[]> referencePointsNodeIds,
+        static private void AppendLoad(FeModel model, Step step, Load load, Dictionary<string, int[]> referencePointsNodeIds,
                                        CalculixKeyword parent)
+        {
+            ComplexLoadTypeEnum complexLoadType;
+            if (load.Complex) complexLoadType = ComplexLoadTypeEnum.Real;
+            else complexLoadType = ComplexLoadTypeEnum.None;
+            //
+            AppendLoad(model, load, referencePointsNodeIds, complexLoadType, parent);
+            // Load case=2 - Imaginary component
+            if (step is SteadyStateDynamics && load.Complex && load.PhaseDeg != 0)
+                AppendLoad(model, load, referencePointsNodeIds, ComplexLoadTypeEnum.Imaginary, parent);
+        }
+        static private void AppendLoad(FeModel model, Load load, Dictionary<string, int[]> referencePointsNodeIds,
+                                       ComplexLoadTypeEnum complexLoadType, CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
                 if (load is CLoad cl)
                 {
-                    CalCLoad cLoad = new CalCLoad(cl, referencePointsNodeIds);
+                    CalCLoad cLoad = new CalCLoad(cl, referencePointsNodeIds, complexLoadType);
                     parent.AddKeyword(cLoad);
                 }
                 else if (load is MomentLoad ml)
                 {
-                    CalMomentLoad mLoad = new CalMomentLoad(ml, referencePointsNodeIds);
+                    CalMomentLoad mLoad = new CalMomentLoad(ml, referencePointsNodeIds, complexLoadType);
                     parent.AddKeyword(mLoad);
                 }
                 else if (load is DLoad dl)
                 {
-                    CalDLoad dLoad = new CalDLoad(dl, model.Mesh.Surfaces[dl.SurfaceName]);
+                    CalDLoad dLoad = new CalDLoad(dl, model.Mesh.Surfaces[dl.SurfaceName], complexLoadType);
                     parent.AddKeyword(dLoad);
                 }
                 else if (load is HydrostaticPressure hpl)
                 {
-                    CalHydrostaticPressureLoad hpLoad = new CalHydrostaticPressureLoad(model, hpl);
+                    CalHydrostaticPressureLoad hpLoad = new CalHydrostaticPressureLoad(model, hpl, complexLoadType);
                     parent.AddKeyword(hpLoad);
                 }
                 else if (load is ImportedPressure ipl)
                 {
-                    CalImportedPressureLoad ipLoad = new CalImportedPressureLoad(model, ipl);
+                    CalImportedPressureLoad ipLoad = new CalImportedPressureLoad(model, ipl, complexLoadType);
                     parent.AddKeyword(ipLoad);
                 }
                 else if (load is STLoad stl)
                 {
-                    CalSTLoad stLoad = new CalSTLoad(model, stl);
+                    CalSTLoad stLoad = new CalSTLoad(model, stl, complexLoadType);
                     parent.AddKeyword(stLoad);
                 }
                 else if (load is ShellEdgeLoad sel)
                 {
-                    CalShellEdgeLoad seLoad = new CalShellEdgeLoad(sel, model.Mesh.Surfaces[sel.SurfaceName]);
+                    CalShellEdgeLoad seLoad = new CalShellEdgeLoad(sel, model.Mesh.Surfaces[sel.SurfaceName], complexLoadType);
                     parent.AddKeyword(seLoad);
                 }
                 else if (load is GravityLoad gl)
                 {
-                    CalGravityLoad gLoad = new CalGravityLoad(gl);
+                    CalGravityLoad gLoad = new CalGravityLoad(gl, complexLoadType);
                     parent.AddKeyword(gLoad);
                 }
                 else if (load is CentrifLoad cfl)
                 {
-                    CalCentrifLoad cLoad = new CalCentrifLoad(cfl);
+                    CalCentrifLoad cLoad = new CalCentrifLoad(cfl, complexLoadType);
                     parent.AddKeyword(cLoad);
                 }
                 else if (load is PreTensionLoad ptl)
@@ -1084,17 +1111,17 @@ namespace FileInOut.Output
                     if (ptl.Type == PreTensionLoadType.Force)
                     {
                         int nodeId = referencePointsNodeIds[name][0];
-                        CLoad cLoad = new CLoad(ptl.Name, nodeId, ptl.Magnitude, 0, 0, ptl.TwoD);
+                        CLoad cLoad = new CLoad(ptl.Name, nodeId, ptl.Magnitude, 0, 0, ptl.TwoD, ptl.Complex, ptl.PhaseDeg);
                         cLoad.AmplitudeName = ptl.AmplitudeName;
-                        calKey = new CalCLoad(cLoad, referencePointsNodeIds);
+                        calKey = new CalCLoad(cLoad, referencePointsNodeIds, complexLoadType);
                     }
                     else if (ptl.Type == PreTensionLoadType.Displacement)
                     {
                         DisplacementRotation dr = new DisplacementRotation(ptl.Name, name, RegionTypeEnum.ReferencePointName,
-                                                                           ptl.TwoD);
+                                                                           ptl.TwoD, ptl.Complex, ptl.PhaseDeg);
                         dr.U1 = ptl.Magnitude;
                         dr.AmplitudeName = ptl.AmplitudeName;
-                        calKey = new CalDisplacementRotation(dr, referencePointsNodeIds, null);
+                        calKey = new CalDisplacementRotation(dr, referencePointsNodeIds, null, complexLoadType);
                     }
                     else throw new NotSupportedException();
                     //

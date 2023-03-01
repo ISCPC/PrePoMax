@@ -23,47 +23,8 @@ namespace CaeGlobals
         //
         private static readonly float _radToDeg = (float)(180f / Math.PI);
         private static readonly float _degToRad = (float)(Math.PI / 180f);
-        //
-        public static string GetEnumStandardValueDescription(Enum value)
-        {
-            System.Reflection.FieldInfo fi = value.GetType().GetField(value.ToString());
-            StandardValueAttribute[] attributes = (StandardValueAttribute[])fi.GetCustomAttributes(typeof(StandardValueAttribute), false);
-            if (attributes != null && attributes.Length > 0) return attributes[0].Description;
-            else return value.ToString();
-        }
-
-        public static bool IsSubclassOfRawGeneric(Type generic, Type toCheck)
-        {
-            while (toCheck != null && toCheck != typeof(object))
-            {
-                var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
-                if (generic == cur)
-                    return true;
-                toCheck = toCheck.BaseType;
-            }
-            return false;
-        }
-
-        public static void SetLabelColumnWidth(PropertyGrid grid, double labelRatio)
-        {
-            if (grid == null)
-                throw new ArgumentNullException("grid");
-
-            // get the grid view
-            Control view = (Control)grid.GetType().GetField("gridView", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(grid);
-            //Control view = (Control)typeof(PropertyGrid).GetField("gridView", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(grid);
-
-            // set label width
-            //FieldInfo fi = view.GetType().GetField("labelWidth", BindingFlags.Instance | BindingFlags.NonPublic);
-            //fi.SetValue(view, width);
-
-            FieldInfo fi2 = view.GetType().GetField("labelRatio");
-            fi2.SetValue(view, labelRatio);
-
-            // refresh
-            view.Invalidate();
-        }
-
+        
+        
         // Read clone from File
         public static T LoadDumpFromFile<T>(string fileName)
         {
@@ -79,7 +40,6 @@ namespace CaeGlobals
                 return (T)formatter.Deserialize(stream);
             }
         }
-
         public static T LoadDumpFromFile<T>(BinaryReader br)
         {
             using (MemoryStream stream = new MemoryStream())
@@ -92,25 +52,56 @@ namespace CaeGlobals
                 return (T)formatter.Deserialize(stream);
             }
         }
-
         public static async Task<T> LoadDumpFromFileAsync<T>(string fileName)
         {
             T a = default(T);
             await Task.Run(() => a = LoadDumpFromFile<T>(fileName));
             return a;
         }
-
-        public static int IntParseFast(string value)
+        //
+        public static string GetLocalPath(string path)
         {
-            int result = 0;
-            int length = value.Length;
-            for (int i = 0; i < length; i++)
+            string startUpPath = System.Windows.Forms.Application.StartupPath;
+            if (path.StartsWith(startUpPath))
             {
-                result = 10 * result + (value[i] - 48);
+                return "#" + path.Substring(startUpPath.Length);
             }
-            return result;
+            return path;
         }
-
+        public static string GetGlobalPath(string path)
+        {
+            if (path != null && path.StartsWith("#"))
+            {
+                string startUpPath = System.Windows.Forms.Application.StartupPath;
+                return System.IO.Path.Combine(startUpPath, path.Substring(1).TrimStart('\\'));
+            }
+            return path;
+        }
+        public static string GetNonExistentRandomFileName(string path, string extension = "")
+        {
+            string hash;
+            bool repeate;
+            string[] allFiles = System.IO.Directory.GetFiles(path);
+            //
+            do
+            {
+                hash = CaeGlobals.Tools.GetRandomString(8);
+                //
+                repeate = false;
+                foreach (var fileName in allFiles)
+                {
+                    if (fileName.StartsWith(hash))
+                    {
+                        repeate = true;
+                        break;
+                    }
+                }
+            }
+            while (repeate);
+            //
+            return System.IO.Path.Combine(path, System.IO.Path.ChangeExtension(hash, extension));
+        }
+        // Rouding
         public static double RoundToSignificantDigits(double d, int digits)
         {
             //double[] stdValues = new double[] { 0.1, 0.2, 0.25, 0.5 };
@@ -136,7 +127,6 @@ namespace CaeGlobals
                 }
             }
         }
-
         // Windows version
         public static string GetWindowsName()
         {
@@ -144,7 +134,7 @@ namespace CaeGlobals
             string productName = (string)reg.GetValue("ProductName");
             return productName;
         }
-        /// Check if it's Windows 8.1
+        // Check if it's Windows 8.1
         public static bool IsWindows10orNewer()
         {
             try
@@ -226,13 +216,11 @@ namespace CaeGlobals
             return lines;
         }
         // Read number of lines        
-        //
         [DebuggerStepThrough]
         public static bool IsNullOrEmptyOrWhiteSpace(this string value)
         {
             return string.IsNullOrWhiteSpace(value);
         }
-        //
         [DebuggerStepThrough]
         public static T NotNull<T>(T value, string argName) where T : class
         {
@@ -241,7 +229,6 @@ namespace CaeGlobals
             if (value == null) throw new Exception(argName);
             return value;
         }
-        //
         [DebuggerStepThrough]
         public static long CountLines(this Stream stream, Encoding encoding = default)
         {
@@ -327,7 +314,6 @@ namespace CaeGlobals
             }
             return new String(stringChars);
         }
-
         // Sort
         public static void Sort3_descending(ref float arr0, ref float arr1, ref float arr2)
         {
@@ -500,6 +486,10 @@ namespace CaeGlobals
             return Sin(x + 1.5707963f);
         }
         // Complex
+        public static double GetPhase360(double phase)
+        {
+            return (phase % 360 + 360) % 360;
+        }
         public static float GetComplexMagnitude(float real, float imaginary)
         {
             return (float)Math.Sqrt(real * real + imaginary * imaginary);

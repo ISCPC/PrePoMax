@@ -32,7 +32,7 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            string type = _modalDamping.DampingType == ModalDampingTypeEnum.Rayleigh ? ", Rayliegh" : "";
+            string type = _modalDamping.DampingType == ModalDampingTypeEnum.Rayleigh ? ", Rayleigh" : "";
             return string.Format("*Modal damping{0}{1}", type, Environment.NewLine);
         }
         public override string GetDataString()

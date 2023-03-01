@@ -235,13 +235,6 @@ namespace CaeModel
             foreach (var step in _steps) allNames.UnionWith(step.BoundaryConditions.Keys);
             return allNames.ToArray();
         }
-        public void AddBoundaryCondition(BoundaryCondition boundaryCondition, string stepName)
-        {
-            foreach (var step in _steps)
-            {
-                if (step.Name == stepName) step.AddBoundaryCondition(boundaryCondition);
-            }
-        }
         public Dictionary<string, int> GetBoundaryConditionRegionsCount()
         {
             Dictionary<string, int> regionsCount = new Dictionary<string, int>();
@@ -349,13 +342,6 @@ namespace CaeModel
             HashSet<string> allNames = new HashSet<string>();
             foreach (var step in _steps) allNames.UnionWith(step.Loads.Keys);
             return allNames.ToArray();
-        }
-        public void AddLoad(Load load, string stepName)
-        {
-            foreach (var step in _steps)
-            {
-                if (step.Name == stepName)  step.AddLoad(load);
-            }
         }
         public Dictionary<string, int> GetLoadRegionsCount()
         {

@@ -346,6 +346,7 @@ namespace PrePoMax.Forms
             Step step = _controller.GetStep(_stepName);
             System.Drawing.Color color = _controller.Settings.Pre.BoundaryConditionSymbolColor;
             bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
+            bool complex = step is SteadyStateDynamics;
             // Populate list view
             ListViewItem item;
             // Fixed
@@ -362,7 +363,7 @@ namespace PrePoMax.Forms
             // Displacement/Rotation
             item = new ListViewItem("Displacement/Rotation");
             DisplacementRotation displacementRotation = new DisplacementRotation(GetBoundaryConditionName("Displacement_Rotation"),
-                                                                                 "", RegionTypeEnum.Selection, twoD);
+                                                                                 "", RegionTypeEnum.Selection, twoD, complex, 0);
             if (step.IsBoundaryConditionSupported(displacementRotation))
             {
                 ViewDisplacementRotation vdr = new ViewDisplacementRotation(displacementRotation);

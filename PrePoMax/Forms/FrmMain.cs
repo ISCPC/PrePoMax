@@ -6948,7 +6948,7 @@ namespace PrePoMax
             {
                 if (e.KeyCode == Keys.Enter)
                 {
-                    tstbAngle.Text = ((tstbAngle.Value % 360 + 360) % 360).ToString();
+                    tstbAngle.Text = Tools.GetPhase360(tstbAngle.Value).ToString();
                     //
                     _controller.Redraw();
                     this.ActiveControl = null;

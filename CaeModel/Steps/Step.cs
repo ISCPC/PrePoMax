@@ -142,7 +142,18 @@ namespace CaeModel
         public void AddBoundaryCondition(BoundaryCondition boundaryCondition)
         {
             if (IsBoundaryConditionSupported(boundaryCondition))
+            {
+                boundaryCondition.Complex = this is SteadyStateDynamics;
                 _boundayConditions.Add(boundaryCondition.Name, boundaryCondition);
+            }
+        }
+        public void ReplaceBoundaryCondition(string oldBoundaryConditionName, BoundaryCondition boundaryCondition)
+        {
+            if (IsBoundaryConditionSupported(boundaryCondition))
+            {
+                boundaryCondition.Complex = this is SteadyStateDynamics;
+                _boundayConditions.Replace(oldBoundaryConditionName, boundaryCondition.Name, boundaryCondition);
+            }
         }
         public bool IsLoadSupported(Load load)
         {
@@ -151,7 +162,19 @@ namespace CaeModel
         public abstract bool IsLoadTypeSupported(Type loadType);
         public void AddLoad(Load load)
         {
-            if (IsLoadSupported(load)) _loads.Add(load.Name, load);
+            if (IsLoadSupported(load))
+            {
+                load.Complex = this is SteadyStateDynamics;
+                _loads.Add(load.Name, load);
+            }
+        }
+        public void ReplaceLoad(string oldLoadName, Load load)
+        {
+            if (IsLoadSupported(load))
+            {
+                load.Complex = this is SteadyStateDynamics;
+                _loads.Replace(oldLoadName, load.Name, load);
+            }
         }
         public abstract bool IsDefinedFieldSupported(DefinedField definedField);
         public void AddDefinedField(DefinedField definedField)

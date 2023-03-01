@@ -109,6 +109,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalSubmodel.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalCFlux.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalBodyFlux.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalLoadEnums.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalDFlux.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalFilmHeatTransfer.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalImportedPressureLoad.cs" />

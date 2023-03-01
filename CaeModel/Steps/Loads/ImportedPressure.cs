@@ -35,8 +35,9 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public ImportedPressure(string name, string surfaceName, RegionTypeEnum regionType, bool twoD)
-            : base(name, surfaceName, regionType, twoD)
+        public ImportedPressure(string name, string surfaceName, RegionTypeEnum regionType, bool twoD,
+                                bool complex, double phaseDeg)
+            : base(name, surfaceName, regionType, twoD, complex, phaseDeg)
         {
             _fileName = null;
             _pressureTime = null;
