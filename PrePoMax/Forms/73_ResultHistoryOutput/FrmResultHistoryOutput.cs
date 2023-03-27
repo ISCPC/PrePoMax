@@ -192,7 +192,7 @@ namespace PrePoMax.Forms
             ListViewItem item;
             // Node output
             item = new ListViewItem("History output from field output");
-            CaeResults.FieldData fieldData = _controller.CurrentFieldData;
+            FieldData fieldData = _controller.CurrentFieldData;
             ResultHistoryOutputFromField rhoff = new ResultHistoryOutputFromField(GetHistoryOutputName("FF"),
                                                                                   fieldData.Name, fieldData.Component,
                                                                                   "", RegionTypeEnum.Selection);

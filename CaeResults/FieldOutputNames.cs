@@ -22,7 +22,7 @@ namespace CaeResults
         public const string DispMaxAng = "DISPMAXANG";                  // scalar
         public const string DispMin = "DISPMIN";                        // scalar
         public const string DispMinAng = "DISPMINANG";                  // scalar
-        public const string PDisp = "PDISP";                            // scalar - kind of
+        public const string PDisp = "PDISP";                            // scalar - kind of: mag, pha
         // Velocity
         public const string Velo = "VELO";                              // vector
         // Stress
@@ -35,7 +35,7 @@ namespace CaeResults
         public const string StressMaxAng = "STRESSMAXANG";              // tensor
         public const string StressMin = "STRESSMIN";                    // tensor
         public const string StressMinAng = "STRESSMINANG";              // tensor
-        public const string PStress = "PSTRESS";                        // scalar - kind of
+        public const string PStress = "PSTRESS";                        // scalar - kind of: mag, pha
         public const string ZZStr = "ZZSTR";                            // tensor
         public const string ZZStrR = "ZZSTRR";                          // tensor
         public const string ZZStrI = "ZZSTRI";                          // tensor
@@ -79,7 +79,7 @@ namespace CaeResults
         public const string Contact = "CONTACT";                        // scalar
         // Thermal
         public const string NdTemp = "NDTEMP";                          // scalar
-        public const string PNdTemp = "PNDTEMP";                        // scalar - kind of
+        public const string PNdTemp = "PNDTEMP";                        // scalar - kind of: mag, pha
         public const string Flux = "FLUX";                              // vector
         public const string Rfl = "RFL";                                // vector
         public const string HError = "HERROR";                          // scalar
@@ -93,7 +93,7 @@ namespace CaeResults
         public const string HErrorMinAng = "HERRORMINANG";              // scalar
         // Sensitivity
         public const string Norm = "NORM";                              // vector
-        public const string SenFreq = "SENFREQ";                        // scalar - kind of
+        public const string SenFreq = "SENFREQ";                        // scalar
         // Wear
         public const string SlidingDistance = "SLIDING_DISTANCE";       // scalar
         public const string SurfaceNormal = "SURFACE_NORMAL";           // vector
@@ -296,6 +296,22 @@ namespace CaeResults
                     return DataTypeEnum.None;
             }
         }
+        public static Dictionary<string, string[]> GetSafetyFactorFieldComponentNames()
+        {
+            Dictionary<string, string[]> fieldNameComponentName = new Dictionary<string, string[]>
+            {
+                //{Disp, new string[] { FOComponentNames.All, FOComponentNames.U1, FOComponentNames.U2, FOComponentNames.U3 } },
+                { Stress, new string[] { FOComponentNames.Mises, FOComponentNames.Tresca,
+                                         FOComponentNames.S11, FOComponentNames.S22, FOComponentNames.S33,
+                                         FOComponentNames.S12, FOComponentNames.S23, FOComponentNames.S13,
+                                         FOComponentNames.SgnMaxAbsPri,
+                                         FOComponentNames.PrincipalMax,
+                                         FOComponentNames.PrincipalMid,
+                                         FOComponentNames.PrincipalMin} },
+                //{ Pe, new string[] { FOComponentNames.PE } }
+            };
+            return fieldNameComponentName;
+        }
     }
 
     public class FOComponentNames
@@ -362,6 +378,8 @@ namespace CaeResults
         public const string E12 = "E12";
         public const string E23 = "E23";
         public const string E13 = "E13";
+        //
+        public const string PE = "PE";
         // Thermal
         public const string T = "T";
         // Contact
@@ -385,7 +403,8 @@ namespace CaeResults
         public const string D2 = "D2";
         public const string D3 = "D3";
         public const string PRESS = "PRESS";
-
+        //
+        public const string SF = "SF";
         //
         //public const string UH1 = "UH1";
         //public const string UH2 = "UH2";

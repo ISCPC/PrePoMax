@@ -62,7 +62,6 @@
             this.dgvData.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvData_CellValueChanged);
             this.dgvData.ColumnAdded += new System.Windows.Forms.DataGridViewColumnEventHandler(this.dgvData_ColumnAdded);
             this.dgvData.ColumnRemoved += new System.Windows.Forms.DataGridViewColumnEventHandler(this.dgvData_ColumnRemoved);
-            this.dgvData.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvData_DataError);
             // 
             // btnOK
             // 

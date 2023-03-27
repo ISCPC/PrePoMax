@@ -177,10 +177,6 @@ namespace PrePoMax.Forms
             propertyGrid.Refresh();
             _propertyItemChanged = true;
         }
-        private void dgvData_DataError(object sender, DataGridViewDataErrorEventArgs e)
-        {
-            MessageBoxes.ShowError(e.Exception.Message);
-        }
         private void btnOK_Click(object sender, EventArgs e)
         {
             try

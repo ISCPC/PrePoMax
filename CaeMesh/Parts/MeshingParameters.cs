@@ -20,6 +20,8 @@ namespace CaeMesh
         public static readonly double DefaultFactorMin = 0.001;
         public static readonly double DefaultFactorHausdorff = 0.001;
         //
+        private bool _advancedView;
+        //
         private bool _relativeSize;
         private double _factorMax;
         private double _factorMin;
@@ -47,6 +49,7 @@ namespace CaeMesh
 
 
         // Properties                                                                                                               
+        public bool AdvancedView { get { return _advancedView; } set { _advancedView = value; } }
         public bool RelativeSize { get { return _relativeSize; } set { _relativeSize = value; } }
         public double FactorMax 
         {
@@ -187,6 +190,7 @@ namespace CaeMesh
         }
         public MeshingParameters(MeshingParameters meshingParameters)
         {
+            _advancedView = meshingParameters.AdvancedView;
             _relativeSize = meshingParameters.RelativeSize;
             _factorMax = meshingParameters.FactorMax;
             _factorMin = meshingParameters.FactorMin;
@@ -215,6 +219,7 @@ namespace CaeMesh
         public void Reset()
         {
             // Defaults
+            _advancedView = false;
             _relativeSize = false;
             _factorMax = DefaultFactorMax;
             _factorMin = DefaultFactorMin;
@@ -302,6 +307,8 @@ namespace CaeMesh
             if (meshingParameters1 == null) return false;
             if (meshingParameters2 == null) return false;
             //
+            if (meshingParameters1._advancedView != meshingParameters2._advancedView) return false;
+            if (meshingParameters1._relativeSize != meshingParameters2._relativeSize) return false;
             if (meshingParameters1._factorMax != meshingParameters2._factorMax) return false;
             if (meshingParameters1._factorMin != meshingParameters2._factorMin) return false;
             if (meshingParameters1._factorHausdorff != meshingParameters2._factorHausdorff) return false;

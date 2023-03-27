@@ -78,6 +78,7 @@ namespace PrePoMax
         private FrmAnalysis _frmAnalysis;
         private FrmMonitor _frmMonitor;
         private FrmAnimation _frmAnimation;
+        private FrmResultFieldOutput _frmResultFieldOutput;
         private FrmViewResultHistoryOutput _frmViewResultHistoryOutput;
         private FrmResultHistoryOutput _frmResultHistoryOutput;
         private FrmTransformation _frmTransformation;
@@ -422,6 +423,9 @@ namespace PrePoMax
                 _frmAnimation = new FrmAnimation();
                 _frmAnimation.Form_ControlsEnable = DisableEnableControlsForAnimation;
                 AddFormToAllForms(_frmAnimation);
+                //
+                _frmResultFieldOutput = new FrmResultFieldOutput(_controller);
+                AddFormToAllForms(_frmResultFieldOutput);
                 //
                 _frmViewResultHistoryOutput = new FrmViewResultHistoryOutput(_controller);
                 AddFormToAllForms(_frmViewResultHistoryOutput);
@@ -833,7 +837,8 @@ namespace PrePoMax
             else if (_controller.CurrentResult != null && _controller.CurrentResult.Mesh != null &&
                      _controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                if (nodeName == _modelTree.HistoryOutputsName) tsmiCreateResultHistoryOutput_Click(null, null);
+                if (nodeName == _modelTree.FieldOutputsName) tsmiCreateResultFieldOutput_Click(null, null);
+                else if (nodeName == _modelTree.HistoryOutputsName) tsmiCreateResultHistoryOutput_Click(null, null);
             }
         }
         private void ModelTree_Edit(NamedClass namedClass, string stepName)
@@ -876,8 +881,9 @@ namespace PrePoMax
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
                 if (namedClass is ResultPart || namedClass is GeometryPart) EditResultPart(namedClass.Name);
-                else if (namedClass is CaeResults.HistoryResultData hd) ViewResultHistoryOutputData(hd);
-                else if (namedClass is CaeResults.FieldData fd) ShowLegendSettings();
+                else if (namedClass is ResultFieldOutput rfo) EditResultFieldOutput(rfo.Name);
+                else if (namedClass is HistoryResultData hd) ViewResultHistoryOutputData(hd);
+                else if (namedClass is FieldData fd) ShowLegendSettings();
             }
         }
         private void ModelTree_Query()
@@ -1040,12 +1046,13 @@ namespace PrePoMax
                 ApplyActionOnItems<ResultPart>(items, DeleteResultParts);
                 ApplyActionOnItems<GeometryPart>(items, DeleteResultParts);
                 // First delete components and then field outputs
-                DeleteParentItems<CaeResults.FieldData>(items, parentNames, DeleteResultFieldOutputComponents);
-                ApplyActionOnItems<CaeResults.Field>(items, DeleteResultFieldOutputs);
+                DeleteParentItems<FieldData>(items, parentNames, DeleteResultFieldOutputComponents);
+                ApplyActionOnItems<Field>(items, DeleteResultFieldOutputs);
+                ApplyActionOnItems<ResultFieldOutput>(items, DeleteResultFieldOutputs);
                 //
                 DeleteResultHistoryResultCompoments(items);
-                DeleteParentItems<CaeResults.HistoryResultField>(items, parentNames, DeleteResultHistoryResultFields);
-                ApplyActionOnItems<CaeResults.HistoryResultSet>(items, RemoveResultHistoryResultSets);
+                DeleteParentItems<HistoryResultField>(items, parentNames, DeleteResultHistoryResultFields);
+                ApplyActionOnItems<HistoryResultSet>(items, RemoveResultHistoryResultSets);
                 
             }
         }
@@ -6244,11 +6251,33 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Result field output  ###############################################################################################
+        private void tsmiCreateResultFieldOutput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CreateResultFieldOutput();
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiEditResultFieldOutput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Field Outputs", _controller.GetResultFieldOutputs(), EditResultFieldOutput);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeleteResultFieldOutput_Click(object sender, EventArgs e)
         {
             try
             {
-                SelectMultipleEntities("Field Outputs", _controller.GetResultFieldOutputsAsNamedItems(),
+                SelectMultipleEntities("Field Outputs", _controller.GetVisibleResultFieldOutputsAsNamedItems(),
                                        DeleteResultFieldOutputs);
             }
             catch (Exception ex)
@@ -6257,6 +6286,17 @@ namespace PrePoMax
             }
         }
         //
+        private void CreateResultFieldOutput()
+        {
+            if (_controller.CurrentResult == null || _controller.CurrentResult.Mesh == null) return;
+            if (_controller.CurrentResult.GetAllFiledNameComponentNames().Count == 0) return;
+            //
+            ShowForm(_frmResultFieldOutput, "Create Field Output", null);
+        }
+        private void EditResultFieldOutput(string resultFieldOutputName)
+        {
+            ShowForm(_frmResultFieldOutput, "Edit Field Output", resultFieldOutputName);
+        }
         public void DeleteResultFieldOutputs(string[] fieldOutputNames)
         {
             if (MessageBoxes.ShowWarningQuestion("OK to delete selected field outputs?" + Environment.NewLine
@@ -7059,7 +7099,6 @@ namespace PrePoMax
         {
             tslDeformationFactor.Enabled = GetDeformationType() == DeformationScaleFactorTypeEnum.UserDefined;
             tstbDeformationFactor.Enabled = tslDeformationFactor.Enabled;
-
         }
         public string GetDeformationVariable()
         {
@@ -7111,14 +7150,14 @@ namespace PrePoMax
             {
                 visible = true;
                 //
-                bool enabled;
-                if (_controller.CurrentFieldData != null)
-                {
-                    Field field = _controller.CurrentResult.GetField(_controller.CurrentFieldData);
-                    if (field != null) enabled = field.Complex;
-                    else enabled = false;
-                }
-                else enabled = false;
+                bool enabled = true;
+                //if (_controller.CurrentFieldData != null)
+                //{
+                //    Field field = _controller.CurrentResult.GetField(_controller.CurrentFieldData);
+                //    if (field != null) enabled = field.Complex;
+                //    else enabled = false;
+                //}
+                //else enabled = false;
                 //
                 tslComplex.Enabled = enabled;
                 tscbComplex.Enabled = enabled;
@@ -7169,8 +7208,6 @@ namespace PrePoMax
         {
             return tstbAngle.Value;
         }
-
-
 
         #endregion  ################################################################################################################
 
@@ -7387,7 +7424,7 @@ namespace PrePoMax
         }
         private bool CheckValiditiy()
         {
-            string[] invalidItems = _controller.CheckAndUpdateValidity();
+            string[] invalidItems = _controller.CheckAndUpdateModelValidity();
             if (invalidItems.Length > 0)
             {
                 string text = "The model contains active invlaid items:" + Environment.NewLine;
@@ -7876,34 +7913,32 @@ namespace PrePoMax
                 {
                     // Step id or increment id changed                                              
 
-                    // find the choosen data; also contains info about type of step ...
+                    // Find the choosen data; also contains info about type of step ...
                     fieldData = _controller.CurrentResult.GetFieldData(fieldData.Name,
                                                                        fieldData.Component,
                                                                        fieldData.StepId,
                                                                        fieldData.StepIncrementId,
                                                                        true);
-                    // update controller field data
+                    // Update controller field data
                     _controller.CurrentFieldData = fieldData;
-                    // draw deformation or field data
+                    // Draw deformation or field data
                     if (_controller.ViewResultsType != ViewResultsType.Undeformed) _controller.DrawResults(false);
                 }
                 else
                 {
-                    // field of field component changed                                                 
+                    // Field of field component changed                                                 
 
-                    // update controller field data; this is used for the SetStepAndIncrementIds to detect missing ids
+                    // Update controller field data; this is used for the SetStepAndIncrementIds to detect missing ids
                     _controller.CurrentFieldData = fieldData;
-                    // find all step and step increments
-                    //SetAllStepAndIncrementIds();
-                    // find the existing choosen data; also contains info about type of step ...
+                    // Find the existing choosen data; also contains info about type of step ...
                     fieldData = _controller.CurrentResult.GetFieldData(fieldData.Name,
                                                                        fieldData.Component,
                                                                        fieldData.StepId,
                                                                        fieldData.StepIncrementId,
                                                                        true);
-                    // update controller field data
+                    // Update controller field data
                     _controller.CurrentFieldData = fieldData;
-                    // draw field data
+                    // Draw field data
                     if (_controller.ViewResultsType == ViewResultsType.ColorContours) _controller.UpdatePartsScalarFields();
                 }
                 //
@@ -8640,6 +8675,6 @@ namespace PrePoMax
             }
         }
 
-        
+       
     }
 }

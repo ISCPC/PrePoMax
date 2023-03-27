@@ -57,6 +57,8 @@ namespace CaeResults
                 Dictionary<int, FeNode> nodes = null;
                 Dictionary<int, int> nodeIdsLookUp = null;
                 Dictionary<int, FeElement> elements = null;
+                Dictionary<int, string> materialIdMaterialName = null;
+                Dictionary<int, List<int>> materialIdElementIds = null;
                 //
                 FeResults result = new FeResults(fileName);
                 Field field;
@@ -73,6 +75,7 @@ namespace CaeResults
                         result.HashName = GetHashName(dataSet);
                         result.DateTime = GetDateTime(dataSet);
                         result.UnitSystem = GetUnitSystem(dataSet);
+                        materialIdMaterialName = GetMaterialIdsAndNames(dataSet);
                     }
                     else if (setID.StartsWith("    2C")) // Nodes
                     {
@@ -81,7 +84,7 @@ namespace CaeResults
                     }
                     else if (setID.StartsWith("    3C")) // Elements
                     {
-                        elements = GetElements(dataSet);
+                        elements = GetElements(dataSet, out materialIdElementIds);
                         //elements = GetElementsFast(dataSet));
                     }
                     else if (setID.StartsWith("    1PSTEP")) // Fields
@@ -99,6 +102,19 @@ namespace CaeResults
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Results);
                 mesh.ResetPartsColor();
                 result.SetMesh(mesh, nodeIdsLookUp);
+                //
+                //
+                if (materialIdMaterialName != null && materialIdElementIds != null &&
+                    materialIdMaterialName.Count == materialIdElementIds.Count)
+                {
+                    FeElementSet elementSet;
+                    foreach (var entry in materialIdMaterialName)
+                    {
+                        elementSet = new FeElementSet(entry.Value, materialIdElementIds[entry.Key].ToArray());
+                        result.Mesh.AddElementSet(elementSet);
+                    }
+                }
+                //
                 //
                 return result;
             }
@@ -211,6 +227,31 @@ namespace CaeResults
             //
             return new UnitSystem(unitSystemType);
         }
+        static private Dictionary<int, string> GetMaterialIdsAndNames(string[] lines)
+        {
+            //    1UMAT    1S235
+            //    1UMAT    2SPRING
+            int materialId;
+            string materialName;
+            string[] tmp;
+            Dictionary<int, string> materialIdMaterialName = new Dictionary<int, string>();
+            //
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].ToUpper().Contains("1UMAT"))
+                {
+                    tmp = lines[i].Split(new string[] { "1UMAT" }, StringSplitOptions.RemoveEmptyEntries);
+                    if (tmp.Length == 2)
+                    {
+                        materialId = int.Parse(tmp[1].Substring(0, 5));
+                        materialName = "MATERIAL_" + tmp[1].Substring(5, tmp[1].Length - 5).Trim();
+                        materialIdMaterialName.Add(materialId, materialName);
+                    }
+                }
+            }
+            //
+            return materialIdMaterialName;
+        }
         static private List<string[]> GetDataSets(string[] lines)
         {
             List<string> dataSet = new List<string>();
@@ -300,7 +341,7 @@ namespace CaeResults
 
             return nodes;
         }
-        static private Dictionary<int, FeElement> GetElements(string[] lines)
+        static private Dictionary<int, FeElement> GetElements(string[] lines, out Dictionary<int, List<int>> materialIdElementIds)
         {
             //        el.id   type       ?   mat.id      
             // -1      1413      3       0        1      
@@ -308,6 +349,8 @@ namespace CaeResults
             // -2       483       489       481       482
 
             Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
+            List<int> elementIds;
+            materialIdElementIds = new Dictionary<int, List<int>>();
             int id;
             FrdFeDescriptorId feDescriptorId;
             FeElement element;
@@ -322,7 +365,10 @@ namespace CaeResults
                 record1 = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                 id = int.Parse(record1[1]);
                 feDescriptorId = (FrdFeDescriptorId)int.Parse(record1[2]);
-                //materialID = int.Parse(record1[4]);
+                materialID = int.Parse(record1[4]);
+                //
+                if (materialIdElementIds.TryGetValue(materialID, out elementIds)) elementIds.Add(id);
+                else materialIdElementIds.Add(materialID, new List<int> { id });
                 //
                 switch (feDescriptorId)
                 {

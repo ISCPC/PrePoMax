@@ -487,7 +487,7 @@ namespace CaeMesh
                 }
                 //
                 SetItemValidity(meshingParameters, valid, items);
-                if (!valid && meshingParameters.Active) invalidItems.Add("Meshing parameters: " + entry.Value.Name);
+                if (!valid && meshingParameters.Active) invalidItems.Add("Meshing parameters: " + meshingParameters.Name);
             }
             // Mesh refinement
             int partId;
@@ -506,7 +506,7 @@ namespace CaeMesh
                 }
                 //
                 SetItemValidity(meshRefinement, valid, items);
-                if (!valid && meshRefinement.Active) invalidItems.Add("Mesh refinement: " + entry.Value.Name);
+                if (!valid && meshRefinement.Active) invalidItems.Add("Mesh refinement: " + meshRefinement.Name);
             }
             // Node set
             FeNodeSet nodeSet;
@@ -3537,7 +3537,7 @@ namespace CaeMesh
                         }
                     }
                 }
-                List<Graph<BasePart>> subGraphs = graph.GeConnectedSubgraphs();
+                List<Graph<BasePart>> subGraphs = graph.GetConnectedSubgraphs();
                 foreach (var subGraph in subGraphs)
                 {
                     connectedParts = new List<BasePart>();

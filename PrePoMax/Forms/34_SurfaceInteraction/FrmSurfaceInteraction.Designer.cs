@@ -226,7 +226,6 @@
             this.dgvData.StartPlotAtZero = false;
             this.dgvData.TabIndex = 0;
             this.dgvData.XColIndex = 0;
-            this.dgvData.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvData_DataError);
             // 
             // label2
             // 

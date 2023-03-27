@@ -12,6 +12,7 @@ using CaeModel;
 using CaeMesh;
 using CaeJob;
 using CaeResults;
+using System.Xml.Linq;
 
 namespace UserControls
 {
@@ -1494,6 +1495,7 @@ namespace UserControls
                     {
                         if (selectedNode.Parent.Parent.Tag is Step) parentName = selectedNode.Parent.Parent.Text;
                         else if (selectedNode.Parent.Tag is Field) parentName = selectedNode.Parent.Text;
+                        else if (selectedNode.Parent.Tag is ResultFieldOutput) parentName = selectedNode.Parent.Text;
                         else if (selectedNode.Parent.Tag is HistoryResultSet) parentName = selectedNode.Parent.Text;
                     }
                     parentNames.Add(parentName);
@@ -1852,8 +1854,7 @@ namespace UserControls
                             {
                                 allComponents[i] = results.GetFieldComponentNames(fieldNames[i]);
                             }
-                            SetFieldOutputAndComponentNames(fieldNames, allComponents);
-                            //SelectFirstComponentOfFirstFieldOutput();
+                            SetFieldOutputAndComponentNames(fieldNames, allComponents, results.GetResultFieldOutputs());
                         }
                         //
                         if (results.GetHistory() != null) SetHistoryResults(results.GetHistory());
@@ -2127,6 +2128,14 @@ namespace UserControls
                 node.Tag = item;
                 parent = _resultParts;
             }
+            else if (item is ResultFieldOutput rfo)
+            {
+                SetFieldOutputAndComponentNames(new string[] { rfo.Name }, new string[][] { rfo.GetComponentNames() },
+                                                new ResultFieldOutput[] { rfo });
+                node = _resultFieldOutputs.Nodes[rfo.Name];
+                parent = _resultFieldOutputs;
+                //return;
+            }
             else if (item is HistoryResultSet hrs)
             {
                 node = SetHistoryResultSet(hrs);
@@ -2212,6 +2221,7 @@ namespace UserControls
             if (item is MeshingParameters) baseNode = _meshingParameters;
             else if (item is FeMeshRefinement) baseNode = _meshRefinements;
             else if (item is AnalysisJob) baseNode = _analyses;
+            else if (item is ResultFieldOutput) baseNode = _resultFieldOutputs;
             else baseNode = tree.Nodes[0];
             //
             TreeNode[] tmp;
@@ -2258,6 +2268,7 @@ namespace UserControls
             else if (typeof(T) == typeof(AnalysisJob)) baseNode = _analyses;
             //
             else if (typeof(T) == typeof(Field)) baseNode = _resultFieldOutputs;
+            else if (typeof(T) == typeof(ResultFieldOutput)) baseNode = _resultFieldOutputs;
             else if (typeof(T) == typeof(HistoryResultSet)) baseNode = _resultHistoryOutputs;
             else baseNode = tree.Nodes[0];
             // Find parent
@@ -2557,6 +2568,18 @@ namespace UserControls
                     cltv.SetNodeForeColor(node, cltv.HighlightForeErrorColor);
                     node.Parent.Expand();
                 }
+                // Set status of component nodes
+                if (item is ResultFieldOutput)
+                {
+                    foreach (TreeNode componentNode in node.Nodes)
+                    {
+                        if (componentNode.Tag != null && componentNode.Tag is NamedClass nc)
+                        {
+                            nc.Valid = item.Valid;
+                            SetNodeStatus(componentNode);
+                        }
+                    }
+                }
             }
         }
         private void SetNodeImage(TreeNode node, string imageName)
@@ -2569,7 +2592,8 @@ namespace UserControls
         }
 
         // Results                                                                                                                  
-        private void SetFieldOutputAndComponentNames(string[] fieldNames, string[][] components)
+        private void SetFieldOutputAndComponentNames(string[] fieldNames, string[][] components,
+                                                     ResultFieldOutput[] resultFieldOutputs)
         {
             TreeNode node;
             TreeNode child;
@@ -2595,6 +2619,12 @@ namespace UserControls
             //
             int n = _resultFieldOutputs.Nodes.Count;
             if (n > 0) _resultFieldOutputs.Text = _fieldOutputsName + " (" + n + ")";
+            // Add result field outputs
+            foreach (var resultFieldOutput in resultFieldOutputs)
+            {
+                node = _resultFieldOutputs.Nodes[resultFieldOutput.Name];
+                if (node != null) node.Tag = resultFieldOutput;    // overwrite Field with ResultFieldOutput
+            }
         }
         public void SelectFirstComponentOfFirstFieldOutput()
         {
@@ -2783,6 +2813,10 @@ namespace UserControls
             else if (node.TreeView == cltvResults && node.Name == _resultNodeSetsName) return false;
             else if (node.TreeView == cltvResults && node.Name == _resultElementSetsName) return false;
             else if (node.TreeView == cltvResults && node.Name == _resultSurfacesName) return false;
+            //
+            else if (node.TreeView == cltvResults && node.Name == _fieldOutputsName) return true;
+            else if (node.TreeView == cltvResults && node.Name == _historyOutputsName) return true;
+            //
             else return false;
         }
         private bool CanDuplicate(TreeNode node)

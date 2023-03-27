@@ -26,11 +26,13 @@ namespace PrePoMax.Commands
         // Properties                                                                                                               
         public int Count { get { return _commands.Count(); } }
         public int CurrPositionIndex { get { return _currPositionIndex; } }
+        public List<Command> Commands { get { return _commands; } }
 
 
         // Callbacks                                                                                                                
         [NonSerialized] public Action<string> WriteOutput;
         [NonSerialized] public Action ModelChanged_ResetJobStatus;
+
 
         // Events                                                                                                                   
         public event Action<string, string> EnableDisableUndoRedo;

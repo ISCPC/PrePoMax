@@ -416,21 +416,28 @@
     <Compile Include="Forms\53_Find\FrmFind.Designer.cs">
       <DependentUpon>FrmFind.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\72_ResultHistoryOutput\FrmResultHistoryOutput.cs">
+    <Compile Include="Forms\72_ResultFieldOutput\SafetyFactorPartDataPoint.cs" />
+    <Compile Include="Forms\72_ResultFieldOutput\SafetyFactorMaterialDataPoint.cs" />
+    <Compile Include="Forms\72_ResultFieldOutput\FrmResultFieldOutput.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\72_ResultHistoryOutput\ViewResultHistoryOutputFromField.cs" />
-    <Compile Include="Forms\72_ResultHistoryOutput\ViewResultHistoryOutput.cs" />
-    <Compile Include="Forms\73_Transformation\FrmTransformation.cs">
+    <Compile Include="Forms\72_ResultFieldOutput\ViewResultFieldOutput.cs" />
+    <Compile Include="Forms\72_ResultFieldOutput\ViewResultFieldOutputSafetyFactor.cs" />
+    <Compile Include="Forms\73_ResultHistoryOutput\FrmResultHistoryOutput.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\73_Transformation\FrmTransformation.Designer.cs">
+    <Compile Include="Forms\73_ResultHistoryOutput\ViewResultHistoryOutputFromField.cs" />
+    <Compile Include="Forms\73_ResultHistoryOutput\ViewResultHistoryOutput.cs" />
+    <Compile Include="Forms\74_Transformation\FrmTransformation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\74_Transformation\FrmTransformation.Designer.cs">
       <DependentUpon>FrmTransformation.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\73_Transformation\ViewCircularPattern.cs" />
-    <Compile Include="Forms\73_Transformation\ViewLinearPattern.cs" />
-    <Compile Include="Forms\73_Transformation\ViewTransformation.cs" />
-    <Compile Include="Forms\73_Transformation\ViewSymetry.cs" />
+    <Compile Include="Forms\74_Transformation\ViewCircularPattern.cs" />
+    <Compile Include="Forms\74_Transformation\ViewLinearPattern.cs" />
+    <Compile Include="Forms\74_Transformation\ViewTransformation.cs" />
+    <Compile Include="Forms\74_Transformation\ViewSymetry.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewFriction.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceInteractionProperty.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceBehavior.cs" />
@@ -492,10 +499,10 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\51_Settings\EnvVarsUIEditor.cs" />
-    <Compile Include="Forms\72_ResultHistoryOutput\FrmViewResultHistoryOutput.cs">
+    <Compile Include="Forms\73_ResultHistoryOutput\FrmViewResultHistoryOutput.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\72_ResultHistoryOutput\FrmViewResultHistoryOutput.Designer.cs">
+    <Compile Include="Forms\73_ResultHistoryOutput\FrmViewResultHistoryOutput.Designer.cs">
       <DependentUpon>FrmViewResultHistoryOutput.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\IFormHighlight.cs" />
@@ -767,13 +774,16 @@
     <EmbeddedResource Include="Forms\71_Animation\FrmAnimation.resx">
       <DependentUpon>FrmAnimation.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\72_ResultHistoryOutput\FrmResultHistoryOutput.resx">
+    <EmbeddedResource Include="Forms\72_ResultFieldOutput\FrmResultFieldOutput.resx">
+      <DependentUpon>FrmResultFieldOutput.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\73_ResultHistoryOutput\FrmResultHistoryOutput.resx">
       <DependentUpon>FrmResultHistoryOutput.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\72_ResultHistoryOutput\FrmViewResultHistoryOutput.resx">
+    <EmbeddedResource Include="Forms\73_ResultHistoryOutput\FrmViewResultHistoryOutput.resx">
       <DependentUpon>FrmViewResultHistoryOutput.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\73_Transformation\FrmTransformation.resx">
+    <EmbeddedResource Include="Forms\74_Transformation\FrmTransformation.resx">
       <DependentUpon>FrmTransformation.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMain.resx">

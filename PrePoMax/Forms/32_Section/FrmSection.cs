@@ -120,7 +120,7 @@ namespace PrePoMax.Forms
                 _controller.AddSectionCommand(Section);
             }
             // Replace
-            else if(_propertyItemChanged)
+            else if (_propertyItemChanged)
             {
                 _controller.ReplaceSectionCommand(_sectionToEditName, Section);
             }

@@ -100,7 +100,7 @@ namespace PrePoMax.Forms
                 _controller.AddFieldOutputCommand(_stepName, FieldOutput);
             }
             // Replace
-            else if(_propertyItemChanged)
+            else if (_propertyItemChanged)
             {
                 _controller.ReplaceFieldOutputCommand(_stepName, _fieldOutputToEditName, FieldOutput);
             }

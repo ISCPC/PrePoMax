@@ -29,6 +29,7 @@ namespace PrePoMax.Settings
             _settingsView = true;
             UpdateVisibility(); // apply settings view
             //
+            _dctd.GetProperty(nameof(AdvancedView)).SetIsBrowsable(false);
             _dctd.GetProperty(nameof(Name)).SetIsBrowsable(false);
             _dctd.GetProperty(nameof(MaxH)).SetIsBrowsable(false);
             _dctd.GetProperty(nameof(MinH)).SetIsBrowsable(false);

@@ -21,6 +21,8 @@ using System.Runtime.InteropServices;
 using System.IO.Ports;
 using System.Collections.ObjectModel;
 using System.Xml.Linq;
+using Newtonsoft.Json;
+using PrePoMax.Forms;
 
 namespace PrePoMax
 {
@@ -258,8 +260,8 @@ namespace PrePoMax
         }
         public string GetCurrentResultsUnitAbbreviation()
         {
-            return _allResults.CurrentResult.GetFieldUnitAbbrevation(CurrentFieldData.Name, CurrentFieldData.Component,
-                                                                     CurrentFieldData.StepId, CurrentFieldData.StepIncrementId);
+            if (CurrentFieldData.Unit != null && CurrentFieldData.Unit.Length > 0) return CurrentFieldData.Unit;
+            else return _allResults.CurrentResult.GetFieldUnitAbbrevation(CurrentFieldData);
         }
         public bool AreTransformationsActive()
         {
@@ -582,7 +584,7 @@ namespace PrePoMax
             else if (extension == ".foam") OpenFoam(fileName);
             else throw new NotSupportedException();
             // Check validity
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
             // Get first component of the first field for the last increment in the last step
             if (ResultsInitialized)
                 CurrentFieldData = _allResults.CurrentResult.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
@@ -638,6 +640,12 @@ namespace PrePoMax
             _form.RegenerateTree(false);
             // Set tree states
             if (data[2] is bool[][] states) _form.SetTreeExpandCollapseState(states);
+
+
+
+            JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
+            string json = JsonConvert.SerializeObject(_commands, Formatting.Indented, settings);
+            File.WriteAllText(@"D:\out.txt", json);
         }
         private void OpenPmh(string fileName)
         {
@@ -1098,7 +1106,7 @@ namespace PrePoMax
             // Regenerate
             _form.RegenerateTree();
             //
-            if (extension == ".inp") CheckAndUpdateValidity();  // must be here at the last place
+            if (extension == ".inp") CheckAndUpdateModelValidity();  // must be here at the last place
         }
         public string[] ImportCADAssemblyFile(string assemblyFileName, string splitCommand)
         {
@@ -2429,7 +2437,7 @@ namespace PrePoMax
                 DrawGeometry(false);
             }
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         private string ScaleGeometryPart(GeometryPart part, double[] scaleCenter, double[] scaleFactors)
         {
@@ -2460,7 +2468,7 @@ namespace PrePoMax
             _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
             _netgenJob.Submit();
             // Job completed
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
             //
             if (_netgenJob.JobStatus == JobStatus.OK) return outputBrepFileName;
             else return null;
@@ -2631,7 +2639,7 @@ namespace PrePoMax
             //
             foreach (var name in removedParts) _form.RemoveTreeNode<GeometryPart>(view, name, null);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
             //
             DrawGeometry(false);
         }
@@ -2695,7 +2703,7 @@ namespace PrePoMax
                     MessageBoxes.ShowWarning(warning + Environment.NewLine + "Only face orientations on CAD shell parts were fliped.");
             }
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         private string FlipPartFaceOrientations(GeometryPart part, int[] faceIds)
         {
@@ -2769,7 +2777,7 @@ namespace PrePoMax
                 //
                 UpdateAfterImport(extension);
                 //
-                CheckAndUpdateValidity();
+                CheckAndUpdateModelValidity();
                 //_form.ScreenUpdating = true;
             }
             else
@@ -2844,7 +2852,7 @@ namespace PrePoMax
             }
             else MessageBoxes.ShowWarning("Faces on non-CAD parts cannot be split.");
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         private string SplitAFaceUsingTwoPoints(GeometryPart part, int faceId, FeNode node1, FeNode node2)
         {
@@ -2891,7 +2899,7 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, geometryPart.Name, geometryPart, null);
             }
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
             // Draw
             DrawGeometry(false);
         }
@@ -2914,7 +2922,7 @@ namespace PrePoMax
                 }
             }
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
             //
             DrawGeometry(false);
         }
@@ -3015,7 +3023,7 @@ namespace PrePoMax
             //
             UpdateMeshRefinements(false);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
             //
             UpdateHighlight();
         }
@@ -3102,7 +3110,7 @@ namespace PrePoMax
             //
             UpdateMeshRefinements(false);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
             //
             _form.SelectBaseParts(compoundPartNames);
         }
@@ -4455,7 +4463,7 @@ namespace PrePoMax
             //
             AnnotateWithColorLegend();
             //
-            CheckAndUpdateValidity();
+            FeModelUpdate(UpdateType.Check);
         }
         // Transform
         public void TranslateModelParts(string[] partNames, double[] translateVector, bool copy)
@@ -5475,7 +5483,7 @@ namespace PrePoMax
             //
             AnnotateWithColorLegend();
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }        
         public Material GetMaterial(string materialName)
         {
@@ -5493,7 +5501,7 @@ namespace PrePoMax
             //
             AnnotateWithColorLegend();
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public void DuplicateMaterials(string[] materialNames)
         {
@@ -5522,7 +5530,7 @@ namespace PrePoMax
             //
             AnnotateWithColorLegend();
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         //
         public string[] GetMaterialLibraryFiles()
@@ -5581,7 +5589,7 @@ namespace PrePoMax
             if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawModel);
             else AnnotateWithColorLegend();
             //
-            CheckAndUpdateValidity();   // Check the model in both cases: FeModelUpdate and AnnotateWithColorLegend
+            CheckAndUpdateModelValidity();   // Check the model in both cases: FeModelUpdate and AnnotateWithColorLegend
         }
         public Section GetSection(string sectionName)
         {
@@ -5605,7 +5613,7 @@ namespace PrePoMax
             if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawModel);
             else AnnotateWithColorLegend();
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public void RemoveSections(string[] sectionNames)
         {
@@ -5621,7 +5629,7 @@ namespace PrePoMax
             if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawModel);
             else AnnotateWithColorLegend();
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         //
         private void ConvertSelectionBasedSection(Section section)
@@ -6138,7 +6146,7 @@ namespace PrePoMax
             _model.SurfaceInteractions.Add(surfaceInteraction.Name, surfaceInteraction);
             _form.AddTreeNode(ViewGeometryModelResults.Model, surfaceInteraction, null);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public SurfaceInteraction GetSurfaceInteraction(string surfaceInteractionName)
         {
@@ -6154,7 +6162,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSurfaceInteractionName, newSurfaceInteraction, null);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public void DuplicateSurfaceInteractions(string[] surfaceInteractionNames)
         {
@@ -6175,7 +6183,7 @@ namespace PrePoMax
                 _form.RemoveTreeNode<SurfaceInteraction>(ViewGeometryModelResults.Model, name, null);
             }
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
 
         #endregion #################################################################################################################
@@ -6876,7 +6884,7 @@ namespace PrePoMax
             _model.StepCollection.AddHistoryOutput(historyOutput, stepName);
             _form.AddTreeNode(ViewGeometryModelResults.Model, historyOutput, stepName);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public HistoryOutput GetHistoryOutput(string stepName, string historyOutputName)
         {
@@ -6903,7 +6911,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldHistoryOutputName, historyOutput, stepName);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public void PropagateHistoryOutput(string stepName, string historyOutputName)
         {
@@ -6928,7 +6936,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, historyOutputName, historyOutput, stepName);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public void RemoveHistoryOutputs(string stepName, string[] historyOutputNames)
         {
@@ -6939,7 +6947,7 @@ namespace PrePoMax
                 _form.RemoveTreeNode<HistoryOutput>(ViewGeometryModelResults.Model, name, stepName);
             }
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         //
         private void ConvertSelectionBasedHistoryOutput(HistoryOutput historyOutput)
@@ -7029,7 +7037,7 @@ namespace PrePoMax
             _model.StepCollection.AddFieldOutput(fieldOutput, stepName);
             _form.AddTreeNode(ViewGeometryModelResults.Model, fieldOutput, stepName);
 
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public FieldOutput GetFieldOutput(string stepName, string fieldOutputName)
         {
@@ -7045,7 +7053,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldFieldOutputName, fieldOutput, stepName);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public void PropagateFieldOutput(string stepName, string fieldOutputName)
         {
@@ -7069,7 +7077,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, fieldOutputName, fieldOutput, stepName);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public void RemoveFieldOutputs(string stepName, string[] fieldOutputNames)
         {
@@ -7079,7 +7087,7 @@ namespace PrePoMax
                 _form.RemoveTreeNode<FieldOutput>(ViewGeometryModelResults.Model, name, stepName);
             }
 
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
 
         #endregion #################################################################################################################
@@ -7516,7 +7524,7 @@ namespace PrePoMax
             _model.StepCollection.AddDefinedField(definedField, stepName);
             _form.AddTreeNode(ViewGeometryModelResults.Model, definedField, stepName);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public DefinedField GetDefinedField(string stepName, string definedFieldName)
         {
@@ -7542,7 +7550,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldDefinedFieldName, definedField, stepName);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public void PropagateDefinedField(string stepName, string definedFieldName)
         {
@@ -7579,7 +7587,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, definedFieldName, definedField, stepName);
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         public void RemoveDefinedFields(string stepName, string[] definedFieldNames)
         {
@@ -7590,7 +7598,7 @@ namespace PrePoMax
                 _form.RemoveTreeNode<DefinedField>(ViewGeometryModelResults.Model, name, stepName);
             }
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
         }
         //
         private void ConvertSelectionBasedDefinedField(DefinedField definedField)
@@ -8118,7 +8126,7 @@ namespace PrePoMax
         {
             LoadResults(results, false);
             // Check validity
-            CheckAndUpdateValidity();
+            CheckAndUpdateModelValidity();
             // Get first component of the first field for the last increment in the last step
             if (ResultsInitialized)
                 _currentFieldData = _allResults.CurrentResult.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
@@ -8248,12 +8256,14 @@ namespace PrePoMax
             // Replace result part
             BasePart part = GetResultPart(oldPartName);
             part.SetProperties(newPartProperties);
-            _allResults.CurrentResult.Mesh.Parts.Remove(oldPartName);
-            _allResults.CurrentResult.Mesh.Parts.Add(part.Name, part);
+            _allResults.CurrentResult.Mesh.Parts.Replace(oldPartName, part.Name, part);
+            //
             _form.UpdateActor(oldPartName, part.Name, part.Color);
             _form.UpdateTreeNode(ViewGeometryModelResults.Results, oldPartName, part, null);
             //
             AnnotateWithColorLegend();
+            //
+            FeResultsUpdate(UpdateType.Check);
         }
         public void RemoveResultParts(string[] partNames)
         {
@@ -8270,7 +8280,9 @@ namespace PrePoMax
             //
             foreach (var name in removedPartNames) _form.RemoveTreeNode<BasePart>(view, name, null);
             //
-            DrawResults(false);
+            AnnotateWithColorLegend();
+            //
+            FeResultsUpdate(UpdateType.Check | UpdateType.DrawResults);
         }
         //
         public bool AreResultPartsMergable(string[] partNames)
@@ -8298,7 +8310,9 @@ namespace PrePoMax
                 //
                 _form.AddTreeNode(view, newResultPart, null);
                 //
-                DrawResults(false);
+                AnnotateWithColorLegend();
+                //
+                FeResultsUpdate(UpdateType.Check | UpdateType.DrawResults);
             }
         }
 
@@ -8315,6 +8329,23 @@ namespace PrePoMax
                     if (!entry.Value.Internal) userNodeSetNames.Add(entry.Key);
                 }
                 return userNodeSetNames.ToArray();
+            }
+            else return null;
+        }
+
+        #endregion #################################################################################################################
+        
+        #region Result element set  ###################################################################################################
+        public string[] GetResultUserElementSetNames()
+        {
+            if (_allResults.CurrentResult != null && _allResults.CurrentResult.Mesh != null)
+            {
+                List<string> userElementSetNames = new List<string>();
+                foreach (var entry in _allResults.CurrentResult.Mesh.ElementSets)
+                {
+                    if (!entry.Value.Internal) userElementSetNames.Add(entry.Key);
+                }
+                return userElementSetNames.ToArray();
             }
             else return null;
         }
@@ -8343,10 +8374,6 @@ namespace PrePoMax
         {
             return _allResults.CurrentResult.GetAllFieldNames();
         }
-        public NamedClass[] GetResultFieldOutputsAsNamedItems()
-        {
-            return _allResults.CurrentResult.GetFieldsAsNamedItems();
-        }
         public string[] GetResultFieldOutputComponents(string fieldOutputName)
         {
             return _allResults.CurrentResult.GetFieldComponentNames(fieldOutputName);
@@ -8361,18 +8388,61 @@ namespace PrePoMax
         {
             return _allResults.CurrentResult.GetStepIncrementIds(stepId);
         }
+        public void AddResultFieldOutput(ResultFieldOutput resultFieldOutput)
+        {
+            _allResults.CurrentResult.AddResultFieldOutput(resultFieldOutput);
+            //
+            //_form.RegenerateTree()
+            _form.AddTreeNode(ViewGeometryModelResults.Results, resultFieldOutput, null);
+            //
+            FeResultsUpdate(UpdateType.Check);
+        }
+        public ResultFieldOutput[] GetResultFieldOutputs()
+        {
+            return _allResults.CurrentResult.GetResultFieldOutputs();
+        }
+        public NamedClass[] GetVisibleResultFieldOutputsAsNamedItems()
+        {
+            return _allResults.CurrentResult.GetVisibleFieldsAsNamedItems();
+        }
+        public ResultFieldOutput GetResultFieldOutput(string resultFieldOutputname)
+        {
+            return _allResults.CurrentResult.GetResultFieldOutput(resultFieldOutputname);
+        }
+        public void ReplaceResultFieldOutput(string oldResultFieldOutputName, ResultFieldOutput resultFieldOutput)
+        {
+            _allResults.CurrentResult.ReplaceResultFieldOutput(oldResultFieldOutputName, resultFieldOutput);
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Results, oldResultFieldOutputName, resultFieldOutput, null);
+            //
+            UpdatePartsScalarFields();
+            //
+            FeResultsUpdate(UpdateType.Check);
+        }
         // Remove
         public void RemoveResultFieldOutputs(string[] fieldOutputNames)
         {
+            Dictionary<string, Action<ViewGeometryModelResults, string, string>> nameDeleteAction =
+                new Dictionary<string, Action<ViewGeometryModelResults, string, string>>();
+            foreach (var name in fieldOutputNames)
+            {
+                if (_allResults.CurrentResult.ContainsResultFieldOutput(name))
+                    nameDeleteAction.Add(name, _form.RemoveTreeNode<ResultFieldOutput>);
+                else nameDeleteAction.Add(name, _form.RemoveTreeNode<Field>);
+            }
+            //
             _allResults.CurrentResult.RemoveResultFieldOutputs(fieldOutputNames);
             _form.ClearActiveTreeSelection();   // prevents errors on _form.RemoveTreeNode
             //
             ViewGeometryModelResults view = ViewGeometryModelResults.Results;
-            foreach (var name in fieldOutputNames) _form.RemoveTreeNode<Field>(view, name, null);
+            foreach (var name in fieldOutputNames)
+            {
+                nameDeleteAction[name](view, name, null);
+            }
             //
             if (_allResults.CurrentResult.GetAllComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
             //
-            DrawResults(false); // in all cases redraw the 
+            FeResultsUpdate(UpdateType.Check | UpdateType.DrawResults);
         }
         public void RemoveResultFieldOutputComponents(string fieldOutputName, string[] componentNames)
         {
@@ -8384,7 +8454,7 @@ namespace PrePoMax
             //
             if (_allResults.CurrentResult.GetAllComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
             //
-            DrawResults(false); // in all cases redraw the 
+            FeResultsUpdate(UpdateType.Check | UpdateType.DrawResults);
         }
         //
         
@@ -10060,7 +10130,7 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, entry.Key, entry.Value, null, false);
             }
         }
-        public string[] CheckAndUpdateValidity()
+        public string[] CheckAndUpdateModelValidity()
         {
             // Update user keywords
             if (_model != null && _model.CalculixUserKeywords != null)
@@ -10072,12 +10142,25 @@ namespace PrePoMax
             }
             // Tuple<NamedClass, string>   ...   Tuple<invalidItem, stepName>
             List<Tuple<NamedClass, string>> items = new List<Tuple<NamedClass, string>>();
-            string[] invalidItems = _model.CheckValidity(items);
+            string[] invalidModelItems = _model.CheckValidity(items);
             foreach (var entry in items)
             {
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, entry.Item1.Name, entry.Item1, entry.Item2, false);
             }
-            return invalidItems;
+            //
+            return invalidModelItems;
+        }
+        public string[] CheckAndUpdateResultValidity()
+        {
+            // Tuple<NamedClass, string>   ...   Tuple<invalidItem, stepName>
+            List<Tuple<NamedClass, string>> items = new List<Tuple<NamedClass, string>>();
+            string[] invalidResultItems = _allResults.CurrentResult.CheckValidity(items);
+            foreach (var entry in items)
+            {
+                _form.UpdateTreeNode(ViewGeometryModelResults.Results, entry.Item1.Name, entry.Item1, entry.Item2, false);
+            }
+            //
+            return invalidResultItems;
         }
 
         // Common
@@ -10132,9 +10215,14 @@ namespace PrePoMax
         public void FeModelUpdate(UpdateType updateType)
         {
             // First check the validity to correctly draw the symbols
-            if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity();
+            if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateModelValidity();
             if (updateType.HasFlag(UpdateType.DrawModel)) DrawModel(updateType.HasFlag(UpdateType.ResetCamera));
             if (updateType.HasFlag(UpdateType.RedrawSymbols)) RedrawSymbols();
+        }
+        public void FeResultsUpdate(UpdateType updateType)
+        {
+            if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateResultValidity();
+            if (updateType.HasFlag(UpdateType.DrawResults)) DrawResults(updateType.HasFlag(UpdateType.ResetCamera));
         }
         private vtkMaxActorRepresentation GetRepresentation(BasePart part)
         {
@@ -13355,9 +13443,15 @@ namespace PrePoMax
         {
             int count = 0;
             FeElementSet elementSet;
+            OrderedDictionary<string, FeElementSet> elementSets = null;
             foreach (var elementSetName in elementSetsToSelect)
             {
-                if (_model.Mesh.ElementSets.TryGetValue(elementSetName, out elementSet))
+                if (_currentView == ViewGeometryModelResults.Model)
+                    elementSets = _model.Mesh.ElementSets;
+                else if (_currentView == ViewGeometryModelResults.Results)
+                    elementSets = _allResults.CurrentResult.Mesh.ElementSets;
+                //
+                if (elementSets != null && elementSets.TryGetValue(elementSetName, out elementSet))
                 {
                     count += DrawElementSet("Highlight", elementSet, Color.Red,
                                             vtkControl.vtkRendererLayer.Selection, backfaceCulling);
@@ -13365,13 +13459,14 @@ namespace PrePoMax
                     if (elementSet.Name.StartsWith(Globals.MissingSectionName))
                     {
                         HashSet<int> nodeIds = new HashSet<int>();
-                        foreach (var elementId in _model.Mesh.ElementSets[elementSetName].Labels)
+                        foreach (var elementId in elementSets[elementSetName].Labels)
                         {
                             nodeIds.UnionWith(_model.Mesh.Elements[elementId].NodeIds);
                         }
                         DrawNodes("Highlight", nodeIds.ToArray(), Color.Red, vtkControl.vtkRendererLayer.Selection);
                     }
                 }
+                
             }
             return count;
         }

@@ -77,6 +77,8 @@
     <Compile Include="Enums\SlipWearResultsEnum.cs" />
     <Compile Include="FeResults.cs" />
     <Compile Include="FieldOutputNames.cs" />
+    <Compile Include="FieldOutput\ResultFieldOutput.cs" />
+    <Compile Include="FieldOutput\ResultFieldOutputSafetyFactor.cs" />
     <Compile Include="FileInOut\Input\OpenFoam\OpenFoamFileReader.cs" />
     <Compile Include="HistoryOutputNames.cs" />
     <Compile Include="HistoryOutputs\HistoryResultData.cs" />

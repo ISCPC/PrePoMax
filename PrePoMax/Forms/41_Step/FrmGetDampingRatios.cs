@@ -105,10 +105,6 @@ namespace PrePoMax.Forms
                 rowId++;
             }
         }
-
-        private void dgvData_DataError(object sender, DataGridViewDataErrorEventArgs e)
-        {
-            MessageBoxes.ShowError(e.Exception.Message);
-        }
+        
     }
 }

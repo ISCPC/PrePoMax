@@ -22,6 +22,15 @@ namespace CaeResults
     }
 
     [Serializable]
+    public enum DataStateEnum
+    {
+        OK,
+        UpdateComplexMinMax,
+        UpdateResultFieldOutput
+    }
+
+
+    [Serializable]
     public struct IDValuePair
     {
         public int Id;
@@ -185,9 +194,11 @@ namespace CaeResults
         {
             _components.Replace(name, name, newComponent);
         }
-        public void RemoveComponent(string name)
+        public FieldComponent RemoveComponent(string name)
         {
-            _components.Remove(name);
+            FieldComponent removedComponent;
+            _components.TryRemove(name, out removedComponent);
+            return removedComponent;
         }
         //
         public void RemoveInvariants()

@@ -166,7 +166,7 @@ namespace CaeMesh
             }
             return true;
         }
-        public List<Graph<T>> GeConnectedSubgraphs()
+        public List<Graph<T>> GetConnectedSubgraphs()
         {
             Node<T> currentNode;
             HashSet<Node<T>> visitedNodes = new HashSet<Node<T>>();
@@ -204,6 +204,34 @@ namespace CaeMesh
             }
             //
             return connectedSubgraphs;
+        }
+        //
+        public List<T> GetIndependencyList()
+        {
+            Graph<T> graphCopy = new Graph<T>(_nodeSet);
+            List<T> childItems = new List<T>();
+            List<T> independencyList = new List<T>();
+            // Remove all independent items
+            do
+            {
+                childItems.Clear();
+                //
+                foreach (Node<T> node in graphCopy.Nodes)
+                {
+                    if (node.Neighbors.Count() == 0) childItems.Add(node.Value);
+                }
+                //
+                foreach (var item in childItems)
+                {
+                    graphCopy.Remove(item);
+                }
+                independencyList.AddRange(childItems);
+            }
+            while (childItems.Count > 0);
+            //
+            if (graphCopy.Count > 0) throw new NotSupportedException();
+            //
+            return independencyList;
         }
     }
 }

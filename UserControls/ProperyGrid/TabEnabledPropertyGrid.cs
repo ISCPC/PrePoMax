@@ -189,7 +189,7 @@ namespace UserControls
             List<GridItem> gridItems = new List<GridItem>();
             this.FindItems(root, gridItems);
             //
-            this.SelectedGridItem = gridItems[0];
+            if (gridItems[0].Expanded) this.SelectedGridItem = gridItems[0];
             //
             base.OnEnter(e);
         }

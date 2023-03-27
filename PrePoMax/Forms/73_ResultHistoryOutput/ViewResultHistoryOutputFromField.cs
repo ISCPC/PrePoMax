@@ -183,7 +183,7 @@ namespace PrePoMax
         private void UpdateComponents()
         {
             string[] componentNames;
-            if (_filedNameComponentNames.TryGetValue(FieldName, out componentNames) && componentNames.Length > 1)
+            if (_filedNameComponentNames.TryGetValue(FieldName, out componentNames) && componentNames.Length > 0)
             {
                 DynamicCustomTypeDescriptor.PopulateProperty(nameof(ComponentName), componentNames);
                 if (!componentNames.Contains(ComponentName)) ComponentName = componentNames[0];

@@ -636,6 +636,21 @@ namespace CaeModel
             elementIdMaterialId = new Dictionary<int, int>();
             foreach (var entry in elementIdSectionId) elementIdMaterialId.Add(entry.Key, sectionIdMaterialId[entry.Value]);
         }
+        public void GetNodalSafetyFactorLimits()
+        {
+            Dictionary<int, int> elementIdMaterialId;
+            GetMaterialAssignments(out elementIdMaterialId);
+            //
+            int count = 0;
+            Dictionary<int, double> materialIdSafetyFactor = new Dictionary<int, double>();
+            foreach (var entry in _materials)
+            {
+                //if (safetyFactor != null) materialIdSafetyFactor.Add(count++, safetyFactor.SafetyFactorLimitValue);
+                //else materialIdSafetyFactor.Add(count++, double.NaN);
+            }
+            //
+            Dictionary<int, double> nodeIdSafetyFactorLimit = new Dictionary<int, double>();
+        }
         public bool AreSlipWearCoefficientsDefined(out Dictionary<int, double> materialIdCoefficient)
         {
             int count = 0;
@@ -1219,7 +1234,7 @@ namespace CaeModel
             int nodeId;
             int[] nodeIds;
             double A;
-            double k;
+            double sign;
             double pressure;
             double[] force;
             double[] nodalForce;
@@ -1265,15 +1280,15 @@ namespace CaeModel
                     // Force magnitudes without area
                     nodalForceMagnitudes = element.GetEquivalentForcesFromFaceName(entry.Key, nodalPressures);
                     // Invert face normal in case of S1 or S2 shell face
-                    if (shellElement && (entry.Key == FeFaceName.S1 || entry.Key == FeFaceName.S2)) k = -1;
-                    else k = 1;
+                    if (shellElement && (entry.Key == FeFaceName.S1 || entry.Key == FeFaceName.S2)) sign = -1;
+                    else sign = 1;
                     // Force vectors
                     for (int i = 0; i < nodeIds.Length; i++)
                     {
                         force = new double[] {
-                            k * A * nodalForceMagnitudes[i] * faceNormal[0],
-                            k * A * nodalForceMagnitudes[i] * faceNormal[1],
-                            k * A * nodalForceMagnitudes[i] * faceNormal[2]};
+                            sign * A * nodalForceMagnitudes[i] * faceNormal[0],
+                            sign * A * nodalForceMagnitudes[i] * faceNormal[1],
+                            sign * A * nodalForceMagnitudes[i] * faceNormal[2]};
                         //
                         if (!nodeIdForce.TryGetValue(nodeIds[i], out nodalForce))
                         {

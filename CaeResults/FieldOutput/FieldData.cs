@@ -19,13 +19,6 @@ namespace CaeResults
     }
 
     [Serializable]
-    public enum DataStateEnum
-    {
-        OK,
-        UpdateComplexMinMax
-    }
-
-    [Serializable]
     public class FieldData : CaeGlobals.NamedClass
     {
         // Variables                                                                                                                
@@ -35,7 +28,8 @@ namespace CaeResults
         public StepTypeEnum StepType;
         public float Time;
         public int StepId;
-        public int StepIncrementId;        
+        public int StepIncrementId;
+        public string Unit;
         
 
 
@@ -52,6 +46,7 @@ namespace CaeResults
             Time = -1;
             StepId = -1;
             StepIncrementId = -1;
+            Unit = null;
         }
         public FieldData(string name, string component, int stepId, int stepIncrementId)
            : base(name)
@@ -64,6 +59,7 @@ namespace CaeResults
             Time = -1;
             StepId = stepId;
             StepIncrementId = stepIncrementId;
+            Unit = null;
         }
         public FieldData(FieldData fieldData)
             : base(fieldData.Name)
@@ -75,6 +71,7 @@ namespace CaeResults
             Time = fieldData.Time;
             StepId = fieldData.StepId;
             StepIncrementId = fieldData.StepIncrementId;
+            Unit = fieldData.Unit;
         }
 
 
@@ -90,10 +87,8 @@ namespace CaeResults
                 bw.Write((int)1);
                 //
                 bw.Write(fieldData.Name);
-                if (fieldData.Component == null)
-                {
-                    bw.Write((int)0);
-                }
+                // Component
+                if (fieldData.Component == null) bw.Write((int)0);
                 else
                 {
                     bw.Write((int)1);
@@ -105,8 +100,13 @@ namespace CaeResults
                 bw.Write(fieldData.Time);
                 bw.Write(fieldData.StepId);
                 bw.Write(fieldData.StepIncrementId);
-                //
-                //bw.Write((int)fieldData.DataState);
+                // Unit
+                if (fieldData.Unit == null) bw.Write((int)0);
+                else
+                {
+                    bw.Write((int)1);
+                    bw.Write(fieldData.Unit);
+                }
                 //
                 bw.Write(fieldData.Active);
                 bw.Write(fieldData.Visible);
@@ -121,7 +121,7 @@ namespace CaeResults
             if (fieldDataExists == 1)
             {
                 FieldData fieldData = new FieldData(br.ReadString());       // read the name
-                //
+                // Component
                 int componentExists = br.ReadInt32();
                 if (componentExists == 1) fieldData.Component = br.ReadString();
                 //
@@ -134,6 +134,10 @@ namespace CaeResults
                 //
                 if (version >= 1_004_000)
                 {
+                    // Unit
+                    int unitExists = br.ReadInt32();
+                    if (unitExists == 1) fieldData.Unit = br.ReadString();
+                    //
                     fieldData.Active = br.ReadBoolean();
                     fieldData.Visible = br.ReadBoolean();
                     fieldData.Valid = br.ReadBoolean();

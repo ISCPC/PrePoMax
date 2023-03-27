@@ -414,6 +414,9 @@ namespace vtkControl
         public void SetText(string fieldName, string componentName, string unitAbbreviation, string complexComponent,
                             string minMaxType)
         {
+            fieldName = fieldName.Replace('_', ' ').Replace('-', ' ');
+            componentName = componentName.Replace('_', ' ').Replace('-', ' ');
+            //
             _unitAbbreviation = unitAbbreviation;
             string complexLabel;
             if (complexComponent == null || complexComponent.Length == 0) complexLabel = "";

@@ -100,7 +100,7 @@ namespace CaeMesh
         //
         public List<MasterSlaveItem> GetMasterSlaveItems(bool checkUnresolved)
         {
-            List<Graph<NodeData>> connectedSubgraphList = _graph.GeConnectedSubgraphs();
+            List<Graph<NodeData>> connectedSubgraphList = _graph.GetConnectedSubgraphs();
             List<MasterSlaveItem> masterSlaveItems = new List<MasterSlaveItem>();
             //
             foreach (var connectedGraph in connectedSubgraphList)
