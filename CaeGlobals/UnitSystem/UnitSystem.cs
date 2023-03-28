@@ -286,7 +286,7 @@ namespace CaeGlobals
                 if ((int)_massUnit == MyUnit.NoUnit) return "";
                 else
                 {
-                    string unit = "√(" + MassUnitAbbreviation + ")·" + AngleUnit.Radian;
+                    string unit = "√(" + MassUnitAbbreviation + ")·" + AngleUnitAbbreviation;
                     return unit;
                 }
             }
@@ -310,7 +310,7 @@ namespace CaeGlobals
                 if ((int)_massUnit == MyUnit.NoUnit) return "";
                 else
                 {
-                    string unit = MassUnitAbbreviation + "·" + AngleUnit.Radian + "²";
+                    string unit = MassUnitAbbreviation + "·" + AngleUnitAbbreviation + "²";
                     return unit;
                 }
             }
