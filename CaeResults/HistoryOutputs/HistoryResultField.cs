@@ -58,6 +58,15 @@ namespace CaeResults
 
 
         // Methods                                                                                                                  
+        public void AppendComponents(HistoryResultField historyResultField)
+        {
+            HistoryResultComponent component;
+            foreach (var entry in historyResultField.Components)
+            {
+                if (_components.TryGetValue(entry.Key, out component)) throw new NotSupportedException();
+                else _components.Add(entry.Key, entry.Value);
+            }
+        }
 
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)

@@ -2862,7 +2862,8 @@ namespace CaeResults
             string unit;
             if (component.Unit != null) unit = component.Unit;
             else unit = GetHistoryUnitAbbrevation(field.Name, component.Name, -1, -1);
-            unit = "\n[" + unit + "]";
+            string frequencyColumnName = PrepareFrequencyUnits(component);
+            //
             string timeUnit = "[" + GetHistoryUnitAbbrevation("Time", null, -1, -1) + "]";
             string frequencyUnit = "[" + GetHistoryUnitAbbrevation("Frequency", null, -1, -1) + "]";
             string angleUnit = "[" + StringAngleDegConverter.GetUnitAbbreviation() + "]";
@@ -2879,19 +2880,25 @@ namespace CaeResults
             // Create rows
             for (int i = 0; i < numRow; i++) rowBasedData[i] = new object[numCol];
             // Add time column name
-            if (set.Harmonic) columnNames[0] = "Angle " + angleUnit;
+            if (frequencyColumnName != null) columnNames[0] = frequencyColumnName;
+            else if (set.Harmonic) columnNames[0] = "Angle " + angleUnit;
             else columnNames[0] = "Time " + timeUnit + Environment.NewLine + "Frequency " + frequencyUnit;
             // Fill the data array
             for (int i = 0; i < sortedTime.Length; i++) rowBasedData[i][0] = sortedTime[i];
             // Add data column
-            //
             int col = 1;
             int row;
             double[] timePoints;
             double[] values;
+            string entryUnit;
             foreach (var entry in component.Entries)
             {
-                columnNames[col] = entry.Key + unit;
+                columnNames[col] = entry.Key;
+                // Entry unit
+                if (entry.Value.Unit != null) entryUnit = entry.Value.Unit;
+                else entryUnit = unit;
+                columnNames[col] += "\n[" + entryUnit + "]";
+                // Local
                 if (entry.Value.Local) columnNames[col] += "\nLocal";
                 //
                 row = 0;
@@ -2904,6 +2911,81 @@ namespace CaeResults
                 }
                 col++;
             }
+        }
+        private string PrepareFrequencyUnits(HistoryResultComponent component)
+        {
+            string columnName = null;
+            // Frequency data units
+            if (component.Name == HOFieldNames.EigenvalueOutput)
+            {
+                foreach (var entry in component.Entries)
+                {
+                    if (entry.Key == HOComponentNames.EIGENVALUE) entry.Value.Unit = _unitSystem.EigenvalueUnitAbbreviation;
+                    else if (entry.Key == HOComponentNames.OMEGA) entry.Value.Unit = _unitSystem.RotationalSpeedUnitAbbreviation;
+                    else if (entry.Key == HOComponentNames.FREQUENCY) entry.Value.Unit = _unitSystem.FrequencyUnitAbbreviation;
+                    else if (entry.Key == HOComponentNames.FREQUENCY_IM) entry.Value.Unit = _unitSystem.RotationalSpeedUnitAbbreviation;
+                    else throw new NotSupportedException();
+                }
+                columnName = "Mode [/]";
+            }
+            else if (component.Name == HOFieldNames.ParticipationFactors)
+            {
+                foreach (var entry in component.Entries)
+                {
+                    if (entry.Key == HOComponentNames.XCOMPONENT ||
+                        entry.Key == HOComponentNames.YCOMPONENT ||
+                        entry.Key == HOComponentNames.ZCOMPONENT)
+                    {
+                        entry.Value.Unit = _unitSystem.TransParticipationFactorUnitAbbreviation;
+                    }
+                    else if (entry.Key == HOComponentNames.XROTATION ||
+                             entry.Key == HOComponentNames.YROTATION ||
+                             entry.Key == HOComponentNames.ZROTATION)
+                    {
+                        entry.Value.Unit = _unitSystem.RotParticipationFactorUnitAbbreviation;
+                    }
+                }
+                columnName = "Mode [/]";
+            }
+            else if (component.Name == HOFieldNames.EffectiveModalMass)
+            {
+                foreach (var entry in component.Entries)
+                {
+                    if (entry.Key == HOComponentNames.XCOMPONENT ||
+                        entry.Key == HOComponentNames.YCOMPONENT ||
+                        entry.Key == HOComponentNames.ZCOMPONENT)
+                    {
+                        entry.Value.Unit = _unitSystem.TransEffectiveMassUnitAbbreviation;
+                    }
+                    else if (entry.Key == HOComponentNames.XROTATION ||
+                             entry.Key == HOComponentNames.YROTATION ||
+                             entry.Key == HOComponentNames.ZROTATION)
+                    {
+                        entry.Value.Unit = _unitSystem.RotEffectiveMassUnitAbbreviation;
+                    }
+                }
+                columnName = "Mode [/]";
+            }
+            else if (component.Name == HOFieldNames.TotalEffectiveModalMass || component.Name == HOFieldNames.TotalEffectiveMass)
+            {
+                foreach (var entry in component.Entries)
+                {
+                    if (entry.Key == HOComponentNames.XCOMPONENT ||
+                        entry.Key == HOComponentNames.YCOMPONENT ||
+                        entry.Key == HOComponentNames.ZCOMPONENT)
+                    {
+                        entry.Value.Unit = _unitSystem.TransEffectiveMassUnitAbbreviation;
+                    }
+                    else if (entry.Key == HOComponentNames.XROTATION ||
+                              entry.Key == HOComponentNames.YROTATION ||
+                              entry.Key == HOComponentNames.ZROTATION)
+                    {
+                        entry.Value.Unit = _unitSystem.RotEffectiveMassUnitAbbreviation;
+                    }
+                }
+                columnName = "Total [/]";
+            }
+            return columnName;
         }
         public void GetSortedTime(HistoryResultComponent[] components, out double[] sortedTime,
                                   out Dictionary<double, int> timeRowId, bool sort = true)

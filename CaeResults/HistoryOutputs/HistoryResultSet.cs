@@ -36,7 +36,15 @@ namespace CaeResults
 
 
         // Methods                                                                                                                  
-       
+        public void AppendFields(HistoryResultSet historyResultSet)
+        {
+            HistoryResultField field;
+            foreach (var entry in historyResultSet.Fields)
+            {
+                if (_fields.TryGetValue(entry.Key, out field)) field.AppendComponents(entry.Value);
+                else _fields.Add(entry.Key, entry.Value);
+            }
+        }
 
     }
 }

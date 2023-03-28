@@ -7,6 +7,7 @@ using System.IO;
 using CaeMesh;
 using CaeGlobals;
 using System.Configuration;
+using Octree;
 
 namespace CaeResults
 {
@@ -21,7 +22,11 @@ namespace CaeResults
         private static readonly string[] dataSplitter = new string[] { " ", "for set", "and time" };
         private static readonly string[] signSplitter = new string[] { "-", "+" };
         private static readonly string steadyStateDynamicsKey =
-            "P A R T I C I P A T I O N   F A C T O R S   F O R   F R E Q U E N C Y";        
+            "P A R T I C I P A T I O N   F A C T O R S   F O R   F R E Q U E N C Y";
+        public const string EigenvalueOutputKey = "E I G E N V A L U E   O U T P U T";
+        public const string ParticipationFactorsKey = "P A R T I C I P A T I O N   F A C T O R S";
+        public const string EffectiveModalMassKey = "E F F E C T I V E   M O D A L   M A S S";
+        public const string TotalEffectiveMassKey = "T O T A L   E F F E C T I V E   M A S S";
         //
         private static readonly Dictionary<string, string> compMapRP = new Dictionary<string, string>()
         {
@@ -61,6 +66,15 @@ namespace CaeResults
                 dataSetNames.Add(HOFieldNames.Temperatures);
                 dataSetNames.Add(HOFieldNames.HeatGeneration);
                 dataSetNames.Add(HOFieldNames.TotalHeatGeneration);
+                // Frequency                                                            
+                dataSetNames.Add(EigenvalueOutputKey);
+                dataSetNames.Add(ParticipationFactorsKey);
+                dataSetNames.Add(EffectiveModalMassKey);
+                dataSetNames.Add(TotalEffectiveMassKey);
+                //dataSetNames.Add(HOFieldNames.EigenvalueOutput);
+                //dataSetNames.Add(HOFieldNames.ParticipationFactors);
+                //dataSetNames.Add(HOFieldNames.EffectiveModalMass);
+                //dataSetNames.Add(HOFieldNames.TotalEffectiveMass);
                 // Contact                                                              
                 dataSetNames.Add(HOFieldNames.RelativeContactDisplacement);
                 dataSetNames.Add(HOFieldNames.ContactStress);
@@ -95,26 +109,44 @@ namespace CaeResults
                 DatDataSet newDataSet;
                 DatDataSet existingDataSet;
                 OrderedDictionary<string, DatDataSet> dataSets = new OrderedDictionary<string, DatDataSet>("DataSets");
+                //
+                HistoryResults allHistoryResults = new HistoryResults("HistoryOutput");
+                HistoryResults frequencyHistoryOutput;
                 foreach (string[] dataSetLines in dataSetLinesList)
                 {
-                    newDataSet = GetDatDataSet(dataSetNames, dataSetLines, repairedSetNames);
-                    // Steady state dynamics
-                    if (steadyStateDynamics && dataSets.TryGetValue(newDataSet.GetHashKey(), out existingDataSet))
+                    // Frequency
+                    if (dataSetLines[0] == EigenvalueOutputKey ||
+                        dataSetLines[0] == ParticipationFactorsKey ||
+                        dataSetLines[0] == EffectiveModalMassKey ||
+                        dataSetLines[0] == TotalEffectiveMassKey)
                     {
-                        existingDataSet.FieldName += HOFieldNames.ComplexRealSuffix;
-                        dataSets.Replace(newDataSet.GetHashKey(), existingDataSet.GetHashKey(), existingDataSet);
-                        //
-                        newDataSet.FieldName += HOFieldNames.ComplexImaginarySuffix;
+                        frequencyHistoryOutput = GetFrequencyDatDataSets(dataSetLines);
+                        allHistoryResults.AppendSets(frequencyHistoryOutput);
                     }
-                    //
-                    if (newDataSet.FieldName != HOFieldNames.Error) dataSets.Add(newDataSet.GetHashKey(), newDataSet);
+                    else
+                    {
+                        newDataSet = GetDatDataSet(dataSetNames, dataSetLines, repairedSetNames);
+                        if (newDataSet.SetName == steadyStateDynamicsKey) continue;
+                        // Steady state dynamics
+                        if (steadyStateDynamics && dataSets.TryGetValue(newDataSet.GetHashKey(), out existingDataSet))
+                        {
+                            existingDataSet.FieldName += HOFieldNames.ComplexRealSuffix;
+                            dataSets.Replace(newDataSet.GetHashKey(), existingDataSet.GetHashKey(), existingDataSet);
+                            //
+                            newDataSet.FieldName += HOFieldNames.ComplexImaginarySuffix;
+                        }
+                        //
+                        if (newDataSet.FieldName != HOFieldNames.Error) dataSets.Add(newDataSet.GetHashKey(), newDataSet);
+                    }
                 }
                 //
                 HistoryResults historyOutput = GetHistoryOutput(dataSets.Values);
                 AddComplexFields(historyOutput);
                 AddStressComponents(historyOutput);
                 AddStrainComponents(historyOutput);
-                return historyOutput;
+                //
+                allHistoryResults.AppendSets(historyOutput);
+                return allHistoryResults;
             }
             //
             return null;
@@ -137,6 +169,7 @@ namespace CaeResults
             List<string[]> dataSets = new List<string[]>();
             //
             string theName;
+            string firstLine;
             steadyStateDynamics = false;
             for (int i = 0; i < lines.Length; i++)
             {
@@ -144,20 +177,51 @@ namespace CaeResults
                 if (!steadyStateDynamics && lines[i].ToUpper().StartsWith(steadyStateDynamicsKey))
                 {
                     steadyStateDynamics = true;
-                    dataSets.Clear();   // clear everything until this point
+                    foreach (var dataSetToRemove in dataSets.ToArray())
+                    {
+                        firstLine = dataSetToRemove[0].ToUpper();
+                        if (!firstLine.StartsWith(EigenvalueOutputKey) &&
+                            !firstLine.StartsWith(ParticipationFactorsKey) &&
+                            !firstLine.StartsWith(EffectiveModalMassKey) &&
+                            !firstLine.StartsWith(TotalEffectiveMassKey))
+                        {
+                            dataSets.Remove(dataSetToRemove);
+                        }
+                    }
                 }
                 //
                 theName = null;
                 foreach (var name in dataSetNames)
                 {
-                    if (lines[i].ToLower().StartsWith(name.ToLower()))
+                    if (lines[i].ToUpper().StartsWith(name.ToUpper()))
                     {
                         theName = name;
                         break;
                     }
                 }
+                // Frequency
+                if (theName == EigenvalueOutputKey ||
+                    theName == ParticipationFactorsKey ||
+                    theName == EffectiveModalMassKey ||
+                    theName == TotalEffectiveMassKey)
+                {
+                    int emptyLinesCounter = 0;
+                    dataSet = new List<string> { lines[i] };
+                    i++;
+                    //
+                    while (i < lines.Length && emptyLinesCounter <= 2)
+                    {
+                        if (lines[i].Length == 0) emptyLinesCounter++;
+                        else dataSet.Add(lines[i]);
+                        if (emptyLinesCounter >= 3) break;
+                        //
+                        i++;
+                    }
+                    //
+                    dataSets.Add(dataSet.ToArray());
+                }
                 // Contact statistics
-                if (theName == HOFieldNames.StatisticsForSlaveSet)
+                else if (theName == HOFieldNames.StatisticsForSlaveSet)
                 {
                     dataSet = new List<string>();
                     for (int j = 0; j <= 8 && i < lines.Length; j++)
@@ -183,6 +247,7 @@ namespace CaeResults
                     {
                         if (lines[i].Length == 0 || lines[i].Contains("time")) break;    // last line is empty
                         else dataSet.Add(lines[i]);
+                        //
                         i++;
                     }
                     //
@@ -505,6 +570,93 @@ namespace CaeResults
             }
             return newName;
         }
+        static private HistoryResults GetFrequencyDatDataSets(string[] dataSetLines)
+        {
+            int firstDataRowId = 1;
+            string entryName = null;
+            string totalEntryName = HOFieldNames.TotalEffectiveModalMass;
+            string[] componentNames = null;
+            double time = 0;
+            List<double[]> valuesList = null;
+            double[] rowValues = null;
+            List<DatDataSet> dataSets = new List<DatDataSet>();
+            //
+            if (dataSetLines[0] == EigenvalueOutputKey)
+            {
+                firstDataRowId = 4;
+                entryName = HOFieldNames.EigenvalueOutput;
+                componentNames = new string[] { HOComponentNames.EIGENVALUE, HOComponentNames.OMEGA, HOComponentNames.FREQUENCY,
+                                                HOComponentNames.FREQUENCY_IM};
+            }
+            else if (dataSetLines[0] == ParticipationFactorsKey)
+            {
+                firstDataRowId = 2;
+                entryName = HOFieldNames.ParticipationFactors;
+                componentNames = new string[] { HOComponentNames.XCOMPONENT,HOComponentNames.YCOMPONENT, HOComponentNames.ZCOMPONENT,
+                                                HOComponentNames.XROTATION,HOComponentNames.YROTATION, HOComponentNames.ZROTATION };
+            }
+            else if (dataSetLines[0] == EffectiveModalMassKey)
+            {
+                firstDataRowId = 2;
+                entryName = HOFieldNames.EffectiveModalMass;
+                componentNames = new string[] { HOComponentNames.XCOMPONENT,HOComponentNames.YCOMPONENT, HOComponentNames.ZCOMPONENT,
+                                                HOComponentNames.XROTATION,HOComponentNames.YROTATION, HOComponentNames.ZROTATION };
+            }
+            else if (dataSetLines[0] == TotalEffectiveMassKey)
+            {
+                firstDataRowId = 2;
+                entryName = HOFieldNames.TotalEffectiveMass;
+                componentNames = new string[] { HOComponentNames.XCOMPONENT,HOComponentNames.YCOMPONENT, HOComponentNames.ZCOMPONENT,
+                                                HOComponentNames.XROTATION,HOComponentNames.YROTATION, HOComponentNames.ZROTATION };
+            }
+            //
+            string[] tmp;
+            HistoryResults historyResults = new HistoryResults("HistoryResults");
+            HistoryResultSet historyResultSet = new HistoryResultSet("ENTIRE_MODEL");
+            HistoryResultField historyResultField = new HistoryResultField("FREQUENCY");
+            HistoryResultComponent historyResultComponent = new HistoryResultComponent(entryName);
+            HistoryResultComponent totalHistoryResultComponent = new HistoryResultComponent(totalEntryName);
+            HistoryResultEntries historyResultEntries = null;
+            HistoryResultEntries totalHistoryResultEntries = null;
+            valuesList = new List<double[]>();
+            //
+            for (int i = firstDataRowId; i < dataSetLines.Length; i++)
+            {
+                tmp = dataSetLines[i].Split(spaceSplitter, StringSplitOptions.RemoveEmptyEntries);
+                if (tmp.Length >= 2)
+                {
+                    rowValues = new double[tmp.Length];
+                    for (int j = 0; j < rowValues.Length; j++) rowValues[j] = ParseStringToDouble(tmp[j]);
+                    valuesList.Add(rowValues);
+                }
+            }
+            double[][] values = valuesList.ToArray();   // [row][col]
+            int delta = values[0].Length - componentNames.Length;
+            for (int col = delta; col < values[0].Length; col++)  // first value in a row is time
+            {
+                historyResultEntries = new HistoryResultEntries(componentNames[col - delta], false);
+                totalHistoryResultEntries = new HistoryResultEntries(componentNames[col - delta], false);
+                //
+                for (int row = 0; row < values.Length; row++)
+                {
+                    if (delta == 1) time = values[row][0];
+                    else time = row + 1;
+                    //
+                    if (double.IsNaN(time)) totalHistoryResultEntries.Add(1, values[row][col]);
+                    else historyResultEntries.Add(time, values[row][col]);
+                }
+                historyResultComponent.Entries.Add(historyResultEntries.Name, historyResultEntries);
+                if (totalHistoryResultEntries.Time.Count > 0)
+                    totalHistoryResultComponent.Entries.Add(totalHistoryResultEntries.Name, totalHistoryResultEntries);
+            }
+            historyResultField.Components.Add(historyResultComponent.Name, historyResultComponent);
+            if (totalHistoryResultComponent.Entries.Count > 0)
+                historyResultField.Components.Add(totalHistoryResultComponent.Name, totalHistoryResultComponent);
+            historyResultSet.Fields.Add(historyResultField.Name, historyResultField);
+            historyResults.Sets.Add(historyResultSet.Name, historyResultSet);
+            //
+            return historyResults;
+        }
         static private DatDataSet GetDatDataSet(List<string> dataSetNames, string[] dataSetLines,
                                                 Dictionary<string, string> repairedSetNames)
         {
@@ -515,6 +667,12 @@ namespace CaeResults
                 DatDataSet dataSet = new DatDataSet();
                 //
                 string firstLine = dataSetLines[0];
+                if (firstLine.ToUpper().StartsWith(steadyStateDynamicsKey))
+                {
+                    dataSet.SetName = steadyStateDynamicsKey;
+                    return dataSet;
+                }
+                //
                 foreach (var name in dataSetNames)
                 {
                     if (firstLine.ToLower().StartsWith(name.ToLower()))
@@ -533,9 +691,7 @@ namespace CaeResults
                 dataSet.SetName = RepairSetName(tmp2[0].Trim(), repairedSetNames);
                 dataSet.Time = double.Parse(tmp2[1]);
                 //
-                string tmp3;
                 int length;
-                int count;
                 double[] values;
                 List<bool> locals = new List<bool>();
                 List<double[]> allValues = new List<double[]>();
@@ -556,24 +712,7 @@ namespace CaeResults
                     //
                     values = new double[length];
                     //
-                    for (int j = 0; j < length; j++)
-                    {
-                        if (!double.TryParse(tmp[j], out values[j]))
-                        {
-                            // Try to repair values as:
-                            // 1.090361-282  8.468565-284 -8.171595-285
-                            tmp3 = tmp[j];
-                            tmp2 = tmp3.Split(signSplitter, StringSplitOptions.RemoveEmptyEntries);
-                            if (tmp2.Length == 2)
-                            {
-                                count = tmp3.Length - (tmp2[1].Length + 1);
-                                tmp[j] = tmp3.Substring(0, count) + "E" + tmp3.Substring(count, tmp2[1].Length + 1);
-                                //
-                                if (!double.TryParse(tmp[j], out values[j])) values[j] = double.NaN;
-                            }
-                            else values[j] = double.NaN;
-                        }
-                    }
+                    for (int j = 0; j < length; j++) values[j] = ParseStringToDouble(tmp[j]);
                     //
                     allValues.Add(values);
                 }
@@ -587,6 +726,29 @@ namespace CaeResults
             {
                 return new DatDataSet() { FieldName = HOFieldNames.Error };
             }
+        }
+        static private double ParseStringToDouble(string valueAsString)
+        {
+            double value;
+            int count;
+            string tmp3;
+            string[] tmp2;
+            if (!double.TryParse(valueAsString, out value))
+            {
+                // Try to repair values as:
+                // 1.090361-282  8.468565-284 -8.171595-285
+                tmp3 = valueAsString;
+                tmp2 = tmp3.Split(signSplitter, StringSplitOptions.RemoveEmptyEntries);
+                if (tmp2.Length == 2)
+                {
+                    count = tmp3.Length - (tmp2[1].Length + 1);
+                    valueAsString = tmp3.Substring(0, count) + "E" + tmp3.Substring(count, tmp2[1].Length + 1);
+                    //
+                    if (!double.TryParse(valueAsString, out value)) value = double.NaN;
+                }
+                else value = double.NaN;
+            }
+            return value;
         }
         static private HistoryResults GetHistoryOutput(IEnumerable<DatDataSet> dataSets)
         {

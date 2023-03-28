@@ -34,6 +34,12 @@ namespace CaeResults
         public const string Temperatures = "TEMPERATURES";
         public const string HeatGeneration = "HEAT GENERATION";
         public const string TotalHeatGeneration = "TOTAL HEAT GENERATION";
+        // Frequency
+        public const string EigenvalueOutput = "EIGENVALUE OUTPUT";
+        public const string ParticipationFactors = "PARTICIPATION FACTORS";
+        public const string EffectiveModalMass = "EFFECTIVE MODAL MASS";
+        public const string TotalEffectiveModalMass = "TOTAL EFFECTIVE MODAL MASS";
+        public const string TotalEffectiveMass = "TOTAL EFFECTIVE MASS";
         // Contact
         public const string RelativeContactDisplacement = "RELATIVE CONTACT DISPLACEMENT";
         public const string ContactStress = "CONTACT STRESS";
@@ -126,6 +132,18 @@ namespace CaeResults
         public const string N1 = "N1";
         public const string N2 = "N2";
         public const string N3 = "N3";
+        //
+        public const string EIGENVALUE = "EIGENVALUE";
+        public const string OMEGA = "OMEGA";
+        public const string FREQUENCY = "FREQUENCY";
+        public const string FREQUENCY_IM = "FREQUENCY IM";
+        //
+        public const string XCOMPONENT = "X COMPONENT";
+        public const string YCOMPONENT = "Y COMPONENT";
+        public const string ZCOMPONENT = "Z COMPONENT";
+        public const string XROTATION = "X ROTATION";
+        public const string YROTATION = "Y ROTATION";
+        public const string ZROTATION = "Z ROTATION";
 
     }
 
