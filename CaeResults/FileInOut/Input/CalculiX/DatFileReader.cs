@@ -1297,14 +1297,14 @@ namespace CaeResults
                                 entry = new HistoryResultEntries(entryName, false);
                                 for (int i = 0; i < effectiveModelMassValues.Length; i++)
                                 {
-                                    if (totalMassValue != 0) value = effectiveModelMassValues[i] / totalMassValue * 100;
+                                    if (totalMassValue != 0) value = effectiveModelMassValues[i] / totalMassValue;
                                     else value = 0;
                                     value = Tools.RoundToSignificantDigits(value, 6);
                                     entry.Add(effectiveModelMassTimes[i],value);
                                 }
                                 relativeEffectiveModalMass.Entries.Add(entry.Name, entry);
                                 // Ratio
-                                if (totalMassValue != 0) value = totalModalMassValue / totalMassValue * 100;
+                                if (totalMassValue != 0) value = totalModalMassValue / totalMassValue;
                                 else value = 0;
                                 value = Tools.RoundToSignificantDigits(value, 6);
                                 //

@@ -69,29 +69,19 @@ namespace PrePoMax
                                                     " will be displayed.");
             }
             //
-            int width;
             for (int i = 0; i < Math.Min(columnNames.Length, maxNumCol + 1); i++)
             {
                 column = new DataGridViewColumn(cell);
                 column.HeaderText = columnNames[i];
                 column.FillWeight = 1;
                 column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                // Enable sorting of all
+                // Enable sorting
                 column.SortMode = DataGridViewColumnSortMode.Automatic;
+                // Auto size
                 column.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-                width = column.Width;
-                column.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                column.Width = width;
-                // Enable sorting of time/frequency
-                if (i == 0)
-                {
-                    //column.SortMode = DataGridViewColumnSortMode.Automatic;
-                    //column.Width = 110;
-                }
-                //column.CellType = typeof(double);
+                // Add
                 dgvHistory.Columns.Add(column);
             }
-            
             //
             if (rowBasedData.Length <= 0) return;
             foreach (var row in rowBasedData) dgvHistory.Rows.Add(row);
@@ -99,14 +89,11 @@ namespace PrePoMax
             int width;
             for (int i = 0; i <= dgvHistory.Columns.Count - 1; i++)
             {
-                // Store Auto Sized Widths:
                 width = dgvHistory.Columns[i].Width;
                 // Remove AutoSizing:
                 dgvHistory.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                // Set Width to calculated AutoSize value:
                 dgvHistory.Columns[i].Width = width;
             }
-
             //
             return;
         }
