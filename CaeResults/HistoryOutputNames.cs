@@ -40,6 +40,8 @@ namespace CaeResults
         public const string EffectiveModalMass = "EFFECTIVE MODAL MASS";
         public const string TotalEffectiveModalMass = "TOTAL EFFECTIVE MODAL MASS";
         public const string TotalEffectiveMass = "TOTAL EFFECTIVE MASS";
+        public const string RelativeEffectiveModalMass = "RELATIVE EFFECTIVE MODAL MASS";
+        public const string RelativeTotalEffectiveModalMass = "RELATIVE TOTAL EFFECTIVE MODAL MASS";
         // Contact
         public const string RelativeContactDisplacement = "RELATIVE CONTACT DISPLACEMENT";
         public const string ContactStress = "CONTACT STRESS";

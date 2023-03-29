@@ -39,14 +39,14 @@ namespace PrePoMax
         [DescriptionAttribute("Lower bound of the frequency range.")]
         [TypeConverter(typeof(StringFrequencyConverter))]
         [Id(5, 1)]
-        public double FrequencyLower { get { return _steadyStep.FrequencyLower; } set { _steadyStep.FrequencyLower = value; } }
+        public double LowerFrequency { get { return _steadyStep.LowerFrequency; } set { _steadyStep.LowerFrequency = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(5, 10, "Upper frequency bound")]
         [DescriptionAttribute("Upper bound of the frequency range.")]
         [TypeConverter(typeof(StringFrequencyConverter))]
         [Id(6, 1)]
-        public double FrequencyUpper { get { return _steadyStep.FrequencyUpper; } set { _steadyStep.FrequencyUpper = value; } }
+        public double UpperFrequency { get { return _steadyStep.UpperFrequency; } set { _steadyStep.UpperFrequency = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(6, 10, "Number of data points")]

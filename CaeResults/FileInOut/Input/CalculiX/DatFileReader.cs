@@ -111,7 +111,7 @@ namespace CaeResults
                 OrderedDictionary<string, DatDataSet> dataSets = new OrderedDictionary<string, DatDataSet>("DataSets");
                 //
                 HistoryResults allHistoryResults = new HistoryResults("HistoryOutput");
-                HistoryResults frequencyHistoryOutput;
+                HistoryResults frequencyHistoryOutput = new HistoryResults("HistoryOutput");
                 foreach (string[] dataSetLines in dataSetLinesList)
                 {
                     // Frequency
@@ -120,8 +120,7 @@ namespace CaeResults
                         dataSetLines[0] == EffectiveModalMassKey ||
                         dataSetLines[0] == TotalEffectiveMassKey)
                     {
-                        frequencyHistoryOutput = GetFrequencyDatDataSets(dataSetLines);
-                        allHistoryResults.AppendSets(frequencyHistoryOutput);
+                        frequencyHistoryOutput.AppendSets(GetFrequencyDatDataSets(dataSetLines));
                     }
                     else
                     {
@@ -139,6 +138,9 @@ namespace CaeResults
                         if (newDataSet.FieldName != HOFieldNames.Error) dataSets.Add(newDataSet.GetHashKey(), newDataSet);
                     }
                 }
+                //
+                AddTotalEffectiveModalMassToMassRatio(frequencyHistoryOutput);
+                allHistoryResults.AppendSets(frequencyHistoryOutput);
                 //
                 HistoryResults historyOutput = GetHistoryOutput(dataSets.Values);
                 AddComplexFields(historyOutput);
@@ -613,7 +615,7 @@ namespace CaeResults
             string[] tmp;
             HistoryResults historyResults = new HistoryResults("HistoryResults");
             HistoryResultSet historyResultSet = new HistoryResultSet("ENTIRE_MODEL");
-            HistoryResultField historyResultField = new HistoryResultField("FREQUENCY");
+            HistoryResultField historyResultField = new HistoryResultField(HOFieldNames.Frequency);
             HistoryResultComponent historyResultComponent = new HistoryResultComponent(entryName);
             HistoryResultComponent totalHistoryResultComponent = new HistoryResultComponent(totalEntryName);
             HistoryResultEntries historyResultEntries = null;
@@ -973,6 +975,13 @@ namespace CaeResults
         }
         static private void AddStressComponents(HistoryResults historyOutput)
         {
+            HistoryResultComponent vonMisesCom;
+            HistoryResultComponent trescaCom;
+            HistoryResultComponent sgnMaxAbsPrinCom;
+            HistoryResultComponent prinMaxCom;
+            HistoryResultComponent prinMidCom;
+            HistoryResultComponent prinMinCom;
+            //
             foreach (var setsEntry in historyOutput.Sets)
             {
                 foreach (var fieldEntry in setsEntry.Value.Fields)
@@ -981,12 +990,12 @@ namespace CaeResults
                     //
                     if (noSuffixName == HOFieldNames.Stresses && HOFieldNames.HasRealComplexSuffix(fieldEntry.Key))
                     {
-                        HistoryResultComponent vonMisesCom = new HistoryResultComponent(HOComponentNames.Mises);
-                        HistoryResultComponent trescaCom = new HistoryResultComponent(HOComponentNames.Tresca);
-                        HistoryResultComponent sgnMaxAbsPrinCom = new HistoryResultComponent(HOComponentNames.SgnMaxAbsPri);
-                        HistoryResultComponent prinMaxCom = new HistoryResultComponent(HOComponentNames.PrincipalMax);
-                        HistoryResultComponent prinMidCom = new HistoryResultComponent(HOComponentNames.PrincipalMid);
-                        HistoryResultComponent prinMinCom = new HistoryResultComponent(HOComponentNames.PrincipalMin);
+                        vonMisesCom = new HistoryResultComponent(HOComponentNames.Mises);
+                        trescaCom = new HistoryResultComponent(HOComponentNames.Tresca);
+                        sgnMaxAbsPrinCom = new HistoryResultComponent(HOComponentNames.SgnMaxAbsPri);
+                        prinMaxCom = new HistoryResultComponent(HOComponentNames.PrincipalMax);
+                        prinMidCom = new HistoryResultComponent(HOComponentNames.PrincipalMid);
+                        prinMinCom = new HistoryResultComponent(HOComponentNames.PrincipalMin);
                         //
                         string[] entryNames = fieldEntry.Value.Components[HOComponentNames.S11].Entries.Keys.ToArray();
                         double[][] values = new double[6][];
@@ -1244,6 +1253,70 @@ namespace CaeResults
                         fieldEntry.Value.Components.Add(prinMaxCom.Name, prinMaxCom);
                         fieldEntry.Value.Components.Add(prinMidCom.Name, prinMidCom);
                         fieldEntry.Value.Components.Add(prinMinCom.Name, prinMinCom);
+                    }
+                }
+            }
+        }
+        static private void AddTotalEffectiveModalMassToMassRatio(HistoryResults historyOutput)
+        {
+            double[] effectiveModelMassTimes;
+            double[] effectiveModelMassValues;
+            double value;
+            double totalModalMassValue;
+            double totalMassValue;
+            HistoryResultEntries entry;
+            HistoryResultComponent effectiveModalMass;
+            HistoryResultComponent totalModalMass;
+            HistoryResultComponent totalMass;
+            HistoryResultComponent relativeEffectiveModalMass = new HistoryResultComponent(HOFieldNames.RelativeEffectiveModalMass);
+            HistoryResultComponent relativeTotalMass = new HistoryResultComponent(HOFieldNames.RelativeTotalEffectiveModalMass);
+            string[] entryNames = new string[] { HOComponentNames.XCOMPONENT,
+                                                 HOComponentNames.YCOMPONENT,
+                                                 HOComponentNames.ZCOMPONENT,
+                                                 HOComponentNames.XROTATION,
+                                                 HOComponentNames.YROTATION,
+                                                 HOComponentNames.ZROTATION };
+            //
+            foreach (var setsEntry in historyOutput.Sets)
+            {
+                foreach (var fieldEntry in setsEntry.Value.Fields)
+                {
+                    if (fieldEntry.Key == HOFieldNames.Frequency)
+                    {
+                        if (fieldEntry.Value.Components.TryGetValue(HOFieldNames.EffectiveModalMass, out effectiveModalMass) &&
+                            fieldEntry.Value.Components.TryGetValue(HOFieldNames.TotalEffectiveModalMass, out totalModalMass) &&
+                            fieldEntry.Value.Components.TryGetValue(HOFieldNames.TotalEffectiveMass, out totalMass))
+                        {
+                            foreach (var entryName in entryNames)
+                            {
+                                effectiveModelMassValues = effectiveModalMass.Entries[entryName].Values.ToArray();
+                                effectiveModelMassTimes = effectiveModalMass.Entries[entryName].Time.ToArray();
+                                totalModalMassValue = totalModalMass.Entries[entryName].Values.ToArray()[0];
+                                totalMassValue = totalMass.Entries[entryName].Values.ToArray()[0];
+                                // Relative effective modal mass
+                                entry = new HistoryResultEntries(entryName, false);
+                                for (int i = 0; i < effectiveModelMassValues.Length; i++)
+                                {
+                                    if (totalMassValue != 0) value = effectiveModelMassValues[i] / totalMassValue * 100;
+                                    else value = 0;
+                                    value = Tools.RoundToSignificantDigits(value, 6);
+                                    entry.Add(effectiveModelMassTimes[i],value);
+                                }
+                                relativeEffectiveModalMass.Entries.Add(entry.Name, entry);
+                                // Ratio
+                                if (totalMassValue != 0) value = totalModalMassValue / totalMassValue * 100;
+                                else value = 0;
+                                value = Tools.RoundToSignificantDigits(value, 6);
+                                //
+                                entry = new HistoryResultEntries(entryName, false);
+                                entry.Add(1, value);
+                                //
+                                relativeTotalMass.Entries.Add(entry.Name, entry);
+                            }
+                            //
+                            fieldEntry.Value.Components.Add(relativeEffectiveModalMass.Name, relativeEffectiveModalMass);
+                            fieldEntry.Value.Components.Add(relativeTotalMass.Name, relativeTotalMass);
+                        }
                     }
                 }
             }

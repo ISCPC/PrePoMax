@@ -134,6 +134,7 @@
     <Compile Include="UnitSystem\MyNCalc.cs" />
     <Compile Include="UnitSystem\MyUnit.cs" />
     <Compile Include="UnitSystem\StringForceTimePerLengthConverter.cs" />
+    <Compile Include="UnitSystem\StringFrequencyDefaultConverter.cs" />
     <Compile Include="UnitSystem\StringIntegerDefaultConverter.cs" />
     <Compile Include="UnitSystem\StringIntegerConverter.cs" />
     <Compile Include="UnitSystem\StringFrequencyConverter.cs" />

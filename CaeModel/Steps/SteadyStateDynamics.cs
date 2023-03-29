@@ -13,8 +13,8 @@ namespace CaeModel
     {
         // Variables                                                                                                                
         private bool _harmonic;             //ISerializable
-        private double _frequencyLower;     //ISerializable
-        private double _frequencyUpper;     //ISerializable
+        private double _lowerFrequency;     //ISerializable
+        private double _upperFrequency;     //ISerializable
         private int _numDataPoints;         //ISerializable
         private double _bias;               //ISerializable
         private int _numFourierTerms;       //ISerializable
@@ -25,24 +25,24 @@ namespace CaeModel
 
         // Properties                                                                                                               
         public bool Harmonic { get { return _harmonic; } set { _harmonic = value; } }
-        public double FrequencyLower
+        public double LowerFrequency
         {
-            get { return _frequencyLower; }
+            get { return _lowerFrequency; }
             set
             {
-                if (value > _frequencyUpper)
+                if (value > _upperFrequency)
                     throw new CaeGlobals.CaeException("The lower frequency value must be smaller than the upper frequency value.");
-                _frequencyLower = value;
+                _lowerFrequency = value;
             }
         }
-        public double FrequencyUpper
+        public double UpperFrequency
         {
-            get { return _frequencyUpper; }
+            get { return _upperFrequency; }
             set
             {
-                if (value < _frequencyLower)
+                if (value < _lowerFrequency)
                     throw new CaeGlobals.CaeException("The upper frequency value must be larger than the lower frequency value.");
-                _frequencyUpper = value;
+                _upperFrequency = value;
             }
         }
         public int NumDataPoints
@@ -82,8 +82,8 @@ namespace CaeModel
             :base(name)
         {
             _harmonic = true;
-            _frequencyLower = 0;
-            _frequencyUpper = 10;
+            _lowerFrequency = 0;
+            _upperFrequency = 10;
             _numDataPoints = 20;
             _bias = 3;
             _numFourierTerms = 20;
@@ -104,10 +104,10 @@ namespace CaeModel
                 {
                     case "_harmonic":
                         _harmonic = (bool)entry.Value; break;
-                    case "_frequencyLower":
-                        _frequencyLower = (double)entry.Value; break;
-                    case "_frequencyUpper":
-                        _frequencyUpper = (double)entry.Value; break;
+                    case "_lowerFrequency":
+                        _lowerFrequency = (double)entry.Value; break;
+                    case "_upperFrequency":
+                        _upperFrequency = (double)entry.Value; break;
                     case "_numDataPoints":
                         _numDataPoints = (int)entry.Value; break;
                     case "_bias":
@@ -174,8 +174,8 @@ namespace CaeModel
             base.GetObjectData(info, context);
             //
             info.AddValue("_harmonic", _harmonic, typeof(bool));
-            info.AddValue("_frequencyLower", _frequencyLower, typeof(double));
-            info.AddValue("_frequencyUpper", _frequencyUpper, typeof(double));
+            info.AddValue("_lowerFrequency", _lowerFrequency, typeof(double));
+            info.AddValue("_upperFrequency", _upperFrequency, typeof(double));
             info.AddValue("_numDataPoints", _numDataPoints, typeof(int));
             info.AddValue("_bias", _bias, typeof(double));
             info.AddValue("_numFourierTerms", _numFourierTerms, typeof(int));

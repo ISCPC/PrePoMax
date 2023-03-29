@@ -2926,7 +2926,7 @@ namespace CaeResults
                     else if (entry.Key == HOComponentNames.FREQUENCY_IM) entry.Value.Unit = _unitSystem.RotationalSpeedUnitAbbreviation;
                     else throw new NotSupportedException();
                 }
-                columnName = "Mode [/]";
+                columnName = "Mode";
             }
             else if (component.Name == HOFieldNames.ParticipationFactors)
             {
@@ -2936,16 +2936,16 @@ namespace CaeResults
                         entry.Key == HOComponentNames.YCOMPONENT ||
                         entry.Key == HOComponentNames.ZCOMPONENT)
                     {
-                        entry.Value.Unit = _unitSystem.TransParticipationFactorUnitAbbreviation;
+                        entry.Value.Unit = "/";
                     }
                     else if (entry.Key == HOComponentNames.XROTATION ||
                              entry.Key == HOComponentNames.YROTATION ||
                              entry.Key == HOComponentNames.ZROTATION)
                     {
-                        entry.Value.Unit = _unitSystem.RotParticipationFactorUnitAbbreviation;
+                        entry.Value.Unit = "/";
                     }
                 }
-                columnName = "Mode [/]";
+                columnName = "Mode";
             }
             else if (component.Name == HOFieldNames.EffectiveModalMass)
             {
@@ -2955,16 +2955,16 @@ namespace CaeResults
                         entry.Key == HOComponentNames.YCOMPONENT ||
                         entry.Key == HOComponentNames.ZCOMPONENT)
                     {
-                        entry.Value.Unit = _unitSystem.TransEffectiveMassUnitAbbreviation;
+                        entry.Value.Unit = _unitSystem.MassUnitAbbreviation;
                     }
                     else if (entry.Key == HOComponentNames.XROTATION ||
                              entry.Key == HOComponentNames.YROTATION ||
                              entry.Key == HOComponentNames.ZROTATION)
                     {
-                        entry.Value.Unit = _unitSystem.RotEffectiveMassUnitAbbreviation;
+                        entry.Value.Unit = _unitSystem.MassUnitAbbreviation;
                     }
                 }
-                columnName = "Mode [/]";
+                columnName = "Mode";
             }
             else if (component.Name == HOFieldNames.TotalEffectiveModalMass || component.Name == HOFieldNames.TotalEffectiveMass)
             {
@@ -2974,16 +2974,54 @@ namespace CaeResults
                         entry.Key == HOComponentNames.YCOMPONENT ||
                         entry.Key == HOComponentNames.ZCOMPONENT)
                     {
-                        entry.Value.Unit = _unitSystem.TransEffectiveMassUnitAbbreviation;
+                        entry.Value.Unit = _unitSystem.MassUnitAbbreviation;
                     }
                     else if (entry.Key == HOComponentNames.XROTATION ||
                               entry.Key == HOComponentNames.YROTATION ||
                               entry.Key == HOComponentNames.ZROTATION)
                     {
-                        entry.Value.Unit = _unitSystem.RotEffectiveMassUnitAbbreviation;
+                        entry.Value.Unit = _unitSystem.MassUnitAbbreviation;
                     }
                 }
-                columnName = "Total [/]";
+                columnName = "Total";
+            }
+            else if (component.Name == HOFieldNames.RelativeEffectiveModalMass)
+            {
+                foreach (var entry in component.Entries)
+                {
+                    if (entry.Key == HOComponentNames.XCOMPONENT ||
+                        entry.Key == HOComponentNames.YCOMPONENT ||
+                        entry.Key == HOComponentNames.ZCOMPONENT)
+                    {
+                        entry.Value.Unit = "/";
+                    }
+                    else if (entry.Key == HOComponentNames.XROTATION ||
+                             entry.Key == HOComponentNames.YROTATION ||
+                             entry.Key == HOComponentNames.ZROTATION)
+                    {
+                        entry.Value.Unit = "/";
+                    }
+                }
+                columnName = "Mode";
+            }
+            else if (component.Name == HOFieldNames.RelativeTotalEffectiveModalMass)
+            {
+                foreach (var entry in component.Entries)
+                {
+                    if (entry.Key == HOComponentNames.XCOMPONENT ||
+                        entry.Key == HOComponentNames.YCOMPONENT ||
+                        entry.Key == HOComponentNames.ZCOMPONENT)
+                    {
+                        entry.Value.Unit = "/";
+                    }
+                    else if (entry.Key == HOComponentNames.XROTATION ||
+                             entry.Key == HOComponentNames.YROTATION ||
+                             entry.Key == HOComponentNames.ZROTATION)
+                    {
+                        entry.Value.Unit = "/";
+                    }
+                }
+                columnName = "Total";
             }
             return columnName;
         }

@@ -35,8 +35,8 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            string data = string.Format("{0}, {1}, {2}, {3}", _step.FrequencyLower.ToCalculiX16String(),
-                                                              _step.FrequencyUpper.ToCalculiX16String(),
+            string data = string.Format("{0}, {1}, {2}, {3}", _step.LowerFrequency.ToCalculiX16String(),
+                                                              _step.UpperFrequency.ToCalculiX16String(),
                                                               _step.NumDataPoints,
                                                               _step.Bias.ToCalculiX16String());
             if (!_step.Harmonic) data += string.Format(", {0}, {1}, {2}", _step.NumFourierTerms,

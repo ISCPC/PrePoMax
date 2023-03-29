@@ -39,6 +39,28 @@ namespace PrePoMax
             get { return _frequencystep.NumOfFrequencies; }
             set { _frequencystep.NumOfFrequencies = value; }
         }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(7, 10, "Lower frequency bound")]
+        [DescriptionAttribute("Lower bound of the frequency range.")]
+        [TypeConverter(typeof(StringFrequencyDefaultConverter))]
+        [Id(8, 1)]
+        public double LowestFrequency
+        {
+            get { return _frequencystep.LowerFrequency; }
+            set { _frequencystep.LowerFrequency = value; }
+        }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(8, 10, "Upper frequency bound")]
+        [DescriptionAttribute("Upper bound of the frequency range.")]
+        [TypeConverter(typeof(StringFrequencyDefaultConverter))]
+        [Id(9, 1)]
+        public double UpperFrequency
+        {
+            get { return _frequencystep.UpperFrequency; }
+            set { _frequencystep.UpperFrequency = value; }
+        }
 
 
         // Constructors                                                                                                             
