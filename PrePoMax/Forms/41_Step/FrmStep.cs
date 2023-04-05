@@ -35,6 +35,8 @@ namespace PrePoMax.Forms
                     _viewStep = new ViewFrequencyStep(fs.DeepClone());
                 else if (value is BuckleStep bs)
                     _viewStep = new ViewBuckleStep(bs.DeepClone());
+                else if (value is ModalDynamics md)
+                    _viewStep = new ViewModalDynamics(md.DeepClone());
                 else if (value is SteadyStateDynamics ssd)
                     _viewStep = new ViewSteadyStateDynamics(ssd.DeepClone());
                 else if (value.GetType() == typeof(DynamicStep))    // use this form due to inheritance
@@ -196,6 +198,7 @@ namespace PrePoMax.Forms
             bool addBoundaryDisplacementStep = false;
             bool addFrequencyStep = false;
             bool addBuckleStep = false;
+            bool addModalDynamicsStep = false;
             bool addSteadyStepDynamicsStep = false;
             bool addDynamicStep = false;
             bool addHeatTransferStep = false;
@@ -223,6 +226,7 @@ namespace PrePoMax.Forms
                 if (!(prevOrLastStep is FrequencyStep)) addFrequencyStep = true;
                 if (!(prevOrLastStep is BuckleStep)) addBuckleStep = true;
                 //
+                addModalDynamicsStep = true;
                 addSteadyStepDynamicsStep = true;
                 addDynamicStep = true;
                 addHeatTransferStep = true;
@@ -231,8 +235,8 @@ namespace PrePoMax.Forms
             }
             //
             cannotAdd = !(addStaticStep || addSlipWearStep || addBoundaryDisplacementStep || addFrequencyStep || addBuckleStep ||
-                          addSteadyStepDynamicsStep || addDynamicStep || addHeatTransferStep || addUncoupledTemDispStep ||
-                          addCoupledTemDispStep);
+                          addModalDynamicsStep || addSteadyStepDynamicsStep || addDynamicStep || addHeatTransferStep ||
+                          addUncoupledTemDispStep || addCoupledTemDispStep);
             //
             ListViewItem item;
             if (cannotAdd)
@@ -289,10 +293,19 @@ namespace PrePoMax.Forms
                     item.Tag = new ViewBuckleStep(buckleStep);
                     lvTypes.Items.Add(item);
                 }
+                if (addModalDynamicsStep)
+                {
+                    // Modal dynamics step
+                    item = new ListViewItem("Modal Dynamics Step");
+                    ModalDynamics modalDynamicsStep = new ModalDynamics(GetStepName());
+                    modalDynamicsStep.SolverType = defaultSolverType;
+                    item.Tag = new ViewModalDynamics(modalDynamicsStep);
+                    lvTypes.Items.Add(item);
+                }
                 if (addSteadyStepDynamicsStep)
                 {
                     // Steady state dynamics step
-                    item = new ListViewItem("Steady state dynamics step");
+                    item = new ListViewItem("Steady State Dynamics Step");
                     SteadyStateDynamics steadyStateDynamicsStep = new SteadyStateDynamics(GetStepName());
                     steadyStateDynamicsStep.SolverType = defaultSolverType;
                     item.Tag = new ViewSteadyStateDynamics(steadyStateDynamicsStep);

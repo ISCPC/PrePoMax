@@ -99,15 +99,15 @@ namespace PrePoMax
         //
         [CategoryAttribute("Damping")]
         [OrderedDisplayName(1, 10, "Alpha")]
-        [DescriptionAttribute("Stiffness-proportional damping coefficient of the Rayleigh damping.")]
-        [TypeConverter(typeof(StringTimeConverter))]
+        [DescriptionAttribute("Mass-proportional damping coefficient of the Rayleigh damping.")]
+        [TypeConverter(typeof(StringReciprocalTimeConverter))]
         [Id(2, 2)]
         public double Alpha { get { return _steadyStep.ModalDamping.Alpha; } set { _steadyStep.ModalDamping.Alpha = value; } }
         //
         [CategoryAttribute("Damping")]
         [OrderedDisplayName(2, 10, "Beta")]
-        [DescriptionAttribute("Mass-proportional damping coefficient of the Rayleigh damping.")]
-        [TypeConverter(typeof(StringReciprocalTimeConverter))]
+        [DescriptionAttribute("Stiffness-proportional damping coefficient of the Rayleigh damping.")]
+        [TypeConverter(typeof(StringTimeConverter))]
         [Id(3, 2)]
         public double Beta { get { return _steadyStep.ModalDamping.Beta; } set { _steadyStep.ModalDamping.Beta = value; } }
         //

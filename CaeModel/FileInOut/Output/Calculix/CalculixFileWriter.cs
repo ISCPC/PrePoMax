@@ -853,6 +853,19 @@ namespace FileInOut.Output
                         CalBuckleStep calBuckleStep = new CalBuckleStep(buckleStep);
                         calStep.AddKeyword(calBuckleStep);
                     }
+                    else if (step is ModalDynamics modalStep)
+                    {
+                        CalModalDynamics calModalStep = new CalModalDynamics(modalStep);
+                        calStep.AddKeyword(calModalStep);
+                        // Damping
+                        if (modalStep.ModalDamping.DampingType != ModalDampingTypeEnum.Off)
+                        {
+                            CalTitle damping = new CalTitle("Damping", "");
+                            CalModalDamping calModalDamping = new CalModalDamping(modalStep.ModalDamping);
+                            damping.AddKeyword(calModalDamping);
+                            calStep.AddKeyword(damping);
+                        }
+                    }
                     else if (step is SteadyStateDynamics steadyStep)
                     {
                         CalSteadyStateDynamics calSteadyStep = new CalSteadyStateDynamics(steadyStep);
