@@ -81,7 +81,7 @@ namespace PrePoMax.Forms
             if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
-                if (itemTag is ViewError)  _viewHistoryOutput = null;
+                if (itemTag is ViewError) _viewHistoryOutput = null;
                 else if (itemTag is ViewResultHistoryOutputFromField vrhoff) _viewHistoryOutput = vrhoff;
                 else throw new NotImplementedException();
                 //

@@ -32,8 +32,8 @@ namespace PrePoMax.Forms
             {
                 var clone = value.DeepClone();
                 if (clone == null) _viewResultFieldOutput = null;
-                else if (clone is ResultFieldOutputSafetyFactor rfosf)
-                    _viewResultFieldOutput = new ViewResultFieldOutputSafetyFactor(rfosf, _controller.GetResultPartNames(),
+                else if (clone is ResultFieldOutputLimit rfosf)
+                    _viewResultFieldOutput = new ViewResultFieldOutputLimit(rfosf, _controller.GetResultPartNames(),
                                                                                    _controller.GetResultUserElementSetNames(),
                                                                                    ref _propertyItemChanged);
                 else throw new NotImplementedException();
@@ -61,7 +61,6 @@ namespace PrePoMax.Forms
             dgvData.EnablePasteMenu = false;
             dgvData.EnablePlotMenu = false;
         }
-
         private void InitializeComponent()
         {
             this.tcProperties.SuspendLayout();
@@ -124,7 +123,7 @@ namespace PrePoMax.Forms
             {
                 ActiveControl = dgvData;
                 dgvData.ClearSelection();
-                dgvData[0, 0].Selected = true;
+                if (dgvData.RowCount > 0 && dgvData.Columns.Count > 0) dgvData[0, 0].Selected = true;
             }
         }
         private void Binding_ListChanged(object sender, ListChangedEventArgs e)
@@ -138,9 +137,9 @@ namespace PrePoMax.Forms
         {
             string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
             //
-            if (_viewResultFieldOutput is ViewResultFieldOutputSafetyFactor vrfosf)
+            if (_viewResultFieldOutput is ViewResultFieldOutputLimit vrfosf)
             {
-                if (property == nameof(vrfosf.SafetyFactorBasedOn))
+                if (property == nameof(vrfosf.LimitPlotBasedOn))
                 {
                     SetDataGridView(vrfosf);
                 }
@@ -172,13 +171,13 @@ namespace PrePoMax.Forms
             {
                 throw new CaeException("The selected dependent field output creates a cyclic reference!");
             }
-            // Check for zero safety limits
-            if (_viewResultFieldOutput is ViewResultFieldOutputSafetyFactor vrfosf)
+            // Check for zero limits
+            if (_viewResultFieldOutput is ViewResultFieldOutputLimit vrfosf)
             {
-                ResultFieldOutputSafetyFactor rfosf = (ResultFieldOutputSafetyFactor)vrfosf.GetBase();
-                foreach (var entry in rfosf.ItemNameSafetyLimit)
+                ResultFieldOutputLimit rfosf = (ResultFieldOutputLimit)vrfosf.GetBase();
+                foreach (var entry in rfosf.ItemNameLimit)
                 {
-                    if (entry.Value == 0) throw new CaeException("All safety limit values must be different from 0.");
+                    if (entry.Value == 0) throw new CaeException("All limit values must be different from 0.");
                 }
             }
             // Create
@@ -203,6 +202,8 @@ namespace PrePoMax.Forms
             _viewResultFieldOutput = null;
             lvTypes.Items.Clear();
             propertyGrid.SelectedObject = null;
+            dgvData.DataSource = null;
+            dgvData.Columns.Clear();
             //
             _stepName = stepName;
             _resultFieldOutputNames = _controller.GetResultFieldOutputNames();
@@ -225,6 +226,9 @@ namespace PrePoMax.Forms
                 lvTypes.Enabled = true;
                 _viewResultFieldOutput = null;
                 if (lvTypes.Items.Count == 1) _preselectIndex = 0;
+                // Show only propertes tab
+                tcProperties.TabPages.Clear();
+                tcProperties.TabPages.Add(_pages[0]);   // properites
             }
             else
             {
@@ -232,7 +236,7 @@ namespace PrePoMax.Forms
                 _propertyItemChanged = !ResultFieldOutput.Valid;
                 //
                 int selectedId;
-                if (_viewResultFieldOutput is ViewResultFieldOutputSafetyFactor vrfosf)
+                if (_viewResultFieldOutput is ViewResultFieldOutputLimit vrfosf)
                 {
                     selectedId = 0;
                     // Check
@@ -263,15 +267,24 @@ namespace PrePoMax.Forms
         {
             // Populate list view
             ListViewItem item;
-            // Safety factor
-            item = new ListViewItem("Safety Factor");
-            ResultFieldOutputSafetyFactor rfosf = new ResultFieldOutputSafetyFactor(GetResultFieldOutputName("Safety_Factor"),
+            // Limit
+            item = new ListViewItem("Limit");
+            ResultFieldOutputLimit rfosf = new ResultFieldOutputLimit(GetResultFieldOutputName("Limit"),
                                                                                     FOFieldNames.Stress,
                                                                                     FOComponentNames.Mises);
-            ViewResultFieldOutputSafetyFactor vrfosf = new ViewResultFieldOutputSafetyFactor(rfosf, partNames, elementSetNames,
+            ViewResultFieldOutputLimit vrfosf = new ViewResultFieldOutputLimit(rfosf, partNames, elementSetNames,
                                                                                              ref _propertyItemChanged);
             vrfosf.PopulateDropDownLists(filedNameComponentNames);
             item.Tag = vrfosf;
+            lvTypes.Items.Add(item);
+            // Envelope
+            item = new ListViewItem("Envelope");
+            ResultFieldOutputEnvelope rfoe = new ResultFieldOutputEnvelope(GetResultFieldOutputName("Envelope"),
+                                                                           FOFieldNames.Stress,
+                                                                           FOComponentNames.Mises);
+            ViewResultFieldOutputEnvelope vrfoe = new ViewResultFieldOutputEnvelope(rfoe);
+            vrfoe.PopulateDropDownLists(filedNameComponentNames);
+            item.Tag = vrfoe;
             lvTypes.Items.Add(item);
         }
         private string GetResultFieldOutputName(string name)
@@ -284,7 +297,7 @@ namespace PrePoMax.Forms
         }
         private void SetDataGridView(object item)
         {
-            if (item is ViewResultFieldOutputSafetyFactor vrfosf)
+            if (item is ViewResultFieldOutputLimit vrfosf)
             {
                 // Clear
                 dgvData.DataSource = null;

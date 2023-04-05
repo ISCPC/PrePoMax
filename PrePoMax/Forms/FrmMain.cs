@@ -539,7 +539,7 @@ namespace PrePoMax
                         HashSet<string> importExtensions = GetFileImportExtensions();
                         //
                         if (extension == ".pmx" || extension == ".pmh" || extension == ".frd")
-                            await Task.Run(() => OpenAsync(fileName));
+                            await Task.Run(() => OpenAsync(fileName, _controller.Open));
                         else if (importExtensions.Contains(extension))
                         {
                             // Create new model
@@ -1354,7 +1354,7 @@ namespace PrePoMax
                     openFileDialog.FileName = "";
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        if (CheckBeforeOpen(openFileDialog.FileName)) await OpenAsync(openFileDialog.FileName);
+                        if (CheckBeforeOpen(openFileDialog.FileName)) await OpenAsync(openFileDialog.FileName, _controller.Open);
                     }
                 }
             }
@@ -1385,7 +1385,7 @@ namespace PrePoMax
             }
             return true;
         }
-        private async Task OpenAsync(string fileName, bool resetCamera = true, Action callback = null)
+        private async Task OpenAsync(string fileName, Action<string> ActionOnFile, bool resetCamera = true, Action callback = null)
         {
             bool stateSet = false;
             try
@@ -1393,7 +1393,7 @@ namespace PrePoMax
                 if (SetStateWorking(Globals.OpeningText))
                 {
                     stateSet = true;
-                    await Task.Run(() => Open(fileName, resetCamera));
+                    await Task.Run(() => Open(fileName, ActionOnFile, resetCamera));
                     callback?.Invoke();                    
                 }
                 else MessageBoxes.ShowWarning("Another task is already running.");
@@ -1410,9 +1410,9 @@ namespace PrePoMax
                 if (stateSet) SetStateReady(Globals.OpeningText);
             }
         }
-        public void Open(string fileName, bool resetCamera = true)
-        {            
-            _controller.Open(fileName);
+        public void Open(string fileName, Action<string> ActionOnFile, bool resetCamera = true)
+        {
+            ActionOnFile(fileName);
             //
             if (_controller.CurrentResult != null && _controller.CurrentResult.Mesh != null)
             {
@@ -1441,7 +1441,7 @@ namespace PrePoMax
         internal void tsmiImportFile_Click(object sender, EventArgs e)
         {
             ImportFile(false);
-        }
+        }        
         internal async void tsmiSave_Click(object sender, EventArgs e)
         {
             try
@@ -1917,7 +1917,7 @@ namespace PrePoMax
             try
             {
                 string fileName = ((ToolStripMenuItem)sender).Name;
-                if (CheckBeforeOpen(fileName)) OpenAsync(fileName);
+                if (CheckBeforeOpen(fileName)) OpenAsync(fileName, _controller.Open);
             }
             catch (Exception ex)
             {
@@ -5976,7 +5976,7 @@ namespace PrePoMax
             {
                 string resultsFile = job.Name + ".frd";
                 //
-                await OpenAsync(Path.Combine(job.WorkDirectory, resultsFile), false,
+                await OpenAsync(Path.Combine(job.WorkDirectory, resultsFile), _controller.Open, false,
                     () => { if (_controller.CurrentResult != null && _controller.CurrentResult.Mesh != null)
                             _frmMonitor.DialogResult = DialogResult.OK; }); // this hides the monitor window
             }
@@ -6065,9 +6065,50 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiTransformation_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SinglePointDataEditor.ParentForm = _frmTransformation;
+                SinglePointDataEditor.Controller = _controller;
+                //
+                ShowForm(_frmTransformation, "Create Transformation", null);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private async void tsmiAppendResults_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
+                {
+                    openFileDialog.Filter = "Calculix result files|*.frd";
+                    openFileDialog.Multiselect = false;
+                    //
+                    openFileDialog.FileName = "";
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        foreach (var fileName in openFileDialog.FileNames)
+                        {
+                            // Do not use: if (CheckBeforeOpen(fileName))
+                            if (File.Exists(fileName)) await OpenAsync(fileName, _controller.AppendResult);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+                _controller.ModelChanged = false;   // hide messagebox
+                tsmiNew_Click(null, null);
+            }
+        }
 
         #endregion  ################################################################################################################
-        
+
         #region Result part menu  ##################################################################################################
         private void tsmiEditResultParts_Click(object sender, EventArgs e)
         {
@@ -6155,21 +6196,6 @@ namespace PrePoMax
             try
             {
                 SelectMultipleEntities("Parts", _controller.GetResultParts(), DeleteResultParts);
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
-        //
-        private void tsmiTransformation_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                SinglePointDataEditor.ParentForm = _frmTransformation;
-                SinglePointDataEditor.Controller = _controller;
-                //
-                ShowForm(_frmTransformation, "Create Transformation", null);
             }
             catch (Exception ex)
             {
@@ -6407,6 +6433,7 @@ namespace PrePoMax
             }
         }
         #endregion  ################################################################################################################
+       
 
         #region Help menu  #########################################################################################################
         private void tsmiHomePage_Click(object sender, EventArgs e)
@@ -8007,7 +8034,7 @@ namespace PrePoMax
         public void SetDefaultStepAndIncrementIds()
         {
             string[] tmp;
-            CaeResults.FieldData fieldData = _controller.CurrentFieldData;
+            FieldData fieldData = _controller.CurrentFieldData;
             if (fieldData.StepId == -1 && fieldData.StepIncrementId == -1) return;
             else SetStepAndIncrementIds(fieldData.StepId, fieldData.StepIncrementId);
             //
@@ -8675,6 +8702,6 @@ namespace PrePoMax
             }
         }
 
-       
+        
     }
 }

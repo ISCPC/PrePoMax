@@ -12,12 +12,12 @@ using CaeModel;
 namespace PrePoMax
 {
     [Serializable]
-    public class ViewResultFieldOutputSafetyFactor : ViewResultFieldOutput
+    public class ViewResultFieldOutputLimit : ViewResultFieldOutput
     {
         // Variables                                                                                                                
-        private ResultFieldOutputSafetyFactor _resultFieldOutput;
-        private List<SafetyFactorPartDataPoint> _partPoints;
-        private List<SafetyFactorElementSetDataPoint> _elementSetPoints;
+        private ResultFieldOutputLimit _resultFieldOutput;
+        private List<LimitPartDataPoint> _partPoints;
+        private List<LimitElementSetDataPoint> _elementSetPoints;
         private Dictionary<string, string[]> _filedNameComponentNames;
 
 
@@ -50,23 +50,23 @@ namespace PrePoMax
         }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(2, 10, "SF based on")]
-        [DescriptionAttribute("Select how the safety limit values will be defined for the field output.")]
-        public SafetyFactorBasedOnEnum SafetyFactorBasedOn
+        [OrderedDisplayName(2, 10, "Limit based on")]
+        [DescriptionAttribute("Select how the limit values will be defined for the field output.")]
+        public LimitPlotBasedOnEnum LimitPlotBasedOn
         {
-            get { return _resultFieldOutput.SafetyFactorBasedOn; }
-            set { _resultFieldOutput.SafetyFactorBasedOn = value; }
+            get { return _resultFieldOutput.LimitPlotBasedOn; }
+            set { _resultFieldOutput.LimitPlotBasedOn = value; }
         }
         //
         [Browsable(false)]
-        public List<SafetyFactorPartDataPoint> PartPoints
+        public List<LimitPartDataPoint> PartPoints
         {
             get { return _partPoints; }
             set { _partPoints = value; }
         }
         //
         [Browsable(false)]
-        public List<SafetyFactorElementSetDataPoint> ElementSetPoints
+        public List<LimitElementSetDataPoint> ElementSetPoints
         {
             get { return _elementSetPoints; }
             set { _elementSetPoints = value; }
@@ -76,38 +76,38 @@ namespace PrePoMax
         {
             get
             {
-                if (SafetyFactorBasedOn == SafetyFactorBasedOnEnum.Parts) return _partPoints;
-                if (SafetyFactorBasedOn == SafetyFactorBasedOnEnum.ElementSets) return _elementSetPoints;
+                if (LimitPlotBasedOn == LimitPlotBasedOnEnum.Parts) return _partPoints;
+                if (LimitPlotBasedOn == LimitPlotBasedOnEnum.ElementSets) return _elementSetPoints;
                 else throw new NotSupportedException();
             }
         }
 
 
         // Constructors                                                                                                             
-        public ViewResultFieldOutputSafetyFactor(ResultFieldOutputSafetyFactor resultFieldOutput, string[] partNames,
+        public ViewResultFieldOutputLimit(ResultFieldOutputLimit resultFieldOutput, string[] partNames,
                                                  string[] elementSetNames, ref bool propertyChanged)
         {
             // The order is important
             _resultFieldOutput = resultFieldOutput;
             // Parts
             bool valid = true;
-            double safetyLimit;
-            _partPoints = new List<SafetyFactorPartDataPoint>();
+            double limit;
+            _partPoints = new List<LimitPartDataPoint>();
             foreach (var partName in partNames)
             {
-                safetyLimit = 0;
-                valid &= _resultFieldOutput.ItemNameSafetyLimit.TryGetValue(partName, out safetyLimit);
-                _partPoints.Add(new SafetyFactorPartDataPoint(partName, safetyLimit));
+                limit = 0;
+                valid &= _resultFieldOutput.ItemNameLimit.TryGetValue(partName, out limit);
+                _partPoints.Add(new LimitPartDataPoint(partName, limit));
             }
             // Element sets
-            if (elementSetNames.Length == 0) elementSetNames = new string[] { ResultFieldOutputSafetyFactor.AllElementsName };
+            if (elementSetNames.Length == 0) elementSetNames = new string[] { ResultFieldOutputLimit.AllElementsName };
             //
-            _elementSetPoints = new List<SafetyFactorElementSetDataPoint>();
+            _elementSetPoints = new List<LimitElementSetDataPoint>();
             foreach (var elementSetName in elementSetNames)
             {
-                safetyLimit = 0;
-                valid &= _resultFieldOutput.ItemNameSafetyLimit.TryGetValue(elementSetName, out safetyLimit);
-                _elementSetPoints.Add(new SafetyFactorElementSetDataPoint(elementSetName, safetyLimit));
+                limit = 0;
+                valid &= _resultFieldOutput.ItemNameLimit.TryGetValue(elementSetName, out limit);
+                _elementSetPoints.Add(new LimitElementSetDataPoint(elementSetName, limit));
             }
             //
             if (!valid) propertyChanged = true;
@@ -119,20 +119,20 @@ namespace PrePoMax
         // Methods                                                                                                                  
         public override ResultFieldOutput GetBase()
         {
-            _resultFieldOutput.ItemNameSafetyLimit.Clear();
+            _resultFieldOutput.ItemNameLimit.Clear();
             //
-            if (SafetyFactorBasedOn == SafetyFactorBasedOnEnum.Parts)
+            if (LimitPlotBasedOn == LimitPlotBasedOnEnum.Parts)
             {
                 foreach (var point in _partPoints)
                 {
-                    _resultFieldOutput.ItemNameSafetyLimit.Add(point.PartName, point.SafetyLimit);
+                    _resultFieldOutput.ItemNameLimit.Add(point.PartName, point.Limit);
                 }
             }
-            else if (SafetyFactorBasedOn == SafetyFactorBasedOnEnum.ElementSets)
+            else if (LimitPlotBasedOn == LimitPlotBasedOnEnum.ElementSets)
             {
                 foreach (var point in _elementSetPoints)
                 {
-                    _resultFieldOutput.ItemNameSafetyLimit.Add(point.ElementSetName, point.SafetyLimit);
+                    _resultFieldOutput.ItemNameLimit.Add(point.ElementSetName, point.Limit);
                 }
             }
             else throw new NotSupportedException();

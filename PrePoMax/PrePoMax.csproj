@@ -416,13 +416,14 @@
     <Compile Include="Forms\53_Find\FrmFind.Designer.cs">
       <DependentUpon>FrmFind.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\72_ResultFieldOutput\SafetyFactorPartDataPoint.cs" />
-    <Compile Include="Forms\72_ResultFieldOutput\SafetyFactorMaterialDataPoint.cs" />
+    <Compile Include="Forms\72_ResultFieldOutput\LimitPartDataPoint.cs" />
+    <Compile Include="Forms\72_ResultFieldOutput\LimitElementSetDataPoint.cs" />
     <Compile Include="Forms\72_ResultFieldOutput\FrmResultFieldOutput.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\72_ResultFieldOutput\ViewResultFieldOutput.cs" />
-    <Compile Include="Forms\72_ResultFieldOutput\ViewResultFieldOutputSafetyFactor.cs" />
+    <Compile Include="Forms\72_ResultFieldOutput\ViewResultFieldOutputEnvelope.cs" />
+    <Compile Include="Forms\72_ResultFieldOutput\ViewResultFieldOutputLimit.cs" />
     <Compile Include="Forms\73_ResultHistoryOutput\FrmResultHistoryOutput.cs">
       <SubType>Form</SubType>
     </Compile>

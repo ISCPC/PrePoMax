@@ -404,7 +404,11 @@ namespace CaeResults
         public const string D3 = "D3";
         public const string PRESS = "PRESS";
         //
-        public const string SF = "SF";
+        public const string Ratio = "RATIO";
+        public const string SafetyFactor = "SAFETY_FACTOR";
+        public const string Min = "MIN";
+        public const string Max = "MAX";
+        public const string Average = "AVERAGE";
         //
         //public const string UH1 = "UH1";
         //public const string UH2 = "UH2";

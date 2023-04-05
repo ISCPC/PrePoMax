@@ -325,23 +325,23 @@ namespace CaeResults
                     //
                     if (valid)
                     {
-                        if (resultFieldOutput is ResultFieldOutputSafetyFactor rfosf)
+                        if (resultFieldOutput is ResultFieldOutputLimit rfosf)
                         {
                             // Parent components
                             names = new HashSet<string>(filedNameComponentNames[rfosf.FieldName]);
                             valid &= names.Contains(rfosf.ComponentName);
                             //
-                            if (rfosf.SafetyFactorBasedOn == SafetyFactorBasedOnEnum.Parts)
+                            if (rfosf.LimitPlotBasedOn == LimitPlotBasedOnEnum.Parts)
                                 names = new HashSet<string>(_mesh.Parts.Keys);
-                            else if (rfosf.SafetyFactorBasedOn == SafetyFactorBasedOnEnum.ElementSets)
+                            else if (rfosf.LimitPlotBasedOn == LimitPlotBasedOnEnum.ElementSets)
                             {
                                 names = new HashSet<string>(_mesh.ElementSets.Keys);
-                                names.Add(ResultFieldOutputSafetyFactor.AllElementsName);
+                                names.Add(ResultFieldOutputLimit.AllElementsName);
                             }
                             else throw new NotSupportedException();
                             //
-                            names.IntersectWith(rfosf.ItemNameSafetyLimit.Keys);
-                            valid &= names.Count == rfosf.ItemNameSafetyLimit.Count;
+                            names.IntersectWith(rfosf.ItemNameLimit.Keys);
+                            valid &= names.Count == rfosf.ItemNameLimit.Count;
                         }
                         else throw new NotSupportedException();
                     }
@@ -440,11 +440,13 @@ namespace CaeResults
             //
             AddFieldOutputs(results, lastTime, lastStepId, lastStepIncrementId);
             AddHistoryOutputs(results, lastTime);
+            //
+            ReplaceAllResultFieldOutputs();
         }
         private void AddFieldOutputs(FeResults results, float lastTime, int lastStepId, int lastStepIncrementId)
         {
             Field lastWearDepthField = GetField(new FieldData(FOFieldNames.WearDepth, "", lastStepId, lastStepIncrementId), false);
-            if (lastWearDepthField == null) throw new NotSupportedException();
+            //if (lastWearDepthField == null) throw new NotSupportedException();
             //
             Field currentField;
             FieldData fieldData;
@@ -559,6 +561,7 @@ namespace CaeResults
         }
         private void AddHistoryOutputs(FeResults results, float lastTime)
         {
+            if (results._history == null) return;
             // Append all entries
             HistoryResultEntries historyResultEntry;
             foreach (var setEntry in results._history.Sets)
@@ -1624,13 +1627,13 @@ namespace CaeResults
         public void CopyPartsFromMesh(FeMesh mesh)
         {
             _mesh.Parts.Clear();
-
+            //
             ResultPart part;
             foreach (var entry in mesh.Parts)
             {
                 part = new ResultPart(entry.Value);
                 _mesh.Parts.Add(entry.Key, part);
-
+                //
                 foreach (var elementId in part.Labels) _mesh.Elements[elementId].PartId = part.PartId;
             }
         }
@@ -2319,19 +2322,26 @@ namespace CaeResults
             {
                 foreach (var incrementId in entry.Value)
                 {
-                    if (resultFieldOutput is ResultFieldOutputSafetyFactor rfosf)
+                    if (resultFieldOutput is ResultFieldOutputLimit rfosf)
                     {
                         // Get parent field
                         fieldData = GetFieldData(rfosf.FieldName, rfosf.ComponentName, entry.Key, incrementId, true);
-                        //
+                        // Prepare field
+                        sfField = new Field(rfosf.Name);
+                        sfField.DataState = DataStateEnum.UpdateResultFieldOutput;
+                        // Ratio
                         sfFieldData = new FieldData(fieldData); // copy
                         sfFieldData.Name = rfosf.Name;
-                        sfFieldData.Component = FOComponentNames.SF;
+                        sfFieldData.Component = FOComponentNames.Ratio;
                         sfFieldData.Unit = "/";
-                        //
-                        sfField = new Field(rfosf.Name);
                         sfField.AddComponent(sfFieldData.Component, new float[numNodes]);
-                        sfField.DataState = DataStateEnum.UpdateResultFieldOutput;
+                        // Safety factor
+                        sfFieldData = new FieldData(fieldData); // copy
+                        sfFieldData.Name = rfosf.Name;
+                        sfFieldData.Component = FOComponentNames.SafetyFactor;
+                        sfFieldData.Unit = "/";
+                        sfField.AddComponent(sfFieldData.Component, new float[numNodes]);
+                        // Add field
                         AddField(sfFieldData, sfField);
                     }
                     else throw new NotSupportedException();
@@ -2345,6 +2355,10 @@ namespace CaeResults
         public ResultFieldOutput[] GetResultFieldOutputs()
         {
             return _resultFieldOutputs.Values.ToArray();
+        }
+        public void ReplaceAllResultFieldOutputs()
+        {
+            foreach (var entry in _resultFieldOutputs.ToArray()) ReplaceResultFieldOutput(entry.Key, entry.Value);
         }
         public void ReplaceResultFieldOutput(string oldResultFieldOutputName, ResultFieldOutput resultFieldOutput)
         {
@@ -2390,9 +2404,15 @@ namespace CaeResults
                     {
                         resultFieldOutput = entry.Value;
                         //
-                        if (resultFieldOutput is ResultFieldOutputSafetyFactor rfosf)
+                        if (resultFieldOutput is ResultFieldOutputLimit rfosf)
                         {
-                            sfFieldData = GetFieldData(rfosf.Name, FOComponentNames.SF, stepEntry.Key, incrementId, true);
+                            // Ratio
+                            sfFieldData = GetFieldData(rfosf.Name, FOComponentNames.Ratio, stepEntry.Key, incrementId, true);
+                            sfField = GetField(sfFieldData, false);
+                            if (sfField != null) sfField.DataState = DataStateEnum.UpdateResultFieldOutput;
+                            // Safety factor
+                            sfFieldData = GetFieldData(rfosf.Name, FOComponentNames.SafetyFactor, stepEntry.Key,
+                                                       incrementId, true);
                             sfField = GetField(sfFieldData, false);
                             if (sfField != null) sfField.DataState = DataStateEnum.UpdateResultFieldOutput;
                         }
@@ -2407,9 +2427,10 @@ namespace CaeResults
             //
             foreach (var entry in _resultFieldOutputs)
             {
-                if (entry.Value is ResultFieldOutputSafetyFactor rfosf)
+                if (entry.Value is ResultFieldOutputLimit rfosf)
                 {
-                    if (fieldData.Name == rfosf.Name && fieldData.Component == FOComponentNames.SF)
+                    if (fieldData.Name == rfosf.Name &&
+                        (fieldData.Component == FOComponentNames.Ratio || fieldData.Component == FOComponentNames.SafetyFactor))
                     {
                         foreach (var indResultFieldOutput in independencyList)
                         {
@@ -2422,7 +2443,7 @@ namespace CaeResults
         }
         private void ComputeFieldFromResultFieldOutput(ResultFieldOutput resultFieldOutput, int stepId, int stepIncrementId)
         {
-            if (resultFieldOutput is ResultFieldOutputSafetyFactor rfosf)
+            if (resultFieldOutput is ResultFieldOutputLimit rfosf)
             {
                 FieldData fieldData;
                 FieldData sfFieldData;
@@ -2431,62 +2452,64 @@ namespace CaeResults
                 FieldComponent sfComponent;
                 //
                 int resultsNodeId;
-                float itemSafetyLimit;
-                float[] values = null;
-                float[] safetyLimits = null;
+                float itemLimit;
+                float[] valuesSafety = null;
+                float[] valuesRatio = null;
+                float[] limits = null;
                 //
                 fieldData = GetFieldData(rfosf.FieldName, rfosf.ComponentName, stepId, stepIncrementId, true);
                 field = GetField(fieldData);
                 if (field != null)
                 {
-                    values = field.GetComponentValues(rfosf.ComponentName);
-                    if (values != null)
+                    valuesRatio = field.GetComponentValues(rfosf.ComponentName);
+                    if (valuesRatio != null)
                     {
-                        values = values.ToArray(); // copy
-                        safetyLimits = new float[values.Length];
+                        limits = new float[valuesRatio.Length];
                         //
-                        if (rfosf.SafetyFactorBasedOn == SafetyFactorBasedOnEnum.Parts)
+                        if (rfosf.LimitPlotBasedOn == LimitPlotBasedOnEnum.Parts)
                         {
+                            // Collect limits for parts
                             BasePart part;
-                            foreach (var itemEntry in rfosf.ItemNameSafetyLimit)
+                            foreach (var itemEntry in rfosf.ItemNameLimit)
                             {
                                 if (_mesh.Parts.TryGetValue(itemEntry.Key, out part))
                                 {
-                                    itemSafetyLimit = (float)itemEntry.Value;
-                                    if (itemSafetyLimit == 0) throw new NotSupportedException();
+                                    itemLimit = (float)itemEntry.Value;
+                                    if (itemLimit == 0) throw new NotSupportedException();
                                     //
                                     foreach (var nodeId in part.NodeLabels)
                                     {
                                         resultsNodeId = _nodeIdsLookUp[nodeId];
-                                        if (safetyLimits[resultsNodeId] != 0)
-                                            safetyLimits[resultsNodeId] = Math.Min(safetyLimits[resultsNodeId],
-                                                                                    itemSafetyLimit);
-                                        else safetyLimits[resultsNodeId] = itemSafetyLimit;
+                                        if (limits[resultsNodeId] != 0)
+                                            limits[resultsNodeId] = Math.Min(limits[resultsNodeId],
+                                                                                   itemLimit);
+                                        else limits[resultsNodeId] = itemLimit;
                                     }
                                 }
                             }
                         }
-                        else if (rfosf.SafetyFactorBasedOn == SafetyFactorBasedOnEnum.ElementSets)
+                        else if (rfosf.LimitPlotBasedOn == LimitPlotBasedOnEnum.ElementSets)
                         {
+                            // Collect limits for element sets
                             FeElementSet elementSet;
-                            foreach (var itemEntry in rfosf.ItemNameSafetyLimit)
+                            foreach (var itemEntry in rfosf.ItemNameLimit)
                             {
                                 if (_mesh.ElementSets.TryGetValue(itemEntry.Key, out elementSet) ||
-                                    itemEntry.Key == ResultFieldOutputSafetyFactor.AllElementsName)
+                                    itemEntry.Key == ResultFieldOutputLimit.AllElementsName)
                                 {
-                                    if (itemEntry.Key == ResultFieldOutputSafetyFactor.AllElementsName)
+                                    if (itemEntry.Key == ResultFieldOutputLimit.AllElementsName)
                                         elementSet = new FeElementSet("tmp", _nodeIdsLookUp.Keys.ToArray());
                                     //
-                                    itemSafetyLimit = (float)itemEntry.Value;
-                                    if (itemSafetyLimit == 0) throw new NotSupportedException();
+                                    itemLimit = (float)itemEntry.Value;
+                                    if (itemLimit == 0) throw new NotSupportedException();
                                     //
                                     foreach (var nodeId in elementSet.Labels)
                                     {
                                         resultsNodeId = _nodeIdsLookUp[nodeId];
-                                        if (safetyLimits[resultsNodeId] != 0)
-                                            safetyLimits[resultsNodeId] = Math.Min(safetyLimits[resultsNodeId],
-                                                                                    itemSafetyLimit);
-                                        else safetyLimits[resultsNodeId] = itemSafetyLimit;
+                                        if (limits[resultsNodeId] != 0)
+                                            limits[resultsNodeId] = Math.Min(limits[resultsNodeId],
+                                                                                   itemLimit);
+                                        else limits[resultsNodeId] = itemLimit;
                                     }
                                 }
                             }
@@ -2495,24 +2518,33 @@ namespace CaeResults
                     }
                 }
                 //
-                if (values != null)
+                if (valuesRatio != null)
                 {
-                    // Compute safety factors
-                    for (int i = 0; i < safetyLimits.Length; i++)
+                    valuesRatio = valuesRatio.ToArray(); // copy
+                    valuesSafety = valuesRatio.ToArray(); 
+                    // Compute values
+                    for (int i = 0; i < limits.Length; i++)
                     {
-                        if (values[i] == 0) values[i] = float.NaN;      // this can happen after some parts are renamed
-                        else values[i] = safetyLimits[i] / values[i];
+                        // Ratio
+                        valuesRatio[i] = valuesRatio[i] / limits[i];
+                        // Safety factor
+                        if (valuesSafety[i] == 0) valuesSafety[i] = float.NaN; // this can happen after some parts are renamed
+                        else valuesSafety[i] = limits[i] / valuesSafety[i];
                     }
                 }
-                // Field data
-                sfFieldData = GetFieldData(rfosf.Name, FOComponentNames.SF, stepId, stepIncrementId);
-                // Field
+                // Ratio
+                sfFieldData = GetFieldData(rfosf.Name, FOComponentNames.Ratio, stepId, stepIncrementId);
                 sfField = GetField(sfFieldData, false);
-                sfComponent = new FieldComponent(sfFieldData.Component, values);
+                sfComponent = new FieldComponent(sfFieldData.Component, valuesRatio);
                 sfField.ReplaceComponent(sfComponent.Name, sfComponent);
-                //
                 sfField.DataState = DataStateEnum.OK;
-                //
+                ReplaceOrAddField(sfFieldData, sfField);
+                // Safety factor
+                sfFieldData = GetFieldData(rfosf.Name, FOComponentNames.SafetyFactor, stepId, stepIncrementId);
+                sfField = GetField(sfFieldData, false);
+                sfComponent = new FieldComponent(sfFieldData.Component, valuesSafety);
+                sfField.ReplaceComponent(sfComponent.Name, sfComponent);
+                sfField.DataState = DataStateEnum.OK;
                 ReplaceOrAddField(sfFieldData, sfField);
             }
             else throw new NotSupportedException();
@@ -3398,7 +3430,7 @@ namespace CaeResults
                     foreach (var componentName in componentNames)
                     {
                         value = Math.Pow(entry.Value.GetComponentAbsMax(componentName), 2);
-                        if (!double.IsNaN(value)) max += value;
+                        if (!double.IsNaN(value)) fieldMax += value;
                     }
                     //
                     if (fieldMax > 0) fieldMax = Math.Sqrt(fieldMax);

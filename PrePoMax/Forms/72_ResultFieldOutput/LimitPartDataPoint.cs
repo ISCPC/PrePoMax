@@ -10,31 +10,31 @@ using CaeGlobals;
 namespace PrePoMax
 {
     [Serializable]
-    public class SafetyFactorElementSetDataPoint
+    public class LimitPartDataPoint
     {
         // Variables                                                                                                                
-        private string _elementSetName;
-        private double _safetyLimit;
+        private string _partName;
+        private double _limit;
 
 
         // Properties                                                                                                               
-        [DisplayName("Element Set")]
-        public string ElementSetName { get { return _elementSetName; } set { _elementSetName = value; } }
+        [DisplayName("Part")]
+        public string PartName { get { return _partName; } set { _partName = value; } }
         //
-        [DisplayName("Safety Limit")]
+        [DisplayName("Limit")]
         [TypeConverter(typeof(StringDoubleConverter))]
-        public double SafetyLimit { get { return _safetyLimit; } set { _safetyLimit = value; } }
+        public double Limit { get { return _limit; } set { _limit = value; } }
 
 
         // Constructors                                                                                                             
-        public SafetyFactorElementSetDataPoint()
+        public LimitPartDataPoint()
             : this(null, 0)
         {
         }
-        public SafetyFactorElementSetDataPoint(string elementSetName, double safetyLimit)
+        public LimitPartDataPoint(string partName, double limit)
         {
-            _elementSetName = elementSetName;
-            _safetyLimit = safetyLimit;
+            _partName = partName;
+            _limit = limit;
         }
     }
 }

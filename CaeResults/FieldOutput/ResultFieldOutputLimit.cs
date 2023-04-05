@@ -10,7 +10,7 @@ using DynamicTypeDescriptor;
 namespace CaeResults
 {
     [Serializable]
-    public enum SafetyFactorBasedOnEnum
+    public enum LimitPlotBasedOnEnum
     {
         [StandardValue("Parts", DisplayName = "Parts", Description = "Parts")]
         Parts,
@@ -20,39 +20,39 @@ namespace CaeResults
 
 
     [Serializable]
-    public class ResultFieldOutputSafetyFactor : ResultFieldOutput
+    public class ResultFieldOutputLimit : ResultFieldOutput
     {
         // Variables                                                                                                                
         public static readonly string AllElementsName = "All elements";
         private string _fieldName;
         private string _componentName;
-        private SafetyFactorBasedOnEnum _safetyFactorBasedOn;
-        private OrderedDictionary<string, double> _itemNameSafetyLimit;
+        private LimitPlotBasedOnEnum _limitPlotBasedOn;
+        private OrderedDictionary<string, double> _itemNameLimit;
 
 
         // Properties                                                                                                               
         public string FieldName { get { return _fieldName; } set { _fieldName = value; } }
         public string ComponentName { get { return _componentName; } set { _componentName = value; } }
-        public SafetyFactorBasedOnEnum SafetyFactorBasedOn
+        public LimitPlotBasedOnEnum LimitPlotBasedOn
         {
-            get { return _safetyFactorBasedOn; }
-            set { _safetyFactorBasedOn = value; }
+            get { return _limitPlotBasedOn; }
+            set { _limitPlotBasedOn = value; }
         }
-        public OrderedDictionary<string, double> ItemNameSafetyLimit
+        public OrderedDictionary<string, double> ItemNameLimit
         {
-            get { return _itemNameSafetyLimit; }
-            set { _itemNameSafetyLimit = value; }
+            get { return _itemNameLimit; }
+            set { _itemNameLimit = value; }
         }
 
 
         // Constructors                                                                                                             
-        public ResultFieldOutputSafetyFactor(string name, string filedName, string componentName)
+        public ResultFieldOutputLimit(string name, string filedName, string componentName)
             : base(name)
         {
             _fieldName = filedName;
             _componentName = componentName;
-            _safetyFactorBasedOn = SafetyFactorBasedOnEnum.Parts;
-            _itemNameSafetyLimit = new OrderedDictionary<string, double>("ItemNameSafetyLimit");
+            _limitPlotBasedOn = LimitPlotBasedOnEnum.Parts;
+            _itemNameLimit = new OrderedDictionary<string, double>("ItemNameLimit");
         }
 
 
@@ -67,7 +67,7 @@ namespace CaeResults
         }
         public override string[] GetComponentNames()
         {
-            return new string[] { FOComponentNames.SF };
+            return new string[] { FOComponentNames.Ratio, FOComponentNames.SafetyFactor };
         }
     }
 }

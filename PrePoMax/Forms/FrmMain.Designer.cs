@@ -404,6 +404,7 @@
             this.tsmiDeleteResultHistoryOutput = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerResults2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiTransformation = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiAppendResults = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiTools = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiQuery = new System.Windows.Forms.ToolStripMenuItem();
@@ -437,6 +438,7 @@
             this.tbOutput = new System.Windows.Forms.TextBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
+            this.tsmiDividerResults3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsFile.SuspendLayout();
             this.tsViews.SuspendLayout();
             this.tsModel.SuspendLayout();
@@ -3353,7 +3355,9 @@
             this.tsmiResultFieldOutput,
             this.tsmiResultHistoryOutput,
             this.tsmiDividerResults2,
-            this.tsmiTransformation});
+            this.tsmiTransformation,
+            this.tsmiDividerResults3,
+            this.tsmiAppendResults});
             this.tsmiResults.Name = "tsmiResults";
             this.tsmiResults.Size = new System.Drawing.Size(56, 20);
             this.tsmiResults.Text = "Results";
@@ -3473,26 +3477,26 @@
             // tsmiCreateResultFieldOutput
             // 
             this.tsmiCreateResultFieldOutput.Name = "tsmiCreateResultFieldOutput";
-            this.tsmiCreateResultFieldOutput.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateResultFieldOutput.Size = new System.Drawing.Size(108, 22);
             this.tsmiCreateResultFieldOutput.Text = "Create";
             this.tsmiCreateResultFieldOutput.Click += new System.EventHandler(this.tsmiCreateResultFieldOutput_Click);
             // 
             // tsmiEditResultFieldOutput
             // 
             this.tsmiEditResultFieldOutput.Name = "tsmiEditResultFieldOutput";
-            this.tsmiEditResultFieldOutput.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditResultFieldOutput.Size = new System.Drawing.Size(108, 22);
             this.tsmiEditResultFieldOutput.Text = "Edit";
             this.tsmiEditResultFieldOutput.Click += new System.EventHandler(this.tsmiEditResultFieldOutput_Click);
             // 
             // tsmiDividerResultFieldOutput1
             // 
             this.tsmiDividerResultFieldOutput1.Name = "tsmiDividerResultFieldOutput1";
-            this.tsmiDividerResultFieldOutput1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerResultFieldOutput1.Size = new System.Drawing.Size(105, 6);
             // 
             // tsmiDeleteResultFieldOutput
             // 
             this.tsmiDeleteResultFieldOutput.Name = "tsmiDeleteResultFieldOutput";
-            this.tsmiDeleteResultFieldOutput.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteResultFieldOutput.Size = new System.Drawing.Size(108, 22);
             this.tsmiDeleteResultFieldOutput.Text = "Delete";
             this.tsmiDeleteResultFieldOutput.Click += new System.EventHandler(this.tsmiDeleteResultFieldOutput_Click);
             // 
@@ -3538,6 +3542,13 @@
             this.tsmiTransformation.Size = new System.Drawing.Size(180, 22);
             this.tsmiTransformation.Text = "Transformation";
             this.tsmiTransformation.Click += new System.EventHandler(this.tsmiTransformation_Click);
+            // 
+            // tsmiAppendResults
+            // 
+            this.tsmiAppendResults.Name = "tsmiAppendResults";
+            this.tsmiAppendResults.Size = new System.Drawing.Size(180, 22);
+            this.tsmiAppendResults.Text = "Append Results";
+            this.tsmiAppendResults.Click += new System.EventHandler(this.tsmiAppendResults_Click);
             // 
             // tsmiTools
             // 
@@ -3833,6 +3844,11 @@
             // timerOutput
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
+            // 
+            // tsmiDividerResults3
+            // 
+            this.tsmiDividerResults3.Name = "tsmiDividerResults3";
+            this.tsmiDividerResults3.Size = new System.Drawing.Size(177, 6);
             // 
             // FrmMain
             // 
@@ -4300,6 +4316,8 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiCreateResultFieldOutput;
         private System.Windows.Forms.ToolStripMenuItem tsmiEditResultFieldOutput;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerResultFieldOutput1;
+        private System.Windows.Forms.ToolStripMenuItem tsmiAppendResults;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerResults3;
     }
 }
 

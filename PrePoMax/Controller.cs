@@ -657,7 +657,7 @@ namespace PrePoMax
             if (lastSave != null)
             {
                 Commands.CommandsCollection prevCommands = new Commands.CommandsCollection(this, _commands);
-                _form.Open(lastSave.FileName, true);    // form open redraws the sceene
+                _form.Open(lastSave.FileName, Open, true);    // form open redraws the sceene
                 _commands = new Commands.CommandsCollection(this, prevCommands);
                 //
                 _commands.ExecuteAllCommandsFromLastSave(lastSave);
@@ -693,7 +693,7 @@ namespace PrePoMax
         private void OpenDat(string fileName, bool redraw = true)
         {
             if (_allResults.CurrentResult == null) _allResults.Add(fileName, new FeResults(fileName));
-            //
+            // This is also called in AppendResults
             _allResults.CurrentResult.SetHistory(DatFileReader.Read(fileName));
             // Wear
             _allResults.CurrentResult.ComputeWear(_model.StepCollection.GetSlipWearStepIds(),
@@ -880,6 +880,61 @@ namespace PrePoMax
             _form.SetCurrentView(_currentView);
             // Regenerate tree
             _form.RegenerateTree();
+        }
+        public void AppendResult(string fileName)
+        {
+            if (_allResults != null && _allResults.Count == 0) Open(fileName);
+            else
+            {
+                FeResults results = FrdFileReader.Read(fileName);
+                // Open .dat file
+                string datFileName = Path.GetFileNameWithoutExtension(results.FileName) + ".dat";
+                datFileName = Path.Combine(Path.GetDirectoryName(results.FileName), datFileName);
+                if (File.Exists(datFileName)) results.SetHistory(DatFileReader.Read(datFileName));
+                // Check if the meshes are the same and rename the parts
+                if (_allResults.CurrentResult.Mesh != null && results.Mesh != null)
+                {
+                    SuppressExplodedView();
+                    //
+                    double similarity = _allResults.CurrentResult.Mesh.IsEqual(results.Mesh);
+                    //
+                    if (similarity > 0)
+                    {
+                        if (similarity < 1) similarity = 1;
+                        //
+                        if (similarity == 1)
+                        {
+                            results.CopyPartsFromMesh(_allResults.CurrentResult.Mesh);
+                            //_allResults.CurrentResult.CopyMeshItemsFromMesh(_allResults.CurrentResult.Mesh);
+                        }
+                        else if (similarity == 2)
+                        {
+                            results.Mesh.MergePartsBasedOnMesh(_allResults.CurrentResult.Mesh, typeof(ResultPart));
+                        }
+                        _allResults.CurrentResult.AddResults(results);
+                    }                    
+                    // First resume exploded view
+                    ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
+                    //
+                    if (similarity == 0)
+                    {
+                        // Do not show error!
+                        throw new CaeException("The selected result file does not have the same mesh as the current result.");
+                    }
+                }
+                // Model changed
+                _modelChanged = true;
+                // Redraw
+                // Set the view but do not draw
+                _currentView = ViewGeometryModelResults.Results;
+                _form.SetCurrentView(_currentView);
+                // Regenerate tree
+                _form.RegenerateTree();
+                //
+                // Get first component of the first field for the last increment in the last step
+                if (ResultsInitialized)
+                    CurrentFieldData = _allResults.CurrentResult.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
+            }
         }
         private Dictionary<string, FeNodeSet> GetNodeSetsFromCelElements(Dictionary<int, FeNode> nodes,
                                                                          Dictionary<int, FeElement> elements,

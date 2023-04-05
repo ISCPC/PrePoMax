@@ -59,7 +59,7 @@ namespace CaeResults
             float[] values = new float[numValues];
             for (int i = 0; i < numValues; i++)
                 values[i] = br.ReadSingle();
-
+            //
             return new FieldComponent(name, values, invariant);
         }
         public void UpdateMaxMin()
