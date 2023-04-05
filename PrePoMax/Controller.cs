@@ -640,12 +640,10 @@ namespace PrePoMax
             _form.RegenerateTree(false);
             // Set tree states
             if (data[2] is bool[][] states) _form.SetTreeExpandCollapseState(states);
-
-
-
-            JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
-            string json = JsonConvert.SerializeObject(_commands, Formatting.Indented, settings);
-            File.WriteAllText(@"D:\out.txt", json);
+            //
+            //JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
+            //string json = JsonConvert.SerializeObject(_commands, Formatting.Indented, settings);
+            //File.WriteAllText(@"D:\out.txt", json);
         }
         private void OpenPmh(string fileName)
         {
