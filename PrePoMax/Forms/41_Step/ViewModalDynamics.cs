@@ -20,6 +20,26 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(4, 10, "Perturbation")]
+        [DescriptionAttribute("Perturbation parameter set to On applies preloads from the previous step if it exists.")]
+        [Id(5, 1)]
+        public bool Perturbation { get { return _modalStep.Perturbation; } set { _modalStep.Perturbation = value; } }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(9, 10, "Steady state")]
+        [DescriptionAttribute("Enable/disable the steady state heat transfer solution.")]
+        [Id(10, 1)]
+        public bool SteadyState
+        {
+            get { return _modalStep.SteadyState; }
+            set
+            {
+                _modalStep.SteadyState = value;
+                UpdateVisibility();
+            }
+        }
+        //
         [CategoryAttribute("Damping")]
         [OrderedDisplayName(0, 10, "Damping type")]
         [DescriptionAttribute("Select the modal damping type.")]
@@ -67,6 +87,30 @@ namespace PrePoMax
             get { return _modalStep.ModalDamping.DampingRatiosAndRanges; }
             set { _modalStep.ModalDamping.DampingRatiosAndRanges = value; }
         }
+        //
+        [CategoryAttribute("Incrementation")]
+        [OrderedDisplayName(0, 10, "Initial time increment")]
+        [DescriptionAttribute("Initial time increment of the step.")]
+        [TypeConverter(typeof(StringTimeConverter))]
+        [Id(1, 3)]
+        public double InitialTimeIncrement
+        {
+            get { return _modalStep.InitialTimeIncrement; }
+            set { _modalStep.InitialTimeIncrement = value; }
+        }
+        //
+        [CategoryAttribute("Incrementation")]
+        [OrderedDisplayName(1, 10, "Time period")]
+        [DescriptionAttribute("Time period of the step.")]
+        [TypeConverter(typeof(StringTimeConverter))]
+        [Id(2, 3)]
+        public double TimePeriod { get { return _modalStep.TimePeriod; } set { _modalStep.TimePeriod = value; } }
+        //
+        [CategoryAttribute("Incrementation")]
+        [OrderedDisplayName(1, 10, "Relative error")]
+        [DescriptionAttribute("Relative error for the solution to be considered to be steady state.")]
+        [Id(2, 3)]
+        public double RelativeError { get { return _modalStep.RelativeError; } set { _modalStep.RelativeError = value; } }
 
 
         // Constructors                                                                                                             
@@ -91,6 +135,9 @@ namespace PrePoMax
         public override void InstallProvider()
         {
             base.InstallProvider();
+            //
+            _dctd.RenameBooleanPropertyToOnOff("Perturbation");
+            _dctd.RenameBooleanPropertyToOnOff(nameof(SteadyState));
         }
         public override void UpdateVisibility()
         {
@@ -105,6 +152,10 @@ namespace PrePoMax
             browsable = _modalStep.ModalDamping.DampingType == ModalDampingTypeEnum.Rayleigh;
             _dctd.GetProperty(nameof(Alpha)).SetIsBrowsable(browsable);
             _dctd.GetProperty(nameof(Beta)).SetIsBrowsable(browsable);
+            //
+            browsable = SteadyState;
+            _dctd.GetProperty(nameof(TimePeriod)).SetIsBrowsable(!browsable);
+            _dctd.GetProperty(nameof(RelativeError)).SetIsBrowsable(browsable);
         }
     }
 }

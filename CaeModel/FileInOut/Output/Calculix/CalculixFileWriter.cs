@@ -907,7 +907,7 @@ namespace FileInOut.Output
                 }
                 else calStep.AddKeyword(new CalDeactivated(step.GetType().ToString()));
                 // Boundary conditions
-                if (step.Active) title = new CalTitle("Boundary conditions", "*Boundary, op=New");
+                if (step.Active && !(step is ModalDynamics)) title = new CalTitle("Boundary conditions", "*Boundary, op=New");
                 else title = new CalTitle("Boundary conditions", "");
                 calStep.AddKeyword(title);
                 //

@@ -9,24 +9,40 @@ using System.Runtime.Serialization;
 namespace CaeModel
 {
     [Serializable]
-    public class ModalDynamics : Step, ISerializable
+    public class ModalDynamics : StaticStep, ISerializable
     {
         // Variables                                                                                                                
+        private bool _steadyState;          //ISerializable
         private ModalDamping _modalDamping; //ISerializable
+        private double _relativeError;      //ISerializable
 
 
         // Properties                                                                                                               
+        public bool SteadyState { get { return _steadyState; } set { _steadyState = value; } }
         public ModalDamping ModalDamping { get { return _modalDamping; } set { _modalDamping = value; } }
+        public double RelativeError
+        {
+            get { return _relativeError; }
+            set
+            {
+                _relativeError = value;
+                if (_relativeError < 0) _relativeError = 1E-5;
+                else if (_relativeError > 1) _relativeError = 1;
+            }
+        }
+
 
 
         // Constructors                                                                                                             
         public ModalDynamics(string name)
-            :base(name)
+            :base(name, true)
         {
+            _steadyState = false;
             _modalDamping = new ModalDamping();
+            _relativeError = 0.01;
             //
-            AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.U | NodalFieldVariable.RF));
-            AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S));
+            InitialTimeIncrement = 0.1;
+            TimePeriod = 1;
         }
         //ISerializable
         public ModalDynamics(SerializationInfo info, StreamingContext context)
@@ -36,8 +52,12 @@ namespace CaeModel
             {
                 switch (entry.Name)
                 {
+                    case "_steadyState":
+                        _steadyState = (bool)entry.Value; break;
                     case "_modalDamping":
                         _modalDamping = (ModalDamping)entry.Value; break;
+                    case "_relativeError":
+                        _relativeError = (double)entry.Value; break;
                 }
             }
         }
@@ -90,7 +110,10 @@ namespace CaeModel
             // Using typeof() works also for null fields
             base.GetObjectData(info, context);
             //
+            info.AddValue("_steadyState", _steadyState, typeof(bool));
             info.AddValue("_modalDamping", _modalDamping, typeof(ModalDamping));
+            info.AddValue("_relativeError", _relativeError, typeof(double));
         }
     }
 }
+
