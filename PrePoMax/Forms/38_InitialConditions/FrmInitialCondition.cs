@@ -209,7 +209,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewInitialCondition is ViewInitialVelocity viv)
                 {
-                    selectedId = 0;
+                    selectedId = 1;
                     // Check for deleted entities
                     if (viv.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (viv.RegionType == RegionTypeEnum.PartName.ToFriendlyString())

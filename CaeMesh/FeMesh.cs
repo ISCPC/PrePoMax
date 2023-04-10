@@ -7118,6 +7118,12 @@ namespace CaeMesh
                 //}
             }
         }
+        public int[] GetNodeIdsFromElementSet(FeElementSet elementSet)
+        {
+            HashSet<int> nodeIds = new HashSet<int>();
+            foreach (var elementId in elementSet.Labels) nodeIds.UnionWith(_elements[elementId].NodeIds);
+            return nodeIds.ToArray();
+        }
 
         // Elements 
         public string[] GetElementSetNames()

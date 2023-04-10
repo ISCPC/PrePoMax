@@ -1859,7 +1859,6 @@ namespace UserControls
                         //
                         if (results.GetHistory() != null) SetHistoryResults(results.GetHistory());
                     }
-                    
                 }
                 //
                 SelectNodesByPath(selectedNodePaths);
@@ -2624,6 +2623,7 @@ namespace UserControls
             {
                 node = _resultFieldOutputs.Nodes[resultFieldOutput.Name];
                 if (node != null) node.Tag = resultFieldOutput;    // overwrite Field with ResultFieldOutput
+                SetNodeStatus(node);
             }
         }
         public void SelectFirstComponentOfFirstFieldOutput()

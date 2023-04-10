@@ -281,10 +281,13 @@ namespace CaeResults
                     {
                         fieldData = FieldData.ReadFromFile(br, version);
                         field = Field.ReadFromFile(br, version);
-                        //
-                        field.ComputeInvariants();
-                        //
-                        results.AddField(fieldData, field);
+                        if (field != null)
+                        {
+                            //
+                            field.ComputeInvariants();
+                            //
+                            results.AddField(fieldData, field);
+                        }
                     }
                     // Prepare complex
                     results.PrepareComplexResults();
@@ -325,23 +328,29 @@ namespace CaeResults
                     //
                     if (valid)
                     {
-                        if (resultFieldOutput is ResultFieldOutputLimit rfosf)
+                        if (resultFieldOutput is ResultFieldOutputLimit rfol)
                         {
                             // Parent components
-                            names = new HashSet<string>(filedNameComponentNames[rfosf.FieldName]);
-                            valid &= names.Contains(rfosf.ComponentName);
+                            names = new HashSet<string>(filedNameComponentNames[rfol.FieldName]);
+                            valid &= names.Contains(rfol.ComponentName);
                             //
-                            if (rfosf.LimitPlotBasedOn == LimitPlotBasedOnEnum.Parts)
+                            if (rfol.LimitPlotBasedOn == LimitPlotBasedOnEnum.Parts)
                                 names = new HashSet<string>(_mesh.Parts.Keys);
-                            else if (rfosf.LimitPlotBasedOn == LimitPlotBasedOnEnum.ElementSets)
+                            else if (rfol.LimitPlotBasedOn == LimitPlotBasedOnEnum.ElementSets)
                             {
                                 names = new HashSet<string>(_mesh.ElementSets.Keys);
                                 names.Add(ResultFieldOutputLimit.AllElementsName);
                             }
                             else throw new NotSupportedException();
                             //
-                            names.IntersectWith(rfosf.ItemNameLimit.Keys);
-                            valid &= names.Count == rfosf.ItemNameLimit.Count;
+                            names.IntersectWith(rfol.ItemNameLimit.Keys);
+                            valid &= names.Count == rfol.ItemNameLimit.Count;
+                        }
+                        else if (resultFieldOutput is ResultFieldOutputEnvelope rfoe)
+                        {
+                            // Parent components
+                            names = new HashSet<string>(filedNameComponentNames[rfoe.FieldName]);
+                            valid &= names.Contains(rfoe.ComponentName);
                         }
                         else throw new NotSupportedException();
                     }
@@ -1287,9 +1296,14 @@ namespace CaeResults
         // Units                                    
         public string GetFieldUnitAbbrevation(FieldData fieldData)
         {
-            GetFieldUnitConverterAndAbbrevation(fieldData.Name, fieldData.Component, fieldData.StepId, fieldData.StepIncrementId,
-                                                out TypeConverter unitConverter, out string unitAbbreviation);
-            return unitAbbreviation;
+            if (fieldData.Unit != null && fieldData.Unit.Length > 0) return fieldData.Unit;
+            else
+            {
+                GetFieldUnitConverterAndAbbrevation(fieldData.Name, fieldData.Component, fieldData.StepId,
+                                                    fieldData.StepIncrementId, out TypeConverter unitConverter,
+                                                    out string unitAbbreviation);
+                return unitAbbreviation;
+            }
         }
         public string GetFieldUnitAbbrevation(string fieldDataName, string componentName, int stepId, int incrementId)
         {
@@ -2311,8 +2325,14 @@ namespace CaeResults
         private void PrepareFieldsFromResultFieldOutput(ResultFieldOutput resultFieldOutput)
         {
             FieldData fieldData;
-            FieldData sfFieldData;
-            Field sfField;
+            FieldData newFieldData = null;
+            Field newField;
+            //
+            string newFieldName;
+            string[] newComponentNames;
+            string sourceFieldName;
+            string sourceComponentName;
+            string unit;
             //
             int numNodes = _mesh.Nodes.Count;
             //
@@ -2322,29 +2342,40 @@ namespace CaeResults
             {
                 foreach (var incrementId in entry.Value)
                 {
-                    if (resultFieldOutput is ResultFieldOutputLimit rfosf)
+                    if (resultFieldOutput is ResultFieldOutputLimit rfol)
+                    {
+                        sourceFieldName = rfol.FieldName;
+                        sourceComponentName = rfol.ComponentName;
+                        newFieldName = rfol.Name;
+                        newComponentNames = rfol.GetComponentNames();
+                        unit = "/";
+                    }
+                    else if (resultFieldOutput is ResultFieldOutputEnvelope rfoe)
                     {
                         // Get parent field
-                        fieldData = GetFieldData(rfosf.FieldName, rfosf.ComponentName, entry.Key, incrementId, true);
-                        // Prepare field
-                        sfField = new Field(rfosf.Name);
-                        sfField.DataState = DataStateEnum.UpdateResultFieldOutput;
-                        // Ratio
-                        sfFieldData = new FieldData(fieldData); // copy
-                        sfFieldData.Name = rfosf.Name;
-                        sfFieldData.Component = FOComponentNames.Ratio;
-                        sfFieldData.Unit = "/";
-                        sfField.AddComponent(sfFieldData.Component, new float[numNodes]);
-                        // Safety factor
-                        sfFieldData = new FieldData(fieldData); // copy
-                        sfFieldData.Name = rfosf.Name;
-                        sfFieldData.Component = FOComponentNames.SafetyFactor;
-                        sfFieldData.Unit = "/";
-                        sfField.AddComponent(sfFieldData.Component, new float[numNodes]);
-                        // Add field
-                        AddField(sfFieldData, sfField);
+                        sourceFieldName = rfoe.FieldName;
+                        sourceComponentName = rfoe.ComponentName;
+                        newFieldName = rfoe.Name;
+                        newComponentNames = rfoe.GetComponentNames();
+                        fieldData = GetFieldData(sourceFieldName, sourceComponentName, entry.Key, incrementId, true);
+                        unit = GetFieldUnitAbbrevation(fieldData);
                     }
                     else throw new NotSupportedException();
+                    // Get parent field
+                    fieldData = GetFieldData(sourceFieldName, sourceComponentName, entry.Key, incrementId, true);
+                    // Prepare field
+                    newField = new Field(newFieldName);
+                    newField.DataState = DataStateEnum.UpdateResultFieldOutput;
+                    //
+                    foreach (var componentName in newComponentNames)
+                    {
+                        newFieldData = new FieldData(fieldData); // copy
+                        newFieldData.Name = newFieldName;
+                        newFieldData.Component = componentName;
+                        newFieldData.Unit = unit;
+                        newField.AddComponent(newFieldData.Component, new float[numNodes]);
+                    }
+                    AddField(newFieldData, newField);
                 }
             }
         }
@@ -2404,14 +2435,14 @@ namespace CaeResults
                     {
                         resultFieldOutput = entry.Value;
                         //
-                        if (resultFieldOutput is ResultFieldOutputLimit rfosf)
+                        if (resultFieldOutput is ResultFieldOutputLimit rfol)
                         {
                             // Ratio
-                            sfFieldData = GetFieldData(rfosf.Name, FOComponentNames.Ratio, stepEntry.Key, incrementId, true);
+                            sfFieldData = GetFieldData(rfol.Name, FOComponentNames.Ratio, stepEntry.Key, incrementId, true);
                             sfField = GetField(sfFieldData, false);
                             if (sfField != null) sfField.DataState = DataStateEnum.UpdateResultFieldOutput;
                             // Safety factor
-                            sfFieldData = GetFieldData(rfosf.Name, FOComponentNames.SafetyFactor, stepEntry.Key,
+                            sfFieldData = GetFieldData(rfol.Name, FOComponentNames.SafetyFactor, stepEntry.Key,
                                                        incrementId, true);
                             sfField = GetField(sfFieldData, false);
                             if (sfField != null) sfField.DataState = DataStateEnum.UpdateResultFieldOutput;
@@ -2427,127 +2458,192 @@ namespace CaeResults
             //
             foreach (var entry in _resultFieldOutputs)
             {
-                if (entry.Value is ResultFieldOutputLimit rfosf)
+                if (fieldData.Name == entry.Value.Name && entry.Value.GetComponentNames().Contains(fieldData.Component))
                 {
-                    if (fieldData.Name == rfosf.Name &&
-                        (fieldData.Component == FOComponentNames.Ratio || fieldData.Component == FOComponentNames.SafetyFactor))
+                    foreach (var indResultFieldOutput in independencyList)
                     {
-                        foreach (var indResultFieldOutput in independencyList)
-                        {
-                            ComputeFieldFromResultFieldOutput(indResultFieldOutput, fieldData.StepId, fieldData.StepIncrementId);
-                        }
+                        ComputeFieldFromResultFieldOutput(indResultFieldOutput, fieldData.StepId, fieldData.StepIncrementId);
                     }
                 }
-                else throw new NotSupportedException();
             }
         }
         private void ComputeFieldFromResultFieldOutput(ResultFieldOutput resultFieldOutput, int stepId, int stepIncrementId)
         {
-            if (resultFieldOutput is ResultFieldOutputLimit rfosf)
+            FieldData sourceFieldData;
+            Field sourceField;
+            //
+            string[] componentNames;
+            float[][] values;
+            //
+            if (resultFieldOutput is ResultFieldOutputLimit rfol)
             {
-                FieldData fieldData;
-                FieldData sfFieldData;
-                Field field;
-                Field sfField;
-                FieldComponent sfComponent;
-                //
-                int resultsNodeId;
-                float itemLimit;
-                float[] valuesSafety = null;
-                float[] valuesRatio = null;
-                float[] limits = null;
-                //
-                fieldData = GetFieldData(rfosf.FieldName, rfosf.ComponentName, stepId, stepIncrementId, true);
-                field = GetField(fieldData);
-                if (field != null)
-                {
-                    valuesRatio = field.GetComponentValues(rfosf.ComponentName);
-                    if (valuesRatio != null)
-                    {
-                        limits = new float[valuesRatio.Length];
-                        //
-                        if (rfosf.LimitPlotBasedOn == LimitPlotBasedOnEnum.Parts)
-                        {
-                            // Collect limits for parts
-                            BasePart part;
-                            foreach (var itemEntry in rfosf.ItemNameLimit)
-                            {
-                                if (_mesh.Parts.TryGetValue(itemEntry.Key, out part))
-                                {
-                                    itemLimit = (float)itemEntry.Value;
-                                    if (itemLimit == 0) throw new NotSupportedException();
-                                    //
-                                    foreach (var nodeId in part.NodeLabels)
-                                    {
-                                        resultsNodeId = _nodeIdsLookUp[nodeId];
-                                        if (limits[resultsNodeId] != 0)
-                                            limits[resultsNodeId] = Math.Min(limits[resultsNodeId],
-                                                                                   itemLimit);
-                                        else limits[resultsNodeId] = itemLimit;
-                                    }
-                                }
-                            }
-                        }
-                        else if (rfosf.LimitPlotBasedOn == LimitPlotBasedOnEnum.ElementSets)
-                        {
-                            // Collect limits for element sets
-                            FeElementSet elementSet;
-                            foreach (var itemEntry in rfosf.ItemNameLimit)
-                            {
-                                if (_mesh.ElementSets.TryGetValue(itemEntry.Key, out elementSet) ||
-                                    itemEntry.Key == ResultFieldOutputLimit.AllElementsName)
-                                {
-                                    if (itemEntry.Key == ResultFieldOutputLimit.AllElementsName)
-                                        elementSet = new FeElementSet("tmp", _nodeIdsLookUp.Keys.ToArray());
-                                    //
-                                    itemLimit = (float)itemEntry.Value;
-                                    if (itemLimit == 0) throw new NotSupportedException();
-                                    //
-                                    foreach (var nodeId in elementSet.Labels)
-                                    {
-                                        resultsNodeId = _nodeIdsLookUp[nodeId];
-                                        if (limits[resultsNodeId] != 0)
-                                            limits[resultsNodeId] = Math.Min(limits[resultsNodeId],
-                                                                                   itemLimit);
-                                        else limits[resultsNodeId] = itemLimit;
-                                    }
-                                }
-                            }
-                        }
-                        else throw new NotSupportedException();
-                    }
-                }
-                //
-                if (valuesRatio != null)
-                {
-                    valuesRatio = valuesRatio.ToArray(); // copy
-                    valuesSafety = valuesRatio.ToArray(); 
-                    // Compute values
-                    for (int i = 0; i < limits.Length; i++)
-                    {
-                        // Ratio
-                        valuesRatio[i] = valuesRatio[i] / limits[i];
-                        // Safety factor
-                        if (valuesSafety[i] == 0) valuesSafety[i] = float.NaN; // this can happen after some parts are renamed
-                        else valuesSafety[i] = limits[i] / valuesSafety[i];
-                    }
-                }
-                // Ratio
-                sfFieldData = GetFieldData(rfosf.Name, FOComponentNames.Ratio, stepId, stepIncrementId);
-                sfField = GetField(sfFieldData, false);
-                sfComponent = new FieldComponent(sfFieldData.Component, valuesRatio);
-                sfField.ReplaceComponent(sfComponent.Name, sfComponent);
-                sfField.DataState = DataStateEnum.OK;
-                ReplaceOrAddField(sfFieldData, sfField);
-                // Safety factor
-                sfFieldData = GetFieldData(rfosf.Name, FOComponentNames.SafetyFactor, stepId, stepIncrementId);
-                sfField = GetField(sfFieldData, false);
-                sfComponent = new FieldComponent(sfFieldData.Component, valuesSafety);
-                sfField.ReplaceComponent(sfComponent.Name, sfComponent);
-                sfField.DataState = DataStateEnum.OK;
-                ReplaceOrAddField(sfFieldData, sfField);
+                sourceFieldData = GetFieldData(rfol.FieldName, rfol.ComponentName, stepId, stepIncrementId, true);
+                sourceField = GetField(sourceFieldData);
+                componentNames = rfol.GetComponentNames();
+                values = ComputeFieldFromResultFieldOutputLimit(rfol, sourceField);
+            }
+            else if (resultFieldOutput is ResultFieldOutputEnvelope rfoe)
+            {
+                componentNames = rfoe.GetComponentNames();
+                values = ComputeFieldFromResultFieldOutputEnvelope(rfoe);
             }
             else throw new NotSupportedException();
+            //
+            int count = 0;
+            FieldData newFieldData;
+            Field newField;
+            FieldComponent newComponent;
+            foreach (var componentName in componentNames)
+            {
+                newFieldData = GetFieldData(resultFieldOutput.Name, componentName, stepId, stepIncrementId);
+                newField = GetField(newFieldData, false);
+                newComponent = new FieldComponent(newFieldData.Component, values[count++]);
+                newField.ReplaceComponent(newComponent.Name, newComponent);
+                newField.DataState = DataStateEnum.OK;
+                ReplaceOrAddField(newFieldData, newField);
+            }
+        }
+        private float[][] ComputeFieldFromResultFieldOutputLimit(ResultFieldOutputLimit resultFieldOutputLimit, Field sourceField)
+        {
+            int resultsNodeId;
+            float itemLimit;
+            float[] valuesSafety = null;
+            float[] valuesRatio = null;
+            float[] limits = null;
+            //
+            if (sourceField != null)
+            {
+                valuesRatio = sourceField.GetComponentValues(resultFieldOutputLimit.ComponentName);
+                if (valuesRatio != null)
+                {
+                    limits = new float[valuesRatio.Length];
+                    //
+                    if (resultFieldOutputLimit.LimitPlotBasedOn == LimitPlotBasedOnEnum.Parts)
+                    {
+                        // Collect limits for parts
+                        BasePart part;
+                        foreach (var itemEntry in resultFieldOutputLimit.ItemNameLimit)
+                        {
+                            if (_mesh.Parts.TryGetValue(itemEntry.Key, out part))
+                            {
+                                itemLimit = (float)itemEntry.Value;
+                                if (itemLimit == 0) throw new NotSupportedException();
+                                //
+                                foreach (var nodeId in part.NodeLabels)
+                                {
+                                    resultsNodeId = _nodeIdsLookUp[nodeId];
+                                    if (limits[resultsNodeId] != 0)
+                                        limits[resultsNodeId] = Math.Min(limits[resultsNodeId],
+                                                                                itemLimit);
+                                    else limits[resultsNodeId] = itemLimit;
+                                }
+                            }
+                        }
+                    }
+                    else if (resultFieldOutputLimit.LimitPlotBasedOn == LimitPlotBasedOnEnum.ElementSets)
+                    {
+                        // Collect limits for element sets
+                        FeElementSet elementSet;
+                        foreach (var itemEntry in resultFieldOutputLimit.ItemNameLimit)
+                        {
+                            if (_mesh.ElementSets.TryGetValue(itemEntry.Key, out elementSet) ||
+                                itemEntry.Key == ResultFieldOutputLimit.AllElementsName)
+                            {
+                                if (itemEntry.Key == ResultFieldOutputLimit.AllElementsName)
+                                    elementSet = new FeElementSet("tmp", _mesh.Elements.Keys.ToArray());
+                                //
+                                itemLimit = (float)itemEntry.Value;
+                                if (itemLimit == 0) throw new NotSupportedException();
+                                //
+                                foreach (var nodeId in _mesh.GetNodeIdsFromElementSet(elementSet))
+                                {
+                                    resultsNodeId = _nodeIdsLookUp[nodeId];
+                                    if (limits[resultsNodeId] != 0)
+                                        limits[resultsNodeId] = Math.Min(limits[resultsNodeId], itemLimit);
+                                    else limits[resultsNodeId] = itemLimit;
+                                }
+                            }
+                        }
+                    }
+                    else throw new NotSupportedException();
+                }
+            }
+            //
+            if (valuesRatio != null)
+            {
+                valuesRatio = valuesRatio.ToArray(); // copy
+                valuesSafety = valuesRatio.ToArray();
+                // Compute values
+                for (int i = 0; i < limits.Length; i++)
+                {
+                    // Ratio
+                    valuesRatio[i] = valuesRatio[i] / limits[i];
+                    // Safety factor
+                    if (valuesSafety[i] == 0) valuesSafety[i] = float.NaN; // this can happen after some parts are renamed
+                    else valuesSafety[i] = limits[i] / valuesSafety[i];
+                }
+            }
+            //
+            return new float[][] { valuesRatio, valuesSafety };
+        }
+        private float[][] ComputeFieldFromResultFieldOutputEnvelope(ResultFieldOutputEnvelope resultFieldOutputEnvelope)
+        {
+            FieldData sourceFieldData;
+            Field sourceField;
+            //
+            int stepId;
+            int stepIncrementId;
+            float[] values = null;
+            float[] max = null;
+            float[] min = null;
+            float[] average = null;
+            List<float[]> allValues = new List<float[]>();
+            //
+            Dictionary<int, int[]> stepIdIncrementId = GetAllExistingIncrementIds();
+            foreach (var entry in stepIdIncrementId)
+            {
+                stepId = entry.Key;
+                for (int i = 0; i < entry.Value.Length; i++)
+                {
+                    stepIncrementId = entry.Value[i];
+                    sourceFieldData = GetFieldData(resultFieldOutputEnvelope.FieldName, resultFieldOutputEnvelope.ComponentName,
+                                                   stepId, stepIncrementId, true);
+                    sourceField = GetField(sourceFieldData);
+                    //
+                    if (sourceField != null)
+                    {
+                        values = sourceField.GetComponentValues(resultFieldOutputEnvelope.ComponentName);
+                        if (values != null) allValues.Add(values);
+                    }
+                }
+            }
+            //
+            if (values.Count() > 0)
+            {
+                max = new float[values.Length];
+                min = new float[values.Length];
+                average = new float[values.Length];
+                //
+                for (int i = 0; i < values.Length; i++)
+                {
+                    max[i] = -float.MaxValue;
+                    min[i] = float.MaxValue;
+                }
+                //
+                foreach (var resultValues in allValues)
+                {
+                    for (int i = 0; i < resultValues.Length; i++)
+                    {
+                        if (resultValues[i] > max[i]) max[i] = resultValues[i];
+                        if (resultValues[i] < min[i]) min[i] = resultValues[i];
+                        average[i] += resultValues[i];
+                    }
+                }
+                //
+                for (int i = 0; i < average.Length; i++) average[i] /= allValues.Count();
+            }
+            //
+            return new float[][] { max, min, average };
         }
         private List<ResultFieldOutput> GetResultFieldOutputIndependencyList()
         {

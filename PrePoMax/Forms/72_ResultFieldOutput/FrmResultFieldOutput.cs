@@ -32,10 +32,12 @@ namespace PrePoMax.Forms
             {
                 var clone = value.DeepClone();
                 if (clone == null) _viewResultFieldOutput = null;
-                else if (clone is ResultFieldOutputLimit rfosf)
-                    _viewResultFieldOutput = new ViewResultFieldOutputLimit(rfosf, _controller.GetResultPartNames(),
-                                                                                   _controller.GetResultUserElementSetNames(),
-                                                                                   ref _propertyItemChanged);
+                else if (clone is ResultFieldOutputLimit rfol)
+                    _viewResultFieldOutput = new ViewResultFieldOutputLimit(rfol, _controller.GetResultPartNames(),
+                                                                            _controller.GetResultUserElementSetNames(),
+                                                                            ref _propertyItemChanged);
+                else if (clone is ResultFieldOutputEnvelope rfoe)
+                    _viewResultFieldOutput = new ViewResultFieldOutputEnvelope(rfoe);
                 else throw new NotImplementedException();
             }
         }
@@ -137,12 +139,15 @@ namespace PrePoMax.Forms
         {
             string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
             //
-            if (_viewResultFieldOutput is ViewResultFieldOutputLimit vrfosf)
+            if (_viewResultFieldOutput is ViewResultFieldOutputLimit vrfol)
             {
-                if (property == nameof(vrfosf.LimitPlotBasedOn))
+                if (property == nameof(vrfol.LimitPlotBasedOn))
                 {
-                    SetDataGridView(vrfosf);
+                    SetTabPages(vrfol);
                 }
+            }
+            else if (_viewResultFieldOutput is ViewResultFieldOutputEnvelope vrfoe)
+            {
             }
             //
             base.OnPropertyGridPropertyValueChanged();
@@ -152,7 +157,7 @@ namespace PrePoMax.Forms
             if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count == 1)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
-                SetDataGridView(itemTag);
+                SetTabPages(itemTag);
                 //
                 propertyGrid.SelectedObject = lvTypes.SelectedItems[0].Tag;
                 propertyGrid.Select();
@@ -236,16 +241,27 @@ namespace PrePoMax.Forms
                 _propertyItemChanged = !ResultFieldOutput.Valid;
                 //
                 int selectedId;
-                if (_viewResultFieldOutput is ViewResultFieldOutputLimit vrfosf)
+                if (_viewResultFieldOutput is ViewResultFieldOutputLimit vrfol)
                 {
                     selectedId = 0;
                     // Check
                     string[] fieldNames = filedNameComponentNames.Keys.ToArray();
-                    CheckMissingValueRef(ref fieldNames, vrfosf.FieldName, s => { vrfosf.FieldName = s; });
-                    string[] componentNames = filedNameComponentNames[vrfosf.FieldName];
-                    CheckMissingValueRef(ref componentNames, vrfosf.ComponentName, s => { vrfosf.ComponentName = s; });
+                    CheckMissingValueRef(ref fieldNames, vrfol.FieldName, s => { vrfol.FieldName = s; });
+                    string[] componentNames = filedNameComponentNames[vrfol.FieldName];
+                    CheckMissingValueRef(ref componentNames, vrfol.ComponentName, s => { vrfol.ComponentName = s; });
                     //
-                    vrfosf.PopulateDropDownLists(filedNameComponentNames);
+                    vrfol.PopulateDropDownLists(filedNameComponentNames);
+                }
+                else if (_viewResultFieldOutput is ViewResultFieldOutputEnvelope vrfoe)
+                {
+                    selectedId = 1;
+                    // Check
+                    string[] fieldNames = filedNameComponentNames.Keys.ToArray();
+                    CheckMissingValueRef(ref fieldNames, vrfoe.FieldName, s => { vrfoe.FieldName = s; });
+                    string[] componentNames = filedNameComponentNames[vrfoe.FieldName];
+                    CheckMissingValueRef(ref componentNames, vrfoe.ComponentName, s => { vrfoe.ComponentName = s; });
+                    //
+                    vrfoe.PopulateDropDownLists(filedNameComponentNames);
                 }
                 else throw new NotSupportedException();
                 //
@@ -295,9 +311,9 @@ namespace PrePoMax.Forms
             //
             return name;
         }
-        private void SetDataGridView(object item)
+        private void SetTabPages(object item)
         {
-            if (item is ViewResultFieldOutputLimit vrfosf)
+            if (item is ViewResultFieldOutputLimit vrfol)
             {
                 // Clear
                 dgvData.DataSource = null;
@@ -308,7 +324,7 @@ namespace PrePoMax.Forms
                 tcProperties.TabPages.Add(_pages[1]);   // data points
                 _pages[1].Text = "Limit Values";
                 //
-                SetDataGridViewBinding(vrfosf.DataPoints);
+                SetDataGridViewBinding(vrfol.DataPoints);
                 //
                 dgvData.AllowUserToAddRows = false;
                 dgvData.AllowUserToDeleteRows = false;
@@ -318,7 +334,18 @@ namespace PrePoMax.Forms
                 //
                 dgvData.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 //
-                _viewResultFieldOutput = vrfosf;
+                _viewResultFieldOutput = vrfol;
+            }
+            else if (item is ViewResultFieldOutputEnvelope vrfoe)
+            {
+                // Clear
+                dgvData.DataSource = null;
+                dgvData.Columns.Clear();
+                tcProperties.TabPages.Clear();
+                //
+                tcProperties.TabPages.Add(_pages[0]);   // properites
+                //
+                _viewResultFieldOutput = vrfoe;
             }
             else throw new NotImplementedException();
         }

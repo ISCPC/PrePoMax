@@ -57,7 +57,7 @@ namespace CaeResults
         }
         public override string[] GetComponentNames()
         {
-            return new string[] { FOComponentNames.Min, FOComponentNames.Max, FOComponentNames.Average };
+            return new string[] { FOComponentNames.Max, FOComponentNames.Min, FOComponentNames.Average };
         }
     }
 }
