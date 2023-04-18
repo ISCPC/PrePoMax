@@ -23,6 +23,8 @@ using System.Collections.ObjectModel;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using PrePoMax.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
+using System.Security.Policy;
 
 namespace PrePoMax
 {
@@ -1400,7 +1402,7 @@ namespace PrePoMax
                 return null;
             }
         }        
-        void netgenJob_AppendOutput(string data)
+        private void netgenJob_AppendOutput(string data)
         {
             _form.WriteDataToOutput(data);
         }
@@ -4389,16 +4391,26 @@ namespace PrePoMax
             if (_model.Mesh == null) return null;
             //
             List<MeshPart> parts = new List<MeshPart>();
-            BasePart part = null;
             foreach (var entry in _model.Mesh.Parts)
             {
-                if (_model.Geometry != null) _model.Geometry.Parts.TryGetValue(entry.Key, out part);
-                if (part == null || (part != null && part is GeometryPart gp && gp.CADFileData == null))
-                {
-                    parts.Add((MeshPart)entry.Value);
-                }
+                if (!IsBasePartBasedOnGeoemtry(entry.Value)) parts.Add((MeshPart)entry.Value);
             }
             return parts.ToArray();
+        }
+        private bool IsBasePartBasedOnGeoemtry(BasePart part)
+        {
+            BasePart geometryPart;
+            if (_model.Geometry == null) return false;
+            else _model.Geometry.Parts.TryGetValue(part.Name, out geometryPart);
+            //
+            if (part is MeshPart mp && mp.CreatedFromBasePart) return false;
+            //
+            if (part is ResultPart rp && rp.CreatedFromBasePart) return false;
+            //
+            if (geometryPart == null) return false;
+            else if (geometryPart is GeometryPart gp && gp.CADFileData == null) return false;
+            //
+            return true;
         }
         public string[] GetModelPartNames<T>()
         {
@@ -7226,10 +7238,13 @@ namespace PrePoMax
             BoundaryCondition boundaryCondition = GetBoundaryCondition(stepName, boundaryConditionName).DeepClone();
             foreach (var nextStepName in nextStepNames)
             {
-                if (_model.StepCollection.GetStep(nextStepName).BoundaryConditions.ContainsKey(boundaryConditionName))
-                    ReplaceBoundaryCondition(nextStepName, boundaryConditionName, boundaryCondition, true);
-                else
-                    AddBoundaryCondition(nextStepName, boundaryCondition);
+                if (_model.StepCollection.GetStep(nextStepName).IsBoundaryConditionSupported(boundaryCondition))
+                {
+                    if (_model.StepCollection.GetStep(nextStepName).BoundaryConditions.ContainsKey(boundaryConditionName))
+                        ReplaceBoundaryCondition(nextStepName, boundaryConditionName, boundaryCondition, true);
+                    else
+                        AddBoundaryCondition(nextStepName, boundaryCondition);
+                }
             }
         }
         public void HideBoundaryConditions(string stepName, string[] boundaryConditionNames)
@@ -7399,10 +7414,13 @@ namespace PrePoMax
             Load load = GetLoad(stepName, loadName).DeepClone();
             foreach (var nextStepName in nextStepNames)
             {
-                if (_model.StepCollection.GetStep(nextStepName).Loads.ContainsKey(loadName))
-                    ReplaceLoad(nextStepName, loadName, load, true);
-                else
-                    AddLoad(nextStepName, load);
+                if (_model.StepCollection.GetStep(nextStepName).IsLoadSupported(load))
+                {
+                    if (_model.StepCollection.GetStep(nextStepName).Loads.ContainsKey(loadName))
+                        ReplaceLoad(nextStepName, loadName, load, true);
+                    else
+                        AddLoad(nextStepName, load);
+                }
             }
         }
         public void PreviewLoad(string stepName, string loadName)

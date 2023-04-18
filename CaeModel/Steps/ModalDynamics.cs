@@ -68,7 +68,7 @@ namespace CaeModel
         {
             if (boundaryCondition is FixedBC || 
                 boundaryCondition is DisplacementRotation)
-                return true;
+                return false;
             else if (boundaryCondition is SubmodelBC ||
                      boundaryCondition is TemperatureBC)
                 return false;
@@ -87,7 +87,7 @@ namespace CaeModel
                 loadType == typeof(CentrifLoad) ||
                 loadType == typeof(PreTensionLoad))
             {
-                return true;
+                return false;
             }
             else if (loadType == typeof(CFlux) ||
                      loadType == typeof(DFlux) ||

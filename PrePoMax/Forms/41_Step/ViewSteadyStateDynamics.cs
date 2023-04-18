@@ -20,10 +20,17 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
+
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(3, 10, "Harmonic")]
-        [DescriptionAttribute("Select yes for harmonic periodic loading and no for nonharmonic periodic loading.")]
+        [OrderedDisplayName(3, 10, "Perturbation")]
+        [DescriptionAttribute("Perturbation parameter set to On applies preloads from the previous step if it exists.")]
         [Id(4, 1)]
+        public bool Perturbation { get { return _steadyStep.Perturbation; } set { _steadyStep.Perturbation = value; } }
+
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(4, 10, "Harmonic")]
+        [DescriptionAttribute("Select yes for harmonic periodic loading and no for nonharmonic periodic loading.")]
+        [Id(5, 1)]
         public bool Harmonic
         {
             get { return _steadyStep.Harmonic; }
@@ -35,58 +42,58 @@ namespace PrePoMax
         }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(4, 10, "Lower frequency bound")]
+        [OrderedDisplayName(5, 10, "Lower frequency bound")]
         [DescriptionAttribute("Lower bound of the frequency range.")]
         [TypeConverter(typeof(StringFrequencyConverter))]
-        [Id(5, 1)]
+        [Id(6, 1)]
         public double LowerFrequency { get { return _steadyStep.LowerFrequency; } set { _steadyStep.LowerFrequency = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(5, 10, "Upper frequency bound")]
+        [OrderedDisplayName(6, 10, "Upper frequency bound")]
         [DescriptionAttribute("Upper bound of the frequency range.")]
         [TypeConverter(typeof(StringFrequencyConverter))]
-        [Id(6, 1)]
+        [Id(7, 1)]
         public double UpperFrequency { get { return _steadyStep.UpperFrequency; } set { _steadyStep.UpperFrequency = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(6, 10, "Number of data points")]
+        [OrderedDisplayName(7, 10, "Number of data points")]
         [DescriptionAttribute("Number of data points within the frequency range.")]
         [TypeConverter(typeof(StringIntegerConverter))]
-        [Id(7, 1)]
+        [Id(8, 1)]
         public int NumDataPoints { get { return _steadyStep.NumDataPoints; } set { _steadyStep.NumDataPoints = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(7, 10, "Bias")]
+        [OrderedDisplayName(8, 10, "Bias")]
         [DescriptionAttribute("Distribution bias of the data points within the frequency range (use 1 for equal spacing).")]
         [TypeConverter(typeof(StringDoubleConverter))]
-        [Id(8, 1)]
+        [Id(9, 1)]
         public double Bias { get { return _steadyStep.Bias; } set { _steadyStep.Bias = value; } }
         //
-        [CategoryAttribute("Data")]
-        [OrderedDisplayName(8, 10, "Number of Fourier terms")]
+        [CategoryAttribute("Time")]
+        [OrderedDisplayName(0, 10, "Number of Fourier terms")]
         [DescriptionAttribute("Number of Fourier terms the nonharmonic loading is expanded in.")]
         [TypeConverter(typeof(StringIntegerConverter))]
-        [Id(9, 1)]
+        [Id(1, 2)]
         public int NumFourierTerms { get { return _steadyStep.NumFourierTerms; } set { _steadyStep.NumFourierTerms = value; } }
         //
-        [CategoryAttribute("Data")]
-        [OrderedDisplayName(9, 10, "Lower time bound")]
+        [CategoryAttribute("Time")]
+        [OrderedDisplayName(1, 10, "Lower time bound")]
         [DescriptionAttribute("Lower bound of the time range.")]
         [TypeConverter(typeof(StringTimeConverter))]
-        [Id(10, 1)]
+        [Id(2, 2)]
         public double TimeLower { get { return _steadyStep.TimeLower; } set { _steadyStep.TimeLower = value; } }
         //
-        [CategoryAttribute("Data")]
-        [OrderedDisplayName(10, 10, "Upper time bound")]
+        [CategoryAttribute("Time")]
+        [OrderedDisplayName(2, 10, "Upper time bound")]
         [DescriptionAttribute("Upper bound of the time range.")]
         [TypeConverter(typeof(StringTimeConverter))]
-        [Id(11, 1)]
+        [Id(3, 2)]
         public double TimeUpper { get { return _steadyStep.TimeUpper; } set { _steadyStep.TimeUpper = value; } }
         //
         [CategoryAttribute("Damping")]
         [OrderedDisplayName(0, 10, "Damping type")]
         [DescriptionAttribute("Select the modal damping type.")]
-        [Id(1, 2)]
+        [Id(1, 3)]
         public ModalDampingTypeEnum DampingType
         {
             get { return _steadyStep.ModalDamping.DampingType; }
@@ -101,20 +108,20 @@ namespace PrePoMax
         [OrderedDisplayName(1, 10, "Alpha")]
         [DescriptionAttribute("Mass-proportional damping coefficient of the Rayleigh damping.")]
         [TypeConverter(typeof(StringReciprocalTimeConverter))]
-        [Id(2, 2)]
+        [Id(2, 3)]
         public double Alpha { get { return _steadyStep.ModalDamping.Alpha; } set { _steadyStep.ModalDamping.Alpha = value; } }
         //
         [CategoryAttribute("Damping")]
         [OrderedDisplayName(2, 10, "Beta")]
         [DescriptionAttribute("Stiffness-proportional damping coefficient of the Rayleigh damping.")]
         [TypeConverter(typeof(StringTimeConverter))]
-        [Id(3, 2)]
+        [Id(3, 3)]
         public double Beta { get { return _steadyStep.ModalDamping.Beta; } set { _steadyStep.ModalDamping.Beta = value; } }
         //
         [CategoryAttribute("Damping")]
         [OrderedDisplayName(3, 10, "Damping ratio")]
         [DescriptionAttribute("Viscous damping ratio between the damping coefficient and the critical damping coefficient.")]
-        [Id(4, 2)]
+        [Id(4, 3)]
         public double ViscousDampingRatio
         {
             get { return _steadyStep.ModalDamping.ViscousDampingRatio; }
@@ -124,7 +131,7 @@ namespace PrePoMax
         [OrderedDisplayName(3, 10, "Damping ratios")]
         [DescriptionAttribute("Viscous damping ratios between the damping coefficient and the critical damping coefficient.")]
         [Editor(typeof(Forms.DampingRatiosAndValuesUIEditor), typeof(UITypeEditor))]
-        [Id(4, 2)]
+        [Id(4, 3)]
         public List<DampingRatioAndRange> DampingRatiosAndRanges
         {
             get { return _steadyStep.ModalDamping.DampingRatiosAndRanges; }

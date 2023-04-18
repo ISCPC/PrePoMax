@@ -633,29 +633,32 @@ namespace CaeResults
                 }
             }
             double[][] values = valuesList.ToArray();   // [row][col]
-            int delta = values[0].Length - componentNames.Length;
-            for (int col = delta; col < values[0].Length; col++)  // first value in a row is time
+            if (values != null && values.Length > 0)
             {
-                historyResultEntries = new HistoryResultEntries(componentNames[col - delta], false);
-                totalHistoryResultEntries = new HistoryResultEntries(componentNames[col - delta], false);
-                //
-                for (int row = 0; row < values.Length; row++)
+                int delta = values[0].Length - componentNames.Length;
+                for (int col = delta; col < values[0].Length; col++)  // first value in a row is time
                 {
-                    if (delta == 1) time = values[row][0];
-                    else time = row + 1;
+                    historyResultEntries = new HistoryResultEntries(componentNames[col - delta], false);
+                    totalHistoryResultEntries = new HistoryResultEntries(componentNames[col - delta], false);
                     //
-                    if (double.IsNaN(time)) totalHistoryResultEntries.Add(1, values[row][col]);
-                    else historyResultEntries.Add(time, values[row][col]);
+                    for (int row = 0; row < values.Length; row++)
+                    {
+                        if (delta == 1) time = values[row][0];
+                        else time = row + 1;
+                        //
+                        if (double.IsNaN(time)) totalHistoryResultEntries.Add(1, values[row][col]);
+                        else historyResultEntries.Add(time, values[row][col]);
+                    }
+                    historyResultComponent.Entries.Add(historyResultEntries.Name, historyResultEntries);
+                    if (totalHistoryResultEntries.Time.Count > 0)
+                        totalHistoryResultComponent.Entries.Add(totalHistoryResultEntries.Name, totalHistoryResultEntries);
                 }
-                historyResultComponent.Entries.Add(historyResultEntries.Name, historyResultEntries);
-                if (totalHistoryResultEntries.Time.Count > 0)
-                    totalHistoryResultComponent.Entries.Add(totalHistoryResultEntries.Name, totalHistoryResultEntries);
+                historyResultField.Components.Add(historyResultComponent.Name, historyResultComponent);
+                if (totalHistoryResultComponent.Entries.Count > 0)
+                    historyResultField.Components.Add(totalHistoryResultComponent.Name, totalHistoryResultComponent);
+                historyResultSet.Fields.Add(historyResultField.Name, historyResultField);
+                historyResults.Sets.Add(historyResultSet.Name, historyResultSet);
             }
-            historyResultField.Components.Add(historyResultComponent.Name, historyResultComponent);
-            if (totalHistoryResultComponent.Entries.Count > 0)
-                historyResultField.Components.Add(totalHistoryResultComponent.Name, totalHistoryResultComponent);
-            historyResultSet.Fields.Add(historyResultField.Name, historyResultField);
-            historyResults.Sets.Add(historyResultSet.Name, historyResultSet);
             //
             return historyResults;
         }

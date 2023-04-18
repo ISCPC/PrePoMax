@@ -1418,7 +1418,7 @@ namespace CaeMesh
         {
             part.Visualization.EdgeCellIdsByEdge = null;
             // Build part edges map
-            CompareIntArray comparer = new CompareIntArray();
+            //
             // This are edge cells connected to the node
             Dictionary<int, List<int>> nodeEdgeCellIds = new Dictionary<int, List<int>>();  
             List<int> edgeCellIds;
