@@ -118,6 +118,15 @@ namespace PrePoMax
         [DescriptionAttribute("Output harmonic oscillations as the history output.")]
         public bool Harmonic { get { return _historyOutput.Harmonic; } set { _historyOutput.Harmonic = value; } }
         //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(8, 10, "Node coordinates")]
+        [DescriptionAttribute("Output node coordinates in the history output.")]
+        public OutputNodeCoordinatesEnum OutputNodeCoordinates
+        {
+            get { return _historyOutput.OutputNodeCoordinates; }
+            set { _historyOutput.OutputNodeCoordinates = value; }
+        }
+        //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Node set")]
         [DescriptionAttribute("Select the node set for the creation of the history output.")]
@@ -178,6 +187,7 @@ namespace PrePoMax
                 _stepIdStepIncrementIds.Add(stepEntry.Key.ToString(), incrementIds.ToArray());
             }
             DynamicCustomTypeDescriptor.PopulateProperty(nameof(StepId), _stepIdStepIncrementIds.Keys.ToArray());
+            //
             UpdateStepIncrements();
         }
         private void UpdateComponents()

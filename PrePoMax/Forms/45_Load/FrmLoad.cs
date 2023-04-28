@@ -707,7 +707,7 @@ namespace PrePoMax.Forms
             Step step = _controller.GetStep(_stepName);
             System.Drawing.Color color = _controller.Settings.Pre.LoadSymbolColor;
             bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
-            bool complex = step is SteadyStateDynamics;
+            bool complex = step is SteadyStateDynamicsStep;
             // Populate list view
             ListViewItem item;
             string name;

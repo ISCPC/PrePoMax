@@ -9,7 +9,7 @@ using System.Runtime.Serialization;
 namespace CaeModel
 {
     [Serializable]
-    public class SteadyStateDynamics : Step, ISerializable
+    public class SteadyStateDynamicsStep : Step, ISerializable
     {
         // Variables                                                                                                                
         private bool _harmonic;             //ISerializable
@@ -78,7 +78,7 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public SteadyStateDynamics(string name)
+        public SteadyStateDynamicsStep(string name)
             :base(name)
         {
             _harmonic = true;
@@ -95,7 +95,7 @@ namespace CaeModel
             AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S));
         }
         //ISerializable
-        public SteadyStateDynamics(SerializationInfo info, StreamingContext context)
+        public SteadyStateDynamicsStep(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             foreach (SerializationEntry entry in info)

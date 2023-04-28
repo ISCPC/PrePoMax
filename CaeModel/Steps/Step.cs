@@ -143,7 +143,7 @@ namespace CaeModel
         {
             if (IsBoundaryConditionSupported(boundaryCondition))
             {
-                boundaryCondition.Complex = this is SteadyStateDynamics;
+                boundaryCondition.Complex = this is SteadyStateDynamicsStep;
                 _boundayConditions.Add(boundaryCondition.Name, boundaryCondition);
             }
         }
@@ -151,7 +151,7 @@ namespace CaeModel
         {
             if (IsBoundaryConditionSupported(boundaryCondition))
             {
-                boundaryCondition.Complex = this is SteadyStateDynamics;
+                boundaryCondition.Complex = this is SteadyStateDynamicsStep;
                 _boundayConditions.Replace(oldBoundaryConditionName, boundaryCondition.Name, boundaryCondition);
             }
         }
@@ -164,7 +164,7 @@ namespace CaeModel
         {
             if (IsLoadSupported(load))
             {
-                load.Complex = this is SteadyStateDynamics;
+                load.Complex = this is SteadyStateDynamicsStep;
                 _loads.Add(load.Name, load);
             }
         }
@@ -172,7 +172,7 @@ namespace CaeModel
         {
             if (IsLoadSupported(load))
             {
-                load.Complex = this is SteadyStateDynamics;
+                load.Complex = this is SteadyStateDynamicsStep;
                 _loads.Replace(oldLoadName, load.Name, load);
             }
         }

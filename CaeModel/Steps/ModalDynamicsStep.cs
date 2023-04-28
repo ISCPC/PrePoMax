@@ -9,7 +9,7 @@ using System.Runtime.Serialization;
 namespace CaeModel
 {
     [Serializable]
-    public class ModalDynamics : StaticStep, ISerializable
+    public class ModalDynamicsStep : StaticStep, ISerializable
     {
         // Variables                                                                                                                
         private bool _steadyState;          //ISerializable
@@ -34,18 +34,19 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public ModalDynamics(string name)
+        public ModalDynamicsStep(string name)
             :base(name, true)
         {
             _steadyState = false;
             _modalDamping = new ModalDamping();
             _relativeError = 0.01;
             //
+            _incrementationType = IncrementationTypeEnum.Automatic; // must be different from default to writhe max num increments
             InitialTimeIncrement = 0.1;
             TimePeriod = 1;
         }
         //ISerializable
-        public ModalDynamics(SerializationInfo info, StreamingContext context)
+        public ModalDynamicsStep(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             foreach (SerializationEntry entry in info)
@@ -87,7 +88,7 @@ namespace CaeModel
                 loadType == typeof(CentrifLoad) ||
                 loadType == typeof(PreTensionLoad))
             {
-                return false;
+                return true;
             }
             else if (loadType == typeof(CFlux) ||
                      loadType == typeof(DFlux) ||

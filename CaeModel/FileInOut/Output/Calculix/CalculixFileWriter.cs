@@ -853,9 +853,9 @@ namespace FileInOut.Output
                         CalBuckleStep calBuckleStep = new CalBuckleStep(buckleStep);
                         calStep.AddKeyword(calBuckleStep);
                     }
-                    else if (step is ModalDynamics modalStep)
+                    else if (step is ModalDynamicsStep modalStep)
                     {
-                        CalModalDynamics calModalStep = new CalModalDynamics(modalStep);
+                        CalModalDynamicsStep calModalStep = new CalModalDynamicsStep(modalStep);
                         calStep.AddKeyword(calModalStep);
                         // Damping
                         if (modalStep.ModalDamping.DampingType != ModalDampingTypeEnum.Off)
@@ -866,9 +866,9 @@ namespace FileInOut.Output
                             calStep.AddKeyword(damping);
                         }
                     }
-                    else if (step is SteadyStateDynamics steadyStep)
+                    else if (step is SteadyStateDynamicsStep steadyStep)
                     {
-                        CalSteadyStateDynamics calSteadyStep = new CalSteadyStateDynamics(steadyStep);
+                        CalSteadyStateDynamicsStep calSteadyStep = new CalSteadyStateDynamicsStep(steadyStep);
                         calStep.AddKeyword(calSteadyStep);
                         // Damping
                         if (steadyStep.ModalDamping.DampingType != ModalDampingTypeEnum.Off)
@@ -884,6 +884,14 @@ namespace FileInOut.Output
                         DynamicStep dynamicStep = step as DynamicStep;
                         CalDynamicStep calDynamicStep = new CalDynamicStep(dynamicStep);
                         calStep.AddKeyword(calDynamicStep);
+                        // Damping
+                        if (dynamicStep.Damping.DampingType != DampingTypeEnum.Off)
+                        {
+                            CalTitle damping = new CalTitle("Damping", "");
+                            CalDamping calDamping = new CalDamping(dynamicStep.Damping);
+                            damping.AddKeyword(calDamping);
+                            calStep.AddKeyword(damping);
+                        }
                     }
                     else if (step.GetType() == typeof(HeatTransferStep))
                     {
@@ -907,7 +915,7 @@ namespace FileInOut.Output
                 }
                 else calStep.AddKeyword(new CalDeactivated(step.GetType().ToString()));
                 // Boundary conditions
-                if (step.Active && !(step is ModalDynamics)) title = new CalTitle("Boundary conditions", "*Boundary, op=New");
+                if (step.Active && !(step is ModalDynamicsStep)) title = new CalTitle("Boundary conditions", "*Boundary, op=New");
                 else title = new CalTitle("Boundary conditions", "");
                 calStep.AddKeyword(title);
                 //
@@ -1008,7 +1016,7 @@ namespace FileInOut.Output
             //
             AppendBoundaryCondition(model, boundaryCondition, referencePointsNodeIds, complexLoadType, parent);
             // Load case=2 - Imaginary component
-            if (step is SteadyStateDynamics && boundaryCondition.Complex && boundaryCondition.PhaseDeg != 0)
+            if (step is SteadyStateDynamicsStep && boundaryCondition.Complex && boundaryCondition.PhaseDeg != 0)
                 AppendBoundaryCondition(model, boundaryCondition, referencePointsNodeIds, ComplexLoadTypeEnum.Imaginary, parent);
         }
         static private void AppendBoundaryCondition(FeModel model, BoundaryCondition boundaryCondition,
@@ -1062,7 +1070,7 @@ namespace FileInOut.Output
             //
             AppendLoad(model, load, referencePointsNodeIds, complexLoadType, parent);
             // Load case=2 - Imaginary component
-            if (step is SteadyStateDynamics && load.Complex && load.PhaseDeg != 0)
+            if (step is SteadyStateDynamicsStep && load.Complex && load.PhaseDeg != 0)
                 AppendLoad(model, load, referencePointsNodeIds, ComplexLoadTypeEnum.Imaginary, parent);
         }
         static private void AppendLoad(FeModel model, Load load, Dictionary<string, int[]> referencePointsNodeIds,

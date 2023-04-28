@@ -35,9 +35,9 @@ namespace PrePoMax.Forms
                     _viewStep = new ViewFrequencyStep(fs.DeepClone());
                 else if (value is BuckleStep bs)
                     _viewStep = new ViewBuckleStep(bs.DeepClone());
-                else if (value is ModalDynamics md)
+                else if (value is ModalDynamicsStep md)
                     _viewStep = new ViewModalDynamics(md.DeepClone());
-                else if (value is SteadyStateDynamics ssd)
+                else if (value is SteadyStateDynamicsStep ssd)
                     _viewStep = new ViewSteadyStateDynamics(ssd.DeepClone());
                 else if (value.GetType() == typeof(DynamicStep))    // use this form due to inheritance
                     _viewStep = new ViewDynamicStep((value as DynamicStep).DeepClone());
@@ -297,7 +297,7 @@ namespace PrePoMax.Forms
                 {
                     // Modal dynamics step
                     item = new ListViewItem("Modal Dynamics Step");
-                    ModalDynamics modalDynamicsStep = new ModalDynamics(GetStepName());
+                    ModalDynamicsStep modalDynamicsStep = new ModalDynamicsStep(GetStepName());
                     modalDynamicsStep.SolverType = defaultSolverType;
                     item.Tag = new ViewModalDynamics(modalDynamicsStep);
                     lvTypes.Items.Add(item);
@@ -306,7 +306,7 @@ namespace PrePoMax.Forms
                 {
                     // Steady state dynamics step
                     item = new ListViewItem("Steady State Dynamics Step");
-                    SteadyStateDynamics steadyStateDynamicsStep = new SteadyStateDynamics(GetStepName());
+                    SteadyStateDynamicsStep steadyStateDynamicsStep = new SteadyStateDynamicsStep(GetStepName());
                     steadyStateDynamicsStep.SolverType = defaultSolverType;
                     item.Tag = new ViewSteadyStateDynamics(steadyStateDynamicsStep);
                     lvTypes.Items.Add(item);

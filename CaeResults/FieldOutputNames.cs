@@ -204,6 +204,7 @@ namespace CaeResults
                 case Contact:
                 case NdTemp:
                 case PNdTemp:
+                case Rfl:
                 case HError:
                 case HErrorR:
                 case HErrorI:
@@ -246,7 +247,6 @@ namespace CaeResults
                 case ForcMin:
                 case ForcMinAng:
                 case Flux:
-                case Rfl:
                 case Norm:
                 case SurfaceNormal:
                 case WearDepth:

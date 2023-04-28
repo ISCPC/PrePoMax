@@ -63,8 +63,6 @@ namespace CaeModel
         public FrequencyStep(string name)
             :base(name)
         {
-            _perturbation = true;
-            //
             _numOfFrequencies = 10;
             _lowerFrequency = double.NaN;
             _upperFrequency = double.NaN;

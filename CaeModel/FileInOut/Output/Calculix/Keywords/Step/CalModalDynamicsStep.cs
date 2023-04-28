@@ -10,17 +10,17 @@ using CaeGlobals;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalModalDynamics : CalculixKeyword
+    internal class CalModalDynamicsStep : CalculixKeyword
     {
         // Variables                                                                                                                
-        private ModalDynamics _step;
+        private ModalDynamicsStep _step;
 
 
         // Properties                                                                                                               
 
 
         // Constructor                                                                                                              
-        public CalModalDynamics(ModalDynamics step)
+        public CalModalDynamicsStep(ModalDynamicsStep step)
         {
             _step = step;
         }
