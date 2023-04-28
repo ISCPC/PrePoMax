@@ -81,7 +81,7 @@ namespace CaeResults
         public const string NdTemp = "NDTEMP";                          // scalar
         public const string PNdTemp = "PNDTEMP";                        // scalar - kind of: mag, pha
         public const string Flux = "FLUX";                              // vector
-        public const string Rfl = "RFL";                                // vector
+        public const string Rfl = "RFL";                                // scalar
         public const string HError = "HERROR";                          // scalar
         public const string HErrorR = "HERRORR";                        // scalar
         public const string HErrorI = "HERRORI";                        // scalar
