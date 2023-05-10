@@ -16,7 +16,7 @@ namespace PrePoMax
     public class ViewModalDynamics : ViewStep
     {
         // Variables                                                                                                                
-        private ModalDynamics _modalStep;
+        private ModalDynamicsStep _modalStep;
 
 
         // Properties                                                                                                               
@@ -89,10 +89,17 @@ namespace PrePoMax
         }
         //
         [CategoryAttribute("Incrementation")]
-        [OrderedDisplayName(0, 10, "Initial time increment")]
+        [OrderedDisplayName(0, 10, "Max increments")]
+        [DescriptionAttribute("The maximum number of increments in the step.")]
+        [TypeConverter(typeof(StringIntegerConverter))]
+        [Id(1, 3)]
+        public int MaxIncrements { get { return _modalStep.MaxIncrements; } set { _modalStep.MaxIncrements = value; } }
+        //
+        [CategoryAttribute("Incrementation")]
+        [OrderedDisplayName(1, 10, "Initial time increment")]
         [DescriptionAttribute("Initial time increment of the step.")]
         [TypeConverter(typeof(StringTimeConverter))]
-        [Id(1, 3)]
+        [Id(2, 3)]
         public double InitialTimeIncrement
         {
             get { return _modalStep.InitialTimeIncrement; }
@@ -100,21 +107,21 @@ namespace PrePoMax
         }
         //
         [CategoryAttribute("Incrementation")]
-        [OrderedDisplayName(1, 10, "Time period")]
+        [OrderedDisplayName(2, 10, "Time period")]
         [DescriptionAttribute("Time period of the step.")]
         [TypeConverter(typeof(StringTimeConverter))]
-        [Id(2, 3)]
+        [Id(3, 3)]
         public double TimePeriod { get { return _modalStep.TimePeriod; } set { _modalStep.TimePeriod = value; } }
         //
         [CategoryAttribute("Incrementation")]
-        [OrderedDisplayName(1, 10, "Relative error")]
+        [OrderedDisplayName(2, 10, "Relative error")]
         [DescriptionAttribute("Relative error for the solution to be considered to be steady state.")]
-        [Id(2, 3)]
+        [Id(3, 3)]
         public double RelativeError { get { return _modalStep.RelativeError; } set { _modalStep.RelativeError = value; } }
 
 
         // Constructors                                                                                                             
-        public ViewModalDynamics(ModalDynamics step, bool installProvider = true)
+        public ViewModalDynamics(ModalDynamicsStep step, bool installProvider = true)
             : base(step)
         {
             _modalStep = step;

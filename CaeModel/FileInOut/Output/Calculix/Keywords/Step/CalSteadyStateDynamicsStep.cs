@@ -10,17 +10,17 @@ using CaeGlobals;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalSteadyStateDynamics : CalculixKeyword
+    internal class CalSteadyStateDynamicsStep : CalculixKeyword
     {
         // Variables                                                                                                                
-        private SteadyStateDynamics _step;
+        private SteadyStateDynamicsStep _step;
 
 
         // Properties                                                                                                               
 
 
         // Constructor                                                                                                              
-        public CalSteadyStateDynamics(SteadyStateDynamics step)
+        public CalSteadyStateDynamicsStep(SteadyStateDynamicsStep step)
         {
             _step = step;
         }

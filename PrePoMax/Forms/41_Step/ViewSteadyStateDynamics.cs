@@ -16,7 +16,7 @@ namespace PrePoMax
     public class ViewSteadyStateDynamics : ViewStep
     {
         // Variables                                                                                                                
-        private SteadyStateDynamics _steadyStep;
+        private SteadyStateDynamicsStep _steadyStep;
 
 
         // Properties                                                                                                               
@@ -140,7 +140,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public ViewSteadyStateDynamics(SteadyStateDynamics step, bool installProvider = true)
+        public ViewSteadyStateDynamics(SteadyStateDynamicsStep step, bool installProvider = true)
             : base(step)
         {
             _steadyStep = step;

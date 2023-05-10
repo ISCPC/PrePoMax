@@ -46,6 +46,34 @@ namespace PrePoMax
             get { return _dynamicStep.RelativeToAbsolute; }
             set { _dynamicStep.RelativeToAbsolute = value; }
         }
+        //
+        [CategoryAttribute("Damping")]
+        [OrderedDisplayName(0, 10, "Damping type")]
+        [DescriptionAttribute("Select the damping type.")]
+        [Id(1, 2)]
+        public DampingTypeEnum DampingType
+        {
+            get { return _dynamicStep.Damping.DampingType; }
+            set
+            {
+                _dynamicStep.Damping.DampingType = value;
+                UpdateVisibility();
+            }
+        }
+        //
+        [CategoryAttribute("Damping")]
+        [OrderedDisplayName(1, 10, "Alpha")]
+        [DescriptionAttribute("Mass-proportional damping coefficient of the Rayleigh damping.")]
+        [TypeConverter(typeof(StringReciprocalTimeConverter))]
+        [Id(2, 2)]
+        public double AlphaRayleigh { get { return _dynamicStep.Damping.Alpha; } set { _dynamicStep.Damping.Alpha = value; } }
+        //
+        [CategoryAttribute("Damping")]
+        [OrderedDisplayName(2, 10, "Beta")]
+        [DescriptionAttribute("Stiffness-proportional damping coefficient of the Rayleigh damping.")]
+        [TypeConverter(typeof(StringTimeConverter))]
+        [Id(3, 2)]
+        public double BetaRayleigh { get { return _dynamicStep.Damping.Beta; } set { _dynamicStep.Damping.Beta = value; } }
 
 
         // Constructors                                                                                                             
@@ -78,6 +106,10 @@ namespace PrePoMax
             base.UpdateVisibility();
             //
             _dctd.GetProperty(nameof(Nlgeom)).SetIsBrowsable(false);
+            //
+            bool browsable = _dynamicStep.Damping.DampingType == DampingTypeEnum.Rayleigh;
+            _dctd.GetProperty(nameof(AlphaRayleigh)).SetIsBrowsable(browsable);
+            _dctd.GetProperty(nameof(BetaRayleigh)).SetIsBrowsable(browsable);
         }
 
     }
