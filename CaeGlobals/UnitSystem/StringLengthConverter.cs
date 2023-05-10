@@ -18,6 +18,10 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
+        public static string GetUnitAbbreviation()
+        {
+            return Length.GetAbbreviation(_lengthUnit);
+        }
         public static string SetUnit 
         {
             set
@@ -56,7 +60,7 @@ namespace CaeGlobals
                     if (value is double valueDouble)
                     {
                         string valueString = valueDouble.ToString();
-                        if ((int)_lengthUnit != MyUnit.NoUnit) valueString += " " + Length.GetAbbreviation(_lengthUnit);
+                        if ((int)_lengthUnit != MyUnit.NoUnit) valueString += " " + GetUnitAbbreviation();
                         return valueString;
                     }
                 }

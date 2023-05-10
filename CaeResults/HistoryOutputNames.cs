@@ -21,6 +21,7 @@ namespace CaeResults
         public const string Time = "TIME";
         public const string Frequency = "FREQUENCY";
         // Nodal
+        public const string Coordinates = "COORDINATES";
         public const string Displacements = "DISPLACEMENTS";
         public const string Velocities = "VELOCITIES";
         public const string Forces = "FORCES";
@@ -146,6 +147,10 @@ namespace CaeResults
         public const string XROTATION = "X ROTATION";
         public const string YROTATION = "Y ROTATION";
         public const string ZROTATION = "Z ROTATION";
+        //
+        public const string X = "X";
+        public const string Y = "Y";
+        public const string Z = "Z";
 
     }
 

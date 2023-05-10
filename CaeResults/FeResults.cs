@@ -2772,7 +2772,8 @@ namespace CaeResults
             //
             if (resultHistoryOutput is ResultHistoryOutputFromField rhoff)
             {
-                int[] nodeIds = null;
+                // Collect node ids
+                int[] nodeIds = null; 
                 if (rhoff.RegionType == RegionTypeEnum.NodeSetName)
                 {
                     nodeIds = _mesh.NodeSets[rhoff.RegionName].Labels;
@@ -2792,34 +2793,54 @@ namespace CaeResults
                     // Prepare entries
                     string name;
                     HistoryResultComponent historyResultComponent = new HistoryResultComponent(rhoff.ComponentName);
-                    historyResultComponent.Entries = new Dictionary<string, HistoryResultEntries>();
-                    for (int i = 0; i < nodeIds.Length; i++)
+                    HistoryResultComponent historyResultComponentX = new HistoryResultComponent(HOComponentNames.X);
+                    HistoryResultComponent historyResultComponentY = new HistoryResultComponent(HOComponentNames.Y);
+                    HistoryResultComponent historyResultComponentZ = new HistoryResultComponent(HOComponentNames.Z);
+                    List<HistoryResultComponent> allComponents = new List<HistoryResultComponent>{ historyResultComponent };
+                    // Add components for the node coordinates
+                    if (rhoff.OutputNodeCoordinates != OutputNodeCoordinatesEnum.Off)
                     {
-                        name = nodeIds[i].ToString();
-                        historyResultComponent.Entries.Add(name, new HistoryResultEntries(name, false));
+                        allComponents.Add(historyResultComponentX);
+                        allComponents.Add(historyResultComponentY);
+                        allComponents.Add(historyResultComponentZ);
                     }
+                    // Add entries for each node id
+                    foreach (var newComponent in allComponents)
+                    {
+                        newComponent.Entries = new Dictionary<string, HistoryResultEntries>();
+                        for (int i = 0; i < nodeIds.Length; i++)
+                        {
+                            name = nodeIds[i].ToString();
+                            newComponent.Entries.Add(name, new HistoryResultEntries(name, false));
+                        }
+                    }
+                    
                     //
                     if (rhoff.Harmonic) GetHarmonicFromHistoryOutut(rhoff, historyResultComponent, nodeIds);
                     else
                     {
-
                         // Get all existing increments
                         Dictionary<int, int[]> existingStepIncrementIds =
                             GetExistingIncrementIds(rhoff.FieldName, rhoff.ComponentName, rhoff.StepId, rhoff.StepIncrementId);
+                        //
                         float[] values;
+                        float[] valuesX;
+                        float[] valuesY;
+                        float[] valuesZ;
                         int resultNodeId;
                         Field field;
                         FieldData fieldData;
+                        FeNode resultNode;
                         // Set complex
                         ComplexResultTypeEnum prevComplexResultType = _complexResultType;
                         float prevComplexAngleDeg = _complexAngleDeg;
                         SetComplexResultTypeAndAngle(rhoff.ComplexResultType, (float)rhoff.ComplexAngleDeg);
                         //
-                        foreach (var entry in existingStepIncrementIds)
+                        foreach (var existingStepEntry in existingStepIncrementIds)
                         {
-                            foreach (var incrementId in entry.Value)
+                            foreach (var incrementId in existingStepEntry.Value)
                             {
-                                fieldData = GetFieldData(rhoff.FieldName, rhoff.ComponentName, entry.Key, incrementId);
+                                fieldData = GetFieldData(rhoff.FieldName, rhoff.ComponentName, existingStepEntry.Key, incrementId);
                                 field = GetField(fieldData);
                                 // Filter complex components only to complex field outputs
                                 if (rhoff.ComplexResultType != ComplexResultTypeEnum.Real && !field.Complex) continue;
@@ -2834,6 +2855,41 @@ namespace CaeResults
                                             name = nodeIds[i].ToString();
                                             resultNodeId = _nodeIdsLookUp[nodeIds[i]];
                                             historyResultComponent.Entries[name].Add(fieldData.Time, values[resultNodeId]);
+                                        }
+                                    }
+                                }
+                                // Get node coordinates
+                                fieldData = GetFieldData(FOFieldNames.Disp, "", existingStepEntry.Key, incrementId);
+                                field = GetField(fieldData);
+                                //
+                                if (field != null)
+                                {
+                                    valuesX = field.GetComponentValues(FOComponentNames.U1);
+                                    valuesY = field.GetComponentValues(FOComponentNames.U2);
+                                    valuesZ = field.GetComponentValues(FOComponentNames.U3);
+                                    if (valuesX != null && valuesY != null && valuesZ != null)
+                                    {
+                                        for (int i = 0; i < nodeIds.Length; i++)
+                                        {
+                                            name = nodeIds[i].ToString();
+                                            resultNodeId = _nodeIdsLookUp[nodeIds[i]];
+                                            resultNode = _undeformedNodes[nodeIds[i]];
+                                            //
+                                            if (rhoff.OutputNodeCoordinates == OutputNodeCoordinatesEnum.Undeformed)
+                                            {
+                                                historyResultComponentX.Entries[name].Add(fieldData.Time, resultNode.X);
+                                                historyResultComponentY.Entries[name].Add(fieldData.Time, resultNode.Y);
+                                                historyResultComponentZ.Entries[name].Add(fieldData.Time, resultNode.Z);
+                                            }
+                                            else if (rhoff.OutputNodeCoordinates == OutputNodeCoordinatesEnum.Deformed)
+                                            {
+                                                historyResultComponentX.Entries[name].Add(fieldData.Time,
+                                                                                      valuesX[resultNodeId] + resultNode.X);
+                                                historyResultComponentY.Entries[name].Add(fieldData.Time,
+                                                                                          valuesY[resultNodeId] + resultNode.Y);
+                                                historyResultComponentZ.Entries[name].Add(fieldData.Time,
+                                                                                          valuesZ[resultNodeId] + resultNode.Z);
+                                            }
                                         }
                                     }
                                 }
@@ -2856,6 +2912,20 @@ namespace CaeResults
                     historyResultSet = new HistoryResultSet(rhoff.Name);
                     historyResultSet.Harmonic = rhoff.Harmonic;
                     historyResultSet.Fields.Add(historyResultField.Name, historyResultField);
+                    //
+                    if (rhoff.OutputNodeCoordinates != OutputNodeCoordinatesEnum.Off)
+                    {
+                        historyResultComponentX.Unit = StringLengthConverter.GetUnitAbbreviation();
+                        historyResultComponentY.Unit = StringLengthConverter.GetUnitAbbreviation();
+                        historyResultComponentZ.Unit = StringLengthConverter.GetUnitAbbreviation();
+                        //
+                        HistoryResultField historyResultFieldCoor = new HistoryResultField(HOFieldNames.Coordinates);
+                        historyResultFieldCoor.Components.Add(historyResultComponentX.Name, historyResultComponentX);
+                        historyResultFieldCoor.Components.Add(historyResultComponentY.Name, historyResultComponentY);
+                        historyResultFieldCoor.Components.Add(historyResultComponentZ.Name, historyResultComponentZ);
+                        //
+                        historyResultSet.Fields.Add(historyResultFieldCoor.Name, historyResultFieldCoor);
+                    }
                     //
                     _history.Sets.Add(historyResultSet.Name, historyResultSet);
                 }

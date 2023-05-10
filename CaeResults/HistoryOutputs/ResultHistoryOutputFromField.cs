@@ -8,6 +8,14 @@ using CaeGlobals;
 
 namespace CaeResults
 {
+    [Serializable] 
+    public enum OutputNodeCoordinatesEnum
+    {
+        Off,
+        Undeformed,
+        Deformed
+    }
+
     [Serializable]
     public class ResultHistoryOutputFromField : ResultHistoryOutput
     {
@@ -19,6 +27,7 @@ namespace CaeResults
         private int _stepId;
         private int _stepIncrementId;
         private bool _harmonic;
+        private OutputNodeCoordinatesEnum _outputNodeCoordinates;
 
 
         // Properties                                                                                                               
@@ -29,6 +38,11 @@ namespace CaeResults
         public int StepId { get { return _stepId; } set { _stepId = value; } }
         public int StepIncrementId { get { return _stepIncrementId; } set { _stepIncrementId = value; } }
         public bool Harmonic { get { return _harmonic; } set { _harmonic = value; } }
+        public OutputNodeCoordinatesEnum OutputNodeCoordinates
+        {
+            get { return _outputNodeCoordinates; }
+            set { _outputNodeCoordinates = value; }
+        }
 
 
         // Constructors                                                                                                             
@@ -42,6 +56,7 @@ namespace CaeResults
             _stepId = -1;
             _stepIncrementId = -1;
             _harmonic = false;
+            _outputNodeCoordinates = OutputNodeCoordinatesEnum.Off;
         }
 
 
