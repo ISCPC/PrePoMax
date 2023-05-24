@@ -18,7 +18,8 @@ namespace CaeModel
         private string _pressureTime;
         private string _pressureVariableName;
         private InterpolatorEnum _interpolatorType;
-        private double _scaleFactor;
+        private double _magnitudeFactor;
+        private double _geomScaleFactor;
         //
         private FileInfo _oldFileInfo;
         //
@@ -31,7 +32,8 @@ namespace CaeModel
         public string PressureTime { get { return _pressureTime; } set { _pressureTime = value; } }
         public string PressureVariableName { get { return _pressureVariableName; } set { _pressureVariableName = value; } }
         public InterpolatorEnum InterpolatorType { get { return _interpolatorType; } set { _interpolatorType = value; } }
-        public double ScaleFactor { get { return _scaleFactor; } set { _scaleFactor = value; } }
+        public double MagnitudeFactor { get { return _magnitudeFactor; } set { _magnitudeFactor = value; } }
+        public double GeomScaleFactor { get { return _geomScaleFactor; } set { _geomScaleFactor = value; } }
 
 
         // Constructors                                                                                                             
@@ -43,7 +45,8 @@ namespace CaeModel
             _pressureTime = null;
             _pressureVariableName = null;
             _interpolatorType = InterpolatorEnum.ClosestNode;
-            _scaleFactor = 1;
+            _magnitudeFactor = 1;
+            _geomScaleFactor = 1;
             //
             _oldFileInfo = null;
         }
@@ -111,6 +114,8 @@ namespace CaeModel
                 // Get results
                 FeResults results = OpenFoamFileReader.Read(_fileName, double.Parse(_pressureTime), _pressureVariableName);
                 if (results == null) throw new CaeException("No pressure was imported.");
+                // Scale geometry
+                if (_geomScaleFactor != 1) results.ScaleAllParts(_geomScaleFactor);
                 // Get pressure field data
                 FieldData[] fieldData = results.GetAllFieldData(); // use GetResults for the first time to check existance
                 Dictionary<string, string[]> filedNameComponentNames = results.GetAllFiledNameComponentNames();
@@ -139,23 +144,23 @@ namespace CaeModel
             FeNodeSet nodeSet = targetMesh.NodeSets[surface.NodeSetName];
             HashSet<int> nodeIds = new HashSet<int>(nodeSet.Labels);
             //
-            double[] distance;
-            double value;
+            
             float[] distancesAll = new float[allData.Nodes.Coor.Length];
             float[] distances1 = new float[allData.Nodes.Coor.Length];
             float[] distances2 = new float[allData.Nodes.Coor.Length];
             float[] distances3 = new float[allData.Nodes.Coor.Length];
             float[] values = new float[allData.Nodes.Coor.Length];
             //
-
-
-            
             Parallel.For(0, values.Length, i =>
             //for (int i = 0; i < values.Length; i++)
             {
+                double[] distance;
+                double value;
+                //
                 if (nodeIds.Contains(allData.Nodes.Ids[i]))
                 {
                     GetPressureAndDistanceForPoint(allData.Nodes.Coor[i], out distance, out value);
+                    //
                     distances1[i] = (float)distance[0];
                     distances2[i] = (float)distance[1];
                     distances3[i] = (float)distance[2];
@@ -209,12 +214,12 @@ namespace CaeModel
         public void GetPressureAndDistanceForPoint(double[] point, out double[] distance, out double value)
         {
             _interpolator.InterpolateAt(point, _interpolatorType, out distance, out value);
-            value *= _scaleFactor;
+            value *= _magnitudeFactor;
         }
         public override double GetPressureForPoint(double[] point)
         {
             _interpolator.InterpolateAt(point, _interpolatorType, out double[] distance, out double value);
-            return value * _scaleFactor;
+            return value * _magnitudeFactor;
         }
         
     }

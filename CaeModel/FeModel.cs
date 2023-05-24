@@ -1209,10 +1209,10 @@ namespace CaeModel
                 }
             }
         }
-        public CLoad[] GetNodalLoadsFromVariablePressureLoad(VariablePressure load)
+        public CLoad[] GetNodalCLoadsFromVariablePressureLoad(VariablePressure load)
         {
             Dictionary<int, int> elementIdSectionId;
-            Dictionary<int, double> sectionIdThickness = new Dictionary<int, double>();
+            double[] sectionIdThickness = new double[_sections.Count];
             // Get element thicknesses
             GetSectionAssignments(out elementIdSectionId);
             //
@@ -1225,7 +1225,7 @@ namespace CaeModel
                 else if (entry.Value is ShellSection shell) thickness = shell.Thickness;
                 else throw new NotSupportedException();
                 //
-                sectionIdThickness.Add(sectionId++, thickness);
+                sectionIdThickness[sectionId++] = thickness;
             }
             // Surface
             FeSurface surface = _mesh.Surfaces[surfaceName];
@@ -1316,6 +1316,48 @@ namespace CaeModel
                                       load.PhaseDeg);
                     cLoad.AmplitudeName = load.AmplitudeName;
                     loads.Add(cLoad);
+                }
+            }
+            //
+            return loads.ToArray();
+        }
+        public DLoad[] GetNodalDLoadsFromVariablePressureLoad(VariablePressure load)
+        {
+            // Surface
+            FeSurface surface = _mesh.Surfaces[load.SurfaceName];
+            if (surface.ElementFaces == null) return null;
+            //
+            double sign;
+            double pressure;
+            double[] faceNormal;
+            FeElement element;
+            DLoad dLoad;
+            List<DLoad> loads = new List<DLoad>();
+            //
+            foreach (var entry in surface.ElementFaces)
+            {
+                foreach (var elementId in _mesh.ElementSets[entry.Value].Labels)
+                {
+                    element = _mesh.Elements[elementId];
+                    //
+                    _mesh.GetElementFaceCenterAndNormal(elementId, entry.Key, out double[] faceCenter, out faceNormal,
+                                                        out bool shellElement);
+                    // Pressure
+                    pressure = load.GetPressureForPoint(faceCenter);
+
+                    // Invert face normal in case of S1 or S2 shell face
+                    //if (shellElement && (entry.Key == FeFaceName.S1 || entry.Key == FeFaceName.S2)) sign = -1;
+                    //else sign = 1;
+                    //pressure *= sign;
+
+                    // Pressure loads
+                    if (pressure != 0)
+                    {
+                        dLoad = new DLoad(entry.Key.ToString(), elementId.ToString(), RegionTypeEnum.ElementId,
+                                          pressure, load.TwoD, load.Complex, load.PhaseDeg);
+                        dLoad.AmplitudeName = load.AmplitudeName;
+                        loads.Add(dLoad);
+                    }
                 }
             }
             //

@@ -28,7 +28,8 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            string frequency = _elementFieldOutput.Frequency > 1 ? ", Frequency=" + _elementFieldOutput.Frequency : "";
+            //string frequency = _elementFieldOutput.Frequency > 1 ? ", Frequency=" + _elementFieldOutput.Frequency : "";
+            string frequency = ", Frequency=" + _elementFieldOutput.Frequency;
             string lastIterations = _elementFieldOutput.LastIterations ? ", Last iterations" : "";
             string contactElements = _elementFieldOutput.ContactElements ? ", Contact elements" : "";
             string output = "";

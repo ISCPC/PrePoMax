@@ -32,7 +32,8 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            string frequency = _contactHistoryOutput.Frequency > 1 ? ", Frequency=" + _contactHistoryOutput.Frequency : "";
+            //string frequency = _contactHistoryOutput.Frequency > 1 ? ", Frequency=" + _contactHistoryOutput.Frequency : "";
+            string frequency = ", Frequency=" + _contactHistoryOutput.Frequency;
             string totals = "";
             if (_contactHistoryOutput.TotalsType == TotalsTypeEnum.Yes) totals = ", Totals=Yes";
             else if (_contactHistoryOutput.TotalsType == TotalsTypeEnum.Only) totals = ", Totals=Only";

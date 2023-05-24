@@ -104,6 +104,7 @@ namespace CaeModel
             if (copyBCsAndLoads && _steps.Count >= 1)
             {
                 Step lastStep = _steps.Last();
+                //Step lastStep = _steps.First();
                 //
                 foreach (var entry in lastStep.BoundaryConditions)
                 {
@@ -119,6 +120,7 @@ namespace CaeModel
                 }
             }
             _steps.Add(step);
+            //_steps.Insert(0, step);
         }
         public Step GetStep(string stepName)
         {

@@ -6650,8 +6650,8 @@ namespace PrePoMax
                 {
                     if (stepName != null)
                     {
-                        string itemName = text.Replace("Create ", "").ToLower();
-                        MessageBoxes.ShowWarning("Creation of a " + itemName + " in the step: "
+                        string itemName = text.Replace("Create ", "").Replace("Edit ", "").ToLower();
+                        MessageBoxes.ShowWarning("Creating/editing of a " + itemName + " in the step: "
                                                  + stepName + " is not supported.");
                     }
                 }

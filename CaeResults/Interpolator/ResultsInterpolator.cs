@@ -153,6 +153,7 @@ namespace CaeResults
                             if (!regions.ContainsKey(index))
                             {
                                 bb = _regionBoxes[index];
+                                //
                                 if (bb != null && ((Dictionary<int, BoundingBox>)bb.Tag).Count > 0)
                                 {
                                     regions.Add(index, bb);

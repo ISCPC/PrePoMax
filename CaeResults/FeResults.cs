@@ -396,6 +396,12 @@ namespace CaeResults
             //
             _nodeIdsLookUp = nodeIdsLookUp;
         }
+        public void ScaleAllParts(double scale)
+        {
+            _mesh.ScaleAllParts(scale);
+            //
+            InitializeUndeformedNodes();
+        }
         public string[] AddPartsFromMesh(FeMesh mesh, string[] partNames)
         {
             _mesh.Nodes = _undeformedNodes;
@@ -2816,7 +2822,7 @@ namespace CaeResults
                     }
                     
                     //
-                    if (rhoff.Harmonic) GetHarmonicFromHistoryOutut(rhoff, historyResultComponent, nodeIds);
+                    if (rhoff.Harmonic) GetHarmonicFromHistoryOutput(rhoff, historyResultComponent, nodeIds);
                     else
                     {
                         // Get all existing increments
@@ -2932,7 +2938,7 @@ namespace CaeResults
             }
             return historyResultSet;
         }
-        public void GetHarmonicFromHistoryOutut(ResultHistoryOutputFromField rhoff, HistoryResultComponent historyResultComponent,
+        public void GetHarmonicFromHistoryOutput(ResultHistoryOutputFromField rhoff, HistoryResultComponent historyResultComponent,
                                                 int[] nodeIds)
         {
             int resultNodeId;
@@ -3042,7 +3048,7 @@ namespace CaeResults
             //
             return historyResultEntry;
         }
-        public NamedClass[] GetHistoriyOutputsAsNamedItems()
+        public NamedClass[] GetHistoryOutputsAsNamedItems()
         {
             string[] names = _history.Sets.Keys.ToArray();
             NamedClass[] historyOutputs = new NamedClass[names.Length];
@@ -3274,7 +3280,7 @@ namespace CaeResults
                 }
             }
         }
-        public void RemoveResultHistoryResultCompoments(string historyResultSetName,
+        public void RemoveResultHistoryResultComponents(string historyResultSetName,
                                                         string historyResultFieldName,
                                                         string[] historyResultComponentNames)
         {
@@ -3648,7 +3654,7 @@ namespace CaeResults
 
         // Wear         
         public bool ComputeWear(int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient,
-                                Dictionary<int, bool[]> nodeIdZeroDisplacements)
+                                int numOfSmoothingSteps, Dictionary<int, bool[]> nodeIdZeroDisplacements)
         {
             if (slipStepIds != null && slipStepIds.Length > 0 && CheckFieldAndHistoryTimes())
             {
@@ -3675,7 +3681,7 @@ namespace CaeResults
                     CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SurfaceNormal, n3, false);
                 }
                 //
-                return ComputeSlidingWearFields(slipStepIds, nodeIdCoefficient, nodeIdZeroDisplacements);
+                return ComputeSlidingWearFields(slipStepIds, nodeIdCoefficient, numOfSmoothingSteps, nodeIdZeroDisplacements);
             }
             else return false;
         }
@@ -3744,7 +3750,7 @@ namespace CaeResults
             }
         }
         public bool ComputeSlidingWearFields(int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient,
-                                             Dictionary<int, bool[]> nodeIdZeroDisplacements)
+                                             int numOfSmoothingSteps, Dictionary<int, bool[]> nodeIdZeroDisplacements)
         {
             HistoryResultComponent slidingDistanceAll =
                 GetHistoryResultComponent(HOSetNames.ContactWear, HOFieldNames.SlidingDistance, HOComponentNames.All);
@@ -3828,7 +3834,7 @@ namespace CaeResults
                             normalN1Values = normalField.GetComponentValues(FOComponentNames.N1).ToArray();
                             normalN2Values = normalField.GetComponentValues(FOComponentNames.N2).ToArray();
                             normalN3Values = normalField.GetComponentValues(FOComponentNames.N3).ToArray();
-                            // Adjust normals based on zero BCs
+                            // Adjust normals based on zero BCs inside the wear step
                             if (nodeIdZeroDisplacements != null)
                             {
                                 foreach (var entry in nodeIdZeroDisplacements)
@@ -3876,6 +3882,14 @@ namespace CaeResults
                                                                     Math.Pow(dispValuesU2[k], 2) +
                                                                     Math.Pow(dispValuesU3[k], 2));
                             }
+                            //
+                            prevDepthValuesMag = depthValuesMag.ToArray(); // must copy due to smoothing
+                            prevDepthValuesH1 = depthValuesH1.ToArray();
+                            prevDepthValuesH2 = depthValuesH2.ToArray();
+                            prevDepthValuesH3 = depthValuesH3.ToArray();
+                            // Smoothing
+                            SmoothVectorField(ref depthValuesH1, ref depthValuesH2, ref depthValuesH3, ref depthValuesMag,
+                                              numOfSmoothingSteps);
                             // Wear depth
                             depthData = new FieldData(FOFieldNames.WearDepth);
                             depthData.StepId = slipStepIds[i];
@@ -3908,11 +3922,7 @@ namespace CaeResults
                             dispField.AddComponent(FOComponentNames.U2, dispValuesU2);
                             dispField.AddComponent(FOComponentNames.U3, dispValuesU3);
                             AddField(dispData, dispField);
-                            //
-                            prevDepthValuesMag = depthValuesMag;
-                            prevDepthValuesH1 = depthValuesH1;
-                            prevDepthValuesH2 = depthValuesH2;
-                            prevDepthValuesH3 = depthValuesH3;
+                           
                         }
                     }
                 }
@@ -3920,6 +3930,250 @@ namespace CaeResults
                 return true;
             }
             else return false;
+        }
+        private void SmoothVectorField(ref float[] component1, ref float[] component2, ref float[] component3,
+                                       ref float[] componentMag, int numOfSmoothingSteps)
+        {
+            if (component1.Length != component2.Length && component2.Length != component3.Length &&
+                component3.Length != componentMag.Length) throw new NotSupportedException();
+            //
+            if (numOfSmoothingSteps == 0) return;
+            //
+            double[] xyz = new double[3];
+            HashSet<int> nodeIds = new HashSet<int>();
+            Dictionary<int, double[]> globalVectors = new Dictionary<int, double[]>();
+            //
+            foreach (var entry in _nodeIdsLookUp)
+            {
+                xyz[0] = component1[entry.Value];
+                xyz[1] = component2[entry.Value];
+                xyz[2] = component3[entry.Value];
+                //
+                if (xyz[0] != 0 || xyz[1] != 0 || xyz[2] != 0)
+                {
+                    globalVectors.Add(entry.Key, new double[] { xyz[0], xyz[1], xyz[2] });
+                    nodeIds.Add(entry.Key);
+                }
+            }
+            // Smooth                                                                                                               
+            bool contains;
+            int surfaceId;
+            int cellId;
+            int[] cell;
+            VisualizationData vis;
+            List<int> surfaceIds;
+            Dictionary<VisualizationData, List<int>> visualizationSurfaceIds = new Dictionary<VisualizationData, List<int>>();
+            // Find surfaces that have deformed entire element faces
+            foreach (var entry in _mesh.Parts)
+            {
+                vis = entry.Value.Visualization;
+                for (int i = 0; i < vis.CellIdsByFace.Length; i++)
+                {
+                    surfaceId = i;
+                    for (int j = 0; j < vis.CellIdsByFace[surfaceId].Length; j++)
+                    {
+                        cellId = vis.CellIdsByFace[surfaceId][j];
+                        cell = vis.Cells[cellId];
+                        //
+                        contains = true;
+                        for (int k = 0; k < cell.Length; k++)
+                        {
+                            if (!nodeIds.Contains(cell[k])) { contains = false; break; }
+                        }
+                        if (contains)
+                        {
+                            if (visualizationSurfaceIds.TryGetValue(vis, out surfaceIds)) surfaceIds.Add(surfaceId);
+                            else visualizationSurfaceIds.Add(vis, new List<int> { surfaceId });
+                            break;
+                        }
+                    }
+                }
+            }
+            //
+            int numOfNodes;
+            double[] vector;
+            HashSet<int> neighboursHash;
+            Dictionary<int, HashSet<int>> nodeIdNeighbours = new Dictionary<int, HashSet<int>>();
+            // Find node neighbours
+            foreach (var entry in visualizationSurfaceIds)
+            {
+                vis = entry.Key;
+                foreach (var visSurfaceId in entry.Value)
+                {
+                    foreach (var visCellId in vis.CellIdsByFace[visSurfaceId])
+                    {
+                        cell = vis.Cells[visCellId];
+                        numOfNodes = cell.Length;
+                        // Find node neighbours by element
+                        for (int i = 0; i < numOfNodes; i++)
+                        {
+                            if (nodeIdNeighbours.TryGetValue(cell[i], out neighboursHash))
+                                neighboursHash.UnionWith(cell);
+                            else
+                            {
+                                neighboursHash = new HashSet<int>(cell);
+                                nodeIdNeighbours.Add(cell[i], neighboursHash);
+                            }
+                            neighboursHash.Remove(cell[i]);
+                        }
+                    }
+                }
+            }
+            // Smoothing loops
+            Dictionary<int, double[]> smoothedVectors;
+            for (int i = 0; i < numOfSmoothingSteps; i++)
+            {
+                smoothedVectors = new Dictionary<int, double[]>(); // must be here
+                //
+                foreach (var entry in nodeIdNeighbours)
+                {
+                    xyz = new double[3];
+                    foreach (var nodeId in entry.Value)
+                    {
+                        if (globalVectors.TryGetValue(nodeId, out vector))
+                        {
+                            xyz[0] += vector[0];
+                            xyz[1] += vector[1];
+                            xyz[2] += vector[2];
+                        }
+                    }
+                    if (xyz[0] != 0 || xyz[1] != 0 || xyz[2] != 0)
+                    {
+                        xyz[0] /= entry.Value.Count;
+                        xyz[1] /= entry.Value.Count;
+                        xyz[2] /= entry.Value.Count;
+                        //
+                        smoothedVectors.Add(entry.Key, xyz);
+                    }
+                }
+                //
+                globalVectors = smoothedVectors;
+            }
+            // Move midside nodes to to central positions                                                                           
+            Dictionary<int, int[]> midNodeIdNeighbours = new Dictionary<int, int[]>();
+            foreach (var entry in _mesh.Elements)
+            {
+                if (entry.Value is ParabolicTetraElement pte)
+                {
+                    if (!midNodeIdNeighbours.ContainsKey(pte.NodeIds[4]))
+                        midNodeIdNeighbours.Add(pte.NodeIds[4], new int[] { pte.NodeIds[0], pte.NodeIds[1] });
+                    if (!midNodeIdNeighbours.ContainsKey(pte.NodeIds[5]))
+                        midNodeIdNeighbours.Add(pte.NodeIds[5], new int[] { pte.NodeIds[1], pte.NodeIds[2] });
+                    if (!midNodeIdNeighbours.ContainsKey(pte.NodeIds[6]))
+                        midNodeIdNeighbours.Add(pte.NodeIds[6], new int[] { pte.NodeIds[2], pte.NodeIds[0] });
+                    //
+                    if (!midNodeIdNeighbours.ContainsKey(pte.NodeIds[7]))
+                        midNodeIdNeighbours.Add(pte.NodeIds[7], new int[] { pte.NodeIds[0], pte.NodeIds[3] });
+                    if (!midNodeIdNeighbours.ContainsKey(pte.NodeIds[8]))
+                        midNodeIdNeighbours.Add(pte.NodeIds[8], new int[] { pte.NodeIds[1], pte.NodeIds[3] });
+                    if (!midNodeIdNeighbours.ContainsKey(pte.NodeIds[9]))
+                        midNodeIdNeighbours.Add(pte.NodeIds[9], new int[] { pte.NodeIds[2], pte.NodeIds[3] });
+                }
+                else if (entry.Value is ParabolicWedgeElement pwe)
+                {
+                    if (!midNodeIdNeighbours.ContainsKey(pwe.NodeIds[6]))
+                        midNodeIdNeighbours.Add(pwe.NodeIds[6], new int[] { pwe.NodeIds[0], pwe.NodeIds[1] });
+                    if (!midNodeIdNeighbours.ContainsKey(pwe.NodeIds[7]))
+                        midNodeIdNeighbours.Add(pwe.NodeIds[7], new int[] { pwe.NodeIds[1], pwe.NodeIds[2] });
+                    if (!midNodeIdNeighbours.ContainsKey(pwe.NodeIds[8]))
+                        midNodeIdNeighbours.Add(pwe.NodeIds[8], new int[] { pwe.NodeIds[2], pwe.NodeIds[0] });
+                    //
+                    if (!midNodeIdNeighbours.ContainsKey(pwe.NodeIds[9]))
+                        midNodeIdNeighbours.Add(pwe.NodeIds[9], new int[] { pwe.NodeIds[3], pwe.NodeIds[4] });
+                    if (!midNodeIdNeighbours.ContainsKey(pwe.NodeIds[10]))
+                        midNodeIdNeighbours.Add(pwe.NodeIds[10], new int[] { pwe.NodeIds[4], pwe.NodeIds[5] });
+                    if (!midNodeIdNeighbours.ContainsKey(pwe.NodeIds[11]))
+                        midNodeIdNeighbours.Add(pwe.NodeIds[11], new int[] { pwe.NodeIds[5], pwe.NodeIds[3] });
+                    //
+                    if (!midNodeIdNeighbours.ContainsKey(pwe.NodeIds[12]))
+                        midNodeIdNeighbours.Add(pwe.NodeIds[12], new int[] { pwe.NodeIds[0], pwe.NodeIds[3] });
+                    if (!midNodeIdNeighbours.ContainsKey(pwe.NodeIds[13]))
+                        midNodeIdNeighbours.Add(pwe.NodeIds[13], new int[] { pwe.NodeIds[1], pwe.NodeIds[4] });
+                    if (!midNodeIdNeighbours.ContainsKey(pwe.NodeIds[14]))
+                        midNodeIdNeighbours.Add(pwe.NodeIds[14], new int[] { pwe.NodeIds[2], pwe.NodeIds[5] });
+                }
+                else if (entry.Value is ParabolicHexaElement phe)
+                {
+                    if (!midNodeIdNeighbours.ContainsKey(phe.NodeIds[8]))
+                        midNodeIdNeighbours.Add(phe.NodeIds[8], new int[] { phe.NodeIds[0], phe.NodeIds[1] });
+                    if (!midNodeIdNeighbours.ContainsKey(phe.NodeIds[9]))
+                        midNodeIdNeighbours.Add(phe.NodeIds[9], new int[] { phe.NodeIds[1], phe.NodeIds[2] });
+                    if (!midNodeIdNeighbours.ContainsKey(phe.NodeIds[10]))
+                        midNodeIdNeighbours.Add(phe.NodeIds[10], new int[] { phe.NodeIds[2], phe.NodeIds[3] });
+                    if (!midNodeIdNeighbours.ContainsKey(phe.NodeIds[11]))
+                        midNodeIdNeighbours.Add(phe.NodeIds[11], new int[] { phe.NodeIds[3], phe.NodeIds[0] });
+                    //
+                    if (!midNodeIdNeighbours.ContainsKey(phe.NodeIds[12]))
+                        midNodeIdNeighbours.Add(phe.NodeIds[12], new int[] { phe.NodeIds[4], phe.NodeIds[5] });
+                    if (!midNodeIdNeighbours.ContainsKey(phe.NodeIds[13]))
+                        midNodeIdNeighbours.Add(phe.NodeIds[13], new int[] { phe.NodeIds[5], phe.NodeIds[6] });
+                    if (!midNodeIdNeighbours.ContainsKey(phe.NodeIds[14]))
+                        midNodeIdNeighbours.Add(phe.NodeIds[14], new int[] { phe.NodeIds[6], phe.NodeIds[7] });
+                    if (!midNodeIdNeighbours.ContainsKey(phe.NodeIds[15]))
+                        midNodeIdNeighbours.Add(phe.NodeIds[15], new int[] { phe.NodeIds[7], phe.NodeIds[4] });
+                    //
+                    if (!midNodeIdNeighbours.ContainsKey(phe.NodeIds[16]))
+                        midNodeIdNeighbours.Add(phe.NodeIds[16], new int[] { phe.NodeIds[0], phe.NodeIds[4] });
+                    if (!midNodeIdNeighbours.ContainsKey(phe.NodeIds[17]))
+                        midNodeIdNeighbours.Add(phe.NodeIds[17], new int[] { phe.NodeIds[1], phe.NodeIds[5] });
+                    if (!midNodeIdNeighbours.ContainsKey(phe.NodeIds[18]))
+                        midNodeIdNeighbours.Add(phe.NodeIds[18], new int[] { phe.NodeIds[2], phe.NodeIds[6] });
+                    if (!midNodeIdNeighbours.ContainsKey(phe.NodeIds[19]))
+                        midNodeIdNeighbours.Add(phe.NodeIds[19], new int[] { phe.NodeIds[3], phe.NodeIds[7] });
+                }
+                else throw new NotSupportedException();
+            }
+            //
+            double[] vector1;
+            double[] vector2;
+            double[] coor1;
+            double[] coor2;
+            double[] coorMid;
+            double[] coorAvg = new double[3];
+            int[] neighbours;
+            foreach (var entry in globalVectors)
+            {
+                if (midNodeIdNeighbours.TryGetValue(entry.Key, out neighbours))
+                {
+                    if (!globalVectors.TryGetValue(neighbours[0], out vector1)) vector1 = new double[3];
+                    if (!globalVectors.TryGetValue(neighbours[1], out vector2)) vector2 = new double[3];
+                    //
+                    coor1 = _mesh.Nodes[neighbours[0]].Coor.ToArray();
+                    coor1[0] += vector1[0];
+                    coor1[1] += vector1[1];
+                    coor1[2] += vector1[2];
+                    //
+                    coor2 = _mesh.Nodes[neighbours[1]].Coor.ToArray();
+                    coor2[0] += vector2[0];
+                    coor2[1] += vector2[1];
+                    coor2[2] += vector2[2];
+                    //
+                    coorAvg[0] = (coor1[0] + coor2[0]) / 2;
+                    coorAvg[1] = (coor1[1] + coor2[1]) / 2;
+                    coorAvg[2] = (coor1[2] + coor2[2]) / 2;
+                    //
+                    coorMid = _mesh.Nodes[entry.Key].Coor.ToArray();
+                    xyz = entry.Value;
+                    xyz[0] = coorAvg[0] - coorMid[0];
+                    xyz[1] = coorAvg[1] - coorMid[1];
+                    xyz[2] = coorAvg[2] - coorMid[2];
+                }
+            }
+            // Copy data back to components                                                                                         
+            for (int i = 0; i < component1.Length; i++)
+            {
+                component1[i] = 0; component2[i] = 0; component3[i] = 0; componentMag[i] = 0;
+            }
+            int locNodeId;
+            foreach (var entry in globalVectors)
+            {
+                locNodeId = _nodeIdsLookUp[entry.Key];
+                component1[locNodeId] = (float)entry.Value[0];
+                component2[locNodeId] = (float)entry.Value[1];
+                component3[locNodeId] = (float)entry.Value[2];
+                componentMag[locNodeId] = (float)Math.Sqrt(entry.Value[0] * entry.Value[0] + entry.Value[1] * entry.Value[1] +
+                                                           entry.Value[2] * entry.Value[2]);
+            }
         }
         private float[][] GetLocalVectors(string fieldName)
         {
@@ -3941,7 +4195,9 @@ namespace CaeResults
         {
             double[] xyz = new double[3];
             float[][] vectors = GetLocalVectors(fieldName);
+            HashSet<int> nodeIds = new HashSet<int>();
             Dictionary<int, double[]> globalVectors = new Dictionary<int, double[]>();
+            //
             foreach (var entry in _nodeIdsLookUp)
             {
                 xyz[0] = vectors[0][entry.Value];
@@ -3949,7 +4205,10 @@ namespace CaeResults
                 xyz[2] = vectors[2][entry.Value];
                 //
                 if (xyz[0] != 0 || xyz[1] != 0 || xyz[2] != 0)
+                {
                     globalVectors.Add(entry.Key, new double[] { xyz[0], xyz[1], xyz[2] });
+                    nodeIds.Add(entry.Key);
+                }
             }
             //
             return globalVectors;
@@ -4118,8 +4377,8 @@ namespace CaeResults
                     //
                     for (int j = 0; j < stepIncrementIds.Length; j++)
                     {
-                        if (i == 0 && j == 0) continue; // Zero increment - Find all occurances!!!
-                                                        // Field
+                        if (i == 0 && j == 0) continue; // Zero increment - Find all occurrences!!!
+                        // Field
                         values = timeAvgValues[sortedTime[count]];
                         fieldData.StepId = stepIds[i];
                         fieldData.StepIncrementId = stepIncrementIds[j];

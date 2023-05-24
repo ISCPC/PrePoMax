@@ -7,6 +7,7 @@ using CaeGlobals;
 using System.Runtime.Serialization;
 using System.Collections.Concurrent;
 using System.Xml.Linq;
+using System.Diagnostics;
 
 namespace CaeMesh
 {
@@ -7048,6 +7049,7 @@ namespace CaeMesh
         public double[][] GetNodeSetCoor(int[] nodeIds, bool onlyVisible)
         {
             int nodeId;
+            FeNode node;
             List<double[]> coor = new List<double[]>();
             //
             HashSet<int> visibleNodes = new HashSet<int>();
@@ -7056,7 +7058,10 @@ namespace CaeMesh
             for (int i = 0; i < nodeIds.Length; i++)
             {
                 nodeId = nodeIds[i];
-                if (!(onlyVisible && !visibleNodes.Contains(nodeId))) coor.Add(_nodes[nodeIds[i]].Coor);
+                if (!(onlyVisible && !visibleNodes.Contains(nodeId)) && _nodes.TryGetValue(nodeIds[i], out node))
+                {
+                    coor.Add(node.Coor);
+                }
             }
             //
             return coor.ToArray();
@@ -8243,6 +8248,15 @@ namespace CaeMesh
             if (copy) return scaledPartNames;
             else return null;
         }
+        public void ScaleAllParts(double scale)
+        {
+            string[] partNames = _parts.Keys.ToArray();
+            double[] scaleCenter = new double[] { 0, 0, 0 };
+            double[] scaleFactors = new double[] { scale, scale, scale };
+            List<string> reservedPartNames = null;
+            //
+            ScaleParts(partNames, scaleCenter, scaleFactors, false, reservedPartNames);
+        }
         public string[] RotateParts(string[] partNames, double[] rotateCenter, double[] rotateAxis, double rotateAngle, bool copy,
                                     ICollection<string> reservedPartNames)
         {
@@ -8323,8 +8337,10 @@ namespace CaeMesh
             return m;
         }
 
-        public string[] CreatePrismaticBoundaryLayer(int[] geometrySurfaceIds, double thickness)
+        public string[] CreatePrismaticBoundaryLayer(int[] geometrySurfaceIds, double thickness, bool preview,
+                                                     out FeNode[] inpressedNodes)
         {
+            inpressedNodes = null;
             // GeometryId = itemId * 100000 + typeId * 10000 + partId
             List<string> errors = new List<string>();
             int cellId;
@@ -8370,7 +8386,6 @@ namespace CaeMesh
                 if (part == null) continue;
                 if (part.PartType == PartType.Solid)
                 {
-                    //
                     vis = part.Visualization;
                     edgeIdNodeIds = vis.GetNodeIdsByEdges();
                     surfaceIdNodeIds = vis.GetNodeIdsBySurfaces();
@@ -8398,7 +8413,7 @@ namespace CaeMesh
                                        " Boundary layer can not be created.");
                             continue;
                         }
-                    }
+                    }                    
                     // Collect all node normals                                                                                         
                     foreach (var surfaceId in partIdSelectedSurfaceIdEntry.Value)
                     {
@@ -8408,8 +8423,8 @@ namespace CaeMesh
                             cell = vis.Cells[surfaceCellId];
                             cellId = vis.CellIds[surfaceCellId];
                             modifiedCells.Add(cell);
-                            normal = -1 * new Vec3D(ComputeNormalFromFaceCellIndices(cell).Coor);       // only first three nodes are used
-                                                                                                    //
+                            normal = -1 * new Vec3D(ComputeNormalFromFaceCellIndices(cell).Coor);  // only first three nodes are used
+                            //
                             foreach (var nodeId in cell)
                             {
                                 if (nodeIdNormals.TryGetValue(nodeId, out normalsList)) normalsList.Add(normal);
@@ -8425,6 +8440,7 @@ namespace CaeMesh
                     int[] nodeIds = new int[nodeIdNormals.Count];
                     Vec3D[] normals = new Vec3D[nodeIdNormals.Count];
                     Vec3D[] allNodeNormals;
+                    List<FeNode> inpressedNodesList = new List<FeNode>();
                     double alpha;
                     double maxAlpha;
                     double factor;
@@ -8464,8 +8480,16 @@ namespace CaeMesh
                         oldNodeId = nodeIds[i];
                         newPosition = new Vec3D(_nodes[oldNodeId].Coor) + thickness * normals[i];
                         node = new FeNode(_maxNodeId, newPosition.Coor);
-                        _nodes.Add(node.Id, node);
+                        inpressedNodesList.Add(node);
                         oldNewNodeIds.Add(oldNodeId, node.Id);
+                    }
+                    inpressedNodes = inpressedNodesList.ToArray();
+                    if (preview)
+                        return errors.ToArray();
+                    // Add inpressed nodes to the mesh
+                    foreach (var inpressedNode in inpressedNodesList)
+                    {
+                        _nodes.Add(inpressedNode.Id, inpressedNode);
                     }
                     // Replace old element nodes for the nodes pressed-into the part                                                    
                     HashSet<int> modifiedElementNodeIds = new HashSet<int>();

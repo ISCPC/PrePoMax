@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
 using CaeGlobals;
+using System.Runtime.InteropServices;
 
 namespace FileInOut.Output.Calculix
 {
@@ -15,7 +16,9 @@ namespace FileInOut.Output.Calculix
         // Variables                                                                                                                
         private ImportedPressure _load;
         private CLoad[] _cLoads;
+        private DLoad[] _dLoads;
         private ComplexLoadTypeEnum _complexLoadType;
+        private FeSurfaceFaceTypes _surfaceFaceType;
 
 
         // Properties                                                                                                               
@@ -26,8 +29,11 @@ namespace FileInOut.Output.Calculix
         {
             _load = load;
             _load.ImportPressure();
-            _cLoads = model.GetNodalLoadsFromVariablePressureLoad(_load);
+            _cLoads = model.GetNodalCLoadsFromVariablePressureLoad(_load);
+            //_dLoads = model.GetNodalDLoadsFromVariablePressureLoad(_load);
             _complexLoadType = complexLoadType;
+            //
+            _surfaceFaceType = model.Mesh.Surfaces[load.SurfaceName].SurfaceFaceTypes;
         }
 
 
@@ -71,5 +77,57 @@ namespace FileInOut.Output.Calculix
             }
             return sb.ToString();
         }
+
+
+
+        //public override string GetKeywordString()
+        //{
+        //    StringBuilder sb = new StringBuilder();
+        //    sb.AppendLine("** Name: " + _load.Name);
+        //    string amplitude = "";
+        //    if (_load.AmplitudeName != Load.DefaultAmplitudeName) amplitude = ", Amplitude=" + _load.AmplitudeName;
+        //    //
+        //    string loadCase = GetComplexLoadCase(_complexLoadType);
+        //    //
+        //    sb.AppendFormat("*Dload{0}{1}{2}", amplitude, loadCase, Environment.NewLine);
+        //    //
+        //    return sb.ToString();
+        //}
+        //public override string GetDataString()
+        //{
+        //    StringBuilder sb = new StringBuilder();
+        //    //
+        //    double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg);
+        //    //
+        //    if (_dLoads != null)
+        //    {
+        //        string faceKey = "";
+        //        FeFaceName faceName;
+        //        double magnitude;
+        //        //
+        //        foreach (var dLoad in _dLoads)
+        //        {
+        //            faceName = (FeFaceName)Enum.Parse(typeof(FeFaceName), dLoad.Name);
+        //            if (_load.TwoD)
+        //            {
+        //                if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2) throw new NotSupportedException();
+        //                else if (faceName == FeFaceName.S3) faceKey = "P1";
+        //                else if (faceName == FeFaceName.S4) faceKey = "P2";
+        //                else if (faceName == FeFaceName.S5) faceKey = "P3";
+        //                else if (faceName == FeFaceName.S6) faceKey = "P4";
+        //            }
+        //            else
+        //            {
+        //                faceKey = "P" + faceName.ToString()[1];
+        //            }
+        //            //
+        //            magnitude = ratio * dLoad.Magnitude;
+        //            if (_surfaceFaceType == FeSurfaceFaceTypes.ShellFaces && faceName == FeFaceName.S2) magnitude *= -1;
+        //            //
+        //            sb.AppendFormat("{0}, {1}, {2}", dLoad.SurfaceName, faceKey, magnitude.ToCalculiX16String()).AppendLine();
+        //        }
+        //    }
+        //    return sb.ToString();
+        //}
     }
 }

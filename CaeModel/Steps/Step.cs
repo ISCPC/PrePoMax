@@ -139,47 +139,57 @@ namespace CaeModel
             _fieldOutputs.Add(fieldOutput.Name, fieldOutput);
         }
         public abstract bool IsBoundaryConditionSupported(BoundaryCondition boundaryCondition);
-        public void AddBoundaryCondition(BoundaryCondition boundaryCondition)
+        public bool AddBoundaryCondition(BoundaryCondition boundaryCondition)
         {
             if (IsBoundaryConditionSupported(boundaryCondition))
             {
                 boundaryCondition.Complex = this is SteadyStateDynamicsStep;
                 _boundayConditions.Add(boundaryCondition.Name, boundaryCondition);
+                return true;
             }
+            return false;
         }
-        public void ReplaceBoundaryCondition(string oldBoundaryConditionName, BoundaryCondition boundaryCondition)
+        public bool ReplaceBoundaryCondition(string oldBoundaryConditionName, BoundaryCondition boundaryCondition)
         {
             if (IsBoundaryConditionSupported(boundaryCondition))
             {
                 boundaryCondition.Complex = this is SteadyStateDynamicsStep;
                 _boundayConditions.Replace(oldBoundaryConditionName, boundaryCondition.Name, boundaryCondition);
+                return true;
             }
+            return false;
         }
         public bool IsLoadSupported(Load load)
         {
             return IsLoadTypeSupported(load.GetType());
         }
         public abstract bool IsLoadTypeSupported(Type loadType);
-        public void AddLoad(Load load)
+        public bool AddLoad(Load load)
         {
             if (IsLoadSupported(load))
             {
                 load.Complex = this is SteadyStateDynamicsStep;
                 _loads.Add(load.Name, load);
+                return true;
             }
+            return false;
         }
-        public void ReplaceLoad(string oldLoadName, Load load)
+        public bool ReplaceLoad(string oldLoadName, Load load)
         {
             if (IsLoadSupported(load))
             {
                 load.Complex = this is SteadyStateDynamicsStep;
                 _loads.Replace(oldLoadName, load.Name, load);
+                return true;
             }
+            return false;
         }
         public abstract bool IsDefinedFieldSupported(DefinedField definedField);
         public void AddDefinedField(DefinedField definedField)
         {
-            if (IsDefinedFieldSupported(definedField)) _definedFields.Add(definedField.Name, definedField);
+            if (!IsDefinedFieldSupported(definedField)) definedField.Active = false;
+            //
+            _definedFields.Add(definedField.Name, definedField);
         }
 
         // ISerialization

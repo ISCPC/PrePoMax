@@ -206,11 +206,12 @@ namespace PrePoMax.Forms
             bool addCoupledTemDispStep = false;
             bool cannotAdd;
             //
-            if (prevOrLastStep is BoundaryDisplacementStep)
+            //if (prevOrLastStep is BoundaryDisplacementStep)
             {
                 // no possible steps to add
             }
-            else if (prevOrLastStep is SlipWearStep)
+            //else if (prevOrLastStep is SlipWearStep)
+            if (prevOrLastStep is SlipWearStep)
             {
                 addSlipWearStep = true;
                 addBoundaryDisplacementStep = true; // only one possibility
@@ -232,6 +233,19 @@ namespace PrePoMax.Forms
                 addHeatTransferStep = true;
                 addUncoupledTemDispStep = true;
                 addCoupledTemDispStep = true;
+                // Overwrite all possibilities
+                if (true)
+                {
+                    addStaticStep = true;
+                    addFrequencyStep = true;
+                    addBuckleStep = true;
+                    addModalDynamicsStep = true;
+                    addSteadyStepDynamicsStep = true;
+                    addDynamicStep = true;
+                    addHeatTransferStep = true;
+                    addUncoupledTemDispStep = true;
+                    addCoupledTemDispStep = true;
+                }
             }
             //
             cannotAdd = !(addStaticStep || addSlipWearStep || addBoundaryDisplacementStep || addFrequencyStep || addBuckleStep ||

@@ -65,8 +65,6 @@ namespace CaeMesh
             {
                 for (int j = i + 1; j < contactSurfaces.Length; j++)
                 {
-                    if (i ==0 && j == 8)
-                        i = i;
                     if (CheckSurfaceToSurfaceDistance(contactSurfaces[i], contactSurfaces[j], distance, angleRad))
                     {
                         contactSurfacePairs.Add(new ContactSurface[] { contactSurfaces[i], contactSurfaces[j] });

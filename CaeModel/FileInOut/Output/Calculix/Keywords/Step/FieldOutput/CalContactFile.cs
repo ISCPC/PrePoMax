@@ -28,7 +28,8 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            string frequency = _contactFieldOutput.Frequency > 1 ? ", Frequency=" + _contactFieldOutput.Frequency : "";
+            //string frequency = _contactFieldOutput.Frequency > 1 ? ", Frequency=" + _contactFieldOutput.Frequency : "";
+            string frequency = ", Frequency=" + _contactFieldOutput.Frequency;
             string lastIterations = _contactFieldOutput.LastIterations ? ", Last iterations" : "";
             //
             return string.Format("*Contact file{0}{1}{2}", frequency, lastIterations, Environment.NewLine);

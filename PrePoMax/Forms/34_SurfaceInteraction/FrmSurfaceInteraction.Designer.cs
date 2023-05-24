@@ -63,7 +63,7 @@
             // tvProperties
             // 
             this.tvProperties.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.tvProperties.Location = new System.Drawing.Point(6, 38);
+            this.tvProperties.Location = new System.Drawing.Point(5, 38);
             this.tvProperties.Name = "tvProperties";
             treeNode1.Name = "Surface Behavior";
             treeNode1.Text = "Surface Behavior";
@@ -220,6 +220,7 @@
             this.dgvData.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvData.EnableCutMenu = true;
             this.dgvData.EnablePasteMenu = true;
+            this.dgvData.EnablePlotMenu = true;
             this.dgvData.Location = new System.Drawing.Point(3, 3);
             this.dgvData.Name = "dgvData";
             this.dgvData.Size = new System.Drawing.Size(339, 252);

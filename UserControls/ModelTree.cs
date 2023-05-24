@@ -1440,17 +1440,18 @@ namespace UserControls
                 foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
                 {
                     if (selectedNode.Tag == null) continue;
-
+                    //
                     if (CanDeactivate(selectedNode))
                     {
                         items.Add((NamedClass)selectedNode.Tag);
                         stepName = null;
-                        if (tree.SelectedNode.Parent != null && tree.SelectedNode.Parent.Parent != null && tree.SelectedNode.Parent.Parent.Tag is Step)
-                            stepName = tree.SelectedNode.Parent.Parent.Text;
+                        if (selectedNode.Parent != null && selectedNode.Parent.Parent != null
+                            && selectedNode.Parent.Parent.Tag is Step)
+                            stepName = selectedNode.Parent.Parent.Text;
                         stepNames.Add(stepName);
                     }
                 }
-
+                //
                 RenderingOff?.Invoke();
                 bool activate = (sender == tsmiActivate);
                 ActivateDeactivateEvent?.Invoke(items.ToArray(), activate, stepNames.ToArray());

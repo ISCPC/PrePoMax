@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
@@ -302,6 +303,11 @@ namespace CaeMesh
             //Encoding encoding = Encoding.Unicode;
             System.IO.File.WriteAllText(fileName, sb.ToString());
         }
+        public MeshingParameters DeepCopy()
+        {
+            return new MeshingParameters(this);
+        }
+        //
         static public bool Equals(MeshingParameters meshingParameters1, MeshingParameters meshingParameters2)
         {
             if (meshingParameters1 == null) return false;

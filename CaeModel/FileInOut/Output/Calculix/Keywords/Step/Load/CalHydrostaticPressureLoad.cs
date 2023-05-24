@@ -25,7 +25,7 @@ namespace FileInOut.Output.Calculix
         public CalHydrostaticPressureLoad(FeModel model, HydrostaticPressure load, ComplexLoadTypeEnum complexLoadType)
         {
             _load = load;
-            _cLoads = model.GetNodalLoadsFromVariablePressureLoad(_load);
+            _cLoads = model.GetNodalCLoadsFromVariablePressureLoad(_load);
             _complexLoadType = complexLoadType;
         }
 

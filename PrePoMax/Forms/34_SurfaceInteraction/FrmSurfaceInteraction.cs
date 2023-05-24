@@ -47,7 +47,10 @@ namespace PrePoMax.Forms
                 _pages[i++] = tabPage;
             }
             //
-            this.lvAddedProperties.ListViewItemSorter = new ListViewItemComparer(0);
+            int count = 0;
+            Dictionary<string, int> namePosition = new Dictionary<string, int>();
+            foreach (TreeNode node in tvProperties.Nodes) namePosition.Add(node.Text, count++);
+            lvAddedProperties.ListViewItemSorter = new ListViewItemComparer(0, namePosition);
             //
             ClearControls();
         }

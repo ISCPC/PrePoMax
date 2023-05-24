@@ -27,7 +27,7 @@ namespace PrePoMax
         [DescriptionAttribute("Select the surface for the creation of the load.")]
         [Id(3, 2)]
         public string SurfaceName { get { return _importedPressure.SurfaceName; } set {_importedPressure.SurfaceName = value;} }
-        //
+        ////
         [CategoryAttribute("Pressure magnitude")]
         [OrderedDisplayName(0, 10, "Import from file")]
         [DescriptionAttribute("Select the file from which the pressure results will be imported.")]
@@ -84,20 +84,31 @@ namespace PrePoMax
             get { return _importedPressure.InterpolatorType; }
             set { _importedPressure.InterpolatorType = value; }
         }
-        ////
+        //
         [CategoryAttribute("Pressure magnitude")]
-        [OrderedDisplayName(4, 10, "Scale factor")]
-        [DescriptionAttribute("Value of the pressure scale factor.")]
+        [OrderedDisplayName(4, 10, "Magnitude factor")]
+        [DescriptionAttribute("Value of the pressure magnitude scale factor.")]
         [TypeConverter(typeof(StringDoubleConverter))]
         [Id(5, 3)]
-        public double ScaleFactor { get { return _importedPressure.ScaleFactor; } set { _importedPressure.ScaleFactor = value; } }
-        //
+        public double MagnitudeFactor { get { return _importedPressure.MagnitudeFactor; } set { _importedPressure.MagnitudeFactor = value; } }
+        ////
         [CategoryAttribute("Pressure phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Value of the pressure phase.")]
         [TypeConverter(typeof(StringAngleDegConverter))]
         [Id(1, 4)]
         public double Phase { get { return _importedPressure.PhaseDeg; } set { _importedPressure.PhaseDeg = value; } }
+        ////
+        [CategoryAttribute("Imported geometry")]
+        [OrderedDisplayName(0, 10, "Scale fator")]
+        [DescriptionAttribute("Value of the imported geometry scale factor.")]
+        [TypeConverter(typeof(StringDoubleConverter))]
+        [Id(1, 5)]
+        public double GeomScaleFactor
+        {
+            get { return _importedPressure.GeomScaleFactor; }
+            set { _importedPressure.GeomScaleFactor = value; }
+        }
         //
         public override string AmplitudeName
         {

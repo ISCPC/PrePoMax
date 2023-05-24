@@ -28,7 +28,8 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            string frequency = _elementHistoryOutput.Frequency > 1 ? ", Frequency=" + _elementHistoryOutput.Frequency : "";
+            //string frequency = _elementHistoryOutput.Frequency > 1 ? ", Frequency=" + _elementHistoryOutput.Frequency : "";
+            string frequency = ", Frequency=" + _elementHistoryOutput.Frequency;
             string regionName = ", Elset=" + _elementHistoryOutput.RegionName;
             string totals = "";
             if (_elementHistoryOutput.TotalsType == TotalsTypeEnum.Yes) totals = ", Totals=Yes";

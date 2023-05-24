@@ -227,64 +227,79 @@ namespace CaeResults
         }
         private void ComputeVectorFieldInvariant()
         {
-            _components.Remove(FOComponentNames.All);
-            if (_components.Count != 3) throw new NotSupportedException();
-            //
             int count = 0;
-            float[][] values = new float[3][];
-            foreach (var entry in _components)
-            {
-                values[count++] = entry.Value.Values;
-            }
+            count += _components.ContainsKey(FOComponentNames.All) ? 1 : 0;
             //
-            float[] magnitude = new float[values[0].Length];
-            for (int i = 0; i < magnitude.Length; i++)
+            if (_components.Count - count == 3)
             {
-                magnitude[i] = (float)Math.Sqrt(values[0][i] * values[0][i] +
-                                                values[1][i] * values[1][i] +
-                                                values[2][i] * values[2][i]);
+                _components.Remove(FOComponentNames.All);
+                //
+                count = 0;
+                float[][] values = new float[3][];
+                foreach (var entry in _components)
+                {
+                    values[count++] = entry.Value.Values;
+                }
+                //
+                float[] magnitude = new float[values[0].Length];
+                for (int i = 0; i < magnitude.Length; i++)
+                {
+                    magnitude[i] = (float)Math.Sqrt(values[0][i] * values[0][i] +
+                                                    values[1][i] * values[1][i] +
+                                                    values[2][i] * values[2][i]);
 
+                }
+                _components.Insert(0, FOComponentNames.All, new FieldComponent(FOComponentNames.All, magnitude, true));
             }
-            _components.Insert(0, FOComponentNames.All, new FieldComponent(FOComponentNames.All, magnitude, true));
         }
         private void ComputeTensorFieldInvariant()
         {
-            _components.Remove(FOComponentNames.Mises);
-            _components.Remove(FOComponentNames.Tresca);
-            _components.Remove(FOComponentNames.SgnMaxAbsPri);
-            _components.Remove(FOComponentNames.PrincipalMax);
-            _components.Remove(FOComponentNames.PrincipalMid);
-            _components.Remove(FOComponentNames.PrincipalMin);
-            if (_components.Count != 6) throw new NotSupportedException();
-            //
             int count = 0;
-            float[][] values = new float[6][];
-            foreach (var entry in _components)
-            {
-                values[count++] = entry.Value.Values;
-            }
+            count += _components.ContainsKey(FOComponentNames.Mises) ? 1 : 0;
+            count += _components.ContainsKey(FOComponentNames.Tresca) ? 1 : 0;
+            count += _components.ContainsKey(FOComponentNames.SgnMaxAbsPri) ? 1 : 0;
+            count += _components.ContainsKey(FOComponentNames.PrincipalMax) ? 1 : 0;
+            count += _components.ContainsKey(FOComponentNames.PrincipalMid) ? 1 : 0;
+            count += _components.ContainsKey(FOComponentNames.PrincipalMin) ? 1 : 0;
             //
-            float[] vonMises = new float[values[0].Length];
-            float a, b, c;
-            for (int i = 0; i < vonMises.Length; i++)
+            if (_components.Count - count == 6)
             {
-                a = values[0][i] - values[1][i];
-                b = values[1][i] - values[2][i];
-                c = values[2][i] - values[0][i];
-                vonMises[i] = (float)Math.Sqrt(0.5f * (a * a + b * b + c * c +
-                              6 * (values[3][i] * values[3][i] + values[4][i] * values[4][i] + values[5][i] * values[5][i])));
+                _components.Remove(FOComponentNames.Mises);
+                _components.Remove(FOComponentNames.Tresca);
+                _components.Remove(FOComponentNames.SgnMaxAbsPri);
+                _components.Remove(FOComponentNames.PrincipalMax);
+                _components.Remove(FOComponentNames.PrincipalMid);
+                _components.Remove(FOComponentNames.PrincipalMin);
+                //
+                count = 0;
+                float[][] values = new float[6][];
+                foreach (var entry in _components)
+                {
+                    values[count++] = entry.Value.Values;
+                }
+                //
+                float[] vonMises = new float[values[0].Length];
+                float a, b, c;
+                for (int i = 0; i < vonMises.Length; i++)
+                {
+                    a = values[0][i] - values[1][i];
+                    b = values[1][i] - values[2][i];
+                    c = values[2][i] - values[0][i];
+                    vonMises[i] = (float)Math.Sqrt(0.5f * (a * a + b * b + c * c +
+                                  6 * (values[3][i] * values[3][i] + values[4][i] * values[4][i] + values[5][i] * values[5][i])));
+                }
+                // Mises
+                _components.Insert(0, FOComponentNames.Mises, new FieldComponent(FOComponentNames.Mises, vonMises, true));
+                // Principal
+                ComputeAndAddPrincipalInvariants(values);
+                // Tresca
+                float[] tresca = new float[values[0].Length];
+                float[] eMax = GetComponentValues(FOComponentNames.PrincipalMax);
+                float[] eMin = GetComponentValues(FOComponentNames.PrincipalMin);
+                for (int i = 0; i < tresca.Length; i++) tresca[i] = eMax[i] - eMin[i];
+                //
+                _components.Insert(1, FOComponentNames.Tresca, new FieldComponent(FOComponentNames.Tresca, tresca, true));
             }
-            // Mises
-            _components.Insert(0, FOComponentNames.Mises, new FieldComponent(FOComponentNames.Mises, vonMises, true));
-            // Principal
-            ComputeAndAddPrincipalInvariants(values);
-            // Tresca
-            float[] tresca = new float[values[0].Length];
-            float[] eMax = GetComponentValues(FOComponentNames.PrincipalMax);
-            float[] eMin = GetComponentValues(FOComponentNames.PrincipalMin);
-            for (int i = 0; i < tresca.Length; i++) tresca[i] = eMax[i] - eMin[i];
-            //
-            _components.Insert(1, FOComponentNames.Tresca, new FieldComponent(FOComponentNames.Tresca, tresca, true));
         }
         private void ComputeAndAddPrincipalInvariants(float[][] values)
         {

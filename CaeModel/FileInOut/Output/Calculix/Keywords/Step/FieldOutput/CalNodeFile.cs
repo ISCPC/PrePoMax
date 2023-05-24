@@ -28,7 +28,8 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            string frequency = _nodalFieldOutput.Frequency > 1 ? ", Frequency=" + _nodalFieldOutput.Frequency : "";
+            //string frequency = _nodalFieldOutput.Frequency > 1 ? ", Frequency=" + _nodalFieldOutput.Frequency : "";
+            string frequency = ", Frequency=" + _nodalFieldOutput.Frequency;
             string lastIterations = _nodalFieldOutput.LastIterations ? ", Last iterations" : "";
             string contactElements = _nodalFieldOutput.ContactElements ? ", Contact elements" : "";
             //
