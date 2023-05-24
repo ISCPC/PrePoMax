@@ -2825,6 +2825,7 @@ namespace UserControls
             if (node.TreeView == cltvModel && node.Tag is FeNodeSet) return true;
             else if (node.TreeView == cltvModel && node.Tag is FeElementSet) return true;
             else if (node.Tag is Material) return true;
+            else if (node.Tag is Constraint) return true;
             else if (node.Tag is SurfaceInteraction) return true;
             else if (node.Tag is Step) return true;
             else return false;

@@ -166,6 +166,7 @@
     <Compile Include="Command\0050_Model\CSetNewModelProperties.cs" />
     <Compile Include="Command\0050_Model\CCreateBoundaryLayer.cs" />
     <Compile Include="Command\0061_Material\CDuplicateMaterial.cs" />
+    <Compile Include="Command\0071_Constraint\CDuplicateConstraints.cs" />
     <Compile Include="Command\0071_Constraint\CMergeByMasterSlaveConstraints.cs" />
     <Compile Include="Command\0071_Constraint\CSwapMasterSlaveConstraints.cs" />
     <Compile Include="Command\0072_SurfaceInteraction\CAddSurfaceInteraction.cs" />

@@ -5779,6 +5779,11 @@ namespace PrePoMax
             Commands.CReplaceConstraint comm = new Commands.CReplaceConstraint(oldConstraintName, newConstraint);
             _commands.AddAndExecute(comm);
         }
+        public void DuplicateConstraintsCommnad(string[] constraintNames)
+        {
+            Commands.CDuplicateConstraints comm = new Commands.CDuplicateConstraints(constraintNames);
+            _commands.AddAndExecute(comm);
+        }
         public void SwapMasterSlaveConstraintsCommand(string[] constraintNames)
         {
             Commands.CSwapMasterSlaveConstraints comm = new Commands.CSwapMasterSlaveConstraints(constraintNames);
@@ -5837,6 +5842,19 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldConstraintName, constraint, null);
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void DuplicateConstraints(string[] constraintNames)
+        {
+            Constraint newConstraint;
+            foreach (var constraintName in constraintNames)
+            {
+                newConstraint = GetConstraint(constraintName).DeepClone();
+                newConstraint.Name = NamedClass.GetNameWithoutLastValue(newConstraint.Name);
+                newConstraint.Name = GetConstraintNames().GetNextNumberedKey(newConstraint.Name);
+                if (newConstraint.MasterCreationData != null) newConstraint.MasterRegionType = RegionTypeEnum.Selection;
+                if (newConstraint.SlaveCreationData != null) newConstraint.SlaveRegionType = RegionTypeEnum.Selection;
+                AddConstraint(newConstraint);
+            }
         }
         public void SwapMasterSlaveConstraints(string[] constraintNames)
         {

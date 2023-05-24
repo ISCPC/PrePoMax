@@ -898,7 +898,11 @@ namespace PrePoMax
             {
                 ApplyActionOnItems<FeNodeSet>(items, DuplicateNodeSets);
                 ApplyActionOnItems<FeElementSet>(items, DuplicateElementSets);
+                //
                 ApplyActionOnItems<Material>(items, DuplicateMaterials);
+                //
+                ApplyActionOnItems<CaeModel.Constraint>(items, DuplicateConstraints);
+                //
                 ApplyActionOnItems<SurfaceInteraction>(items, DuplicateSurfaceInteractions);
                 //
                 ApplyActionOnItems<Step>(items, DuplicateSteps);
@@ -4216,6 +4220,17 @@ namespace PrePoMax
                  ExceptionTools.Show(this, ex);
              }
         }
+        private void tsmiDuplicateConstraint_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Constraints", _controller.GetAllConstraints(), DuplicateConstraints);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiSwapMasterSlaveConstraint_Click(object sender, EventArgs e)
         {
             try
@@ -4279,6 +4294,10 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmConstraint;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmConstraint, "Edit Constraint", constraintName);
+        }
+        private void DuplicateConstraints(string[] constraintNames)
+        {
+            _controller.DuplicateConstraintsCommnad(constraintNames);
         }
         private void SwapMasterSlaveConstraints(string[] constraintNames)
         {
