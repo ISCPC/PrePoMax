@@ -2540,8 +2540,31 @@ namespace UserControls
                         {
                             cltv.SetNodeForeColor(node, Color.Black);
                             //
-                            if (node.Nodes.Count == 0 || !node.IsExpanded) SetNodeImage(node, "Dots.ico");
-                            else SetNodeImage(node, "Dots_t.ico");
+                            if (node.Tag is BasePart bp)
+                            {
+                                PartType partType = bp.PartType;
+                                //
+                                if (partType == PartType.Solid || partType == PartType.SolidAsShell)
+                                {
+                                    if (bp.Color.A == 255) SetNodeImage(node, "Solid.ico");
+                                    else SetNodeImage(node, "Solid_transparent.ico");
+                                }
+                                else if (partType == PartType.Shell)
+                                {
+                                    if (bp.Color.A == 255) SetNodeImage(node, "Shell.ico");
+                                    else SetNodeImage(node, "Shell_transparent.ico");
+                                }
+                                else if (partType == PartType.Compound)
+                                {
+                                    if (bp.Color.A == 255) SetNodeImage(node, "Compound.ico");
+                                    else SetNodeImage(node, "Compound_transparent.ico");
+                                }
+                            }
+                            else
+                            {
+                                if (node.Nodes.Count == 0 || !node.IsExpanded) SetNodeImage(node, "Dots.ico");
+                                else SetNodeImage(node, "Dots_t.ico");
+                            }
                             //
                             if (item is GeometryPart gp)
                             {

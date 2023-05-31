@@ -105,7 +105,7 @@ namespace PrePoMax
         {
             base.UpdateVisibility();
             //
-            _dctd.GetProperty(nameof(Nlgeom)).SetIsBrowsable(false);
+            //_dctd.GetProperty(nameof(Nlgeom)).SetIsBrowsable(false);
             //
             bool browsable = _dynamicStep.Damping.DampingType == DampingTypeEnum.Rayleigh;
             _dctd.GetProperty(nameof(AlphaRayleigh)).SetIsBrowsable(browsable);

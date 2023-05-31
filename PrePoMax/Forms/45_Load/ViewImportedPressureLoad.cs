@@ -104,10 +104,10 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the imported geometry scale factor.")]
         [TypeConverter(typeof(StringDoubleConverter))]
         [Id(1, 5)]
-        public double GeomScaleFactor
+        public double GeometryScaleFactor
         {
-            get { return _importedPressure.GeomScaleFactor; }
-            set { _importedPressure.GeomScaleFactor = value; }
+            get { return _importedPressure.GeometryScaleFactor; }
+            set { _importedPressure.GeometryScaleFactor = value; }
         }
         //
         public override string AmplitudeName

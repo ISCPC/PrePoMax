@@ -44,8 +44,8 @@ namespace PrePoMax
         public static string CalculixSettingsName = "Calculix";
         public static string PostSettingsName = "Post-processing";
         public static string LegendSettingsName = "Legend";
-        public static string StatusBlockSettingsName = "Status block";
-        public static string UnitSystemSettingsName = "Unit system";
+        public static string StatusBlockSettingsName = "Status Block";
+        public static string UnitSystemSettingsName = "Unit System";
         //
         public static string NetGenMesher = @"\NetGen\NetGenMesher.exe";
         public static string MmgsMesher = @"\NetGen\mmgs.exe";

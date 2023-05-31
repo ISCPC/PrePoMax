@@ -219,7 +219,7 @@
             this.tsmiSpaceDelete,
             this.tsmiDelete});
             this.cmsTree.Name = "cmsTree";
-            this.cmsTree.Size = new System.Drawing.Size(212, 864);
+            this.cmsTree.Size = new System.Drawing.Size(212, 842);
             // 
             // tsmiCreate
             // 
@@ -584,6 +584,12 @@
             this.ilIcons.Images.SetKeyName(32, "Warning.ico");
             this.ilIcons.Images.SetKeyName(33, "Dots.ico");
             this.ilIcons.Images.SetKeyName(34, "Dots_t.ico");
+            this.ilIcons.Images.SetKeyName(35, "Compound_transparent.ico");
+            this.ilIcons.Images.SetKeyName(36, "Solid_transparent.ico");
+            this.ilIcons.Images.SetKeyName(37, "Solid.ico");
+            this.ilIcons.Images.SetKeyName(38, "Shell.ico");
+            this.ilIcons.Images.SetKeyName(39, "Shell_transparent.ico");
+            this.ilIcons.Images.SetKeyName(40, "Compound.ico");
             // 
             // ilStatusIcons
             // 

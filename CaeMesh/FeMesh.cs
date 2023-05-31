@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.Collections.Concurrent;
 using System.Xml.Linq;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CaeMesh
 {
@@ -4285,6 +4286,20 @@ namespace CaeMesh
             }
             //
             return new double[3];
+        }
+
+        public BoundingBox GetSurfaceBoundingBox(string surfaceName)
+        {
+            FeSurface surface = _surfaces[surfaceName];
+            FeNodeSet nodeSet = _nodeSets[surface.NodeSetName];
+            BoundingBox bb = new BoundingBox();
+            if (nodeSet.Labels.Length > 0)
+            {
+                bb.IncludeFirstCoor(_nodes[nodeSet.Labels[0]].Coor);
+                //
+                for (int i = 0; i < nodeSet.Labels.Length; i++) bb.IncludeCoorFast(_nodes[nodeSet.Labels[i]].Coor);
+            }
+            return bb;
         }
         #endregion #################################################################################################################
 

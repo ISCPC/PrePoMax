@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 using Calculix = FileInOut.Output.Calculix;
 using System.IO;
 using System.Drawing;
+using System.Data;
 
 namespace CaeModel
 {
@@ -1321,7 +1322,7 @@ namespace CaeModel
             //
             return loads.ToArray();
         }
-        public DLoad[] GetNodalDLoadsFromVariablePressureLoad(VariablePressure load)
+        public DLoad[] GetNodalDLoadsFromVariablePressureLoad_(VariablePressure load)
         {
             // Surface
             FeSurface surface = _mesh.Surfaces[load.SurfaceName];
@@ -1344,12 +1345,6 @@ namespace CaeModel
                                                         out bool shellElement);
                     // Pressure
                     pressure = load.GetPressureForPoint(faceCenter);
-
-                    // Invert face normal in case of S1 or S2 shell face
-                    //if (shellElement && (entry.Key == FeFaceName.S1 || entry.Key == FeFaceName.S2)) sign = -1;
-                    //else sign = 1;
-                    //pressure *= sign;
-
                     // Pressure loads
                     if (pressure != 0)
                     {
@@ -1359,6 +1354,43 @@ namespace CaeModel
                         loads.Add(dLoad);
                     }
                 }
+            }
+            //
+            return loads.ToArray();
+        }
+        public DLoad[] GetNodalDLoadsFromVariablePressureLoad(VariablePressure load)
+        {
+            // Surface
+            FeSurface surface = _mesh.Surfaces[load.SurfaceName];
+            if (surface.ElementFaces == null) return null;
+            //
+            int elementCount = 0;
+            foreach (var entry in surface.ElementFaces) elementCount += _mesh.ElementSets[entry.Value].Labels.Length;
+            DLoad[] loads = new DLoad[elementCount];
+            //
+            elementCount = 0;
+            foreach (var entry in surface.ElementFaces) // this are faces S1, S2, ...
+            {
+                // Parallel
+                Parallel.For(0, _mesh.ElementSets[entry.Value].Labels.Length, i =>
+                //for (int i = 0; i < _mesh.ElementSets[entry.Value].Labels.Length; i++)
+                {
+                    int elementId = _mesh.ElementSets[entry.Value].Labels[i];
+                    _mesh.GetElementFaceCenterAndNormal(elementId, entry.Key, out double[] faceCenter, out double[] faceNormal,
+                                                        out bool shellElement);
+                    // Pressure
+                    double pressure = load.GetPressureForPoint(faceCenter);
+                    // Pressure loads
+                    if (pressure != 0)
+                    {
+                        DLoad dLoad = new DLoad(entry.Key.ToString(), elementId.ToString(), RegionTypeEnum.ElementId,
+                                          pressure, load.TwoD, load.Complex, load.PhaseDeg);
+                        dLoad.AmplitudeName = load.AmplitudeName;
+                        loads[elementCount + i] = dLoad;
+                    }
+                }
+                );
+                elementCount += _mesh.ElementSets[entry.Value].Labels.Length;
             }
             //
             return loads.ToArray();

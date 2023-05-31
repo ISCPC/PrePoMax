@@ -1645,12 +1645,13 @@ namespace vtkControl
             _renderWindow.LineSmoothingOn();
             //_renderWindow.PolygonSmoothingOn();
             _renderWindow.SetMultiSamples(2);
-            //Camera is located at (0, 0, 1), the camera is looking at (0, 0, 0), and up is (0, 1, 0).
+            // Camera lights are defined in camera coordinate system where:
+            // camera is located at (0, 0, 1), the camera is looking at (0, 0, 0), and up is (0, 1, 0).
             _light1 = vtkLight.New();
             _light1.SetPosition(-1, 1, 1);
             _light1.SetFocalPoint(0, 0, 0);
             _light1.SetColor(1, 1, 1);
-            _light1.SetIntensity(0.5);
+            _light1.SetIntensity(0.4);
             _light1.SetLightTypeToCameraLight();
             _renderer.AddLight(_light1);
             _overlayRenderer.AddLight(_light1);
@@ -1660,7 +1661,7 @@ namespace vtkControl
             _light2.SetPosition(1, 1, 1);
             _light2.SetFocalPoint(0, 0, 0);
             _light2.SetColor(1, 1, 1);
-            _light2.SetIntensity(0.5);
+            _light2.SetIntensity(0.4);
             _light2.SetLightTypeToCameraLight();
             _renderer.AddLight(_light2);
             _overlayRenderer.AddLight(_light2);
@@ -1670,11 +1671,11 @@ namespace vtkControl
             _light3.SetPosition(0, -1, 0);
             _light3.SetFocalPoint(0, 0, 0);
             _light3.SetColor(1, 1, 1);
-            _light3.SetSpecularColor(0, 0, 0);
-            _light3.SetIntensity(0.3);
+            _light3.SetIntensity(0.4);
             _light3.SetLightTypeToCameraLight();
-            _light3.SwitchOff();
             _renderer.AddLight(_light3);
+            _overlayRenderer.AddLight(_light3);
+            _selectionRenderer.AddLight(_light3);
             // Coordinate system
             vtkAxesActor axes = vtkAxesActor.New();
             axes.GetXAxisTipProperty().SetColor(0.706, 0.016, 0.150);
@@ -3756,8 +3757,6 @@ namespace vtkControl
             if (actor.ElementEdges != null) AddActorEdges(actor, false, layer);
             // Add modelEdges
             if (actor.ModelEdges != null) AddActorEdges(actor, true, layer);
-            // Turn on light3 for parts colored by elements
-            if (actor.ColorTable != null) _light3.SwitchOn();
         }
         private void AddActorGeometry(vtkMaxActor actor, vtkRendererLayer layer)
         {
@@ -5696,8 +5695,6 @@ namespace vtkControl
         {
             if (_sectionView) RemoveSectionView();
             _transforms.Clear();
-            //
-            _light3.SwitchOff();
             //
             foreach (var entry in _actors)
             {

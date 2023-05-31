@@ -33,7 +33,7 @@ namespace CaeModel
         public string PressureVariableName { get { return _pressureVariableName; } set { _pressureVariableName = value; } }
         public InterpolatorEnum InterpolatorType { get { return _interpolatorType; } set { _interpolatorType = value; } }
         public double MagnitudeFactor { get { return _magnitudeFactor; } set { _magnitudeFactor = value; } }
-        public double GeomScaleFactor { get { return _geomScaleFactor; } set { _geomScaleFactor = value; } }
+        public double GeometryScaleFactor { get { return _geomScaleFactor; } set { _geomScaleFactor = value; } }
 
 
         // Constructors                                                                                                             
@@ -104,8 +104,8 @@ namespace CaeModel
             }
             else
             {
-                string nofile = "The file from which the pressure should be imported does not exist.";
-                throw new CaeException(nofile);
+                string missingFile = "The file from which the pressure should be imported does not exist.";
+                throw new CaeException(missingFile);
             }
             //
             if (updateData)
@@ -144,7 +144,6 @@ namespace CaeModel
             FeNodeSet nodeSet = targetMesh.NodeSets[surface.NodeSetName];
             HashSet<int> nodeIds = new HashSet<int>(nodeSet.Labels);
             //
-            
             float[] distancesAll = new float[allData.Nodes.Coor.Length];
             float[] distances1 = new float[allData.Nodes.Coor.Length];
             float[] distances2 = new float[allData.Nodes.Coor.Length];

@@ -2668,9 +2668,33 @@ namespace PrePoMax
                 part = _model.Geometry.Parts[name];
                 part.Color = Color.FromArgb(alpha, part.Color);
                 _form.UpdateActor(name, name, part.Color);
+                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, name, part, null, false);
+            }
+            // Check and set compound color for the transparency icon
+            bool transparent;
+            foreach (var entry in _model.Geometry.Parts)
+            {
+                if (entry.Value is CompoundGeometryPart cgp)
+                {
+                    transparent = false;
+                    foreach (var subPartName in cgp.SubPartNames)
+                    {
+                        part = _model.Geometry.Parts[subPartName];
+                        if (part.Color.A != 255)
+                        {
+                            transparent = true;
+                            break;
+                        }
+                    }
+                    if (transparent == (entry.Value.Color.A == 255))
+                    {
+                        entry.Value.Color = Color.FromArgb(alpha, entry.Value.Color);
+                        _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, entry.Key, entry.Value, null, false);
+                    }
+                }
             }
         }
-        public void RemoveGeometryParts(string[] partNames, bool keepGeometryselections)
+        public void RemoveGeometryParts(string[] partNames, bool keepGeometrySelections)
         {
             BasePart part;
             HashSet<string> partNamesToRemove = new HashSet<string>();
@@ -2695,7 +2719,7 @@ namespace PrePoMax
             _annotations.RemoveCurrentArrowAnnotationsByParts(partNamesToRemove.ToArray(), view);
             //
             string[] removedParts;
-            _model.Geometry.RemoveParts(orderedPartsToRemove.ToArray(), out removedParts, keepGeometryselections);
+            _model.Geometry.RemoveParts(orderedPartsToRemove.ToArray(), out removedParts, keepGeometrySelections);
             //
             foreach (var name in removedParts) _form.RemoveTreeNode<GeometryPart>(view, name, null);
             //
@@ -2797,7 +2821,7 @@ namespace PrePoMax
             if (_netgenJob.JobStatus == JobStatus.OK) return outputBrepFileName;
             else return null;
         }
-        private bool ReplacePartGeometryFromFile(GeometryPart part, string fileName, bool keepGeometryselections)
+        private bool ReplacePartGeometryFromFile(GeometryPart part, string fileName, bool keepGeometrySelections)
         {
             int count = 0;
             string[] importedFileNames = null;
@@ -2828,7 +2852,7 @@ namespace PrePoMax
                 part.Name = importedFileNames[0];
                 _model.Geometry.Parts.Replace(importedFileNames[0], part.Name, part);
                 // Remove old part
-                RemoveGeometryParts(new string[] { part.Name }, keepGeometryselections);
+                RemoveGeometryParts(new string[] { part.Name }, keepGeometrySelections);
                 _model.Geometry.ChangePartId(newPart.Name, part.PartId);
                 //
                 UpdateMeshingParameters();
@@ -4357,7 +4381,7 @@ namespace PrePoMax
             _commands.AddAndExecute(comm);
         }
         // Transform
-        public void TranlsateModelPartsCommand(string[] partNames, double[] translateVector, bool copy)
+        public void TranslateModelPartsCommand(string[] partNames, double[] translateVector, bool copy)
         {
             Commands.CTranslateModelParts comm = new Commands.CTranslateModelParts(partNames, translateVector, copy);
             _commands.AddAndExecute(comm);
@@ -4420,11 +4444,11 @@ namespace PrePoMax
             List<MeshPart> parts = new List<MeshPart>();
             foreach (var entry in _model.Mesh.Parts)
             {
-                if (!IsBasePartBasedOnGeoemtry(entry.Value)) parts.Add((MeshPart)entry.Value);
+                if (!IsBasePartBasedOnGeometry(entry.Value)) parts.Add((MeshPart)entry.Value);
             }
             return parts.ToArray();
         }
-        private bool IsBasePartBasedOnGeoemtry(BasePart part)
+        private bool IsBasePartBasedOnGeometry(BasePart part)
         {
             BasePart geometryPart;
             if (_model.Geometry == null) return false;
@@ -4499,6 +4523,7 @@ namespace PrePoMax
                 part = _model.Mesh.Parts[name];
                 part.Color = Color.FromArgb(alpha, part.Color);
                 _form.UpdateActor(name, name, part.Color);
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, part, null, false);
             }
         }
         public void ReplaceModelPartProperties(string oldPartName, PartProperties newPartProperties)
@@ -8361,6 +8386,8 @@ namespace PrePoMax
                 part = _allResults.CurrentResult.Mesh.Parts[name];
                 part.Color = Color.FromArgb(alpha, part.Color);
                 _form.UpdateActor(name, name, part.Color);
+                _form.UpdateTreeNode(ViewGeometryModelResults.Results, name,
+                                     _allResults.CurrentResult.Mesh.Parts[name], null, false);
             }
         }
         public void SetResultPartsColorContoursVisibility(string[] partNames, bool colorContours)

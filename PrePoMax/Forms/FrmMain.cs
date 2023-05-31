@@ -8488,7 +8488,8 @@ namespace PrePoMax
         {
             try
             {
-                _controller.TestCreateSurface();
+                _vtk.SwithchLights();
+                //_controller.TestCreateSurface();
             }
             catch
             {
