@@ -58,7 +58,7 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the force load magnitude per node.")]
         [TypeConverter(typeof(StringForceConverter))]
         [Id(1, 4)]        
-        public double Flength
+        public double Magnitude
         {
             get { return Math.Sqrt(_cLoad.F1 * _cLoad.F1 + _cLoad.F2 * _cLoad.F2 + _cLoad.F3 * _cLoad.F3); }
             set

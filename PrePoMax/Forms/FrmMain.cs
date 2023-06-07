@@ -1185,8 +1185,7 @@ namespace PrePoMax
                 // Vtk
                 bool vtkVisible = false;
                 // Tree
-                _modelTree.DisableGeometryAndModelTreeMouse = true;
-                _modelTree.DisableResultsTreeMouse = true;
+                SetStateWorking("Rendering...");
                 //                      Enable                                                          
                 if (_controller.ModelInitialized || _controller.ResultsInitialized)
                 {
@@ -1217,7 +1216,7 @@ namespace PrePoMax
                                     (setModelView && !_controller.ModelInitialized) ||
                                     (setResultsView && !_controller.ResultsInitialized);
                 
-                // Only for individul views !!!
+                // Only for individual views !!!
                 if (setEmptyView) { }
                 else if (setGeometryView)
                 {
@@ -1229,8 +1228,6 @@ namespace PrePoMax
                     tsViews.DisableMouseButtons = false;
                     // Vtk
                     vtkVisible = true;
-                    // Tree
-                    _modelTree.DisableGeometryAndModelTreeMouse = false;
                 }
                 else if (setModelView)
                 {
@@ -1252,8 +1249,6 @@ namespace PrePoMax
                     tscbSymbolsForStep.Enabled = true;
                     // Vtk
                     vtkVisible = true;
-                    // Tree
-                    _modelTree.DisableGeometryAndModelTreeMouse = false;
                 }
                 else if (setResultsView)
                 {
@@ -1267,9 +1262,9 @@ namespace PrePoMax
                     tsResults.Enabled = true;
                     // Vtk
                     vtkVisible = true;
-                    // Tree
-                    _modelTree.DisableResultsTreeMouse = false;
                 }
+                // Tree
+                SetStateReady("Rendering...");
                 //                      Buttons                                                         
                 tsbSectionView.Checked = _controller.IsSectionViewActive();
                 tsbExplodedView.Checked = _controller.IsExplodedViewActive();
@@ -1434,7 +1429,7 @@ namespace PrePoMax
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
                 // Set the representation which also calls Draw
-                _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+                _controller.ViewResultsType = ViewResultsTypeEnum.ColorContours;  // Draw
                 //
                 if (resetCamera) tsmiFrontView_Click(null, null);
             }
@@ -2419,29 +2414,43 @@ namespace PrePoMax
         //
         private void tsmiResultsUndeformed_Click(object sender, EventArgs e)
         {
-            if (GetCurrentView() == ViewGeometryModelResults.Results)
-            {
-                if (_frmAnimation.Visible) _frmAnimation.Hide();
-                _controller.ViewResultsType = ViewResultsType.Undeformed;
-            }
+            SetUndeformedModelType(ViewResultsTypeEnum.Undeformed, UndeformedModelTypeEnum.None);
         }
         private void tsmiResultsDeformed_Click(object sender, EventArgs e)
         {
-            if (GetCurrentView() == ViewGeometryModelResults.Results)
-            {
-                if (_frmAnimation.Visible) _frmAnimation.Hide();
-                _controller.ViewResultsType = ViewResultsType.Deformed;
-            }
+            SetUndeformedModelType(ViewResultsTypeEnum.Deformed, UndeformedModelTypeEnum.None);
         }
         private void tsmiResultsColorContours_Click(object sender, EventArgs e)
         {
+            SetUndeformedModelType(ViewResultsTypeEnum.ColorContours, UndeformedModelTypeEnum.None);
+        }
+        private void tsmiResultsDeformedColorWireframe_Click(object sender, EventArgs e)
+        {
+            SetUndeformedModelType(ViewResultsTypeEnum.ColorContours, UndeformedModelTypeEnum.WireframeBody);
+        }
+
+        private void tsmiResultsDeformedColorSolid_Click(object sender, EventArgs e)
+        {
+            SetUndeformedModelType(ViewResultsTypeEnum.ColorContours, UndeformedModelTypeEnum.SolidBody);
+        }
+        private void SetUndeformedModelType(ViewResultsTypeEnum viewResultsType, UndeformedModelTypeEnum undeformedModelType)
+        {
+            _controller.SetUndeformedModelType(undeformedModelType);
+            //
             if (GetCurrentView() == ViewGeometryModelResults.Results)
             {
                 if (_frmAnimation.Visible) _frmAnimation.Hide();
-                _controller.ViewResultsType = ViewResultsType.ColorContours;
+                _controller.ViewResultsType = viewResultsType;
             }
+            tsbResultsUndeformed.Checked = viewResultsType == ViewResultsTypeEnum.Undeformed;
+            tsbResultsDeformed.Checked = viewResultsType == ViewResultsTypeEnum.Deformed;
+            tsbResultsColorContours.Checked = viewResultsType == ViewResultsTypeEnum.ColorContours &&
+                                              undeformedModelType == UndeformedModelTypeEnum.None;
+            tsbResultsUndeformedWireframe.Checked = viewResultsType == ViewResultsTypeEnum.ColorContours &&
+                                                    undeformedModelType == UndeformedModelTypeEnum.WireframeBody;
+            tsbResultsUndeformedSolid.Checked = viewResultsType == ViewResultsTypeEnum.ColorContours &&
+                                                undeformedModelType == UndeformedModelTypeEnum.SolidBody;
         }
-
         #endregion
 
         #region Geometry ###########################################################################################################
@@ -4691,7 +4700,7 @@ namespace PrePoMax
                 SelectFirstComponentOfFirstFieldOutput();
             }
             // Set the representation which also calls Draw
-            _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+            _controller.ViewResultsType = ViewResultsTypeEnum.ColorContours;  // Draw
             //
             SetMenuAndToolStripVisibility();
         }
@@ -5322,7 +5331,7 @@ namespace PrePoMax
                 SelectFirstComponentOfFirstFieldOutput();
             }
             // Set the representation which also calls Draw
-            _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+            _controller.ViewResultsType = ViewResultsTypeEnum.ColorContours;  // Draw
             //
             SetMenuAndToolStripVisibility();
         }
@@ -5481,7 +5490,7 @@ namespace PrePoMax
                 SelectFirstComponentOfFirstFieldOutput();
             }
             // Set the representation which also calls Draw
-            _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+            _controller.ViewResultsType = ViewResultsTypeEnum.ColorContours;  // Draw
             //
             SetMenuAndToolStripVisibility();
         }
@@ -7087,7 +7096,7 @@ namespace PrePoMax
                 // Show the selection in the results tree
                 SelectFirstComponentOfFirstFieldOutput();
                 //
-                _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+                _controller.ViewResultsType = ViewResultsTypeEnum.ColorContours;  // Draw
                 //
                 SetMenuAndToolStripVisibility();
                 //tsmiZoomToFit_Click(null, null);    // different results have different views
@@ -7269,22 +7278,15 @@ namespace PrePoMax
         }
         private void tsbResultsColorContours_Click(object sender, EventArgs e)
         {
-            _controller.SetUndeformedModelType(UndeformedModelTypeEnum.None);
-            //
             tsmiResultsColorContours_Click(null, null);
         }
         private void tsbResultsUndeformedWireframe_Click(object sender, EventArgs e)
         {
-            _controller.SetUndeformedModelType(UndeformedModelTypeEnum.WireframeBody);
-            //
-            tsmiResultsColorContours_Click(null, null);
+            tsmiResultsDeformedColorWireframe_Click(null, null);
         }
-
         private void tsbResultsUndeformedSolid_Click(object sender, EventArgs e)
         {
-            _controller.SetUndeformedModelType(UndeformedModelTypeEnum.SolidBody);
-            //
-            tsmiResultsColorContours_Click(null, null);
+            tsmiResultsDeformedColorSolid_Click(null, null);
         }
         private void tsbTransformation_Click(object sender, EventArgs e)
         {
@@ -7343,7 +7345,7 @@ namespace PrePoMax
         {
             try
             {
-                if (_controller.ViewResultsType != ViewResultsType.Undeformed &&
+                if (_controller.ViewResultsType != ViewResultsTypeEnum.Undeformed &&
                     _controller.GetResultStepIDs().Length > 0 && !_frmAnimation.Visible)
                 {
                     CloseAllForms();
@@ -7414,6 +7416,7 @@ namespace PrePoMax
                 tsResults.DisableMouseButtons = working;
                 //
                 //this.DisableAllMouseEvents = working;
+                tspbProgress.Visible = working;
             });
         }
         public void SetStateReady(string currentText)
@@ -7968,7 +7971,7 @@ namespace PrePoMax
                     // Update controller field data
                     _controller.CurrentFieldData = fieldData;
                     // Draw deformation or field data
-                    if (_controller.ViewResultsType != ViewResultsType.Undeformed) _controller.DrawResults(false);
+                    if (_controller.ViewResultsType != ViewResultsTypeEnum.Undeformed) _controller.DrawResults(false);
                 }
                 else
                 {
@@ -7985,7 +7988,7 @@ namespace PrePoMax
                     // Update controller field data
                     _controller.CurrentFieldData = fieldData;
                     // Draw field data
-                    if (_controller.ViewResultsType == ViewResultsType.ColorContours) _controller.UpdatePartsScalarFields();
+                    if (_controller.ViewResultsType == ViewResultsTypeEnum.ColorContours) _controller.UpdatePartsScalarFields();
                 }
                 //
                 UpdateComplexControlStates();
@@ -8583,7 +8586,7 @@ namespace PrePoMax
                 SelectFirstComponentOfFirstFieldOutput();
             }
             // Set the representation which also calls Draw
-            _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+            _controller.ViewResultsType = ViewResultsTypeEnum.ColorContours;  // Draw
             //
             SetMenuAndToolStripVisibility();
             
@@ -8722,6 +8725,6 @@ namespace PrePoMax
             }
         }
 
-        
+       
     }
 }

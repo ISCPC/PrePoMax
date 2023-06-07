@@ -53,7 +53,7 @@ namespace PrePoMax
         // Annotations
         protected AnnotationContainer _annotations;
         // Results
-        [NonSerialized] protected ViewResultsType _viewResultsType;
+        [NonSerialized] protected ViewResultsTypeEnum _viewResultsType;
         [NonSerialized] protected FieldData _currentFieldData;
         [NonSerialized] protected TransformationsCollection _transformations;
         // Errors
@@ -229,21 +229,21 @@ namespace PrePoMax
         // Results
         public ResultsCollection AllResults { get { return _allResults; } }
         public FeResults CurrentResult { get { return _allResults.CurrentResult; } }
-        public ViewResultsType ViewResultsType
+        public ViewResultsTypeEnum ViewResultsType
         {
             get { return _viewResultsType; }
             set
             {
                 _viewResultsType = value;
                 // This is used by the model tree to show/hide the Deformed and Color contour context menu lines
-                ResultPart.Undeformed = _viewResultsType == ViewResultsType.Undeformed;
+                ResultPart.Undeformed = _viewResultsType == ViewResultsTypeEnum.Undeformed;
                 //
                 if (_allResults.CurrentResult != null && _allResults.CurrentResult.Mesh != null)
                 {
                     foreach (var entry in _allResults.CurrentResult.Mesh.Parts)
                     {
                         if (entry.Value is ResultPart resultPart)
-                            resultPart.ColorContours = _viewResultsType == ViewResultsType.ColorContours;
+                            resultPart.ColorContours = _viewResultsType == ViewResultsTypeEnum.ColorContours;
                     }
                     //
                     DrawResults(false);
@@ -372,7 +372,7 @@ namespace PrePoMax
             _selection = new Selection();
             // Results
             _allResults = new ResultsCollection();  // must be first
-            ViewResultsType = ViewResultsType.ColorContours;
+            ViewResultsType = ViewResultsTypeEnum.ColorContours;
             _transformations = new TransformationsCollection(this);
             // Errors - must be here before Clear
             _errors = new List<string>();
@@ -10666,7 +10666,7 @@ namespace PrePoMax
             // Clears the contents
             _form.HideColorBar();   
             //
-            if (_currentView == ViewGeometryModelResults.Results && _viewResultsType == ViewResultsType.ColorContours) return;
+            if (_currentView == ViewGeometryModelResults.Results && _viewResultsType == ViewResultsTypeEnum.ColorContours) return;
             // Face orientation legend
             ColorSettings colorSettings = _settings.Color;
             if (_annotateWithColor == AnnotateWithColorEnum.FaceOrientation)
@@ -13897,7 +13897,7 @@ namespace PrePoMax
                     //
                     if (_allResults.CurrentResult == null || _allResults.CurrentResult.Mesh == null) return;
                     if (_allResults.CurrentResult.GetAllComponentNames().Length == 0)
-                        _viewResultsType = ViewResultsType.Undeformed;
+                        _viewResultsType = ViewResultsTypeEnum.Undeformed;
                     //
                     ApplyResultsUnitSystem();
                     // Settings - must be here before drawing parts to correctly set the numer of colors
@@ -13947,7 +13947,7 @@ namespace PrePoMax
             {
                 if (entry.Value is ResultPart resultPart)
                 {
-                    if (_viewResultsType == ViewResultsType.Undeformed)
+                    if (_viewResultsType == ViewResultsTypeEnum.Undeformed)
                     {
                         // Udeformed view
                         DrawModelPart(_allResults.CurrentResult.Mesh, resultPart, layer);
@@ -14016,7 +14016,7 @@ namespace PrePoMax
             _form.Clear3D();
             //
             if (_allResults.CurrentResult == null || _allResults.CurrentResult.Mesh == null) return false;
-            if (_allResults.CurrentResult.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
+            if (_allResults.CurrentResult.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsTypeEnum.Undeformed;
             //
             ApplyResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
@@ -14098,7 +14098,7 @@ namespace PrePoMax
             //
             numFrames = -1;
             if (_allResults.CurrentResult == null || _allResults.CurrentResult.Mesh == null) return false;
-            if (_allResults.CurrentResult.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
+            if (_allResults.CurrentResult.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsTypeEnum.Undeformed;
             //
             ApplyResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
@@ -14179,7 +14179,7 @@ namespace PrePoMax
         public bool DrawHarmonicAnimation(int numFrames)
         {
             if (_allResults.CurrentResult == null || _allResults.CurrentResult.Mesh == null) return false;
-            if (_allResults.CurrentResult.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
+            if (_allResults.CurrentResult.GetAllComponentNames().Length == 0) _viewResultsType = ViewResultsTypeEnum.Undeformed;
             //
             float scale = GetScale();
             // Prepare data - first prepare data, than clear the vtk data
@@ -14367,7 +14367,7 @@ namespace PrePoMax
                 UpdateCurrentFieldData();
             }
             //
-            if (_viewResultsType == ViewResultsType.ColorContours)
+            if (_viewResultsType == ViewResultsTypeEnum.ColorContours)
             {
                 LegendSettings legendSettings = Settings.Legend;    // use Settings property to account for the results view
                 StatusBlockSettings statusBlockSettings = _settings.StatusBlock;
@@ -14640,7 +14640,7 @@ namespace PrePoMax
         }
         private float GetScale(float maxDisplacement)
         {
-            if (_viewResultsType == ViewResultsType.Undeformed) return 0;
+            if (_viewResultsType == ViewResultsTypeEnum.Undeformed) return 0;
             //
             DeformationScaleFactorTypeEnum scaleFactorType = _form.GetDeformationType();
             if (scaleFactorType == DeformationScaleFactorTypeEnum.Undeformed) return 0;

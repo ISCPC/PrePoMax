@@ -151,8 +151,6 @@ namespace UserControls
         }
         protected override void OnGotFocus(EventArgs e)
         {
-            
-
             //System.Diagnostics.Debug.WriteLine(DateTime.Now.Millisecond + " OnGotFocus");
             //// Get selected griditem
             //GridItem gridItem = this.SelectedGridItem;
