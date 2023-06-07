@@ -7830,6 +7830,10 @@ namespace PrePoMax
         {
             _settings.Post.UndeformedModelType = undeformedModelType;
         }
+        public UndeformedModelTypeEnum GetUndeformedModelType()
+        {
+            return _settings.Post.UndeformedModelType;
+        }
         //
         public void ApplySettings()
         {

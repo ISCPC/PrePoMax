@@ -1269,6 +1269,8 @@ namespace PrePoMax
                 tsbSectionView.Checked = _controller.IsSectionViewActive();
                 tsbExplodedView.Checked = _controller.IsExplodedViewActive();
                 tsbTransformation.Checked = _controller.AreTransformationsActive();
+                //                      Icons                                                           
+                UpdateResultsTypeIconStates();
                 //
                 UpdateComplexControlStates();
                 //
@@ -2442,14 +2444,31 @@ namespace PrePoMax
                 if (_frmAnimation.Visible) _frmAnimation.Hide();
                 _controller.ViewResultsType = viewResultsType;
             }
-            tsbResultsUndeformed.Checked = viewResultsType == ViewResultsTypeEnum.Undeformed;
-            tsbResultsDeformed.Checked = viewResultsType == ViewResultsTypeEnum.Deformed;
-            tsbResultsColorContours.Checked = viewResultsType == ViewResultsTypeEnum.ColorContours &&
-                                              undeformedModelType == UndeformedModelTypeEnum.None;
-            tsbResultsUndeformedWireframe.Checked = viewResultsType == ViewResultsTypeEnum.ColorContours &&
-                                                    undeformedModelType == UndeformedModelTypeEnum.WireframeBody;
-            tsbResultsUndeformedSolid.Checked = viewResultsType == ViewResultsTypeEnum.ColorContours &&
-                                                undeformedModelType == UndeformedModelTypeEnum.SolidBody;
+            //
+            UpdateResultsTypeIconStates();
+        }
+        private void UpdateResultsTypeIconStates()
+        {
+            tsbResultsUndeformed.Checked = false;
+            tsbResultsDeformed.Checked = false;
+            tsbResultsColorContours.Checked = false;
+            tsbResultsUndeformedWireframe.Checked = false;
+            tsbResultsUndeformedSolid.Checked = false;
+            //
+            if (GetCurrentView() == ViewGeometryModelResults.Results)
+            {
+                if (_controller.ViewResultsType == ViewResultsTypeEnum.Undeformed) tsbResultsUndeformed.Checked = true;
+                else if (_controller.ViewResultsType == ViewResultsTypeEnum.Deformed) tsbResultsDeformed.Checked = true;
+                else if (_controller.ViewResultsType == ViewResultsTypeEnum.ColorContours)
+                {
+                    if (_controller.GetUndeformedModelType() == UndeformedModelTypeEnum.None)
+                        tsbResultsColorContours.Checked = true;
+                    else if (_controller.GetUndeformedModelType() == UndeformedModelTypeEnum.WireframeBody)
+                        tsbResultsUndeformedWireframe.Checked = true;
+                    else if (_controller.GetUndeformedModelType() == UndeformedModelTypeEnum.SolidBody)
+                        tsbResultsUndeformedSolid.Checked = true;
+                }
+            }
         }
         #endregion
 
