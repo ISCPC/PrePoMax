@@ -3669,7 +3669,7 @@
             this.panelControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControl.Location = new System.Drawing.Point(0, 0);
             this.panelControl.Name = "panelControl";
-            this.panelControl.Size = new System.Drawing.Size(991, 423);
+            this.panelControl.Size = new System.Drawing.Size(991, 421);
             this.panelControl.TabIndex = 1;
             // 
             // aeAnnotationTextEditor
@@ -3736,44 +3736,45 @@
             // 
             // statusStripMain
             // 
+            this.statusStripMain.AutoSize = false;
             this.statusStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tspbProgress,
             this.tsslState,
             this.tsslCancel,
             this.tsslEmpty,
             this.tsslUnitSystem});
-            this.statusStripMain.Location = new System.Drawing.Point(0, 657);
+            this.statusStripMain.Location = new System.Drawing.Point(0, 655);
             this.statusStripMain.Name = "statusStripMain";
-            this.statusStripMain.Size = new System.Drawing.Size(1264, 24);
-            this.statusStripMain.SizingGrip = false;
+            this.statusStripMain.Size = new System.Drawing.Size(1264, 26);
             this.statusStripMain.TabIndex = 2;
             this.statusStripMain.Text = "statusStrip1";
             // 
             // tspbProgress
             // 
             this.tspbProgress.AutoSize = false;
-            this.tspbProgress.Margin = new System.Windows.Forms.Padding(5, 5, 1, 5);
+            this.tspbProgress.Margin = new System.Windows.Forms.Padding(5, 4, 1, 4);
             this.tspbProgress.MarqueeAnimationSpeed = 40;
             this.tspbProgress.Name = "tspbProgress";
-            this.tspbProgress.Size = new System.Drawing.Size(150, 14);
+            this.tspbProgress.Size = new System.Drawing.Size(150, 20);
             // 
             // tsslState
             // 
             this.tsslState.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.tsslState.Margin = new System.Windows.Forms.Padding(5, 3, 0, 2);
+            this.tsslState.Margin = new System.Windows.Forms.Padding(5, 4, 1, 4);
             this.tsslState.Name = "tsslState";
-            this.tsslState.Size = new System.Drawing.Size(39, 19);
+            this.tsslState.Size = new System.Drawing.Size(39, 20);
             this.tsslState.Text = "Ready";
             this.tsslState.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // tsslCancel
             // 
+            this.tsslCancel.AutoSize = false;
             this.tsslCancel.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
             | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right) 
             | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
-            this.tsslCancel.BorderStyle = System.Windows.Forms.Border3DStyle.Raised;
+            this.tsslCancel.Margin = new System.Windows.Forms.Padding(1, 4, 1, 4);
             this.tsslCancel.Name = "tsslCancel";
-            this.tsslCancel.Size = new System.Drawing.Size(47, 19);
+            this.tsslCancel.Size = new System.Drawing.Size(47, 20);
             this.tsslCancel.Text = "Cancel";
             this.tsslCancel.Visible = false;
             this.tsslCancel.Click += new System.EventHandler(this.tsslCancel_Click);
@@ -3790,8 +3791,9 @@
             // 
             // tsslUnitSystem
             // 
+            this.tsslUnitSystem.Margin = new System.Windows.Forms.Padding(1, 4, 1, 4);
             this.tsslUnitSystem.Name = "tsslUnitSystem";
-            this.tsslUnitSystem.Size = new System.Drawing.Size(130, 17);
+            this.tsslUnitSystem.Size = new System.Drawing.Size(130, 20);
             this.tsslUnitSystem.Text = "Unit system: Undefined";
             this.tsslUnitSystem.Click += new System.EventHandler(this.tsslUnitSystem_Click);
             // 
@@ -3806,13 +3808,13 @@
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.Controls.Add(this.splitContainer1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1264, 533);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1264, 531);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.LeftToolStripPanelVisible = false;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 24);
             this.toolStripContainer1.Name = "toolStripContainer1";
             this.toolStripContainer1.RightToolStripPanelVisible = false;
-            this.toolStripContainer1.Size = new System.Drawing.Size(1264, 633);
+            this.toolStripContainer1.Size = new System.Drawing.Size(1264, 631);
             this.toolStripContainer1.TabIndex = 4;
             this.toolStripContainer1.Text = "toolStripContainer";
             // 
@@ -3836,7 +3838,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Panel2MinSize = 250;
-            this.splitContainer1.Size = new System.Drawing.Size(1264, 533);
+            this.splitContainer1.Size = new System.Drawing.Size(1264, 531);
             this.splitContainer1.SplitterDistance = 269;
             this.splitContainer1.TabIndex = 2;
             // 
@@ -3855,8 +3857,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.tbOutput);
-            this.splitContainer2.Size = new System.Drawing.Size(991, 533);
-            this.splitContainer2.SplitterDistance = 423;
+            this.splitContainer2.Size = new System.Drawing.Size(991, 531);
+            this.splitContainer2.SplitterDistance = 421;
             this.splitContainer2.TabIndex = 2;
             // 
             // tbOutput
