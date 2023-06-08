@@ -9,34 +9,36 @@ using CaeMesh;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalElPrint : CalculixKeyword
+    internal class CalOutput : CalculixKeyword
     {
         // Variables                                                                                                                
-        private readonly ElementHistoryOutput _elementHistoryOutput;
+        private int _outputFrequency;
 
 
         // Properties                                                                                                               
 
 
         // Constructor                                                                                                              
-        public CalElPrint(ElementHistoryOutput elementHistoryOutput)
+        public CalOutput(int outputFrequency)
         {
-            _elementHistoryOutput = elementHistoryOutput;
+            _outputFrequency = outputFrequency;
         }
 
 
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            string regionName = ", Elset=" + _elementHistoryOutput.RegionName;
-            string totals = "";
-            if (_elementHistoryOutput.TotalsType == TotalsTypeEnum.Yes) totals = ", Totals=Yes";
-            else if (_elementHistoryOutput.TotalsType == TotalsTypeEnum.Only) totals = ", Totals=Only";
-            return string.Format("*El print{0}{1}{2}", regionName, totals, Environment.NewLine);
+            string frequency = ", Frequency=";
+            if (_outputFrequency == int.MinValue) frequency += "1";
+            else frequency += _outputFrequency;
+            //
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat("*Output{0}{1}", frequency, Environment.NewLine);
+            return sb.ToString();
         }
         public override string GetDataString()
         {
-            return string.Format("{0}{1}", _elementHistoryOutput.Variables.ToString(), Environment.NewLine);
+            return "";
         }
     }
 }

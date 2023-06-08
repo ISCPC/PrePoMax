@@ -87,6 +87,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalDynamicStep.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalHeatTransferStep.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalCoupledTempDispStep.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalOutput.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalUncoupledTempDispStep.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Damping\CalDamping.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Damping\CalModalDamping.cs" />

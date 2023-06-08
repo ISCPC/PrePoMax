@@ -26,7 +26,7 @@ namespace CaeModel
 
 
         // Static Methods                                                                                                           
-        public bool MulitRegionSelectionExists(string stepName, IMultiRegion newRegion)
+        public bool MultiRegionSelectionExists(string stepName, IMultiRegion newRegion)
         {
             List<Step> prevSteps = new List<Step>();
             foreach (var step in _steps)
@@ -45,9 +45,9 @@ namespace CaeModel
                 else throw new NotSupportedException();
             }
             //
-            return MulitRegionSelectionExists(existingRegions, newRegion);
+            return MultiRegionSelectionExists(existingRegions, newRegion);
         }
-        private bool MulitRegionSelectionExists(List<IMultiRegion> existingRegions, IMultiRegion newRegion)
+        private bool MultiRegionSelectionExists(List<IMultiRegion> existingRegions, IMultiRegion newRegion)
         {
             foreach (var existingRegion in existingRegions)
             {

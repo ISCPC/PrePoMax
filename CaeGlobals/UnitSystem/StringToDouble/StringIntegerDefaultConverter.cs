@@ -6,22 +6,34 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Globalization;
+using UnitsNet.Units;
+using UnitsNet;
 
 namespace CaeGlobals
 {
     public class StringIntegerDefaultConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private ArrayList values;
-        private string _default = "Default";
-        public static int InitialValue = 0;
+        protected ArrayList values;
+        protected string _default = "Default";
+        protected static int _initialValue = 0;
+
+
+        // Properties                                                                                                               
+        public static int SetInitialValue
+        {
+            set
+            {
+                _initialValue = value;
+            }
+        }
 
 
         // Constructors                                                                                                             
         public StringIntegerDefaultConverter()
         {
             // Initializes the standard values list with defaults.
-            values = new ArrayList(new int[] { int.MinValue, InitialValue });
+            values = new ArrayList(new int[] { int.MinValue, _initialValue });
         }
 
 

@@ -44,6 +44,17 @@ namespace PrePoMax
             get { return _step.SolverType; }
             set { _step.SolverType = value; }
         }
+        //
+        [CategoryAttribute("Results")]
+        [OrderedDisplayName(0, 10, "Output frequency")]
+        [DescriptionAttribute("Integer N, which indicates that only results of every N-th increment will be stored.")]
+        [Id(1, 10)]
+        [TypeConverter(typeof(StringIntegerDefaultConverter))]
+        public int OutputFrequency
+        {
+            get { return _step.OutputFrequency; }
+            set { _step.OutputFrequency = value; }
+        }
 
 
         // Constructors                                                                                                             
@@ -52,6 +63,8 @@ namespace PrePoMax
             if (step == null) throw new ArgumentNullException();
             //
             _step = step;
+            //
+            StringIntegerDefaultConverter.SetInitialValue = 1;
         }
 
         // Methods

@@ -429,7 +429,6 @@
             this.tsmiDividerAnnotation2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDeleteAnnotation = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStripMain = new System.Windows.Forms.StatusStrip();
-            this.tsslFirst = new System.Windows.Forms.ToolStripStatusLabel();
             this.tspbProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.tsslState = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslCancel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -969,7 +968,7 @@
             this.toolStripSeparator2});
             this.tsResults.Location = new System.Drawing.Point(3, 75);
             this.tsResults.Name = "tsResults";
-            this.tsResults.Size = new System.Drawing.Size(481, 25);
+            this.tsResults.Size = new System.Drawing.Size(450, 25);
             this.tsResults.TabIndex = 7;
             this.tsResults.Text = "Results";
             // 
@@ -3670,7 +3669,7 @@
             this.panelControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControl.Location = new System.Drawing.Point(0, 0);
             this.panelControl.Name = "panelControl";
-            this.panelControl.Size = new System.Drawing.Size(991, 425);
+            this.panelControl.Size = new System.Drawing.Size(991, 423);
             this.panelControl.TabIndex = 1;
             // 
             // aeAnnotationTextEditor
@@ -3738,37 +3737,32 @@
             // statusStripMain
             // 
             this.statusStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsslFirst,
             this.tspbProgress,
             this.tsslState,
             this.tsslCancel,
             this.tsslEmpty,
             this.tsslUnitSystem});
-            this.statusStripMain.Location = new System.Drawing.Point(0, 659);
+            this.statusStripMain.Location = new System.Drawing.Point(0, 657);
             this.statusStripMain.Name = "statusStripMain";
-            this.statusStripMain.Size = new System.Drawing.Size(1264, 22);
+            this.statusStripMain.Size = new System.Drawing.Size(1264, 24);
+            this.statusStripMain.SizingGrip = false;
             this.statusStripMain.TabIndex = 2;
             this.statusStripMain.Text = "statusStrip1";
             // 
-            // tsslFirst
-            // 
-            this.tsslFirst.Font = new System.Drawing.Font("Segoe UI", 2.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.tsslFirst.Name = "tsslFirst";
-            this.tsslFirst.Size = new System.Drawing.Size(3, 17);
-            this.tsslFirst.Text = " ";
-            // 
             // tspbProgress
             // 
+            this.tspbProgress.AutoSize = false;
+            this.tspbProgress.Margin = new System.Windows.Forms.Padding(5, 5, 1, 5);
             this.tspbProgress.MarqueeAnimationSpeed = 40;
             this.tspbProgress.Name = "tspbProgress";
-            this.tspbProgress.Size = new System.Drawing.Size(150, 18);
-            this.tspbProgress.Visible = false;
+            this.tspbProgress.Size = new System.Drawing.Size(150, 14);
             // 
             // tsslState
             // 
             this.tsslState.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.tsslState.Margin = new System.Windows.Forms.Padding(5, 3, 0, 2);
             this.tsslState.Name = "tsslState";
-            this.tsslState.Size = new System.Drawing.Size(39, 17);
+            this.tsslState.Size = new System.Drawing.Size(39, 19);
             this.tsslState.Text = "Ready";
             this.tsslState.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -3790,7 +3784,7 @@
             // tsslEmpty
             // 
             this.tsslEmpty.Name = "tsslEmpty";
-            this.tsslEmpty.Size = new System.Drawing.Size(1077, 17);
+            this.tsslEmpty.Size = new System.Drawing.Size(847, 19);
             this.tsslEmpty.Spring = true;
             this.tsslEmpty.Text = " ";
             // 
@@ -3812,13 +3806,13 @@
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.Controls.Add(this.splitContainer1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1264, 535);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1264, 533);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.LeftToolStripPanelVisible = false;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 24);
             this.toolStripContainer1.Name = "toolStripContainer1";
             this.toolStripContainer1.RightToolStripPanelVisible = false;
-            this.toolStripContainer1.Size = new System.Drawing.Size(1264, 635);
+            this.toolStripContainer1.Size = new System.Drawing.Size(1264, 633);
             this.toolStripContainer1.TabIndex = 4;
             this.toolStripContainer1.Text = "toolStripContainer";
             // 
@@ -3842,7 +3836,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Panel2MinSize = 250;
-            this.splitContainer1.Size = new System.Drawing.Size(1264, 535);
+            this.splitContainer1.Size = new System.Drawing.Size(1264, 533);
             this.splitContainer1.SplitterDistance = 269;
             this.splitContainer1.TabIndex = 2;
             // 
@@ -3861,8 +3855,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.tbOutput);
-            this.splitContainer2.Size = new System.Drawing.Size(991, 535);
-            this.splitContainer2.SplitterDistance = 425;
+            this.splitContainer2.Size = new System.Drawing.Size(991, 533);
+            this.splitContainer2.SplitterDistance = 423;
             this.splitContainer2.TabIndex = 2;
             // 
             // tbOutput
@@ -4358,7 +4352,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiAppendResults;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerResults3;
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateConstraint;
-        private System.Windows.Forms.ToolStripStatusLabel tsslFirst;
         private System.Windows.Forms.ToolStripMenuItem tsmiResultsDeformedColorWireframe;
         private System.Windows.Forms.ToolStripMenuItem tsmiResultsDeformedColorSolid;
     }

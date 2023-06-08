@@ -841,7 +841,7 @@ namespace FileInOut.Output
                     {
                         StaticStep staticStep = step as StaticStep;
                         CalStaticStep calStaticStep = new CalStaticStep(staticStep);
-                        calStep.AddKeyword(calStaticStep);
+                        calStep.AddKeyword(calStaticStep);                        
                     }
                     else if (step is FrequencyStep frequencyStep)
                     {
@@ -912,6 +912,11 @@ namespace FileInOut.Output
                         calStep.AddKeyword(calCoupledTempDispStep);
                     }
                     else throw new NotImplementedException();
+                    // Frequency
+                    title = new CalTitle("Output frequency", "");
+                    calStep.AddKeyword(title);
+                    CalOutput calOutput = new CalOutput(step.OutputFrequency);
+                    calStep.AddKeyword(calOutput);
                 }
                 else calStep.AddKeyword(new CalDeactivated(step.GetType().ToString()));
                 // Boundary conditions

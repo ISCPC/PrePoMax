@@ -7013,7 +7013,7 @@ namespace PrePoMax
         }
         public void AddHistoryOutput(string stepName, HistoryOutput historyOutput)
         {
-            if (!_model.StepCollection.MulitRegionSelectionExists(stepName, historyOutput))
+            if (!_model.StepCollection.MultiRegionSelectionExists(stepName, historyOutput))
                 ConvertSelectionBasedHistoryOutput(historyOutput);
             //
             _model.StepCollection.AddHistoryOutput(historyOutput, stepName);
@@ -7276,7 +7276,7 @@ namespace PrePoMax
         //
         public void AddBoundaryCondition(string stepName, BoundaryCondition boundaryCondition)
         {
-            if (!_model.StepCollection.MulitRegionSelectionExists(stepName, boundaryCondition))
+            if (!_model.StepCollection.MultiRegionSelectionExists(stepName, boundaryCondition))
                 ConvertSelectionBasedBoundaryCondition(boundaryCondition);
             //
             if (_model.StepCollection.GetStep(stepName).AddBoundaryCondition(boundaryCondition))
@@ -7456,7 +7456,7 @@ namespace PrePoMax
         //
         public void AddLoad(string stepName, Load load)
         {
-            if (!_model.StepCollection.MulitRegionSelectionExists(stepName, load))
+            if (!_model.StepCollection.MultiRegionSelectionExists(stepName, load))
                 ConvertSelectionBasedLoad(load);
             //
             if (_model.StepCollection.GetStep(stepName).AddLoad(load))
@@ -7663,7 +7663,7 @@ namespace PrePoMax
         }
         public void AddDefinedField(string stepName, DefinedField definedField)
         {
-            if (!_model.StepCollection.MulitRegionSelectionExists(stepName, definedField))
+            if (!_model.StepCollection.MultiRegionSelectionExists(stepName, definedField))
                 ConvertSelectionBasedDefinedField(definedField);
             //
             _model.StepCollection.AddDefinedField(definedField, stepName);

@@ -83,7 +83,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public ViewTie(CaeModel.Tie tie)
+        public ViewTie(Tie tie)
         {
             _tie = tie;
             // Master
@@ -105,7 +105,7 @@ namespace PrePoMax
 
 
         // Methods                                                                                                                  
-        public override CaeModel.Constraint GetBase()
+        public override Constraint GetBase()
         {
             return _tie;
         }

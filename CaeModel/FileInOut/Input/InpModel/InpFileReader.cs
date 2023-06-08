@@ -2092,7 +2092,6 @@ namespace FileInOut.Input
                         variables |= (NodalFieldVariable)Enum.Parse(typeof(NodalFieldVariable), record1[i].ToUpper());
                     }
                     NodalFieldOutput nodalFieldOutput = new NodalFieldOutput(name, variables);
-                    if (frequency != null) nodalFieldOutput.Frequency = (int)frequency;
                     // Add to step
                     step.FieldOutputs.Add(name, nodalFieldOutput);
                 }
@@ -2133,7 +2132,6 @@ namespace FileInOut.Input
                         variables |= (ElementFieldVariable)Enum.Parse(typeof(ElementFieldVariable), record1[i].ToUpper());
                     }
                     ElementFieldOutput elementFieldOutput = new ElementFieldOutput(name, variables);
-                    if (frequency != null) elementFieldOutput.Frequency = (int)frequency;
                     // Add to step
                     step.FieldOutputs.Add(name, elementFieldOutput);
                 }
@@ -2174,7 +2172,6 @@ namespace FileInOut.Input
                         variables |= (ContactFieldVariable)Enum.Parse(typeof(ContactFieldVariable), record1[i].ToUpper());
                     }
                     ContactFieldOutput contactFieldOutput = new ContactFieldOutput(name, variables);
-                    if (frequency != null) contactFieldOutput.Frequency = (int)frequency;
                     // Add to step
                     step.FieldOutputs.Add(name, contactFieldOutput);
                 }
@@ -2230,7 +2227,6 @@ namespace FileInOut.Input
                     if (regionName != null)
                     {
                         NodalHistoryOutput nodalHistoryOutput = new NodalHistoryOutput(name, variables, regionName, regionType);
-                        if (frequency != null) nodalHistoryOutput.Frequency = (int)frequency;
                         if (totalsType != TotalsTypeEnum.No) nodalHistoryOutput.TotalsType = totalsType;
                         // Add to step
                         step.HistoryOutputs.Add(name, nodalHistoryOutput);
@@ -2288,7 +2284,6 @@ namespace FileInOut.Input
                     {
                         ElementHistoryOutput elementHistoryOutput = new ElementHistoryOutput(name, variables, regionName,
                                                                                              regionType);
-                        if (frequency != null) elementHistoryOutput.Frequency = (int)frequency;
                         if (totalsType != TotalsTypeEnum.No) elementHistoryOutput.TotalsType = totalsType;
                         // Add to step
                         step.HistoryOutputs.Add(name, elementHistoryOutput);
@@ -2363,7 +2358,6 @@ namespace FileInOut.Input
                         if (contactPairName != null)
                         {
                             ContactHistoryOutput contactHistoryOutput = new ContactHistoryOutput(name, variables, contactPairName);
-                            if (frequency != null) contactHistoryOutput.Frequency = (int)frequency;
                             if (totalsType != TotalsTypeEnum.No) contactHistoryOutput.TotalsType = totalsType;
                             // Add to step
                             step.HistoryOutputs.Add(name, contactHistoryOutput);
