@@ -115,7 +115,6 @@ namespace PrePoMax.Forms
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
             UpdateScrollbarPosition(true);
-            HighlightCenterPoint();
         }
         //
         private void hsbPosition_Scroll(object sender, ScrollEventArgs e)
@@ -174,6 +173,8 @@ namespace PrePoMax.Forms
             hsbPosition.Value = (int)(_viewExplodedViewParameters.ScaleFactor * 1000);
             //
             UpdateExplodedViewFromScrollBar(animate);
+            //
+            HighlightCenterPoint();
         }
         private void UpdateExplodedViewFromScrollBar(bool animate)
         {
