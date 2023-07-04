@@ -167,9 +167,12 @@ namespace CaeMesh
         public static double[][] GetExplodedBBbyCPOffsets(double[] centerPoint, int explodedDirection, double scaleFactor,
                                                           BoundingBox[] boxes)
         {
+            BoundingBox assemblyBB = new BoundingBox();
             // Renumber and add scale
             for (int i = 0; i < boxes.Length; i++)
             {
+                assemblyBB.IncludeBox(boxes[i]);
+                //
                 boxes[i].Tag = i;
                 boxes[i].Scale(1.2);
             }
@@ -200,9 +203,7 @@ namespace CaeMesh
                 else if (explodedDirection == 5) direction.Y = 0;
                 else if (explodedDirection == 6) direction.X = 0;
                 //
-                //direction.Normalize();
-                //
-                offset = direction * (0.0001 * boxes[0].GetDiagonal());
+                offset = direction * (0.0005 * assemblyBB.GetDiagonal());
                 //
                 offsets[(int)box.Tag] = (offset * scaleFactor).Coor;
             }
