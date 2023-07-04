@@ -169,7 +169,8 @@ namespace UserControls
             // Named to existing name
             if ((nameToEdit == null && existingNames.Contains(name, StringComparer.OrdinalIgnoreCase)) ||
             // Renamed to existing name
-            (name != nameToEdit && existingNames.Contains(name, StringComparer.OrdinalIgnoreCase)))
+            ((name.ToLower() != nameToEdit.ToLower()) &&
+             name != nameToEdit && existingNames.Contains(name, StringComparer.OrdinalIgnoreCase)))
             // Exception
             throw new CaeException("The selected "+ messageName + " name already exists. " +
                 "Uppercase and lowercase letters are regarded as equal.");

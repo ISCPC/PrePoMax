@@ -36,7 +36,7 @@ namespace CaeModel
                 if (!double.IsNaN(value))
                 {
                     if (value < 0) throw new Exception("The lower frequency value must be larger or equal to 0.");
-                    if (!double.IsNaN(_upperFrequency) && _lowerFrequency >= _upperFrequency)
+                    if (!double.IsNaN(_upperFrequency) && value >= _upperFrequency)
                         throw new Exception("The lower frequency value must be smaller than the upper frequency value.");
                 }
                 _lowerFrequency = value;
@@ -50,7 +50,7 @@ namespace CaeModel
                 if (!double.IsNaN(value))
                 {
                     if (value < 0) throw new Exception("The upper frequency value must be larger or equal to 0.");
-                    if (!double.IsNaN(_lowerFrequency) && _upperFrequency <= _lowerFrequency)
+                    if (!double.IsNaN(_lowerFrequency) && value <= _lowerFrequency)
                         throw new Exception("The upper frequency value must be larger than the lower frequency value.");
                 }
                 _upperFrequency = value;
