@@ -3265,6 +3265,7 @@ namespace vtkControl
             // Actor
             data.Name += Globals.NameSeparator + "arrow";
             vtkMaxActor actor = new vtkMaxActor(data, mapper);
+            actor.Color = Color.Blue;
             actor.GeometryProperty.SetRepresentationToSurface();
             // Add
             ApplySymbolFormatingToActor(actor);

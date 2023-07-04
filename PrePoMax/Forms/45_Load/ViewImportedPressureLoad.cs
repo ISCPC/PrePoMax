@@ -100,7 +100,7 @@ namespace PrePoMax
         public double Phase { get { return _importedPressure.PhaseDeg; } set { _importedPressure.PhaseDeg = value; } }
         ////
         [CategoryAttribute("Imported geometry")]
-        [OrderedDisplayName(0, 10, "Scale fator")]
+        [OrderedDisplayName(0, 10, "Scale factor")]
         [DescriptionAttribute("Value of the imported geometry scale factor.")]
         [TypeConverter(typeof(StringDoubleConverter))]
         [Id(1, 5)]

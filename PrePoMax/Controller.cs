@@ -1971,7 +1971,8 @@ namespace PrePoMax
             string[] partNames = null;
             if (partOffsets == null)
             {
-                partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Type,
+                partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Method, parameters.Center,
+                                                          (int)parameters.Direction,
                                                           parameters.ScaleFactor * parameters.Magnification,
                                                           partNames);
             }
@@ -1994,7 +1995,8 @@ namespace PrePoMax
             mesh.RemoveExplodedView();
             //
             Dictionary<string, double[]> partOffsets;
-            partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Type, parameters.ScaleFactor * parameters.Magnification,
+            partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Method, parameters.Center, 
+                                                      (int)parameters.Direction, parameters.ScaleFactor * parameters.Magnification,
                                                       partNames);
             mesh.ApplyExplodedView(partOffsets);
             //
@@ -2072,7 +2074,8 @@ namespace PrePoMax
                 mesh.RemoveExplodedView();
                 //
                 Dictionary<string, double[]> partOffsets =
-                    mesh.GetExplodedViewOffsets((int)parameters.Type,
+                    mesh.GetExplodedViewOffsets((int)parameters.Method, parameters.Center,
+                                                (int)parameters.Direction,
                                                 parameters.ScaleFactor * parameters.Magnification,
                                                 partNames);
                 mesh.ApplyExplodedView(partOffsets);

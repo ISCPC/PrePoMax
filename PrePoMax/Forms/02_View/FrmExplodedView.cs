@@ -115,6 +115,7 @@ namespace PrePoMax.Forms
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
             UpdateScrollbarPosition(true);
+            HighlightCenterPoint();
         }
         //
         private void hsbPosition_Scroll(object sender, ScrollEventArgs e)
@@ -195,6 +196,22 @@ namespace PrePoMax.Forms
             }
             catch
             { }
+        }
+        private void HighlightCenterPoint()
+        {
+            _controller.ClearSelectionHistory();
+            //
+            if (_viewExplodedViewParameters.Method == ExplodedViewMethodEnum.Default) { }
+            else if (_viewExplodedViewParameters.Method == ExplodedViewMethodEnum.CenterPoint)
+            {
+                double[][] _coorNodesToDraw = new double[1][];
+                _coorNodesToDraw[0] = new double[3];
+                _coorNodesToDraw[0][0] = _viewExplodedViewParameters.CenterX;
+                _coorNodesToDraw[0][1] = _viewExplodedViewParameters.CenterX;
+                _coorNodesToDraw[0][2] = _viewExplodedViewParameters.CenterX;
+                //
+                _controller.HighlightNodes(_coorNodesToDraw);
+            }
         }
     }
 }

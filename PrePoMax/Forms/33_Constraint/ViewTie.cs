@@ -18,6 +18,7 @@ namespace PrePoMax
         // Variables                                                                                                                        
         private Tie _tie;
 
+
         // Properties                                                                                                                      
         public override string Name { get { return _tie.Name; } set { _tie.Name = value; } }
         //

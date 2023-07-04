@@ -162,6 +162,7 @@ namespace PrePoMax
         {
             base.InstallProvider();
             //
+            _dctd.RenameBooleanPropertyToOnOff("Perturbation");
             _dctd.RenameBooleanProperty(nameof(Harmonic), "Yes", "No");
         }
         public override void UpdateVisibility()

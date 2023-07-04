@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 namespace CaeModel
 {
     [Serializable]
-    public class Tie : Constraint
+    public class Tie : Constraint, ISerializable // ISerializable must be here
     {
         // Variables                                                                                                                
         private static string _positive = "The value must be larger than 0.";

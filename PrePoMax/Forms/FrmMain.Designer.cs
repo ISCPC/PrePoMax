@@ -795,6 +795,7 @@
             // 
             // tsModel
             // 
+            this.tsModel.BackColor = System.Drawing.SystemColors.Control;
             this.tsModel.DisableMouseButtons = false;
             this.tsModel.Dock = System.Windows.Forms.DockStyle.None;
             this.tsModel.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -842,7 +843,7 @@
             this.tstbAngle});
             this.tsDeformationFactor.Location = new System.Drawing.Point(3, 25);
             this.tsDeformationFactor.Name = "tsDeformationFactor";
-            this.tsDeformationFactor.Size = new System.Drawing.Size(823, 25);
+            this.tsDeformationFactor.Size = new System.Drawing.Size(854, 25);
             this.tsDeformationFactor.TabIndex = 8;
             // 
             // tslResultName
@@ -3755,14 +3756,14 @@
             this.tspbProgress.Margin = new System.Windows.Forms.Padding(5, 4, 1, 4);
             this.tspbProgress.MarqueeAnimationSpeed = 40;
             this.tspbProgress.Name = "tspbProgress";
-            this.tspbProgress.Size = new System.Drawing.Size(150, 20);
+            this.tspbProgress.Size = new System.Drawing.Size(150, 18);
             // 
             // tsslState
             // 
             this.tsslState.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.tsslState.Margin = new System.Windows.Forms.Padding(5, 4, 1, 4);
             this.tsslState.Name = "tsslState";
-            this.tsslState.Size = new System.Drawing.Size(39, 20);
+            this.tsslState.Size = new System.Drawing.Size(39, 18);
             this.tsslState.Text = "Ready";
             this.tsslState.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -3774,7 +3775,7 @@
             | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
             this.tsslCancel.Margin = new System.Windows.Forms.Padding(1, 4, 1, 4);
             this.tsslCancel.Name = "tsslCancel";
-            this.tsslCancel.Size = new System.Drawing.Size(47, 20);
+            this.tsslCancel.Size = new System.Drawing.Size(47, 18);
             this.tsslCancel.Text = "Cancel";
             this.tsslCancel.Visible = false;
             this.tsslCancel.Click += new System.EventHandler(this.tsslCancel_Click);
@@ -3785,7 +3786,7 @@
             // tsslEmpty
             // 
             this.tsslEmpty.Name = "tsslEmpty";
-            this.tsslEmpty.Size = new System.Drawing.Size(847, 19);
+            this.tsslEmpty.Size = new System.Drawing.Size(916, 21);
             this.tsslEmpty.Spring = true;
             this.tsslEmpty.Text = " ";
             // 
@@ -3793,7 +3794,7 @@
             // 
             this.tsslUnitSystem.Margin = new System.Windows.Forms.Padding(1, 4, 1, 4);
             this.tsslUnitSystem.Name = "tsslUnitSystem";
-            this.tsslUnitSystem.Size = new System.Drawing.Size(130, 20);
+            this.tsslUnitSystem.Size = new System.Drawing.Size(130, 18);
             this.tsslUnitSystem.Text = "Unit system: Undefined";
             this.tsslUnitSystem.Click += new System.EventHandler(this.tsslUnitSystem_Click);
             // 

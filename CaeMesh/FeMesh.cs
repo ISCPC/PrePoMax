@@ -3259,7 +3259,7 @@ namespace CaeMesh
                 boxes[count].Tag = connectedParts;
                 count++;
             }
-            Array.Sort(boxes, new BoundingBoxVolmeComparer());
+            Array.Sort(boxes, new BoundingBoxVolumeComparer());
             // Add the largest box
             BoundingBox globalBox = new BoundingBox();
             nonIntersectingBBs.Add(boxes[0]);
@@ -3311,7 +3311,9 @@ namespace CaeMesh
             //
             return partOffsets;
         }
-        public Dictionary<string, double[]> GetExplodedViewOffsets(int explodedType, double scaleFactor, string[] partNames = null)
+        public Dictionary<string, double[]> GetExplodedViewOffsets(int explodedMethod, double[] centerPoint,
+                                                                   int explodedDirection, double scaleFactor,
+                                                                   string[] partNames = null)
         {
             //
             // https://stackoverflow.com/questions/3265986/an-algorithm-to-space-out-overlapping-rectangles
@@ -3331,7 +3333,13 @@ namespace CaeMesh
                 count++;
             }
             // Compute BB offsets
-            double[][] offsets = BoundingBox.GetExplodedBBOffsets(explodedType, scaleFactor, boxes);
+            double[][] offsets;
+            if (explodedMethod == 0)        // Default
+                offsets = BoundingBox.GetExplodedBBOffsets(explodedDirection, scaleFactor, boxes);
+            else if (explodedMethod == 1)   // Center point
+                offsets = BoundingBox.GetExplodedBBbyCPOffsets(centerPoint, explodedDirection, scaleFactor, boxes);
+            else
+                throw new NotSupportedException();
             //
             count = 0;
             Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
