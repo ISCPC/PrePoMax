@@ -3851,7 +3851,9 @@ namespace PrePoMax
         private void CreateMeshRefinementFile(GeometryPart part, string fileName, FeMeshRefinement newMeshRefinement)
         {
             double h;
+            int geometryPartId;
             int[] geometryIds;
+            List<int> filteredGeometryIds = new List<int>();
             FeMeshRefinement meshRefinement;
             int numPoints = 0;
             int numLines = 0;
@@ -3878,28 +3880,28 @@ namespace PrePoMax
             }
             else meshPartIds.Add(part.PartId);
             // For each mesh refinement
-            HashSet<int> refinementPartIds;
-            int[] itemTypePartIds;
-            GeometryPart gPart;
             MeshingParameters meshingParameters;
             foreach (var entry in meshRefinements)
             {
                 meshRefinement = entry.Value;
+                filteredGeometryIds.Clear();
                 // Export mesh refinement only if it is active
                 if (meshRefinement.Active && meshRefinement.Valid)
                 {
                     // Get part ids of the mesh refinement
                     geometryIds = meshRefinement.GeometryIds;
-                    refinementPartIds = new HashSet<int>(FeMesh.GetPartIdsFromGeometryIds(geometryIds));
-                    refinementPartIds.IntersectWith(meshPartIds);
-                    // Export refinement only if it was created for the geometry to mesh
-                    if (refinementPartIds.Count > 0)
+                    if (geometryIds == null || geometryIds.Length == 0) break;
+                    // Filter geometry ids to the part being meshed
+                    foreach (var geometryId in geometryIds)
                     {
-                        if (geometryIds == null || geometryIds.Length == 0) break;
-                        //
-                        itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryIds[0]);
-                        gPart = (GeometryPart)_model.Geometry.GetPartById(itemTypePartIds[2]);
-                        meshingParameters = GetPartMeshingParameters(gPart.Name);
+                        geometryPartId = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId)[2];
+                        if (meshPartIds.Contains(geometryPartId)) filteredGeometryIds.Add(geometryId);
+                    }
+                    geometryIds = filteredGeometryIds.ToArray();
+                    // Export refinement only if it was created for the geometry to mesh
+                    if (geometryIds.Length > 0)
+                    {
+                        meshingParameters = GetPartMeshingParameters(part.Name);
                         //
                         if (meshRefinement.MeshSize > meshingParameters.MaxH) h = meshingParameters.MaxH;
                         else if (meshRefinement.MeshSize < meshingParameters.MinH) h = meshingParameters.MinH;
@@ -3907,7 +3909,7 @@ namespace PrePoMax
                         //
                         double[][] points;
                         double[][][] lines;
-                        _model.Geometry.GetVetexAndEdgeCoorFromGeometryIds(geometryIds, h, false, out points, out lines);
+                        _model.Geometry.GetVertexAndEdgeCoorFromGeometryIds(geometryIds, h, false, out points, out lines);
                         numPoints += points.Length;
                         numLines += lines.Length;
                         //
@@ -13526,7 +13528,7 @@ namespace PrePoMax
                 else if (meshRefinement.MeshSize < meshingParameters.MinH) meshSize = meshingParameters.MinH;
                 else meshSize = meshRefinement.MeshSize;
                 //
-                mesh.GetVetexAndEdgeCoorFromGeometryIds(ids, meshSize, true, out coor);
+                mesh.GetVertexAndEdgeCoorFromGeometryIds(ids, meshSize, true, out coor);
                 DrawNodes(meshRefinement.Name, coor, Color.Red, vtkRendererLayer.Selection);
                 //
                 backfaceCulling = part.PartType != PartType.Shell;

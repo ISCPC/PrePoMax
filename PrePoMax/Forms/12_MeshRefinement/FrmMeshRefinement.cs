@@ -93,7 +93,7 @@ namespace PrePoMax.Forms
         private void FrmMeshRefinement_VisibleChanged(object sender, EventArgs e)
         {
             // Limit selection to the first selected part
-            _controller.Selection.LimitSelectionToFirstPart = Visible;
+            _controller.Selection.LimitSelectionToFirstPart = false;
         }
         async private void btnPreview_Click(object sender, EventArgs e)
         {
