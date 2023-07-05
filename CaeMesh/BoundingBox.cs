@@ -189,12 +189,14 @@ namespace CaeMesh
             Vec3D center;
             Vec3D offset;
             Vec3D direction;
+            double distance;
             BoundingBox box;
             for (int i = firstBoxId; i < boxes.Length; i++)
             {
                 box = boxes[i];
                 center = new Vec3D(centerPoint);
                 direction = new Vec3D(box.GetCenter()) - center;
+                distance = direction.Len;
                 // Set the offset type
                 if (explodedDirection == 1) direction.Y = direction.Z = 0;
                 else if (explodedDirection == 2) direction.X = direction.Z = 0;
@@ -202,9 +204,10 @@ namespace CaeMesh
                 else if (explodedDirection == 4) direction.Z = 0;
                 else if (explodedDirection == 5) direction.Y = 0;
                 else if (explodedDirection == 6) direction.X = 0;
-                //
-                offset = direction * (0.0005 * assemblyBB.GetDiagonal());
-                //
+                // Normalize after truncation
+                direction.Normalize();
+                // Compute offset
+                offset = distance * direction * 2;
                 offsets[(int)box.Tag] = (offset * scaleFactor).Coor;
             }
             //

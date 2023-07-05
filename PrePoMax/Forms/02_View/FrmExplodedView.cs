@@ -60,7 +60,7 @@ namespace PrePoMax.Forms
 
 
         // Event handlers                                                                                                           
-        private void FrmSectionView_FormClosing(object sender, FormClosingEventArgs e)
+        private void FrmExplodedView_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
             {
@@ -68,7 +68,7 @@ namespace PrePoMax.Forms
                 btnCancel_Click(null, null);
             }
         }
-        private void FrmSectionView_VisibleChanged(object sender, EventArgs e)
+        private void FrmExplodedView_VisibleChanged(object sender, EventArgs e)
         {
             if (this.Visible)
             {
@@ -93,6 +93,8 @@ namespace PrePoMax.Forms
                     _partOffsets = _controller.RemoveExplodedView(true);
                     _controller.PreviewExplodedView(_viewExplodedViewParameters.Parameters, false, _partOffsets);
                 }
+                // Update properties
+                _viewExplodedViewParameters.UpdateVisibility();
                 // Animate
                 UpdateScrollbarPosition(true);
             }
@@ -208,8 +210,8 @@ namespace PrePoMax.Forms
                 double[][] _coorNodesToDraw = new double[1][];
                 _coorNodesToDraw[0] = new double[3];
                 _coorNodesToDraw[0][0] = _viewExplodedViewParameters.CenterX;
-                _coorNodesToDraw[0][1] = _viewExplodedViewParameters.CenterX;
-                _coorNodesToDraw[0][2] = _viewExplodedViewParameters.CenterX;
+                _coorNodesToDraw[0][1] = _viewExplodedViewParameters.CenterY;
+                _coorNodesToDraw[0][2] = _viewExplodedViewParameters.CenterZ;
                 //
                 _controller.HighlightNodes(_coorNodesToDraw);
             }

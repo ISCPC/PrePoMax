@@ -360,7 +360,7 @@ namespace PrePoMax
             _form.Controller = this;
             // Jobs
             _jobs = new OrderedDictionary<string, AnalysisJob>("Analysis Jobs", StringComparer.OrdinalIgnoreCase);
-            // Edges visibilitires
+            // Edges visibilities
             _edgesVisibilities = new EdgesVisibilitiesCollection(this);
             // Section view
             _sectionViews = new SectionViewsCollection(this);
