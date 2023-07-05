@@ -5731,7 +5731,7 @@ namespace CaeMesh
             return GetElementIdsFromNodeIds(nodeIds, containsEdge, containsFace, false, itemTypePartIds[2]);
         }
         // Get node, edge or triangle coordinates for mesh refinement for Netgen
-        public void GetVetexAndEdgeCoorFromGeometryIds(int[] ids, double meshSize, bool edgeRepresentation,
+        public void GetVertexAndEdgeCoorFromGeometryIds(int[] ids, double meshSize, bool edgeRepresentation,
                                                              out double[][] points, out double[][][] lines)
         {
             int[][] cells = GetCellsFromGeometryIds(ids, edgeRepresentation);
@@ -5760,7 +5760,7 @@ namespace CaeMesh
             lines = lineList.ToArray();
         }
         // Get node, edge or triangle coordinates for mesh refinement for Highlight
-        public void GetVetexAndEdgeCoorFromGeometryIds(int[] ids, double meshSize, bool edgeRepresentation,
+        public void GetVertexAndEdgeCoorFromGeometryIds(int[] ids, double meshSize, bool edgeRepresentation,
                                                        out double[][] points)
         {
             int[][] cells = GetCellsFromGeometryIds(ids, edgeRepresentation);

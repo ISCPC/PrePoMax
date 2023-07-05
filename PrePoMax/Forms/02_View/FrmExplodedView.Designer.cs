@@ -156,8 +156,8 @@
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Exploded View";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSectionView_FormClosing);
-            this.VisibleChanged += new System.EventHandler(this.FrmSectionView_VisibleChanged);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmExplodedView_FormClosing);
+            this.VisibleChanged += new System.EventHandler(this.FrmExplodedView_VisibleChanged);
             this.groupBox3.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
