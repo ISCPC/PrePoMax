@@ -44,6 +44,7 @@ namespace PrePoMax.Forms
         [Category("Method")]
         [OrderedDisplayName(1, 10, "X coordinate")]
         [DescriptionAttribute("Enter the center point X coordinate.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(2, 1)]
         public double CenterX
         {
@@ -54,6 +55,7 @@ namespace PrePoMax.Forms
         [Category("Method")]
         [OrderedDisplayName(2, 10, "Y coordinate")]
         [DescriptionAttribute("Enter the center point Y coordinate.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(3, 1)]
         public double CenterY
         {
@@ -64,6 +66,7 @@ namespace PrePoMax.Forms
         [Category("Method")]
         [OrderedDisplayName(3, 10, "Z coordinate")]
         [DescriptionAttribute("Enter the center point Z coordinate.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(4, 1)]
         public double CenterZ
         {

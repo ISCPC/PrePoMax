@@ -180,18 +180,14 @@ namespace CaeMesh
             BoundingBoxDistanceVolumeComparer.Center = centerPoint.ToArray();
             Array.Sort(boxes, new BoundingBoxDistanceVolumeComparer());
             //
-            int firstBoxId;
             double[][] offsets = new double[boxes.Length][];
-            // Add the first box
-            firstBoxId = 1;
-            offsets[(int)boxes[0].Tag] = new double[] { 0, 0, 0 };
             //
             Vec3D center;
             Vec3D offset;
             Vec3D direction;
             double distance;
             BoundingBox box;
-            for (int i = firstBoxId; i < boxes.Length; i++)
+            for (int i = 0; i < boxes.Length; i++)
             {
                 box = boxes[i];
                 center = new Vec3D(centerPoint);
