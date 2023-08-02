@@ -28,8 +28,14 @@ namespace PrePoMax.Forms
         {
             if (_namePosition == null) return 0;
             //
-            int xPos = _namePosition[((ListViewItem)x).Text];
-            int yPos = _namePosition[((ListViewItem)y).Text];
+            int xPos = 0;
+            int yPos = 0;
+            if (_namePosition.TryGetValue(((ListViewItem)x).Text, out xPos) &&
+                _namePosition.TryGetValue(((ListViewItem)y).Text, out yPos))
+            {
+                xPos = _namePosition[((ListViewItem)x).Text];
+                yPos = _namePosition[((ListViewItem)y).Text];
+            }
             //
             if (xPos > yPos) return 1;
             else if (xPos < yPos) return -1;

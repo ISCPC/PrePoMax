@@ -2318,7 +2318,10 @@ namespace UserControls
             TreeNode parent = tmp[0].Parent;
             //
             tmp[0].Remove();
+            //
+            _disableSelectionsChanged = true;
             tree.SelectedNodes.Remove(tmp[0]);
+            _disableSelectionsChanged = false;
             //
             parent.Text = parent.Name;
             if (parent.Tag is Field || parent.Tag is HistoryResultSet || parent.Tag is HistoryResultField)

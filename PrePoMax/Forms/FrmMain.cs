@@ -144,11 +144,6 @@ namespace PrePoMax
             });
         }
         public bool ScreenUpdating { get { return _modelTree.ScreenUpdating; } set { _modelTree.ScreenUpdating = value; } }
-        public bool DisableSelectionsChanged
-        {
-            get { return _modelTree.DisableSelectionsChanged; }
-            set { _modelTree.DisableSelectionsChanged = value; }
-        }
         public bool RenderingOn { get { return _vtk.RenderingOn; } set { _vtk.RenderingOn = value; } }        
         private ViewType GetViewType(ViewGeometryModelResults view)
         {

@@ -5080,10 +5080,12 @@ namespace PrePoMax
         {
             FeElementSet elementSet;
             bool update = false;    // needed for remeshing
+            //
             foreach (var name in elementSetNames)
             {
                 if (_model.Mesh.ElementSets.TryRemove(name, out elementSet) && !elementSet.Internal)
                 {
+                    
                     _form.RemoveTreeNode<FeElementSet>(ViewGeometryModelResults.Model, name, null);
                     update = true;
                 }
@@ -6036,16 +6038,12 @@ namespace PrePoMax
         }
         public void RemoveConstraints(string[] constraintNames)
         {
-            _form.DisableSelectionsChanged = true;
-            //
             foreach (var name in constraintNames)
             {
                 DeleteSelectionBasedConstraintSets(name);
                 _model.Constraints.Remove(name);
                 _form.RemoveTreeNode<Constraint>(ViewGeometryModelResults.Model, name, null);
             }
-            //
-            _form.DisableSelectionsChanged = false;
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
@@ -6560,16 +6558,12 @@ namespace PrePoMax
         }
         public void RemoveContactPairs(string[] contactPairNames)
         {
-            _form.DisableSelectionsChanged = true;
-            //
             foreach (var name in contactPairNames)
             {
                 DeleteSelectionBasedContactPairSets(name);
                 _model.ContactPairs.Remove(name);
                 _form.RemoveTreeNode<ContactPair>(ViewGeometryModelResults.Model, name, null);
             }
-            //
-            _form.DisableSelectionsChanged = false;
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
