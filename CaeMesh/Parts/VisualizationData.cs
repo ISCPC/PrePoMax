@@ -579,15 +579,15 @@ namespace CaeMesh
             List<int[]> edgeCells;
             Dictionary<int, List<int[]>> nodeIdEdgeCells = new Dictionary<int, List<int[]>>();
             //
-            int id;
+            List<int> ids = new List<int>();
             int[] edgeCellNodeIds;
             foreach (var edgeCell in _edgeCells)
             {
-                id = -1;
-                if (vertexNodeIds.Contains(edgeCell[0])) id = 0;
-                else if (vertexNodeIds.Contains(edgeCell[1])) id = 1;
+                ids.Clear();
+                if (vertexNodeIds.Contains(edgeCell[0])) ids.Add(0);
+                if (vertexNodeIds.Contains(edgeCell[1])) ids.Add(1);
                 //
-                if (id >= 0)
+                foreach (var id in ids)
                 {
                     edgeCellNodeIds = new int[] { edgeCell[id], edgeCell[(id + 1) % 2] };
                     if (nodeIdEdgeCells.TryGetValue(edgeCell[id], out edgeCells)) edgeCells.Add(edgeCellNodeIds);

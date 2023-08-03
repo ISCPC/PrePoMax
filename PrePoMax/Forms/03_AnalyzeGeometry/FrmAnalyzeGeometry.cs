@@ -108,13 +108,14 @@ namespace PrePoMax
         {
             try
             {
-                if (cbEdgesShorter.Checked || cbFacesSmaller.Checked || cbCloseEdges.Checked || cbVerticesWithAngle.Checked)
-                    _controller.ClearAllSelection();
+                //if (cbEdgesShorter.Checked || cbFacesSmaller.Checked || cbCloseEdges.Checked || cbVerticesWithAngle.Checked)
+                _controller.ClearAllSelection();
                 //
                 if (cbEdgesShorter.Checked) _controller.ShowShortEdges(tbMinEdgeLen.Value, _partNamesToAnalyze);
                 if (cbFacesSmaller.Checked) _controller.ShowSmallFaces(tbMinFaceSize.Value, _partNamesToAnalyze);
                 if (cbCloseEdges.Checked) _controller.ShowCloseUnConnectedEdges(tbMinEdgesDistance.Value, _partNamesToAnalyze);
-                if (cbVerticesWithAngle.Checked) _controller.ShowVerticesWithLargeAngle(_partNamesToAnalyze, 5);
+                if (cbVerticesWithAngle.Checked)
+                    _controller.ShowVerticesWithLargeAngle(_partNamesToAnalyze, tbVerticesWithAngle.Value);
             }
             catch
             {
