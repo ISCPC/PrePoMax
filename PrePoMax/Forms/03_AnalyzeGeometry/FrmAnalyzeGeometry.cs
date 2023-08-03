@@ -45,6 +45,7 @@ namespace PrePoMax
             tbMinEdgeLen.UnitConverter = new CaeGlobals.StringLengthConverter();
             tbMinEdgesDistance.UnitConverter = tbMinEdgeLen.UnitConverter;
             tbMinFaceSize.UnitConverter = new CaeGlobals.StringAreaConverter();
+            tbVerticesWithAngle.UnitConverter = new CaeGlobals.StringAngleDegMoreThanConverter();
         }
 
 
@@ -94,6 +95,8 @@ namespace PrePoMax
                 if (smallestFace > 0) tbMinFaceSize.Text = Math.Pow(10, Math.Ceiling(Math.Log10(smallestFace))).ToString();
                 else tbMinFaceSize.Text = "0.0";
                 //
+                tbVerticesWithAngle.Text = "175";
+                //
                 float widthAfter = GetMaxLabelWidth();
                 float delta = widthAfter - widthBefore;
                 Width += (int)delta;
@@ -105,12 +108,13 @@ namespace PrePoMax
         {
             try
             {
-                if (cbEdgesShorter.Checked || cbFacesSmaller.Checked || cbCloseEdges.Checked)
+                if (cbEdgesShorter.Checked || cbFacesSmaller.Checked || cbCloseEdges.Checked || cbVerticesWithAngle.Checked)
                     _controller.ClearAllSelection();
                 //
                 if (cbEdgesShorter.Checked) _controller.ShowShortEdges(tbMinEdgeLen.Value, _partNamesToAnalyze);
                 if (cbFacesSmaller.Checked) _controller.ShowSmallFaces(tbMinFaceSize.Value, _partNamesToAnalyze);
                 if (cbCloseEdges.Checked) _controller.ShowCloseUnConnectedEdges(tbMinEdgesDistance.Value, _partNamesToAnalyze);
+                if (cbVerticesWithAngle.Checked) _controller.ShowVerticesWithLargeAngle(_partNamesToAnalyze, 5);
             }
             catch
             {

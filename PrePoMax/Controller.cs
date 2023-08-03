@@ -3231,6 +3231,11 @@ namespace PrePoMax
             int[][] cells = mesh.GetSmallestFaces(minFaceArea, partNames);
             HighlightSurface(cells, null, false);
         }
+        public void ShowVerticesWithLargeAngle(string[] partNames, double angleDeg)
+        {
+            double[][] smallAngleVertexCoor = DisplayedMesh.GetVertexCoorWithLargeAngle(partNames, angleDeg);
+            HighlightNodes(smallAngleVertexCoor);
+        }
 
         #endregion #################################################################################################################
 

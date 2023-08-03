@@ -411,7 +411,7 @@ namespace CaeMesh
             // Cell neighbours over cell
             if (_cellNeighboursOverCell != null)
             {
-                int[] renumberedKkey;
+                int[] renumberedKey;
                 int[] renumberedCell;
                 CellNeighbour cellNeighbour;
                 CompareIntArray comparer = new CompareIntArray();
@@ -420,18 +420,18 @@ namespace CaeMesh
                 //
                 foreach (var entry in _cellNeighboursOverCell)
                 {
-                    renumberedKkey = entry.Key.ToArray();           // not all nodes are renumbered
+                    renumberedKey = entry.Key.ToArray();           // not all nodes are renumbered
                     renumberedCell = entry.Value.Cell1.ToArray();   // not all nodes are renumbered
                     //
                     for (int i = 0; i < renumberedCell.Length; i++)
                     {
-                        if (newIds.TryGetValue(entry.Key[i], out id)) renumberedKkey[i] = id;
+                        if (newIds.TryGetValue(entry.Key[i], out id)) renumberedKey[i] = id;
                         if (newIds.TryGetValue(entry.Value.Cell1[i], out id)) renumberedCell[i] = id;
                     }
                     //
                     cellNeighbour = entry.Value;
                     cellNeighbour.Cell1 = renumberedCell;
-                    renumberedNeighbours.Add(renumberedKkey, cellNeighbour);
+                    renumberedNeighbours.Add(renumberedKey, cellNeighbour);
                 }
                 _cellNeighboursOverCell = renumberedNeighbours;
             }
@@ -573,6 +573,30 @@ namespace CaeMesh
             for (int i = 0; i < _cells.Length; i++) nodeIds.UnionWith(_cells[i]);
             return nodeIds;
         }
+        public Dictionary<int, List<int[]>> GetVertexEdgeCells()
+        {
+            HashSet<int> vertexNodeIds = new HashSet<int>(_vertexNodeIds);
+            List<int[]> edgeCells;
+            Dictionary<int, List<int[]>> nodeIdEdgeCells = new Dictionary<int, List<int[]>>();
+            //
+            int id;
+            int[] edgeCellNodeIds;
+            foreach (var edgeCell in _edgeCells)
+            {
+                id = -1;
+                if (vertexNodeIds.Contains(edgeCell[0])) id = 0;
+                else if (vertexNodeIds.Contains(edgeCell[1])) id = 1;
+                //
+                if (id >= 0)
+                {
+                    edgeCellNodeIds = new int[] { edgeCell[id], edgeCell[(id + 1) % 2] };
+                    if (nodeIdEdgeCells.TryGetValue(edgeCell[id], out edgeCells)) edgeCells.Add(edgeCellNodeIds);
+                    else nodeIdEdgeCells.Add(edgeCell[id], new List<int[]> { edgeCellNodeIds });
+                }
+            }
+            //
+            return nodeIdEdgeCells;
+        }
         public HashSet<int> GetNodeIdsBySurface(int surfaceId)
         {
             HashSet<int> surfaceNodeIds = new HashSet<int>();
@@ -649,29 +673,6 @@ namespace CaeMesh
             return elementIdSurfaceIds;
         }
         // Free edges and nodes
-        public HashSet<int> GetFreeEdgeIds1()
-        {
-            int[] edgeCount;
-            HashSet<int> freeEdgeIds = new HashSet<int>();
-            Dictionary<int, int[]> edgeIdCount = new Dictionary<int, int[]>();
-            //
-            foreach (var faceEdgeId in _faceEdgeIds)
-            {
-                foreach (var edgeId in faceEdgeId)
-                {
-                    if (edgeIdCount.TryGetValue(edgeId, out edgeCount)) edgeCount[0]++;
-                    else edgeIdCount.Add(edgeId, new int[] { 1 });
-                }
-            }
-            //
-            freeEdgeIds.Clear();
-            foreach (var edgeEntry in edgeIdCount)
-            {
-                if (edgeEntry.Value[0] == 1) freeEdgeIds.Add(edgeEntry.Key);
-            }
-            //
-            return freeEdgeIds;
-        }
         public HashSet<int> GetFreeEdgeIds()
         {
             int edgeCellId;

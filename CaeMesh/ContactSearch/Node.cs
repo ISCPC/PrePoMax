@@ -11,19 +11,19 @@ namespace CaeMesh
     {
         // Variables                                                                                                                
         private T _data;
-        private NodeList<T> _neighbors = null;
+        private NodeList<T> _neighbours = null;
 
 
         // Propeties                                                                                                                  
         public T Value { get { return _data; } set { _data = value; } }
-        public NodeList<T> Neighbors
+        public NodeList<T> Neighbours
         {
             get
             {
-                if (_neighbors == null) _neighbors = new NodeList<T>();
-                return _neighbors;
+                if (_neighbours == null) _neighbours = new NodeList<T>();
+                return _neighbours;
             }
-            set { _neighbors = value; }
+            set { _neighbours = value; }
         }
 
 
@@ -33,15 +33,15 @@ namespace CaeMesh
         public Node(T data)
             : this(data, null)
         { }
-        public Node(T data, NodeList<T> neighbors)
+        public Node(T data, NodeList<T> neighbours)
         {
             _data = data;
-            _neighbors = neighbors;
+            _neighbours = neighbours;
         }
         public int CompareTo(Node<T> other)
         {
-            int n1 = _neighbors == null ? 0 : _neighbors.Count;
-            int n2 = other.Neighbors == null ? 0 : other.Neighbors.Count;
+            int n1 = _neighbours == null ? 0 : _neighbours.Count;
+            int n2 = other.Neighbours == null ? 0 : other.Neighbours.Count;
             //
             if (n1 < n2)
                 return -1;

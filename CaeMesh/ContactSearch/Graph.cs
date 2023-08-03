@@ -44,7 +44,7 @@ namespace CaeMesh
                 // Add connections
                 foreach (var oldNode in nodeSet)
                 {
-                    foreach (var neighbour in oldNode.Neighbors)
+                    foreach (var neighbour in oldNode.Neighbours)
                     {
                         AddDirectedEdge(oldNewNode[oldNode], oldNewNode[neighbour]);
                     }
@@ -77,11 +77,11 @@ namespace CaeMesh
             // Enumerate through each node in the nodeSet, removing edges to this node
             foreach (Node<T> gnode in _nodeSet)
             {
-                int index = gnode.Neighbors.IndexOf(node);
+                int index = gnode.Neighbours.IndexOf(node);
                 if (index != -1)
                 {
                     // Remove the reference to the node and associated cost
-                    gnode.Neighbors.RemoveAt(index);
+                    gnode.Neighbours.RemoveAt(index);
                 }
             }
             //
@@ -90,21 +90,21 @@ namespace CaeMesh
         // Edges
         public void AddDirectedEdge(Node<T> from, Node<T> to)
         {
-            from.Neighbors.Add(to);
+            from.Neighbours.Add(to);
         }
         public void AddUndirectedEdge(Node<T> from, Node<T> to)
         {
-            from.Neighbors.Add(to);
-            to.Neighbors.Add(from);
+            from.Neighbours.Add(to);
+            to.Neighbours.Add(from);
         }
         public void RemoveDirectedEdge(Node<T> from, Node<T> to)
         {
-            from.Neighbors.Remove(to);
+            from.Neighbours.Remove(to);
         }
         public void RemoveUndirectedEdge(Node<T> from, Node<T> to)
         {
-            from.Neighbors.Remove(to);
-            to.Neighbors.Remove(from);
+            from.Neighbours.Remove(to);
+            to.Neighbours.Remove(from);
         }
         //
         public bool IsGraphWithoutCycles()
@@ -126,7 +126,7 @@ namespace CaeMesh
                 if (visitedNodes.Add(currentNode))
                 {
                     // Add all neighbours to the queue
-                    foreach (var neighbour in currentNode.Neighbors)
+                    foreach (var neighbour in currentNode.Neighbours)
                     {
                         if (neighbour != parentNode)
                         {
@@ -150,7 +150,7 @@ namespace CaeMesh
                 //
                 foreach (Node<T> node in graphCopy.Nodes)
                 {
-                    if (node.Neighbors.Count() <= 1) singleConnectedItems.Add(node.Value);
+                    if (node.Neighbours.Count() <= 1) singleConnectedItems.Add(node.Value);
                 }
                 //
                 foreach (var item in singleConnectedItems)
@@ -162,7 +162,7 @@ namespace CaeMesh
             // Check for a single cycle
             foreach (Node<T> node in graphCopy.Nodes)
             {
-                if (node.Neighbors.Count() > 2) return false;
+                if (node.Neighbours.Count() > 2) return false;
             }
             return true;
         }
@@ -194,7 +194,7 @@ namespace CaeMesh
                         {
                             connectedNodes.Add(currentNode);
                             // Add all neighbours to the queue
-                            foreach (var neighbour in currentNode.Neighbors)
+                            foreach (var neighbour in currentNode.Neighbours)
                                 queue.Enqueue(neighbour);
                         }
                     }
@@ -218,7 +218,7 @@ namespace CaeMesh
                 //
                 foreach (Node<T> node in graphCopy.Nodes)
                 {
-                    if (node.Neighbors.Count() == 0) childItems.Add(node.Value);
+                    if (node.Neighbours.Count() == 0) childItems.Add(node.Value);
                 }
                 //
                 foreach (var item in childItems)

@@ -8152,7 +8152,7 @@ namespace CaeMesh
             foreach (var partName in partNames)
             {
                 part = _parts[partName];
-                if (part is CaeMesh.CompoundGeometryPart) continue;
+                if (part is CompoundGeometryPart) continue;
                 //
                 visualization = part.Visualization;
                 // for each face
@@ -8171,6 +8171,39 @@ namespace CaeMesh
                 }
             }
             return cells.ToArray();
+        }
+        //
+        public double[][] GetVertexCoorWithLargeAngle(string[] partNames, double angleDeg)
+        {
+            double nodeAngle;
+            BasePart part;
+            VisualizationData visualization;
+            Dictionary<int, List<int[]>> nodeIdEdgeCells;
+            List<double[]> nodeCoor = new List<double[]>();
+            //
+            foreach (var partName in partNames)
+            {
+                part = _parts[partName];
+                if (part is CompoundGeometryPart) continue;
+                //
+                visualization = part.Visualization;
+                nodeIdEdgeCells = visualization.GetVertexEdgeCells();
+                //
+                foreach (var entry in nodeIdEdgeCells)
+                {
+                    if (entry.Value.Count == 1) nodeCoor.Add(_nodes[entry.Key].Coor);
+                    else if (entry.Value.Count == 2)
+                    {
+                        nodeAngle = ComputeAngleInRadFromEdgeCellIndices(entry.Value[0], entry.Value[1], entry.Key) * 180 / Math.PI;
+                        if (nodeAngle > angleDeg)
+                        {
+                            nodeCoor.Add(_nodes[entry.Key].Coor);
+                        }
+                    }
+                }
+            }
+            //
+            return nodeCoor.ToArray();
         }
 
         // Read - Write

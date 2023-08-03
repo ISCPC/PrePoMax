@@ -183,9 +183,9 @@ namespace CaeMesh
                 //
                 foreach (Node<NodeData> node in reducedGraph.Nodes)
                 {
-                    if (node.Neighbors.Count() == 1)
+                    if (node.Neighbours.Count() == 1)
                     {
-                        neighbour = node.Neighbors[0];
+                        neighbour = node.Neighbours[0];
                         masterSlaveItems.Add(new MasterSlaveItem(node.Value.Name, neighbour.Value.Name,
                                                                  node.Value.ItemIds, neighbour.Value.ItemIds));
                         //
@@ -226,7 +226,7 @@ namespace CaeMesh
                 if (visitedNodes.Add(currentNode))
                 {
                     // Add all neighbours to the queue
-                    foreach (var neighbour in currentNode.Neighbors)
+                    foreach (var neighbour in currentNode.Neighbours)
                     {
                         if (neighbour != parentNode)
                         {
@@ -235,7 +235,7 @@ namespace CaeMesh
                             //
                             queue.Enqueue(neighbour);
                             parentQueue.Enqueue(currentNode);
-                            break;  // add only the first neighbor and continue
+                            break;  // add only the first neighbour and continue
                         }
                     }
                 }
@@ -266,13 +266,13 @@ namespace CaeMesh
             //
             foreach (var node in reducedGraph.Nodes)
             {
-                foreach (var neighbor in node.Neighbors)
+                foreach (var neighbour in node.Neighbours)
                 {
-                    masterSlaveItems.Add(new MasterSlaveItem(prefix + node.Value.Name, neighbor.Value.Name,
-                                                             node.Value.ItemIds, neighbor.Value.ItemIds));
-                    reducedGraph.RemoveDirectedEdge(neighbor, node);
+                    masterSlaveItems.Add(new MasterSlaveItem(prefix + node.Value.Name, neighbour.Value.Name,
+                                                             node.Value.ItemIds, neighbour.Value.ItemIds));
+                    reducedGraph.RemoveDirectedEdge(neighbour, node);
                 }
-                node.Neighbors.Clear();
+                node.Neighbours.Clear();
             }
             //
             return masterSlaveItems;
