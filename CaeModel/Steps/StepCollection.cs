@@ -392,6 +392,18 @@ namespace CaeModel
             //
             return false;
         }
+        public int GetNumberOfCentrifLoads()
+        {
+            int count = 0;
+            foreach (var stepEntry in _steps)
+            {
+                foreach (var loadEntry in stepEntry.Loads)
+                {
+                    if (loadEntry.Value is CentrifLoad cf) count++;
+                }
+            }
+            return count;
+        }
         // Defined field
         public string[] GetAllDefinedFieldNames()
         {

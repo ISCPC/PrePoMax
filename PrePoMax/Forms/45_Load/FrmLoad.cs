@@ -603,6 +603,14 @@ namespace PrePoMax.Forms
                     else if (vcfl.RegionType == RegionTypeEnum.ElementSetName.ToFriendlyString())
                         CheckMissingValueRef(ref elementSetNames, vcfl.ElementSetName, s => { vcfl.ElementSetName = s; });
                     else throw new NotSupportedException();
+                    // Check for change in axisymmetric
+                    bool isLoadAxiSymmetric = ((CentrifLoad)vcfl.GetBase()).Axisymmetric;
+                    bool isModelAxiSymmetric = _controller.Model.Properties.ModelSpace == ModelSpaceEnum.Axisymmetric;
+                    if (isLoadAxiSymmetric != isModelAxiSymmetric)
+                    {
+                        vcfl.Axisymmetric = isModelAxiSymmetric;
+                        _propertyItemChanged = true;
+                    }
                     //
                     vcfl.PopulateDropDownLists(partNames, elementSetNames, amplitudeNames);
                 }
@@ -836,7 +844,8 @@ namespace PrePoMax.Forms
             name = "Centrifugal Load";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            CentrifLoad centrifLoad = new CentrifLoad(loadName, "", RegionTypeEnum.Selection, twoD, complex, 0);
+            bool axisymmetric = _controller.Model.Properties.ModelSpace == ModelSpaceEnum.Axisymmetric;
+            CentrifLoad centrifLoad = new CentrifLoad(loadName, "", RegionTypeEnum.Selection, twoD, axisymmetric, complex, 0);
             ViewCentrifLoad vcfl = new ViewCentrifLoad(centrifLoad);
             if (step.IsLoadSupported(gravityLoad))
             {

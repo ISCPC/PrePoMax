@@ -16,11 +16,20 @@ namespace PrePoMax.Settings
         // Variables                                                                                                                
         private StatusBlockSettings _statusBlockSettings;
         private DynamicCustomTypeDescriptor _dctd = null;
-       
+
 
         // Properties                                                                                                               
         [CategoryAttribute("Design")]
-        [OrderedDisplayName(0, 10, "Background type")]
+        [OrderedDisplayName(0, 10, "Status block visibility")]
+        [DescriptionAttribute("Turn status block on or off.")]
+        public bool Visibility
+        {
+            get { return _statusBlockSettings.Visible; }
+            set { _statusBlockSettings.Visible = value; }
+        }
+        //
+        [CategoryAttribute("Design")]
+        [OrderedDisplayName(1, 10, "Background type")]
         [DescriptionAttribute("Select the background type.")]
         public AnnotationBackgroundType BackgroundType
         {
@@ -29,7 +38,7 @@ namespace PrePoMax.Settings
         }
         //
         [CategoryAttribute("Design")]
-        [OrderedDisplayName(1, 10, "Draw a border rectangle")]
+        [OrderedDisplayName(2, 10, "Draw a border rectangle")]
         [DescriptionAttribute("Draw a border rectangle around the status block.")]
         public bool DrawBorder
         {
@@ -44,7 +53,8 @@ namespace PrePoMax.Settings
             _statusBlockSettings = statusBlockSettings;
             _dctd = ProviderInstaller.Install(this);
             // Now lets display Yes/No instead of True/False
-            _dctd.RenameBooleanPropertyToYesNo(nameof(DrawBorder));
+            _dctd.RenameBooleanPropertyToYesNo(nameof(Visibility));
+            _dctd.RenameBooleanPropertyToOnOff(nameof(DrawBorder));
         }
 
 

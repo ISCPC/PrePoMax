@@ -106,8 +106,12 @@ namespace CaeModel
             {
                 foreach (var item in Enum.GetValues(elementType))
                 {
-                    if ((int)item > 0 && (int)item / 10 != type)
+                    // Remove all elements of the wrong type
+                    if ((int)item > 0 && (int)item / 10 != type) 
                     {
+                        // For axisymmetric models allow plane stress elements
+                        if (type == 4 && (int)item > 0 && (int)item / 10 == 2) continue;
+                        //
                         if (unavailableElementTypeNames.TryGetValue(elementType, out elementEnums))
                             elementEnums.Add(item.ToString());
                         else

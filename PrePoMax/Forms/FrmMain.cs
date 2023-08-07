@@ -17,6 +17,7 @@ using CaeModel;
 using CaeMesh;
 using CaeResults;
 using vtkControl;
+using System.Threading;
 
 namespace PrePoMax
 {
@@ -473,7 +474,7 @@ namespace PrePoMax
             // Set pass through control for the mouse wheel event
             this.PassThroughControl = _vtk;
             // Timer to delay the rendering of the vtk so that menus get rendered first
-            Timer timer = new Timer();
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
             timer.Interval = 50;
             timer.Tick += new EventHandler(async (object s, EventArgs ea) =>
             {
@@ -572,6 +573,11 @@ namespace PrePoMax
         private void FrmMain_Resize(object sender, EventArgs e)
         {
             if (this.WindowState == FormWindowState.Minimized && _frmAnimation.Visible) _frmAnimation.UpdateAnimation();
+            //
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                WriteDataToOutput(Width + " : " + Height);
+            }
         }
         private async void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -7710,9 +7716,9 @@ namespace PrePoMax
             InvokeIfRequired(() => { tsbSectionView.Checked = false; });
         }
         // Exploded view
-        public void PreviewExplodedView(Dictionary<string, double[]> partOffsets, bool animate)
+        public void PreviewExplodedView(Dictionary<string, double[]> partOffsets, bool animate, int timeMs)
         {
-            InvokeIfRequired(_vtk.PreviewExplodedView, partOffsets, animate);
+            InvokeIfRequired(_vtk.PreviewExplodedView, partOffsets, animate, timeMs);
         }
         public void RemovePreviewedExplodedView(string[] partNames)
         {
@@ -7892,6 +7898,10 @@ namespace PrePoMax
             InvokeIfRequired(_vtk.HideColorBar);
         }
         // Status bar
+        public void SetStatusBlockVisibility(bool draw)
+        {
+            InvokeIfRequired(_vtk.SetStatusBlockVisibility, draw);
+        }
         public void DrawStatusBlockBackground(bool drawBackground)
         {
             InvokeIfRequired(_vtk.DrawStatusBlockBackground, drawBackground);
@@ -8278,6 +8288,8 @@ namespace PrePoMax
         // Output
         public void WriteDataToOutput(string data)
         {
+            return;
+
             if (data == null) return;
             // 20 chars is an empty line with date
             if (data.Length == 0 && (outputLines.Length > 0 && outputLines.Last().Length == 20)) return;
@@ -8505,8 +8517,9 @@ namespace PrePoMax
         {
             try
             {
-                _vtk.SwithchLights();
+                //_vtk.SwithchLights();
                 //_controller.TestCreateSurface();
+                AnimateModel58();
             }
             catch
             {
@@ -8610,7 +8623,86 @@ namespace PrePoMax
             //if (timerTest.Enabled) timerTest.Stop();
             //else timerTest.Start();
         }
+        private void AnimateModel58()
+        {
+            tbOutput.Clear();
+            Thread.Sleep(3000);
+            //
+            //_vtk.AnimateZoomToFactor(3000, 100);
+            //
+            if (true)
+            {
+                int alphaStart = 230;
+                int alphaEnd = 50;
+                int alphaStep = 5;
+                AnimateTransparency("Shell_part-7", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-6", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-11", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-1", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-10", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-2", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-14", alphaStart, alphaEnd, alphaStep);
+            }
+            //Thread.Sleep(1000);
+            //_vtk.AnimateZoomToFactor(6000, 1500);
+            ////
+            //Thread.Sleep(1000);
+            //_controller.TurnExplodedViewOnOff(true, 1500);
+            ////
+            //Thread.Sleep(1000);
+            //_controller.TurnExplodedViewOnOff(true, 1500);
+            ////
+            //Thread.Sleep(1000);
+            //_vtk.AnimateZoomToFactor(3000, 1500);
+        }
+        private void AnimateSierra()
+        {
+            tbOutput.Clear();
+            Thread.Sleep(3000);
+            //
+            _vtk.AnimateZoomToFactor(800, 100);
+            //
+            if (true)
+            {
+                int alphaStart = 230;
+                int alphaEnd = 50;
+                int alphaStep = 5;
+                AnimateTransparency("Shell_part-16", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-4", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-1", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-17", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-12", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-9", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-7", alphaStart, alphaEnd, alphaStep);
+                AnimateTransparency("Shell_part-13", alphaStart, alphaEnd, alphaStep);
+            }
+            //Thread.Sleep(1000);
+            //_vtk.AnimateZoomToFactor(2000, 1500);
+            //
+            //Thread.Sleep(1000);
+            //_controller.TurnExplodedViewOnOff(true, 1500);
+            //
+            //Thread.Sleep(1000);
+            //_controller.TurnExplodedViewOnOff(true, 1500);
+            //
+            //Thread.Sleep(1000);
+            //_vtk.AnimateZoomToFactor(800, 1500);
+        }
+        private void AnimateTransparency(string partName, int alphaFrom, int alphaTo, int alphaStep)
+        {
+            string[] partNames = new string[] { partName };
 
+            if (alphaFrom > alphaTo)
+            {
+                for (int i = alphaFrom; i >= alphaTo; i -= alphaStep)
+                {
+                    _controller.SetTransparencyForResultParts(partNames, (byte)i);
+                    //_controller.SetTransparencyForGeometryParts(partNames, (byte)i);
+                    Application.DoEvents();
+                }
+            }
+            
+        }
         private void timerTest_Tick(object sender, EventArgs e)
         {
             //TestAnimation();

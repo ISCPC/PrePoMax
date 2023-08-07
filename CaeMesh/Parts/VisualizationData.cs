@@ -916,7 +916,7 @@ namespace CaeMesh
                     //
                     if (key[0] == key[1] || (key.Length == 3 && key[1] == key[2]))
                     {
-                        //manifoldGeometry
+                        // manifoldGeometry
                         continue;
                     }
                     //
@@ -937,8 +937,11 @@ namespace CaeMesh
             {
                 for (int j = 0; j < cellEdgeData[i].Length; j++)
                 {
-                    if (allEdges.TryGetValue(cellEdgeData[i][j].Key, out data)) data.CellIds.Add(i);
-                    else allEdges.Add(cellEdgeData[i][j].Key, cellEdgeData[i][j]);
+                    if (cellEdgeData[i][j] != null) // check for manifold geometry
+                    {
+                        if (allEdges.TryGetValue(cellEdgeData[i][j].Key, out data)) data.CellIds.Add(i);
+                        else allEdges.Add(cellEdgeData[i][j].Key, cellEdgeData[i][j]);
+                    }
                 }
             }
             watch.Stop();

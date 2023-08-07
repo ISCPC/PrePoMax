@@ -251,7 +251,7 @@ namespace PrePoMax.Forms
                 bool showThickness = _controller.Model.Properties.ModelSpace == ModelSpaceEnum.PlaneStress ||
                                      _controller.Model.Properties.ModelSpace == ModelSpaceEnum.PlaneStrain;
                 SolidSection ss = new SolidSection(GetSectionName("Solid"), materialNames[0], "",
-                                                   RegionTypeEnum.Selection, 1, showThickness);
+                                                   RegionTypeEnum.Selection, 1, twoD);
                 ViewSolidSection vss = new ViewSolidSection(ss);
                 vss.PopulateDropDownLists(materialNames, partNames, elementSetNames);
                 item.Tag = vss;

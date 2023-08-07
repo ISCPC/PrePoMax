@@ -368,6 +368,19 @@ namespace CaeModel
                     load = loadEntry.Value;
                     // Region
                     valid = IsLoadRegionValid(load);
+                    // D2 vs axisymmetric
+                    if (valid && load is CentrifLoad cf)
+                    {
+                        if (_properties.ModelSpace == ModelSpaceEnum.PlaneStress ||
+                            _properties.ModelSpace == ModelSpaceEnum.PlaneStrain)
+                        {
+                            if (cf.Axisymmetric == true) valid = false;
+                        }
+                        else if (_properties.ModelSpace == ModelSpaceEnum.Axisymmetric)
+                        {
+                            if (cf.Axisymmetric == false) valid = false;
+                        }
+                    }
                     // Amplitude
                     if (load.AmplitudeName != BoundaryCondition.DefaultAmplitudeName && 
                         !_amplitudes.ContainsValidKey(load.AmplitudeName)) valid = false;

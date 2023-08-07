@@ -7,6 +7,7 @@ using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
 using System.Drawing.Design;
+using CaeModel;
 
 namespace PrePoMax
 {
@@ -14,7 +15,7 @@ namespace PrePoMax
     public class ViewCentrifLoad : ViewLoad
     {
         // Variables                                                                                                                
-        private CaeModel.CentrifLoad _cenLoad;
+        private CentrifLoad _cenLoad;
         private ItemSetData _centerPointItemSetData;
 
 
@@ -106,10 +107,21 @@ namespace PrePoMax
         //
         public override string AmplitudeName { get { return _cenLoad.AmplitudeName; } set { _cenLoad.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _cenLoad.Color; } set { _cenLoad.Color = value; } }
+        //
+        [Browsable(false)]
+        public bool Axisymmetric
+        {
+            get { return _cenLoad.Axisymmetric; }
+            set
+            {
+                _cenLoad.Axisymmetric = value;
+                UpdateVisibility();
+            }
+        }
 
 
         // Constructors                                                                                                             
-        public ViewCentrifLoad(CaeModel.CentrifLoad cenLoad)
+        public ViewCentrifLoad(CentrifLoad cenLoad)
         {
             // The order is important
             _cenLoad = cenLoad;
@@ -125,17 +137,12 @@ namespace PrePoMax
             _centerPointItemSetData = new ItemSetData(); // needed to display ItemSetData.ToString()
             _centerPointItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
             //
-            DynamicCustomTypeDescriptor.GetProperty(nameof(Z)).SetIsBrowsable(!cenLoad.TwoD);
-            DynamicCustomTypeDescriptor.GetProperty(nameof(N1)).SetIsBrowsable(!cenLoad.TwoD);
-            DynamicCustomTypeDescriptor.GetProperty(nameof(N2)).SetIsBrowsable(!cenLoad.TwoD);
-            DynamicCustomTypeDescriptor.GetProperty(nameof(N3)).SetIsBrowsable(!cenLoad.TwoD);
-            // Phase
-            DynamicCustomTypeDescriptor.GetProperty(nameof(Phase)).SetIsBrowsable(_cenLoad.Complex);
+            UpdateVisibility();
         }
 
 
         // Methods                                                                                                                  
-        public override CaeModel.Load GetBase()
+        public override Load GetBase()
         {
             return _cenLoad;
         }
@@ -148,6 +155,23 @@ namespace PrePoMax
             PopulateDropDownLists(regionTypeListItemsPairs);
             //
             PopulateAmplitudeNames(amplitudeNames);
+        }
+        private void UpdateVisibility()
+        {
+            bool visible = !_cenLoad.Axisymmetric;
+            bool readOnly = _cenLoad.Axisymmetric;
+            //
+            DynamicCustomTypeDescriptor.GetProperty(nameof(CenterPointItemSet)).SetIsBrowsable(visible);
+            //
+            DynamicCustomTypeDescriptor.GetProperty(nameof(X)).SetIsReadOnly(readOnly);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(Y)).SetIsReadOnly(readOnly);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(Z)).SetIsBrowsable(visible);
+            //
+            DynamicCustomTypeDescriptor.GetProperty(nameof(N1)).SetIsReadOnly(readOnly);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(N2)).SetIsReadOnly(readOnly);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(N3)).SetIsBrowsable(visible);
+            // Phase
+            DynamicCustomTypeDescriptor.GetProperty(nameof(Phase)).SetIsBrowsable(_cenLoad.Complex);
         }
     }
 

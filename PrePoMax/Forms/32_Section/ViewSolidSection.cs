@@ -19,7 +19,9 @@ namespace PrePoMax
         // Properties                                                                                                               
         [CategoryAttribute("Data")]
         [OrderedDisplayName(6, 10, "Thickness")]
-        [DescriptionAttribute("Set the thickness in the case of 2D plain strain/stress state.")]
+        [DescriptionAttribute("Set the thickness for the 2D plain strain/stress elements. " +
+                              "For the mixed axisymmetric model the thickness of the plane stress elements must be " +
+                              "defined for an angle of 360°.")]
         [TypeConverter(typeof(StringLengthConverter))]
         public double Thickness { get { return _solidSection.Thickness; } set { _solidSection.Thickness = value; } }
 

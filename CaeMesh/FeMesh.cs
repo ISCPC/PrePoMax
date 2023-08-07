@@ -2674,6 +2674,9 @@ namespace CaeMesh
                     }
                 }
             }
+            HashSet<int> vertices = new HashSet<int>();
+            // Gather all mesh vertices
+            foreach (var partEntry in _parts) vertices.UnionWith(partEntry.Value.Visualization.VertexNodeIds);
             // Modify existing parts
             int count = 0;
             BasePart part;
@@ -2708,7 +2711,7 @@ namespace CaeMesh
                 _parts[newBasePart.Name] = newBasePart;
                 // Keep existing edges
                 edgeElements.AddRange(GetLineElementsFromEdges(part));
-                ConvertLineFeElementsToEdges(edgeElements, new string[] { newBasePart.Name });
+                ConvertLineFeElementsToEdges(edgeElements, new string[] { newBasePart.Name }, vertices);
                 //
                 modifiedParts[count++] = newBasePart;
             }
@@ -2741,7 +2744,7 @@ namespace CaeMesh
                 _parts.Add(newBasePart.Name, newBasePart);
                 newParts[count++] = newBasePart;
                 // Keep existing edges
-                ConvertLineFeElementsToEdges(edgeElements, new string[] { newBasePart.Name });
+                ConvertLineFeElementsToEdges(edgeElements, new string[] { newBasePart.Name }, vertices);
             }
             // Remove element sets
             for (int i = 0; i < elementSetNames.Length; i++) _elementSets.Remove(elementSetNames[i]);

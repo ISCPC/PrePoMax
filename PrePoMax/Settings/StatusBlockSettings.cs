@@ -15,11 +15,13 @@ namespace PrePoMax
     public class StatusBlockSettings : ISettings
     {
         // Variables                                                                                                                
+        private bool _visible;
         private AnnotationBackgroundType _backgroundType;
         private bool _drawBorder;
 
 
         // Properties                                                                                                               
+        public bool Visible { get { return _visible; } set { _visible = value; } }
         public AnnotationBackgroundType BackgroundType
         {
             get { return _backgroundType; }
@@ -48,6 +50,7 @@ namespace PrePoMax
         }
         public void Reset()
         {
+            _visible = true;
             _backgroundType = AnnotationBackgroundType.None;
             _drawBorder = true;
         }

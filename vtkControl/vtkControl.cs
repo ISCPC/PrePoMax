@@ -52,6 +52,7 @@ namespace vtkControl
         private vtkMaxStatusBlockWidget _statusBlockWidget;
         private vtkInteractorStyleControl _style;
         private bool _drawCoorSys;
+        private bool _drawStatusBlock;
         private vtkEdgesVisibility _edgesVisibility;
         //
         private vtkMaxColorSpectrum _colorSpectrum;
@@ -246,6 +247,7 @@ namespace vtkControl
             //
             _renderingOn = true;
             _drawCoorSys = true;
+            _drawStatusBlock = true;
             _edgesVisibility = vtkEdgesVisibility.ElementEdges;
             _colorSpectrum = new vtkMaxColorSpectrum();
             //
@@ -2473,6 +2475,19 @@ namespace vtkControl
             vtkCamera camera = _renderer.GetActiveCamera();
             camera.SetParallelScale(factor);
         }
+        public void AnimateZoomToFactor(double factor, int timeMs)
+        {
+            if (_animating) return;
+            _animating = true;
+            //
+            vtkCamera camera = _renderer.GetActiveCamera();
+            vtkCamera cameraStart = vtkCamera.New();
+            cameraStart.DeepCopy(camera);
+            //
+            SetZoomFactor(factor);
+            //
+            AnimateCamera(cameraStart, camera, camera, timeMs);
+        }
         public void SetZoomToFit(bool animate)
         {
             if (_animating) return;
@@ -2827,7 +2842,7 @@ namespace vtkControl
 
             _animating = false;
         }
-        public void AnimateCamera(vtkCamera cameraStart, vtkCamera cameraEnd, vtkCamera camera)
+        public void AnimateCamera(vtkCamera cameraStart, vtkCamera cameraEnd, vtkCamera camera, int timeMs = 500)
         {
             ((vtkInteractorStyleControl)_renderWindowInteractor.GetInteractorStyle()).Animating = true;
             IntPtr pq1 = new IntPtr();
@@ -2894,7 +2909,7 @@ namespace vtkControl
                 pq = Marshal.AllocHGlobal(Marshal.SizeOf(q1[0]) * q1.Length);
                 //
                 DateTime start = DateTime.Now;
-                int delta = 500; //ms
+                int delta = timeMs; //ms
                 double currentDelta = 0;
                 //
                 do
@@ -4541,7 +4556,7 @@ namespace vtkControl
         #endregion  ################################################################################################################
 
         #region Exploded view  #####################################################################################################
-        public void PreviewExplodedView(Dictionary<string, double[]> partOffsets, bool animate)
+        public void PreviewExplodedView(Dictionary<string, double[]> partOffsets, bool animate, int timeMs)
         {
             vtkMaxActor actor;
             double[] offsetFinal;
@@ -4561,7 +4576,7 @@ namespace vtkControl
             }
             //
             DateTime start = DateTime.Now;
-            int delta = 500; //ms
+            int delta = timeMs; //ms
             double currentDelta;
             double t;
             double tPrev = 0;
@@ -4874,6 +4889,10 @@ namespace vtkControl
             RenderSceene();
         }
         // Status bar
+        public void SetStatusBlockVisibility(bool visibility)
+        {
+            _drawStatusBlock = visibility;
+        }
         public void DrawStatusBlockBackground(bool drawBackground)
         {
             _statusBlockWidget.SetBackgroundColor(1, 1, 1);
@@ -4900,7 +4919,8 @@ namespace vtkControl
             _statusBlockWidget.AnimationScaleFactor = -1;
             _statusBlockWidget.StepNumber = stepNumber;
             _statusBlockWidget.IncrementNumber = incrementNumber;
-            _statusBlockWidget.VisibilityOn();
+            if (_drawStatusBlock) _statusBlockWidget.VisibilityOn();
+            else _statusBlockWidget.VisibilityOff();
         }
         // General
         public void SetBackground(bool gradient, Color topColor, Color bottomColor, bool redraw)

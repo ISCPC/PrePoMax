@@ -1963,7 +1963,8 @@ namespace PrePoMax
         }
         // Exploded view
         public void PreviewExplodedView(ExplodedViewParameters parameters, bool animate,
-                                        Dictionary<string, double[]> partOffsets = null)
+                                        Dictionary<string, double[]> partOffsets = null,
+                                        int timeMs = 500)
         {
             FeMesh mesh = DisplayedMesh;
             if (mesh == null) return;
@@ -1978,7 +1979,7 @@ namespace PrePoMax
             }
             //
             _animating = animate;
-            _form.PreviewExplodedView(partOffsets, animate);
+            _form.PreviewExplodedView(partOffsets, animate, timeMs);
             _animating = false;
             //
             _form.SetExplodedViewStatus(true);
@@ -2095,7 +2096,7 @@ namespace PrePoMax
                 }
             }
         }
-        public void TurnExplodedViewOnOff(bool animate)
+        public void TurnExplodedViewOnOff(bool animate, int timeMs = 500)
         {
             // Exit
             if (_animating) return;
@@ -2124,9 +2125,9 @@ namespace PrePoMax
                 ExplodedViewParameters parameters = _explodedViews.GetCurrentExplodedViewParameters().DeepClone();
                 Dictionary<string, double[]> partOffsets = RemoveExplodedView(true);   // Highlight
                 _form.Clear3DSelection();
-                PreviewExplodedView(parameters, false, partOffsets);
+                PreviewExplodedView(parameters, false, partOffsets, timeMs);
                 parameters.ScaleFactor = 0;
-                PreviewExplodedView(parameters, animate);
+                PreviewExplodedView(parameters, animate, null, timeMs);
                 //
                 _form.SetExplodedViewStatus(false);
             }
@@ -2139,7 +2140,7 @@ namespace PrePoMax
                     _form.Clear3DSelection();
                     ExplodedViewParameters parameters = _explodedViews.GetCurrentExplodedViewParameters().DeepClone();
                     parameters.ScaleFactor = 0.5;
-                    PreviewExplodedView(parameters, animate);
+                    PreviewExplodedView(parameters, animate, null, timeMs);
                     ApplyExplodedView(parameters);  // Highlight
                 }
             }
@@ -4128,12 +4129,23 @@ namespace PrePoMax
         //******************************************************************************************
         public void ReplaceModelProperties(string newModelName, ModelProperties newModelProperties)
         {
-            bool update = _model.Properties.ModelSpace != newModelProperties.ModelSpace;
+            ModelSpaceEnum prevModelSpace = _model.Properties.ModelSpace;
+            ModelSpaceEnum newModelSpace = newModelProperties.ModelSpace;
+            bool update = prevModelSpace != newModelSpace;
             //
             _model.Name = newModelName;
             _model.Properties = newModelProperties;
             //
-            if (update) _model.UpdateMeshPartsElementTypes();
+            if (update)
+            {
+                _model.UpdateMeshPartsElementTypes();
+                // Check for a change to or from AxiSymmetric
+                if (prevModelSpace == ModelSpaceEnum.Axisymmetric || newModelSpace == ModelSpaceEnum.Axisymmetric)
+                {
+                    if (_model.StepCollection.GetNumberOfCentrifLoads() > 0)
+                        FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+                }
+            }
         }
         // Tools
         public void CreateBoundaryLayer(int[] geometryIds, double thickness)
@@ -14404,6 +14416,7 @@ namespace PrePoMax
                 _form.DrawLegendBackground(legendSettings.BackgroundType == AnnotationBackgroundType.White);
                 _form.DrawLegendBorder(legendSettings.DrawBorder);
                 // Status block
+                _form.SetStatusBlockVisibility(statusBlockSettings.Visible);
                 _form.DrawStatusBlockBackground(statusBlockSettings.BackgroundType == AnnotationBackgroundType.White);
                 _form.DrawStatusBlockBorder(statusBlockSettings.DrawBorder);
                 // Limits
