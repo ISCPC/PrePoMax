@@ -392,21 +392,21 @@ namespace PrePoMax
 
 
         // Static methods                                                                                                           
-        public static void PrepareForSavig(Controller controller)
+        public static void PrepareForSaving(Controller controller)
         {
             if (controller != null)
             {
-                if (controller.Model != null) FeMesh.PrepareForSavig(controller.Model.Geometry);
-                if (controller.Model != null) FeMesh.PrepareForSavig(controller.Model.Mesh);
+                if (controller.Model != null) FeMesh.PrepareForSaving(controller.Model.Geometry);
+                if (controller.Model != null) FeMesh.PrepareForSaving(controller.Model.Mesh);
                 if (controller.CurrentResult != null) ResultsCollection.PrepareForSavig(controller._allResults);
             }
         }
-        public static void ResetAfterSavig(Controller controller)
+        public static void ResetAfterSaving(Controller controller)
         {
             if (controller != null)
             {
-                if (controller.Model != null) FeMesh.ResetAfterSavig(controller.Model.Geometry);
-                if (controller.Model != null) FeMesh.ResetAfterSavig(controller.Model.Mesh);
+                if (controller.Model != null) FeMesh.ResetAfterSaving(controller.Model.Geometry);
+                if (controller.Model != null) FeMesh.ResetAfterSaving(controller.Model.Mesh);
                 if (controller.CurrentResult != null) ResultsCollection.ResetAfterSavig(controller._allResults);
             }
         }
@@ -993,7 +993,7 @@ namespace PrePoMax
                     //
                     using (BinaryReader br = new BinaryReader(Decompress(fs)))
                     {
-                        data = CaeGlobals.Tools.LoadDumpFromFile<object[]>(br);
+                        data = Tools.LoadDumpFromFile<object[]>(br);
                         tmp = (Controller)data[0];
                         model = tmp._model;
                         // Compatibility v.1.3.5
@@ -1049,13 +1049,13 @@ namespace PrePoMax
                         else ResultsCollection.ReadFromFile(allResults, br, version);
                     }
                     //
-                    model.UpdateMeshPartsElementTypes();
+                    model.UpdateMeshPartsElementTypes(true);
                 }
                 return data;
             }
             catch (Exception ex)
             {
-                if (ex.Message == "UncompatibleVersion") return new object[] { ex.Message };
+                if (ex.Message == "IncompatibleVersion") return new object[] { ex.Message };
                 else return null;
             }
         }
@@ -1080,7 +1080,7 @@ namespace PrePoMax
                     FeResults.ReadFromFile(allResults.CurrentResult, br, 0_000_000);
                 }
                 //
-                model.UpdateMeshPartsElementTypes();
+                model.UpdateMeshPartsElementTypes(true);
                 //
                 return data;
             }
@@ -1161,7 +1161,7 @@ namespace PrePoMax
             else if (extension == ".unv" || extension == ".vol" || extension == ".inp" || extension == ".mesh")
             {
                 // Element types
-                _model.UpdateMeshPartsElementTypes();
+                _model.UpdateMeshPartsElementTypes(true);
                 //
                 _currentView = ViewGeometryModelResults.Model;
                 _form.SetCurrentView(_currentView);
@@ -1474,7 +1474,7 @@ namespace PrePoMax
                 }
             }
             // Update finite element types based on model dimensionality
-            _model.UpdateMeshPartsElementTypes();
+            _model.UpdateMeshPartsElementTypes(false);
             // Shading
             if (fromBrep)
             {
@@ -1548,7 +1548,7 @@ namespace PrePoMax
             {
                 _model.ImportGeneratedRemeshFromMeshFile(fileName, elementIds, part, convertToSecondOrder, midNodes);
                 // Update finite element types based on model dimensionality
-                _model.UpdateMeshPartsElementTypes();
+                _model.UpdateMeshPartsElementTypes(false);
                 // Regenerate and change the DisplayedMesh to Model before updating sets
                 _form.Clear3D();
                 _currentView = ViewGeometryModelResults.Model;
@@ -1594,7 +1594,7 @@ namespace PrePoMax
             {                
                 _savingFile = true;
                 //
-                PrepareForSavig(this);
+                PrepareForSaving(this);
                 bool[][] states = _form.GetTreeExpandCollapseState();
                 OpenedFileName = fileName;
                 //
@@ -1658,7 +1658,7 @@ namespace PrePoMax
             }
             finally
             {
-                ResetAfterSavig(this);
+                ResetAfterSaving(this);
                 _savingFile = false;
             }
         }
@@ -4138,7 +4138,7 @@ namespace PrePoMax
             //
             if (update)
             {
-                _model.UpdateMeshPartsElementTypes();
+                _model.UpdateMeshPartsElementTypes(true);
                 // Check for a change to or from AxiSymmetric
                 if (prevModelSpace == ModelSpaceEnum.Axisymmetric || newModelSpace == ModelSpaceEnum.Axisymmetric)
                 {

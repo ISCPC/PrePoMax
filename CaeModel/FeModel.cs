@@ -1591,9 +1591,9 @@ namespace CaeModel
             return loads.ToArray();
         }
         // 3D - 2D
-        public void UpdateMeshPartsElementTypes()
+        public void UpdateMeshPartsElementTypes(bool allowMixedModel)
         {
-            Dictionary<Type, HashSet<Enum>> elementTypeEnums = _properties.ModelSpace.GetAvailableElementTypes();
+            Dictionary<Type, HashSet<Enum>> elementTypeEnums = _properties.ModelSpace.GetAvailableElementTypes(allowMixedModel);
             if (_mesh != null) _mesh.UpdatePartsElementTypes(elementTypeEnums);
         }
         // Boundary displacement method

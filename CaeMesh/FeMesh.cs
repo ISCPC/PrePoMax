@@ -282,7 +282,7 @@ namespace CaeMesh
 
 
         // Static methods                                                                                                           
-        public static void PrepareForSavig(FeMesh mesh)
+        public static void PrepareForSaving(FeMesh mesh)
         {
             if (mesh != null && mesh._parts != null)
             {
@@ -293,7 +293,7 @@ namespace CaeMesh
                 }
             }
         }
-        public static void ResetAfterSavig(FeMesh mesh)
+        public static void ResetAfterSaving(FeMesh mesh)
         {
             if (mesh != null && mesh._parts != null)
             {
@@ -1145,6 +1145,16 @@ namespace CaeMesh
         }
         private void ExtractEdgesFromShellByAngle(BasePart part, double angle)
         {
+            // Find shared nodes witn neighbouring parts
+            HashSet<int> sharedNodes = new HashSet<int>();
+            if (part.PartType == PartType.Shell)
+            {
+                foreach (var entry in _parts)
+                {
+                    if (entry.Value != part) sharedNodes.UnionWith(entry.Value.NodeLabels.Intersect(part.NodeLabels));
+                }
+            }
+            //
             int[][] cells = part.Visualization.Cells;
             // Get all edges
             Dictionary<int[], CellEdgeData> allEdges;
@@ -1167,11 +1177,12 @@ namespace CaeMesh
             if (part is GeometryPart gp) geometryPart = gp;
             else geometryPart = null;
             //
+            bool sharedEdge;
             foreach (var entry in allEdges)
             {
+                // Free and error edges
                 data = entry.Value;
                 cellsIds = data.CellIds.ToArray();      // for faster loops
-                // Free and error edges
                 if (cellsIds.Length != 2)
                 {
                     edgeCells.Add(data.NodeIds);
@@ -1193,6 +1204,24 @@ namespace CaeMesh
                     }
                     //
                     continue;
+                }
+                // Shared shell edges
+                if (sharedNodes.Count > 0)
+                {
+                    sharedEdge = true;
+                    for (int i = 0; i < data.NodeIds.Length; i++)
+                    {
+                        if (!sharedNodes.Contains(data.NodeIds[i]))
+                        {
+                            sharedEdge = false;
+                            break;
+                        }
+                    }
+                    if (sharedEdge)
+                    {
+                        edgeCells.Add(data.NodeIds);
+                        continue;
+                    }
                 }
                 // Angle edges
                 if (angle >= 0)

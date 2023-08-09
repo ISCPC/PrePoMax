@@ -34,14 +34,14 @@ namespace CaeResults
         {
             foreach (var entry in resultsCollection._results)
             {
-                if (entry.Value != null) CaeMesh.FeMesh.PrepareForSavig(entry.Value.Mesh);
+                if (entry.Value != null) CaeMesh.FeMesh.PrepareForSaving(entry.Value.Mesh);
             }
         }
         public static void ResetAfterSavig(ResultsCollection resultsCollection)
         {
             foreach (var entry in resultsCollection._results)
             {
-                if (entry.Value != null) CaeMesh.FeMesh.ResetAfterSavig(entry.Value.Mesh);
+                if (entry.Value != null) CaeMesh.FeMesh.ResetAfterSaving(entry.Value.Mesh);
             }
         }
         public static void WriteToFile(ResultsCollection allResults, System.IO.BinaryWriter bw)

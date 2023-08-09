@@ -43,7 +43,8 @@ namespace CaeModel
             return (int)modelSpace > 1; // 2, 3 or 4 is 2D
         }
         //
-        public static Dictionary<Type, HashSet<Enum>> GetAvailableElementTypes(this ModelSpaceEnum modelSpace)
+        public static Dictionary<Type, HashSet<Enum>> GetAvailableElementTypes(this ModelSpaceEnum modelSpace,
+                                                                               bool allowMixedModel)
         {            
             List<Type> elementTypes = new List<Type>();
             elementTypes.Add(typeof(FeElementTypeLinearTria));
@@ -69,7 +70,7 @@ namespace CaeModel
             {
                 foreach (var item in Enum.GetValues(elementType))
                 {
-                    if ((int)item / 10 == type)
+                    if ((int)item / 10 == type || (allowMixedModel && type == 4 && (int)item / 10 == 2))
                     {
                         if (elementTypeEnums.TryGetValue(elementType, out elementEnums)) elementEnums.Add((Enum)item);
                         else elementTypeEnums.Add(elementType, new HashSet<Enum>() { (Enum)item });
