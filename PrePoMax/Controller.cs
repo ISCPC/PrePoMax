@@ -4317,9 +4317,11 @@ namespace PrePoMax
             // Job completed
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
+                // Check if all elements are linear or all elements are parabolic
                 HashSet<bool> parabolic = new HashSet<bool>();
                 foreach (var elementType in part.ElementTypes) parabolic.Add(FeElement.IsParabolic(elementType));
                 if (parabolic.Count != 1) throw new NotSupportedException();
+                //
                 ImportGeneratedRemesh(mmgOutFileName, elementIds, part, parabolic.First(), midNodes, preview);
                 return true;
             }

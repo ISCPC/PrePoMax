@@ -7079,7 +7079,9 @@ namespace CaeMesh
             List<double[]> coor = new List<double[]>();
             //
             HashSet<int> visibleNodes = new HashSet<int>();
-            foreach (var entry in _parts) if (entry.Value.Visible) visibleNodes.UnionWith(entry.Value.NodeLabels);
+            foreach (var entry in _parts)
+                if (entry.Value.Visible)
+                    visibleNodes.UnionWith(entry.Value.NodeLabels);
             //
             for (int i = 0; i < nodeIds.Length; i++)
             {

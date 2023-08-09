@@ -354,6 +354,13 @@ namespace FileInOut.Output
                     }
                 }
             }
+            // Other part nodeIds
+            HashSet<int> otherVisualizationNodeIds = new HashSet<int>();
+            foreach (var entry in mesh.Parts)
+            {
+                if (entry.Value != part)
+                    otherVisualizationNodeIds.UnionWith(entry.Value.Visualization.GetNodeIds());
+            }
             // Boundary edges - free edges of the new subPart
             int edgeId;
             int[] edgeCell;
@@ -372,11 +379,18 @@ namespace FileInOut.Output
                     edgeId = edgeNodeIdsEdgeId.Count;
                     edgeKeys.Add(key, edgeId);
                 }
-                // Free edges must not be kept
+                // Free part edge nodes must not be kept as midside nodes
                 if (!freeEdgeCells.Contains(key))
                 {
                     requiredEdgeIds.Add(edgeId);
                     if (allMidNodes.Count > 0) midNodes.Add(key, allMidNodes[key]);
+                }
+                // Keep free edge midside nodes if they belong to other assembly parts
+                else
+                {
+                    requiredEdgeIds.Add(edgeId);
+                    if (allMidNodes.Count > 0 && otherVisualizationNodeIds.Contains(allMidNodes[key].Id))
+                        midNodes.Add(key, allMidNodes[key]);
                 }
             }
             WriteEdges(sb, edgeNodeIdsEdgeId);

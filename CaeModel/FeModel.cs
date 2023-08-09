@@ -903,11 +903,11 @@ namespace CaeModel
             double max = part.BoundingBox.GetDiagonal();
             Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = new Dictionary<string, Dictionary<int, int>>();
             Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = new Dictionary<string, Dictionary<int, int>>();
-            FeMesh mmgMmesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh, convertToSecondOrder,
-                                                                 _mesh.MaxNodeId + 1, _mesh.MaxElementId + 1,
-                                                                 borderNodes, midNodes,
-                                                                 epsilon * max,
-                                                                 partIdNewSurfIdOldSurfId, partIdNewEdgeIdOldEdgeId);
+            FeMesh mmgMesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh, convertToSecondOrder,
+                                                                _mesh.MaxNodeId + 1, _mesh.MaxElementId + 1,
+                                                                borderNodes, midNodes,
+                                                                epsilon * max,
+                                                                partIdNewSurfIdOldSurfId, partIdNewEdgeIdOldEdgeId);
             // Get surface nodes before modification
             Dictionary<int, HashSet<int>> surfaceIdNodeIds = part.Visualization.GetNodeIdsBySurfaces();
             foreach (var entry in surfaceIdNodeIds) entry.Value.ExceptWith(removedNodeIds);
@@ -916,7 +916,7 @@ namespace CaeModel
             foreach (var entry in edgeIdNodeIds) entry.Value.ExceptWith(removedNodeIds);
             // Add elements to mesh                                                                                     
             FeElement element;
-            foreach (var entry in mmgMmesh.Elements)
+            foreach (var entry in mmgMesh.Elements)
             {
                 element = entry.Value;
                 element.PartId = part.PartId;
@@ -924,17 +924,17 @@ namespace CaeModel
             }
             // Add elements to part
             HashSet<int> newPartElementIds = new HashSet<int>(part.Labels);
-            newPartElementIds.UnionWith(mmgMmesh.Elements.Keys);
+            newPartElementIds.UnionWith(mmgMesh.Elements.Keys);
             part.Labels = newPartElementIds.ToArray();
             Array.Sort(part.Labels);
             // Add nodes to mesh                                                                                        
-            foreach (var entry in mmgMmesh.Nodes)
+            foreach (var entry in mmgMesh.Nodes)
             {
                 if (!_mesh.Nodes.ContainsKey(entry.Key)) _mesh.Nodes.Add(entry.Key, entry.Value);
             }
             // Add nodes to part
             HashSet<int> newPartNodeIds = new HashSet<int>(part.NodeLabels);
-            newPartNodeIds.UnionWith(_mesh.Nodes.Keys);
+            newPartNodeIds.UnionWith(mmgMesh.Nodes.Keys);
             part.NodeLabels = newPartNodeIds.ToArray();
             Array.Sort(part.NodeLabels);
             // Update node ids
@@ -947,9 +947,9 @@ namespace CaeModel
                 if (!removedNodeIds.Contains(nodeId)) vertexNodeIds.Add(nodeId);
             }
             // Get vertices from mmgPart
-            foreach (var entry in mmgMmesh.Parts) vertexNodeIds.UnionWith(entry.Value.Visualization.VertexNodeIds);
+            foreach (var entry in mmgMesh.Parts) vertexNodeIds.UnionWith(entry.Value.Visualization.VertexNodeIds);
             // Model edges                                                                                              
-            int elementId = mmgMmesh.MaxElementId + 1;
+            int elementId = mmgMesh.MaxElementId + 1;
             LinearBeamElement beamElement;
             List<FeElement1D> edgeElements = new List<FeElement1D>();
             // Get model edges from part - only edges that are not completely removed
@@ -971,7 +971,7 @@ namespace CaeModel
                 }
             }
             // Get model edges from mmgPart
-            foreach (var entry in mmgMmesh.Parts)
+            foreach (var entry in mmgMesh.Parts)
             {
                 foreach (var edgeCell in entry.Value.Visualization.EdgeCells)
                 {
@@ -995,7 +995,7 @@ namespace CaeModel
             Dictionary<int, HashSet<int>> itemIdNodeIds;
             foreach (var partNewSurfIdOldSurfId in partIdNewSurfIdOldSurfId)
             {
-                mmgPart = mmgMmesh.Parts[partNewSurfIdOldSurfId.Key];
+                mmgPart = mmgMesh.Parts[partNewSurfIdOldSurfId.Key];
                 itemIdNodeIds = mmgPart.Visualization.GetNodeIdsBySurfaces();
                 //
                 foreach (var newSurfIdOldSurfId in partNewSurfIdOldSurfId.Value)
@@ -1008,7 +1008,7 @@ namespace CaeModel
             // Renumber edges                                                                                           
             foreach (var partNewEdgeIdOldEdgeId in partIdNewEdgeIdOldEdgeId)
             {
-                mmgPart = mmgMmesh.Parts[partNewEdgeIdOldEdgeId.Key];
+                mmgPart = mmgMesh.Parts[partNewEdgeIdOldEdgeId.Key];
                 itemIdNodeIds = mmgPart.Visualization.GetNodeIdsByEdges();
                 //
                 foreach (var newEdgeIdOldEdgeId in partNewEdgeIdOldEdgeId.Value)

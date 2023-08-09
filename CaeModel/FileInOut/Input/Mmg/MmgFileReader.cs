@@ -28,8 +28,12 @@ namespace FileInOut.Input
                 Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
                 Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
                 HashSet<int> surfaceNodeIds;
+                HashSet<int> surfaceElementIds;
                 HashSet<int> edgeNodeIds;
+                HashSet<int> edgeElementIds;
+                Dictionary<int, HashSet<int>> surfaceIdElementIds = new Dictionary<int, HashSet<int>>();
                 Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
+                Dictionary<int, HashSet<int>> edgeIdElementIds = new Dictionary<int, HashSet<int>>();
                 Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
                 Dictionary<int, Dictionary<int, bool>> edgeIdNodeIdCount = new Dictionary<int, Dictionary<int, bool>>();
                 Dictionary<int, bool> nodeIdCount;
@@ -95,10 +99,11 @@ namespace FileInOut.Input
                                     surfaceId = int.Parse(tmp[3]) - 1;
                                     //
                                     elements.Add(triangle.Id, triangle);
-                                    if (surfaceIdNodeIds.TryGetValue(surfaceId, out surfaceNodeIds))
-                                        surfaceNodeIds.UnionWith(triangle.NodeIds);
+                                    //
+                                    if (surfaceIdElementIds.TryGetValue(surfaceId, out surfaceElementIds))
+                                        surfaceElementIds.Add(triangle.Id);
                                     else
-                                        surfaceIdNodeIds.Add(surfaceId, new HashSet<int>(triangle.NodeIds));
+                                        surfaceIdElementIds.Add(surfaceId, new HashSet<int> { triangle.Id });
                                 }
                             }
                         }
@@ -134,10 +139,11 @@ namespace FileInOut.Input
                                         if (!nodeIdCount.Remove(beam.NodeIds[1])) nodeIdCount.Add(beam.NodeIds[1], true);
                                         //
                                         elements.Add(beam.Id, beam);
-                                        if (edgeIdNodeIds.TryGetValue(edgeId, out edgeNodeIds))
-                                            edgeNodeIds.UnionWith(beam.NodeIds);
+                                        //
+                                        if (edgeIdElementIds.TryGetValue(edgeId, out edgeElementIds))
+                                            edgeElementIds.Add(beam.Id);
                                         else
-                                            edgeIdNodeIds.Add(edgeId, new HashSet<int>(beam.NodeIds));
+                                            edgeIdElementIds.Add(edgeId, new HashSet<int> { beam.Id });
                                     }
                                 }
                             }
@@ -162,6 +168,20 @@ namespace FileInOut.Input
                 }
                 //
                 if (convertToSecondOrder) FeMesh.LinearToParabolic(ref nodes, ref elements, existingMidNodes);
+                // Surface node ids
+                foreach (var entry in surfaceIdElementIds)
+                {
+                    surfaceNodeIds = new HashSet<int>();
+                    foreach (var elementIdEntry in entry.Value) surfaceNodeIds.UnionWith(elements[elementIdEntry].NodeIds);
+                    surfaceIdNodeIds.Add(entry.Key, surfaceNodeIds);
+                }
+                // Edge node ids
+                foreach (var entry in edgeIdElementIds)
+                {
+                    edgeNodeIds = new HashSet<int>();
+                    foreach (var elementIdEntry in entry.Value) edgeNodeIds.UnionWith(elements[elementIdEntry].NodeIds);
+                    edgeIdNodeIds.Add(entry.Key, edgeNodeIds);
+                }
                 //
                 FeMesh mesh = new FeMesh(nodes, elements, meshRepresentation, null, null, false,
                                          ImportOptions.DetectEdges);

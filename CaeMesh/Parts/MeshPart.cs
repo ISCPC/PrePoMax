@@ -351,6 +351,7 @@ namespace CaeMesh
         }
         public void UpdateElementTypeEnums(Dictionary<Type, HashSet<Enum>> elementTypeEnums)
         {
+            // After update select the first available element type
             if (elementTypeEnums != null)
             {
                 HashSet<Enum> elementEnums;
