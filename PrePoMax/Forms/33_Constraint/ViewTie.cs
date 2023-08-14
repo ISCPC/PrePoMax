@@ -17,6 +17,7 @@ namespace PrePoMax
     {
         // Variables                                                                                                                        
         private Tie _tie;
+        private DoubleValueContainer _container;
 
 
         // Properties                                                                                                                      
@@ -35,13 +36,13 @@ namespace PrePoMax
         [DescriptionAttribute("Set adjust to No to prevent the projection of the slave nodes on the master surface.")]
         [Id(3, 1)]
         public bool Adjust { get { return _tie.Adjust; } set { _tie.Adjust = value; } }
-
-        //[CategoryAttribute("Data")]
-        //[OrderedDisplayName(3, 10, "Test")]
-        //[DescriptionAttribute("Set adjust to No to prevent the projection of the slave nodes on the master surface.")]
-        //[TypeConverter(typeof(StringStringLengthDefaultConverter))]
-        //[Id(4, 1)]
-        //public string Equation { get { return _container.Equation; } set { _container.Equation = value; } }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(3, 10, "Test")]
+        [DescriptionAttribute("Set adjust to No to prevent the projection of the slave nodes on the master surface.")]
+        [TypeConverter(typeof(EquationLengthDefaultConverter))]
+        [Id(4, 1)]
+        public string Equation { get { return _container.Equation; } set { _container.Equation = value; } }
 
         // MASTER ------------------------------------------------------------------------------------------------------------------
         [CategoryAttribute("Master Region")]
@@ -87,6 +88,7 @@ namespace PrePoMax
         public ViewTie(Tie tie)
         {
             _tie = tie;
+            _container = new DoubleValueContainer(typeof(StringLengthDefaultConverter));
             // Master
             Dictionary<RegionTypeEnum, string> masterRegionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
             masterRegionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(MasterSelectionHidden));

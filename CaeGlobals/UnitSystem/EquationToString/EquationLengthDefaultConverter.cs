@@ -8,10 +8,12 @@ using System.ComponentModel;
 using System.Globalization;
 using UnitsNet.Units;
 using UnitsNet;
+using System.Text.RegularExpressions;
+using System.Runtime.Remoting.Contexts;
 
 namespace CaeGlobals
 {
-    public class StringStringLengthDefaultConverter : StringLengthDefaultConverter
+    public class EquationLengthDefaultConverter : StringLengthDefaultConverter
     {
         // Variables                                                                                                                
 
@@ -20,7 +22,7 @@ namespace CaeGlobals
 
 
         // Constructors                                                                                                             
-        public StringStringLengthDefaultConverter()
+        public EquationLengthDefaultConverter()
         {
         }
 
@@ -32,35 +34,27 @@ namespace CaeGlobals
         }
         public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
         {
-            // Initializes the standard values list with defaults.
-            values = new ArrayList(new string[] { _default, _initialValue.ToString() });
+            // Initializes the standard values list with string defaults.
+            values = new ArrayList(new string[] { _default, (string)ConvertTo(context, null, _initialValue, typeof(string)) });
             // Passes the local integer array.
             StandardValuesCollection svc = new StandardValuesCollection(values);
             return svc;
         }
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            // Convert from string
-            if (value is string valueString)
-            {
-                valueString = valueString.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries)[0];
-                double result = (double)base.ConvertFrom(context, culture, valueString);
-                string resultStr = (string)ConvertTo(context, culture, result, typeof(string));
-                if (valueString.Contains("=")) return valueString.Trim() + "; (" + resultStr + ")";
-                else return resultStr;
-            }
-            else return base.ConvertFrom(context, culture, value);
+            // Convert from equation to string
+            return EquationToString.ConvertFromEquationToString(context, culture, value, base.ConvertFrom);
         }
+
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
-            System.Diagnostics.Debug.WriteLine("StringString-ConvertTo");
-
-            return base.ConvertTo(context, culture, value, destinationType);
+            // Convert from string to equation
+            return EquationToString.ConvertFromStringToEquation(context, culture, value, destinationType,
+                                                                base.ConvertFrom, base.ConvertTo);
         }
 
-        //
-
+        
     }
-    
+
 
 }

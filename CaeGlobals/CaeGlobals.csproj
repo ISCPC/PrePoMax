@@ -140,7 +140,8 @@
     <Compile Include="UnitSystem\StringToDouble\StringIntegerDefaultConverter.cs" />
     <Compile Include="UnitSystem\StringToDouble\StringIntegerConverter.cs" />
     <Compile Include="UnitSystem\StringToDouble\StringFrequencyConverter.cs" />
-    <Compile Include="UnitSystem\StringToString\StringStringLengthDefaultConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationToString.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationLengthDefaultConverter.cs" />
     <Compile Include="UnitSystem\StringToDouble\StringReciprocalTimeConverter.cs" />
     <Compile Include="UnitSystem\StringToDouble\StringVelocityConverter.cs" />
     <Compile Include="UnitSystem\StringToDouble\StringAccelerationConverter.cs" />

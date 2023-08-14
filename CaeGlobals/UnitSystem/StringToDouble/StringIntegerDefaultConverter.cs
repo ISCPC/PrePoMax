@@ -75,8 +75,8 @@ namespace CaeGlobals
                             if (!e.HasErrors())
                             {
                                 object result = e.Evaluate();
-                                if (result is int) valueDouble = (int)result;
-                                else if (result is double) valueDouble = (double)result;
+                                if (result is int i) valueDouble = i;
+                                else if (result is double d) valueDouble = d;
                             }
                             else
                             {

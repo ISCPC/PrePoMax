@@ -70,7 +70,6 @@ namespace CaeGlobals
             // Convert from string
             if (value is string valueString)
             {
-                valueString = valueString.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries)[0];
                 if (String.Equals(value, _default)) return double.NaN;
                 else return MyNCalc.ConvertFromString(valueString, ConvertToCurrentUnits);
             }
