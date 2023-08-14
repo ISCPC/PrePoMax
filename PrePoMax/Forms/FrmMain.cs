@@ -8288,8 +8288,6 @@ namespace PrePoMax
         // Output
         public void WriteDataToOutput(string data)
         {
-            return;
-
             if (data == null) return;
             // 20 chars is an empty line with date
             if (data.Length == 0 && (outputLines.Length > 0 && outputLines.Last().Length == 20)) return;
