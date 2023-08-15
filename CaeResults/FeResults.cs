@@ -1554,8 +1554,16 @@ namespace CaeResults
                         }
                         break;
                     case HOFieldNames.Velocities:
-                        unitConverter = new StringVelocityConverter();
-                        unitAbbreviation = _unitSystem.VelocityUnitAbbreviation;
+                        if (componentName.ToUpper().StartsWith("VR"))
+                        {
+                            unitConverter = new StringRotationalSpeedConverter();
+                            unitAbbreviation = _unitSystem.RotationalSpeedUnitAbbreviation;
+                        }
+                        else
+                        {
+                            unitConverter = new StringVelocityConverter();
+                            unitAbbreviation = _unitSystem.VelocityUnitAbbreviation;
+                        }
                         break;
                     case HOFieldNames.SurfaceArea:
                         unitConverter = new StringAreaConverter();

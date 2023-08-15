@@ -40,6 +40,10 @@ namespace CaeResults
             { "RF2", "RM2" },
             { "RF3", "RM3" },
             //
+            { FOComponentNames.V1, "VR1" },
+            { FOComponentNames.V2, "VR2" },
+            { FOComponentNames.V3, "VR3" },
+            //
             { "T", "T" }
         };
 
