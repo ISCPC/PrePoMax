@@ -4155,6 +4155,7 @@ namespace vtkControl
                     if (sectionVewActor.ModelEdges != null) _renderer.RemoveActor(sectionVewActor.ModelEdges);
                     //
                     _actors.Remove(sectionVewActor.Name);
+                    entry.Value.SectionViewActor = null;
                 }
             }
         }
