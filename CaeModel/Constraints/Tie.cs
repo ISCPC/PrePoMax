@@ -18,17 +18,18 @@ namespace CaeModel
         // Variables                                                                                                                
         private static string _positive = "The value must be larger than 0.";
         //
-        private double _positionTolerance;          //ISerializable
-        private bool _adjust;                       //ISerializable
+        private DoubleValueContainer _positionTolerance;    //ISerializable
+        private bool _adjust;                               //ISerializable
 
 
         // Properties                                                                                                               
-        public double PositionTolerance
+        public DoubleValueContainer PositionTolerance
         {
             get { return _positionTolerance; }
             set
             {
-                if (double.IsNaN(value) || value > 0) _positionTolerance = value; else throw new CaeException(_positive);
+                _positionTolerance = value;
+                _positionTolerance.CheckValue = CheckPositionTolerance; // perform the check
             }
         }
         public bool Adjust { get { return _adjust; } set { _adjust = value; } }       
@@ -47,7 +48,8 @@ namespace CaeModel
             if (masterRegionType == RegionTypeEnum.SurfaceName && slaveRegionType == RegionTypeEnum.SurfaceName &&
                 slaveSurfaceName == masterSurfaceName) throw new CaeException("Master and slave surface names must be different.");
             //
-            _positionTolerance = positionTolerance;
+            _positionTolerance = new DoubleValueContainer(typeof(StringLengthDefaultConverter), positionTolerance,
+                                                          CheckPositionTolerance);
             _adjust = adjust;
         }
         public Tie(SerializationInfo info, StreamingContext context)
@@ -58,7 +60,16 @@ namespace CaeModel
                 switch (entry.Name)
                 {
                     case "_positionTolerance":
-                        _positionTolerance = (double)entry.Value; break;
+                        // Compatibility for version v1.4.0
+                        if (entry.Value is double valueDouble)
+                            _positionTolerance = new DoubleValueContainer(typeof(StringLengthDefaultConverter), valueDouble,
+                                                                          CheckPositionTolerance);
+                        else
+                        {
+                            _positionTolerance = (DoubleValueContainer)entry.Value;
+                            _positionTolerance.CheckValue = CheckPositionTolerance; // perform the check
+                        }
+                        break;
                     case "_adjust":
                         _adjust = (bool)entry.Value; break;
                     // Compatibility for version v1.1.1
@@ -99,7 +110,11 @@ namespace CaeModel
             MasterCreationData = SlaveCreationData;
             SlaveCreationData = tmpCreationData;
         }
-        
+        private double CheckPositionTolerance(double value)
+        {
+            if (double.IsNaN(value) || value > 0) return value;
+            else throw new CaeException(_positive);
+        }
         
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -107,7 +122,7 @@ namespace CaeModel
             // Using typeof() works also for null fields
             base.GetObjectData(info, context);
             //
-            info.AddValue("_positionTolerance", _positionTolerance, typeof(double));
+            info.AddValue("_positionTolerance", _positionTolerance, typeof(DoubleValueContainer));
             info.AddValue("_adjust", _adjust, typeof(bool));
         }
 

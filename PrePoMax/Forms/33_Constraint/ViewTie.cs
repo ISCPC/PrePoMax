@@ -17,7 +17,6 @@ namespace PrePoMax
     {
         // Variables                                                                                                                        
         private Tie _tie;
-        private DoubleValueContainer _container;
 
 
         // Properties                                                                                                                      
@@ -27,23 +26,15 @@ namespace PrePoMax
         [OrderedDisplayName(1, 10, "Position tolerance")]
         [DescriptionAttribute("Enter the value of largest distance from the master surface for which the slave nodes will be " +
                               "included in the tie constraint. Default value equals 2.5 % of the typical element size.")]
-        [TypeConverter(typeof(StringLengthDefaultConverter))]
+        [TypeConverter(typeof(EquationLengthDefaultConverter))]
         [Id(2, 1)]
-        public double PositionTolerance { get { return _tie.PositionTolerance; } set { _tie.PositionTolerance = value; } }
+        public string PositionTolerance { get { return _tie.PositionTolerance.Equation; } set { _tie.PositionTolerance.Equation = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Adjust")]
         [DescriptionAttribute("Set adjust to No to prevent the projection of the slave nodes on the master surface.")]
         [Id(3, 1)]
         public bool Adjust { get { return _tie.Adjust; } set { _tie.Adjust = value; } }
-        //
-        [CategoryAttribute("Data")]
-        [OrderedDisplayName(3, 10, "Test")]
-        [DescriptionAttribute("Set adjust to No to prevent the projection of the slave nodes on the master surface.")]
-        [TypeConverter(typeof(EquationLengthDefaultConverter))]
-        [Id(4, 1)]
-        public string Equation { get { return _container.Equation; } set { _container.Equation = value; } }
-
         // MASTER ------------------------------------------------------------------------------------------------------------------
         [CategoryAttribute("Master Region")]
         [OrderedDisplayName(0, 10, "Master region type")]
@@ -88,7 +79,6 @@ namespace PrePoMax
         public ViewTie(Tie tie)
         {
             _tie = tie;
-            _container = new DoubleValueContainer(typeof(StringLengthDefaultConverter));
             // Master
             Dictionary<RegionTypeEnum, string> masterRegionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
             masterRegionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(MasterSelectionHidden));

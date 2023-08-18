@@ -314,7 +314,7 @@ namespace PrePoMax.Forms
             // check for 0 values
             if (FELoad is CLoad cl)
             {
-                if (cl.F1 == 0 && cl.F2 == 0 && cl.F3 == 0)
+                if (cl.F1.Value == 0 && cl.F2.Value == 0 && cl.F3.Value == 0)
                     throw new CaeException("At least one force component must not be equal to 0.");
             }
             else if (FELoad is MomentLoad ml)
@@ -324,7 +324,7 @@ namespace PrePoMax.Forms
             }
             else if (FELoad is DLoad dl)
             {
-                if (dl.Magnitude == 0)
+                if (dl.Magnitude.Value == 0)
                     throw new CaeException("The pressure load magnitude must not be equal to 0.");
             }
             else if (FELoad is HydrostaticPressure hpl)
@@ -352,7 +352,7 @@ namespace PrePoMax.Forms
             }
             else if (FELoad is CentrifLoad cfl)
             {
-                if (cfl.N1 == 0 && cfl.N2 == 0 && cfl.N3 == 0)
+                if (cfl.N1.Value == 0 && cfl.N2.Value == 0 && cfl.N3.Value == 0)
                     throw new CaeException("At least one axis direction component must not be equal to 0.");
                 if (cfl.RotationalSpeed2 == 0)
                     throw new CaeException("Rotational speed must not be equal to 0.");
@@ -1006,7 +1006,7 @@ namespace PrePoMax.Forms
                     }
                     else if (FELoad is CentrifLoad cf)
                     {
-                        double[][] nodeCoor = new double[][] { new double[] { cf.X, cf.Y, cf.Z } };
+                        double[][] nodeCoor = new double[][] { new double[] { cf.X.Value, cf.Y.Value, cf.Z.Value } };
                         _controller.HighlightNodes(nodeCoor, true);
                     }
                 }
@@ -1107,9 +1107,9 @@ namespace PrePoMax.Forms
                             if (ids.Length == 1)
                             {
                                 FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
-                                vcl.X = node.X;
-                                vcl.Y = node.Y;
-                                vcl.Z = node.Z;
+                                vcl.X = node.X.ToString();
+                                vcl.Y = node.Y.ToString();
+                                vcl.Z = node.Z.ToString();
                                 changed = true;
                             }
                         }

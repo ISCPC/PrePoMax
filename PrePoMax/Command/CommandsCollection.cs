@@ -281,7 +281,7 @@ namespace PrePoMax.Commands
         }
         public void ReadFromFile(string fileName)
         {
-            _commands = CaeGlobals.Tools.LoadDumpFromFile<List<Command>>(fileName);
+            _commands = Tools.LoadDumpFromFile<List<Command>>(fileName);
             _currPositionIndex = _commands.Count - 1;
         }
         // History files

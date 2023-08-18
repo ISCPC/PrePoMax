@@ -31,7 +31,7 @@ namespace CaeModel
         private bool _twoD;                             //ISerializable
 
 
-        // Properties                                                                                                                       
+        // Properties                                                                                                               
         public string MasterRegionName { get { return _masterRegionName; } set { _masterRegionName = value; } }
         public RegionTypeEnum MasterRegionType { get { return _masterRegionType; } set { _masterRegionType = value; } }
         public string SlaveRegionName { get { return _slaveRegionName; } set { _slaveRegionName = value; } }

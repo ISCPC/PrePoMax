@@ -34,9 +34,9 @@ namespace PrePoMax
         [CategoryAttribute("Magnitude")]
         [OrderedDisplayName(0, 10, "Flux per volume")]
         [DescriptionAttribute("Value of the flux per volume.")]
-        [TypeConverter(typeof(StringPowerPerVolumeConverter))]
+        [TypeConverter(typeof(EquationPowerPerVolumeConverter))]
         [Id(1, 4)]
-        public double Magnitude { get { return _flux.Magnitude; } set { _flux.Magnitude = value; } }
+        public string Magnitude { get { return _flux.Magnitude.Equation; } set { _flux.Magnitude.Equation = value; } }
         //
         public override string AmplitudeName { get { return _flux.AmplitudeName; } set { _flux.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _flux.Color; } set { _flux.Color = value; } }

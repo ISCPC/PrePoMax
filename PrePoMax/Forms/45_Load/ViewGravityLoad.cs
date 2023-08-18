@@ -78,9 +78,9 @@ namespace PrePoMax
         [CategoryAttribute("Gravity phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Value of the gravity load phase.")]
-        [TypeConverter(typeof(StringAngleDegConverter))]
+        [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 5)]
-        public double Phase { get { return _gLoad.PhaseDeg; } set { _gLoad.PhaseDeg = value; } }
+        public string Phase { get { return _gLoad.PhaseDeg.Equation; } set { _gLoad.PhaseDeg.Equation = value; } }
         ////
         public override string AmplitudeName { get { return _gLoad.AmplitudeName; } set { _gLoad.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _gLoad.Color; } set { _gLoad.Color = value; } }

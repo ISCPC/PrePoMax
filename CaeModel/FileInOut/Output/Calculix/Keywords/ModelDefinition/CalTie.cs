@@ -33,8 +33,8 @@ namespace FileInOut.Output.Calculix
             //slaveSurfaceName, masterSurfaceName
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("*Tie, Name={0}", _tie.Name );
-            if (!double.IsNaN(_tie.PositionTolerance)) sb.AppendFormat(", Position tolerance={0}",
-                                                                       _tie.PositionTolerance.ToCalculiX16String());
+            if (!double.IsNaN(_tie.PositionTolerance.Value))
+                sb.AppendFormat(", Position tolerance={0}", _tie.PositionTolerance.Value.ToCalculiX16String());
             if (!_tie.Adjust) sb.AppendFormat(", Adjust=No");
             sb.AppendLine();
             return sb.ToString();

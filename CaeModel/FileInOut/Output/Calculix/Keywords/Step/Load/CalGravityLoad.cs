@@ -46,7 +46,7 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             //
-            double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg);
+            double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg.Value);
             //
             Vec3D f = ratio * new Vec3D(_load.F1, _load.F2, _load.F3);
             double len = f.Normalize();

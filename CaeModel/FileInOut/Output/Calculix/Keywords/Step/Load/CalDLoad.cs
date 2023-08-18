@@ -71,9 +71,9 @@ namespace FileInOut.Output.Calculix
                     faceKey = "P" + faceName.ToString()[1];
                 }
                 //
-                double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg);
+                double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg.Value);
                 //
-                magnitude = ratio * _load.Magnitude;
+                magnitude = ratio * _load.Magnitude.Value;
                 if (_surface.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellFaces && faceName == FeFaceName.S2) magnitude *= -1;
                 //
                 sb.AppendFormat("{0}, {1}, {2}", entry.Value, faceKey, magnitude.ToCalculiX16String()).AppendLine();

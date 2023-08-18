@@ -82,9 +82,9 @@ namespace PrePoMax
         [CategoryAttribute("Moment phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Value of the moment phase.")]
-        [TypeConverter(typeof(StringAngleDegConverter))]
+        [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 5)]
-        public double Phase { get { return _momentLoad.PhaseDeg; } set { _momentLoad.PhaseDeg = value; } }
+        public string Phase { get { return _momentLoad.PhaseDeg.Equation; } set { _momentLoad.PhaseDeg.Equation = value; } }
         //
         public override string AmplitudeName
         {

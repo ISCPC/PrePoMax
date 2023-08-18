@@ -95,9 +95,9 @@ namespace PrePoMax
         [CategoryAttribute("Pressure phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Value of the pressure phase.")]
-        [TypeConverter(typeof(StringAngleDegConverter))]
+        [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 4)]
-        public double Phase { get { return _importedPressure.PhaseDeg; } set { _importedPressure.PhaseDeg = value; } }
+        public string Phase { get { return _importedPressure.PhaseDeg.Equation; } set { _importedPressure.PhaseDeg.Equation = value; } }
         ////
         [CategoryAttribute("Imported geometry")]
         [OrderedDisplayName(0, 10, "Scale factor")]

@@ -46,15 +46,20 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             //
-            double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg);
+            double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg.Value);
             //
-            Vec3D n = ratio * new Vec3D(_load.N1, _load.N2, _load.N3);
+            Vec3D n = ratio * new Vec3D(_load.N1.Value, _load.N2.Value, _load.N3.Value);
             n.Normalize();
             //
-            sb.AppendFormat("{0}, CENTRIF, {1}, {2}, {3}, {4}, {5}, {6}, {7}", _load.RegionName,
+            sb.AppendFormat("{0}, CENTRIF, {1}, {2}, {3}, {4}, {5}, {6}, {7}",
+                            _load.RegionName,
                             _load.RotationalSpeed2.ToCalculiX16String(), 
-                            _load.X.ToCalculiX16String(), _load.Y.ToCalculiX16String(), _load.Z.ToCalculiX16String(),
-                            n.X.ToCalculiX16String(), n.Y.ToCalculiX16String(), n.Z.ToCalculiX16String());
+                            _load.X.Value.ToCalculiX16String(),
+                            _load.Y.Value.ToCalculiX16String(),
+                            _load.Z.Value.ToCalculiX16String(),
+                            n.X.ToCalculiX16String(),
+                            n.Y.ToCalculiX16String(),
+                            n.Z.ToCalculiX16String());
             sb.AppendLine();
             return sb.ToString();
         }

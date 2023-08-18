@@ -72,9 +72,9 @@ namespace PrePoMax
         [CategoryAttribute("Force phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Value of the surface traction phase.")]
-        [TypeConverter(typeof(StringAngleDegConverter))]
+        [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 5)]
-        public double Phase { get { return _stLoad.PhaseDeg; } set { _stLoad.PhaseDeg = value; } }
+        public string Phase { get { return _stLoad.PhaseDeg.Equation; } set { _stLoad.PhaseDeg.Equation = value; } }
         //
         public override string AmplitudeName { get { return _stLoad.AmplitudeName; } set { _stLoad.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _stLoad.Color; } set { _stLoad.Color = value; } }

@@ -97,7 +97,7 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             //
-            double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg);
+            double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg.Value);
             //
             if (_dLoads != null)
             {
@@ -121,7 +121,7 @@ namespace FileInOut.Output.Calculix
                         faceKey = "P" + faceName.ToString()[1];
                     }
                     //
-                    magnitude = ratio * dLoad.Magnitude;
+                    magnitude = ratio * dLoad.Magnitude.Value;
                     if (_surfaceFaceType == FeSurfaceFaceTypes.ShellFaces && faceName == FeFaceName.S2) magnitude *= -1;
                     //
                     sb.AppendFormat("{0}, {1}, {2}", dLoad.SurfaceName, faceKey, magnitude.ToCalculiX16String()).AppendLine();

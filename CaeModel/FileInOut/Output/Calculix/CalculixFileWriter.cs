@@ -1075,7 +1075,7 @@ namespace FileInOut.Output
             //
             AppendLoad(model, load, referencePointsNodeIds, complexLoadType, parent);
             // Load case=2 - Imaginary component
-            if (step is SteadyStateDynamicsStep && load.Complex && load.PhaseDeg != 0)
+            if (step is SteadyStateDynamicsStep && load.Complex && load.PhaseDeg.Value != 0)
                 AppendLoad(model, load, referencePointsNodeIds, ComplexLoadTypeEnum.Imaginary, parent);
         }
         static private void AppendLoad(FeModel model, Load load, Dictionary<string, int[]> referencePointsNodeIds,
@@ -1137,14 +1137,14 @@ namespace FileInOut.Output
                     if (ptl.Type == PreTensionLoadType.Force)
                     {
                         int nodeId = referencePointsNodeIds[name][0];
-                        CLoad cLoad = new CLoad(ptl.Name, nodeId, ptl.Magnitude, 0, 0, ptl.TwoD, ptl.Complex, ptl.PhaseDeg);
+                        CLoad cLoad = new CLoad(ptl.Name, nodeId, ptl.Magnitude, 0, 0, ptl.TwoD, ptl.Complex, ptl.PhaseDeg.Value);
                         cLoad.AmplitudeName = ptl.AmplitudeName;
                         calKey = new CalCLoad(cLoad, referencePointsNodeIds, complexLoadType);
                     }
                     else if (ptl.Type == PreTensionLoadType.Displacement)
                     {
                         DisplacementRotation dr = new DisplacementRotation(ptl.Name, name, RegionTypeEnum.ReferencePointName,
-                                                                           ptl.TwoD, ptl.Complex, ptl.PhaseDeg);
+                                                                           ptl.TwoD, ptl.Complex, ptl.PhaseDeg.Value);
                         dr.U1 = ptl.Magnitude;
                         dr.AmplitudeName = ptl.AmplitudeName;
                         calKey = new CalDisplacementRotation(dr, referencePointsNodeIds, null, complexLoadType);

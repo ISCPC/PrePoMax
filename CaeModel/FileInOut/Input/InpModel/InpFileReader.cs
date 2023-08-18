@@ -1965,15 +1965,15 @@ namespace FileInOut.Input
                     switch (dof)
                     {
                         case 1:
-                            cfLoad.F1 = dofValue;
+                            cfLoad.F1.Value = dofValue;
                             step.AddLoad(cfLoad);
                             break;
                         case 2:
-                            cfLoad.F2 = dofValue;
+                            cfLoad.F2.Value = dofValue;
                             step.AddLoad(cfLoad);
                             break;
                         case 3:
-                            cfLoad.F3 = dofValue;
+                            cfLoad.F3.Value = dofValue;
                             step.AddLoad(cfLoad);
                             break;
                         case 4:

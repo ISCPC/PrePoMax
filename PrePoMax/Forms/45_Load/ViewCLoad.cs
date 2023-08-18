@@ -35,53 +35,37 @@ namespace PrePoMax
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(0, 10, "F1")]
         [DescriptionAttribute("Value of the force component per node in the direction of the first axis.")]
-        [TypeConverter(typeof(StringForceConverter))]
+        [TypeConverter(typeof(EquationForceConverter))]
         [Id(1, 3)]
-        public double F1 { get { return _cLoad.F1; } set { _cLoad.F1 = value; } }
+        public string F1 { get { return _cLoad.F1.Equation; } set { _cLoad.F1.Equation = value; } }
         //
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(1, 10, "F2")]
         [DescriptionAttribute("Value of the force component per node in the direction of the second axis.")]
-        [TypeConverter(typeof(StringForceConverter))]
+        [TypeConverter(typeof(EquationForceConverter))]
         [Id(2, 3)]
-        public double F2 { get { return _cLoad.F2; } set { _cLoad.F2 = value; } }
+        public string F2 { get { return _cLoad.F2.Equation; } set { _cLoad.F2.Equation = value; } }
         //
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(2, 10, "F3")]
         [DescriptionAttribute("Value of the force component per node in the direction of the third axis.")]
-        [TypeConverter(typeof(StringForceConverter))]
+        [TypeConverter(typeof(EquationForceConverter))]
         [Id(3, 3)]
-        public double F3 { get { return _cLoad.F3; } set { _cLoad.F3 = value; } }
+        public string F3 { get { return _cLoad.F3.Equation; } set { _cLoad.F3.Equation = value; } }
         //
         [CategoryAttribute("Force magnitude")]
         [OrderedDisplayName(3, 10, "Magnitude")]
         [DescriptionAttribute("Value of the force load magnitude per node.")]
-        [TypeConverter(typeof(StringForceConverter))]
-        [Id(1, 4)]        
-        public double Magnitude
-        {
-            get { return Math.Sqrt(_cLoad.F1 * _cLoad.F1 + _cLoad.F2 * _cLoad.F2 + _cLoad.F3 * _cLoad.F3); }
-            set
-            {
-                if (value <= 0)
-                    throw new Exception("Value of the force load magnitude must be greater than 0.");
-                //
-                double len = Math.Sqrt(_cLoad.F1 * _cLoad.F1 + _cLoad.F2 * _cLoad.F2 + _cLoad.F3 * _cLoad.F3);
-                double r;
-                if (len == 0) r = 0;
-                else r = value / len;
-                _cLoad.F1 *= r;
-                _cLoad.F2 *= r;
-                _cLoad.F3 *= r;
-            }
-        }
+        [TypeConverter(typeof(EquationForceConverter))]
+        [Id(1, 4)]
+        public string Magnitude { get { return _cLoad.Magnitude.Equation; } set { _cLoad.Magnitude.Equation = value; } }
         //
         [CategoryAttribute("Force phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Value of the force phase.")]
-        [TypeConverter(typeof(StringAngleDegConverter))]
+        [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 5)]
-        public double Phase { get { return _cLoad.PhaseDeg; } set { _cLoad.PhaseDeg = value; } }
+        public string Phase { get { return _cLoad.PhaseDeg.Equation; } set { _cLoad.PhaseDeg.Equation = value; } }
         //
         public override string AmplitudeName { get { return _cLoad.AmplitudeName; } set { _cLoad.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _cLoad.Color; } set { _cLoad.Color = value; } }
@@ -122,6 +106,7 @@ namespace PrePoMax
             //
             PopulateAmplitudeNames(amplitudeNames);
         }
+        
         
     }
 

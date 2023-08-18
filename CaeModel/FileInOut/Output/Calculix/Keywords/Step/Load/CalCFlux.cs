@@ -44,7 +44,7 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             //
-            sb.AppendFormat("{0}, 11, {1}{2}", _flux.RegionName, _flux.Magnitude.ToCalculiX16String(), Environment.NewLine);
+            sb.AppendFormat("{0}, 11, {1}{2}", _flux.RegionName, _flux.Magnitude.Value.ToCalculiX16String(), Environment.NewLine);
             //
             return sb.ToString();
         }

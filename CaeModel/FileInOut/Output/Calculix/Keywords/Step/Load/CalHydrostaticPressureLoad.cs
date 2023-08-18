@@ -48,7 +48,7 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             //
-            double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg);
+            double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg.Value);
             //
             if (_cLoads != null)
             {
@@ -56,9 +56,9 @@ namespace FileInOut.Output.Calculix
                 foreach (var cLoad in _cLoads)
                 {
                     directions.Clear();
-                    if (cLoad.F1 != 0) directions.Add(1);
-                    if (cLoad.F2 != 0) directions.Add(2);
-                    if (cLoad.F3 != 0) directions.Add(3);
+                    if (cLoad.F1.Value != 0) directions.Add(1);
+                    if (cLoad.F2.Value != 0) directions.Add(2);
+                    if (cLoad.F3.Value != 0) directions.Add(3);
                     //
                     foreach (var dir in directions)
                     {

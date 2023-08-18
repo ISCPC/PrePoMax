@@ -5999,7 +5999,7 @@ namespace PrePoMax
                     // New tie
                     bool twoD = _model.Properties.ModelSpace.IsTwoD();
                     Tie firstTie = toMerge.First();
-                    Tie newTie = new Tie(name, firstTie.PositionTolerance, firstTie.Adjust, "", RegionTypeEnum.Selection,
+                    Tie newTie = new Tie(name, firstTie.PositionTolerance.Value, firstTie.Adjust, "", RegionTypeEnum.Selection,
                                          "", RegionTypeEnum.Selection, twoD);
                     //
                     newTie.MasterCreationData = new Selection();
@@ -11862,7 +11862,8 @@ namespace PrePoMax
                     {
                         // 2D
                         if (dLoad.TwoD)
-                            DrawShellEdgeLoadSymbols(prefixName, dLoad.SurfaceName, dLoad.Magnitude, color, symbolSize, layer);
+                            DrawShellEdgeLoadSymbols(prefixName, dLoad.SurfaceName, dLoad.Magnitude.Value,
+                                                     color, symbolSize, layer);
                         // 3D
                         else DrawDLoadSymbols(prefixName, dLoad, color, symbolSize, layer);
                     }
@@ -12093,7 +12094,7 @@ namespace PrePoMax
         {
             // Arrows
             List<double[]> allLoadNormals = new List<double[]>();
-            double[] normal = new double[] { cLoad.F1, cLoad.F2, cLoad.F3 };
+            double[] normal = new double[] { cLoad.F1.Value, cLoad.F2.Value, cLoad.F3.Value };
             for (int i = 0; i < symbolCoor.GetLength(0); i++)
             {
                 allLoadNormals.Add(normal);
@@ -12170,7 +12171,7 @@ namespace PrePoMax
                 _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
                                                           out faceNormal, out shellElement);
                 //
-                if ((dLoad.Magnitude < 0) != shellElement) // if both are equal no need to reverse the direction
+                if ((dLoad.Magnitude.Value < 0) != shellElement) // if both are equal no need to reverse the direction
                 {
                     faceNormal[0] *= -1;
                     faceNormal[1] *= -1;
@@ -12191,7 +12192,7 @@ namespace PrePoMax
                 data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
                 data.SectionViewPossible = false;
                 ApplyLighting(data);
-                bool translate = dLoad.Magnitude > 0;
+                bool translate = dLoad.Magnitude.Value > 0;
                 _form.AddOrientedArrowsActor(data, symbolSize, translate);
             }
         }
@@ -12435,13 +12436,13 @@ namespace PrePoMax
                                           vtkRendererLayer layer)
         {
             // Arrows
-            double[] normal = new double[] { cfLoad.N1, cfLoad.N2, cfLoad.N3 };
+            double[] normal = new double[] { cfLoad.N1.Value, cfLoad.N2.Value, cfLoad.N3.Value };
             //
             vtkMaxActorData data = new vtkMaxActorData();
             data.Name = prefixName;
             data.Color = color;
             data.Layer = layer;
-            data.Geometry.Nodes.Coor = new double[][] { new double[] { cfLoad.X, cfLoad.Y, cfLoad.Z } };
+            data.Geometry.Nodes.Coor = new double[][] { new double[] { cfLoad.X.Value, cfLoad.Y.Value, cfLoad.Z.Value } };
             data.Geometry.Nodes.Normals = new double[][] { normal };
             ApplyLighting(data);
             _form.AddOrientedDoubleArrowsActor(data, symbolSize);
@@ -12549,8 +12550,8 @@ namespace PrePoMax
                 _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
                                                           out faceNormal, out shellElement);
                 //
-                if ((surface.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellEdgeFaces && dFlux.Magnitude < 0) ||
-                    (surface.SurfaceFaceTypes != FeSurfaceFaceTypes.ShellEdgeFaces && (dFlux.Magnitude < 0) != shellElement))
+                if ((surface.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellEdgeFaces && dFlux.Magnitude.Value < 0) ||
+                    (surface.SurfaceFaceTypes != FeSurfaceFaceTypes.ShellEdgeFaces && (dFlux.Magnitude.Value < 0) != shellElement))
                 {
                     faceNormal[0] *= -1;
                     faceNormal[1] *= -1;
@@ -12571,7 +12572,7 @@ namespace PrePoMax
                 data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
                 data.SectionViewPossible = false;
                 ApplyLighting(data);
-                bool translate = dFlux.Magnitude > 0;
+                bool translate = dFlux.Magnitude.Value > 0;
                 _form.AddOrientedArrowsActor(data, symbolSize, translate);
             }
         }

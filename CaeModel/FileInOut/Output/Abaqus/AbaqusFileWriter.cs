@@ -423,17 +423,17 @@ namespace FileInOut.Output
                 {
                     CLoad cLoad = (CLoad)load;
                     sb.AppendLine("*Cload");
-                    if (cLoad.F1 != 0)
+                    if (cLoad.F1.Value != 0)
                     {
                         sb.AppendFormat("PART-1-1.{0}, {1}, {2}", cLoad.RegionName, 0, cLoad.F1.ToString());
                         sb.AppendLine();
                     }
-                    if (cLoad.F2 != 0)
+                    if (cLoad.F2.Value != 0)
                     {
                         sb.AppendFormat("PART-1-1.{0}, {1}, {2}", cLoad.RegionName, 1, cLoad.F2.ToString());
                         sb.AppendLine();
                     }
-                    if (cLoad.F3 != 0)
+                    if (cLoad.F3.Value != 0)
                     {
                         sb.AppendFormat("PART-1-1.{0}, {1}, {2}", cLoad.RegionName, 2, cLoad.F3.ToString());
                         sb.AppendLine();

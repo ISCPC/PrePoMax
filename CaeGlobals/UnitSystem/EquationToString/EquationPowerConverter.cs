@@ -11,7 +11,7 @@ using UnitsNet;
 
 namespace CaeGlobals
 {
-    public class EquationLengthDefaultConverter : StringLengthDefaultConverter
+    public class EquationPowerConverter : StringPowerConverter
     {
         // Variables                                                                                                                
 
@@ -20,24 +20,12 @@ namespace CaeGlobals
 
 
         // Constructors                                                                                                             
-        public EquationLengthDefaultConverter()
+        public EquationPowerConverter()
         {
         }
 
 
         // Methods                                                                                                                  
-        public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
-        {
-            return true;
-        }
-        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
-        {
-            // Initializes the standard values list with string defaults.
-            values = new ArrayList(new string[] { _default, (string)ConvertTo(context, null, _initialValue, typeof(string)) });
-            // Passes the local integer array.
-            StandardValuesCollection svc = new StandardValuesCollection(values);
-            return svc;
-        }
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             // Convert from equation to string

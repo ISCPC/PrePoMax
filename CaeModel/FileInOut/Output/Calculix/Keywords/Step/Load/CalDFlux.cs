@@ -40,7 +40,7 @@ namespace FileInOut.Output.Calculix
             // *Dflux
             // Surface-1, S, 10
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("{0}, S, {1}{2}", _flux.SurfaceName, _flux.Magnitude.ToCalculiX16String(), Environment.NewLine);
+            sb.AppendFormat("{0}, S, {1}{2}", _flux.SurfaceName, _flux.Magnitude.Value.ToCalculiX16String(), Environment.NewLine);
             return sb.ToString();
         }
     }

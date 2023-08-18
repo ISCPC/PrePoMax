@@ -1158,7 +1158,7 @@ namespace CaeModel
                                       load.F2 / area * entry.Value,
                                       load.F3 / area * entry.Value,
                                       load.TwoD, load.Complex,
-                                      load.PhaseDeg);
+                                      load.PhaseDeg.Value);
                     cLoad.AmplitudeName = load.AmplitudeName;
                     loads.Add(cLoad);
                 }
@@ -1423,7 +1423,7 @@ namespace CaeModel
                                       entry.Value[1],
                                       entry.Value[2],
                                       load.TwoD, load.Complex,
-                                      load.PhaseDeg);
+                                      load.PhaseDeg.Value);
                     cLoad.AmplitudeName = load.AmplitudeName;
                     loads.Add(cLoad);
                 }
@@ -1544,7 +1544,7 @@ namespace CaeModel
                     if (pressure != 0)
                     {
                         dLoad = new DLoad(entry.Key.ToString(), elementId.ToString(), RegionTypeEnum.ElementId,
-                                          pressure, load.TwoD, load.Complex, load.PhaseDeg);
+                                          pressure, load.TwoD, load.Complex, load.PhaseDeg.Value);
                         dLoad.AmplitudeName = load.AmplitudeName;
                         loads.Add(dLoad);
                     }
@@ -1579,7 +1579,7 @@ namespace CaeModel
                     if (pressure != 0)
                     {
                         DLoad dLoad = new DLoad(entry.Key.ToString(), elementId.ToString(), RegionTypeEnum.ElementId,
-                                          pressure, load.TwoD, load.Complex, load.PhaseDeg);
+                                          pressure, load.TwoD, load.Complex, load.PhaseDeg.Value);
                         dLoad.AmplitudeName = load.AmplitudeName;
                         loads[elementCount + i] = dLoad;
                     }

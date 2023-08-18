@@ -54,7 +54,7 @@ namespace FileInOut.Output.Calculix
             string faceKey = "";
             double magnitude;
             //
-            double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg);
+            double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg.Value);
             //
             foreach (var entry in _surface.ElementFaces)
             {

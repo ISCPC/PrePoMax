@@ -53,11 +53,11 @@ namespace FileInOut.Output.Calculix
             if (_load.RegionType == RegionTypeEnum.ReferencePointName) rpNodeIds = _referencePointsNodeIds[_load.RegionName];
             //
             List<int> directions = new List<int>();
-            if (_load.F1 != 0) directions.Add(1);
-            if (_load.F2 != 0) directions.Add(2);
-            if (_load.F3 != 0) directions.Add(3);
+            if (_load.F1.Value != 0) directions.Add(1);
+            if (_load.F2.Value != 0) directions.Add(2);
+            if (_load.F3.Value != 0) directions.Add(3);
             //
-            double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg);
+            double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg.Value);
             //
             foreach (var dir in directions)
             {

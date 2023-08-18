@@ -37,9 +37,9 @@ namespace PrePoMax
         [CategoryAttribute("Edge load phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Phase of the edge load.")]
-        [TypeConverter(typeof(StringAngleDegConverter))]
+        [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 4)]
-        public double Phase { get { return _shellEdgeLoad.PhaseDeg; } set { _shellEdgeLoad.PhaseDeg = value; } }
+        public string Phase { get { return _shellEdgeLoad.PhaseDeg.Equation; } set { _shellEdgeLoad.PhaseDeg.Equation = value; } }
         //
         public override string AmplitudeName
         {
