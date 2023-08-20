@@ -66,8 +66,8 @@ namespace FileInOut.Output.Calculix
                 }
                 //
                 sb.AppendFormat("{0}, {1}, {2}, {3}{4}", entry.Value, faceKey,
-                                _filmHeatTransfer.SinkTemperature.ToCalculiX16String(),
-                                _filmHeatTransfer.FilmCoefficient.ToCalculiX16String(), Environment.NewLine);
+                                _filmHeatTransfer.SinkTemperature.Value.ToCalculiX16String(),
+                                _filmHeatTransfer.FilmCoefficient.Value.ToCalculiX16String(), Environment.NewLine);
             }
             return sb.ToString();
         }

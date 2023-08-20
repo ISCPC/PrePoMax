@@ -28,46 +28,30 @@ namespace PrePoMax
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(0, 10, "F1")]
         [DescriptionAttribute("Value of the force component in the direction of the first axis.")]
-        [TypeConverter(typeof(StringForceConverter))]
+        [TypeConverter(typeof(EquationForceConverter))]
         [Id(1, 3)]
-        public double F1 { get { return _stLoad.F1; } set { _stLoad.F1 = value; } }
+        public string F1 { get { return _stLoad.F1.Equation; } set { _stLoad.F1.Equation = value; } }
         //
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(1, 10, "F2")]
         [DescriptionAttribute("Value of the force component in the direction of the second axis.")]
-        [TypeConverter(typeof(StringForceConverter))]
+        [TypeConverter(typeof(EquationForceConverter))]
         [Id(2, 3)]
-        public double F2 { get { return _stLoad.F2; } set { _stLoad.F2 = value; } }
+        public string F2 { get { return _stLoad.F2.Equation; } set { _stLoad.F2.Equation = value; } }
         //
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(2, 10, "F3")]
         [DescriptionAttribute("Value of the force component in the direction of the third axis.")]
-        [TypeConverter(typeof(StringForceConverter))]
+        [TypeConverter(typeof(EquationForceConverter))]
         [Id(3, 3)]
-        public double F3 { get { return _stLoad.F3; } set { _stLoad.F3 = value; } }
+        public string F3 { get { return _stLoad.F3.Equation; } set { _stLoad.F3.Equation = value; } }
         //
         [CategoryAttribute("Force magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("Value of the surface traction load magnitude.")]
-        [TypeConverter(typeof(StringForceConverter))]
+        [TypeConverter(typeof(EquationForceConverter))]
         [Id(1, 4)]
-        public double Flength
-        {
-            get { return Math.Sqrt(_stLoad.F1 * _stLoad.F1 + _stLoad.F2 * _stLoad.F2 + _stLoad.F3 * _stLoad.F3); }
-            set
-            {
-                if (value <= 0)
-                    throw new Exception("Value of the surface traction load magnitude must be greater than 0.");
-
-                double len = Math.Sqrt(_stLoad.F1 * _stLoad.F1 + _stLoad.F2 * _stLoad.F2 + _stLoad.F3 * _stLoad.F3);
-                double r;
-                if (len == 0) r = 0;
-                else r = value / len;
-                _stLoad.F1 *= r;
-                _stLoad.F2 *= r;
-                _stLoad.F3 *= r;
-            }
-        }
+        public string Magnitude { get { return _stLoad.Magnitude.Equation; } set { _stLoad.Magnitude.Equation = value; } }
         //
         [CategoryAttribute("Force phase")]
         [OrderedDisplayName(0, 10, "Phase")]

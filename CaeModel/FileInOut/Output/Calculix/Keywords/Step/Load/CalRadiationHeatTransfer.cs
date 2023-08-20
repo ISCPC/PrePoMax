@@ -72,8 +72,8 @@ namespace FileInOut.Output.Calculix
                 }
                 //
                 sb.AppendFormat("{0}, {1}{2}, {3}, {4}{5}", entry.Value, faceKey, cavityRadiation,
-                                _radiationHeatTransfer.SinkTemperature.ToCalculiX16String(),
-                                _radiationHeatTransfer.Emissivity.ToCalculiX16String(), Environment.NewLine);
+                                _radiationHeatTransfer.SinkTemperature.Value.ToCalculiX16String(),
+                                _radiationHeatTransfer.Emissivity.Value.ToCalculiX16String(), Environment.NewLine);
             }
             return sb.ToString();
         }

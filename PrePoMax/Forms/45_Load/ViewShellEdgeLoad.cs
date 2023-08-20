@@ -30,9 +30,13 @@ namespace PrePoMax
         [CategoryAttribute("Edge load magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("Magnitude of the edge load.")]
-        [TypeConverter(typeof(StringForcePerLenghtConverter))]
+        [TypeConverter(typeof(EquationForcePerLengthConverter))]
         [Id(1, 3)]
-        public double Magnitude { get { return _shellEdgeLoad.Magnitude; } set { _shellEdgeLoad.Magnitude = value; } }
+        public string Magnitude
+        {
+            get { return _shellEdgeLoad.Magnitude.Equation; }
+            set { _shellEdgeLoad.Magnitude.Equation = value; }
+        }
         //
         [CategoryAttribute("Edge load phase")]
         [OrderedDisplayName(0, 10, "Phase")]

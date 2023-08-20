@@ -34,46 +34,30 @@ namespace PrePoMax
         [CategoryAttribute("Gravity components")]
         [OrderedDisplayName(0, 10, "F1")]
         [DescriptionAttribute("Value of the gravity component in the direction of the first axis.")]
-        [TypeConverter(typeof(StringAccelerationConverter))]
+        [TypeConverter(typeof(EquationAccelerationConverter))]
         [Id(1, 3)]
-        public double F1 { get { return _gLoad.F1; } set { _gLoad.F1 = value; } }
+        public string F1 { get { return _gLoad.F1.Equation; } set { _gLoad.F1.Equation = value; } }
         //
         [CategoryAttribute("Gravity components")]
         [OrderedDisplayName(1, 10, "F2")]
         [DescriptionAttribute("Value of the gravity component in the direction of the second axis.")]
-        [TypeConverter(typeof(StringAccelerationConverter))]
+        [TypeConverter(typeof(EquationAccelerationConverter))]
         [Id(2, 3)]
-        public double F2 { get { return _gLoad.F2; } set { _gLoad.F2 = value; } }
+        public string F2 { get { return _gLoad.F2.Equation; } set { _gLoad.F2.Equation = value; } }
         //
         [CategoryAttribute("Gravity components")]
         [OrderedDisplayName(2, 10, "F3")]
         [DescriptionAttribute("Value of the gravity component in the direction of the third axis.")]
-        [TypeConverter(typeof(StringAccelerationConverter))]
+        [TypeConverter(typeof(EquationAccelerationConverter))]
         [Id(3, 3)]
-        public double F3 { get { return _gLoad.F3; } set { _gLoad.F3 = value; } }
+        public string F3 { get { return _gLoad.F3.Equation; } set { _gLoad.F3.Equation = value; } }
         //
         [CategoryAttribute("Gravity magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("Value of the gravity load magnitude.")]
-        [TypeConverter(typeof(StringAccelerationConverter))]
+        [TypeConverter(typeof(EquationAccelerationConverter))]
         [Id(1, 4)]
-        public double Flength
-        {
-            get { return Math.Sqrt(_gLoad.F1 * _gLoad.F1 + _gLoad.F2 * _gLoad.F2 + _gLoad.F3 * _gLoad.F3); }
-            set
-            {
-                if (value <= 0)
-                    throw new Exception("Value of the gravity load magnitude must be greater than 0.");
-                //
-                double len = Math.Sqrt(_gLoad.F1 * _gLoad.F1 + _gLoad.F2 * _gLoad.F2 + _gLoad.F3 * _gLoad.F3);
-                double r;
-                if (len == 0) r = 0;
-                else r = value / len;
-                _gLoad.F1 *= r;
-                _gLoad.F2 *= r;
-                _gLoad.F3 *= r;
-            }
-        }
+        public string Magnitude { get { return _gLoad.Magnitude.Equation; } set { _gLoad.Magnitude.Equation = value; } }
         //
         [CategoryAttribute("Gravity phase")]
         [OrderedDisplayName(0, 10, "Phase")]

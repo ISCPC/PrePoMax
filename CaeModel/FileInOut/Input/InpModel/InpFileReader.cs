@@ -1965,27 +1965,27 @@ namespace FileInOut.Input
                     switch (dof)
                     {
                         case 1:
-                            cfLoad.F1.Value = dofValue;
+                            cfLoad.F1.SetEquationFromValue(dofValue);
                             step.AddLoad(cfLoad);
                             break;
                         case 2:
-                            cfLoad.F2.Value = dofValue;
+                            cfLoad.F2.SetEquationFromValue(dofValue);
                             step.AddLoad(cfLoad);
                             break;
                         case 3:
-                            cfLoad.F3.Value = dofValue;
+                            cfLoad.F3.SetEquationFromValue(dofValue);
                             step.AddLoad(cfLoad);
                             break;
                         case 4:
-                            momentLoad.M1 = dofValue;
+                            momentLoad.M1.SetEquationFromValue(dofValue);
                             step.AddLoad(momentLoad);
                             break;
                         case 5:
-                            momentLoad.M2 = dofValue;
+                            momentLoad.M2.SetEquationFromValue(dofValue);
                             step.AddLoad(momentLoad);
                             break;
                         case 6:
-                            momentLoad.M3 = dofValue;
+                            momentLoad.M3.SetEquationFromValue(dofValue);
                             step.AddLoad(momentLoad);
                             break;
                         default:
@@ -2030,9 +2030,9 @@ namespace FileInOut.Input
                         GravityLoad gLoad = new GravityLoad(name, regionName, RegionTypeEnum.ElementSetName,
                                                             0, 0, 0, false, false, 0);
                         //
-                        gLoad.F1 = double.Parse(recordDL[3]) * gValue;
-                        gLoad.F2 = double.Parse(recordDL[4]) * gValue;
-                        gLoad.F3 = double.Parse(recordDL[5]) * gValue;
+                        gLoad.F1.SetEquationFromValue(double.Parse(recordDL[3]) * gValue);
+                        gLoad.F2.SetEquationFromValue(double.Parse(recordDL[4]) * gValue);
+                        gLoad.F3.SetEquationFromValue(double.Parse(recordDL[5]) * gValue);
                         //
                         step.AddLoad(gLoad);
                     }

@@ -5,19 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
+using System.Runtime.Serialization;
 
 namespace CaeModel
 {
     [Serializable]
-    public class RadiationHeatTransfer : Load
+    public class RadiationHeatTransfer : Load, ISerializable
     {
         // Variables                                                                                                                
-        private string _surfaceName;
-        private RegionTypeEnum _regionType;
-        private bool _cavityRadiation;
-        private string _cavityName;
-        private double _sinkTemperature;
-        private double _emissivity;
+        private string _surfaceName;                    //ISerializable
+        private RegionTypeEnum _regionType;             //ISerializable
+        private bool _cavityRadiation;                  //ISerializable
+        private string _cavityName;                     //ISerializable
+        private EquationContainer _sinkTemperature;     //ISerializable
+        private EquationContainer _emissivity;          //ISerializable
 
 
         // Properties                                                                                                               
@@ -35,16 +36,16 @@ namespace CaeModel
                 else _cavityName = value;
             }
         }
-        public double SinkTemperature { get { return _sinkTemperature; } set { _sinkTemperature = value; } }
-        public double Emissivity
+        public EquationContainer SinkTemperature { get { return _sinkTemperature; } set { _sinkTemperature = value; } }
+        public EquationContainer Emissivity
         {
             get { return _emissivity; }
             set
             {
-                
-                if (value < 0) _emissivity = 0;
-                else if (value > 1) _emissivity = 1;
-                else _emissivity = value;
+                _emissivity = value;
+                _emissivity.CheckValue = CheckEmisivity;
+                //
+                _emissivity.CheckEquation();
             }
         }
 
@@ -59,11 +60,65 @@ namespace CaeModel
             //
             _cavityRadiation = false;
             _cavityName = null;
-            _sinkTemperature = sinkTemperature;
-            _emissivity = emissivity;
+            SinkTemperature = new EquationContainer(typeof(StringTemperatureConverter), sinkTemperature);
+            Emissivity = new EquationContainer(typeof(StringDoubleConverter), sinkTemperature);
+        }
+        public RadiationHeatTransfer(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_surfaceName":
+                        _surfaceName = (string)entry.Value; break;
+                    case "_regionType":
+                        _regionType = (RegionTypeEnum)entry.Value; break;
+                    case "_cavityRadiation":
+                        _cavityRadiation = (bool)entry.Value; break;
+                    case "_cavityName":
+                        _cavityName = (string)entry.Value; break;
+                    case "_sinkTemperature":
+                        // Compatibility for version v1.4.0
+                        if (entry.Value is double valueTemp)
+                            SinkTemperature = new EquationContainer(typeof(StringTemperatureConverter), valueTemp);
+                        else
+                            SinkTemperature = (EquationContainer)entry.Value;
+                        break;
+                    case "_emissivity":
+                        // Compatibility for version v1.4.0
+                        if (entry.Value is double valueEm)
+                            Emissivity = new EquationContainer(typeof(StringDoubleConverter), valueEm);
+                        else
+                            Emissivity = (EquationContainer)entry.Value;
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
 
         // Methods                                                                                                                  
+        private double CheckEmisivity(double value)
+        {
+            if (value < 0) return 0;
+            else if (value > 1) return 1;
+            else return value;
+        }
+
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // Using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_surfaceName", _surfaceName, typeof(string));
+            info.AddValue("_regionType", _regionType, typeof(RegionTypeEnum));
+            info.AddValue("_cavityRadiation", _cavityRadiation, typeof(bool));
+            info.AddValue("_cavityName", _cavityName, typeof(string));
+            info.AddValue("_sinkTemperature", _sinkTemperature, typeof(EquationContainer));
+            info.AddValue("_emissivity", _emissivity, typeof(EquationContainer));
+        }
     }
 }

@@ -42,7 +42,7 @@ namespace CaeResults
     public static class OpenFoamFileReader
     {
         // Methods                                                                                                                  
-        static public FeResults Read(string fileName)
+        static public FeResults Read(string fileName, UnitSystemType unitSystemType)
         {
             if (fileName != null && File.Exists(fileName))
             {
@@ -74,6 +74,7 @@ namespace CaeResults
                         mesh.ResetPartsColor();
                         // Read results
                         FeResults result = new FeResults(fileName);
+                        result.UnitSystem = new UnitSystem(unitSystemType);
                         result.SetMesh(mesh, nodeIdsLookUp);
                         //
                         int globalIncrementId = 1;
@@ -113,7 +114,7 @@ namespace CaeResults
             //
             return null;
         }
-        static public FeResults Read(string fileName, double time, string variableName)
+        static public FeResults Read(string fileName, double time, string variableName, UnitSystemType unitSystemType)
         {
             if (fileName != null && File.Exists(fileName))
             {
@@ -145,6 +146,7 @@ namespace CaeResults
                         mesh.ResetPartsColor();
                         // Read results
                         FeResults result = new FeResults(fileName);
+                        result.UnitSystem = new UnitSystem(unitSystemType);
                         result.SetMesh(mesh, nodeIdsLookUp);
                         //
                         int globalIncrementId = 1;

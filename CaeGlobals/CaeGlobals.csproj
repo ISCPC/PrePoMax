@@ -84,7 +84,7 @@
     <Compile Include="CommonClasses\OrderedDictionary.cs" />
     <Compile Include="Comparers\CompareDoubleArray.cs" />
     <Compile Include="Comparers\CompareIntArray.cs" />
-    <Compile Include="DoubleValueContainer.cs" />
+    <Compile Include="EquationContainer.cs" />
     <Compile Include="DynamicTypeDescriptor\CustomComponentModel.cs" />
     <Compile Include="DynamicTypeDescriptor\DynamicTypeDescriptor.cs" />
     <Compile Include="DynamicTypeDescriptor\StandardValueEditorUI.cs">
@@ -133,6 +133,13 @@
     <Compile Include="CommonClasses\UniqueQueue.cs" />
     <Compile Include="CommonClasses\Vec3D.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationAngleDegConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationAccelerationConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationDoubleConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationForcePerLengthConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationLengthFixedDOFConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationMomentConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationHeatTransferCoefficientConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationTemperatureConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationPressureConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationPowerPerAreaConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationForceConverter.cs" />
@@ -174,7 +181,7 @@
     <Compile Include="UnitSystem\StringToDouble\StringAngleFixedDOFConverter.cs" />
     <Compile Include="UnitSystem\StringToDouble\StringAreaConverter.cs" />
     <Compile Include="UnitSystem\StringToDouble\StringDensityConverter.cs" />
-    <Compile Include="UnitSystem\StringToDouble\StringForcePerLenghtConverter.cs" />
+    <Compile Include="UnitSystem\StringToDouble\StringForcePerLengthConverter.cs" />
     <Compile Include="UnitSystem\StringToDouble\StringForceConverter.cs" />
     <Compile Include="UnitSystem\StringToDouble\StringEnergyPerVolumeConverter.cs" />
     <Compile Include="UnitSystem\StringToDouble\StringForcePerVolumeConverter.cs" />

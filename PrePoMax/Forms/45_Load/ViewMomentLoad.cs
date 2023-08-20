@@ -34,50 +34,30 @@ namespace PrePoMax
         [CategoryAttribute("Moment components")]
         [OrderedDisplayName(0, 10, "M1")]
         [DescriptionAttribute("Value of the moment component per node in the direction of the first axis.")]
-        [TypeConverter(typeof(StringMomentConverter))]
+        [TypeConverter(typeof(EquationMomentConverter))]
         [Id(1, 3)]
-        public double M1 { get { return _momentLoad.M1; } set { _momentLoad.M1 = value; } }
+        public string M1 { get { return _momentLoad.M1.Equation; } set { _momentLoad.M1.Equation = value; } }
         //
         [CategoryAttribute("Moment components")]
         [OrderedDisplayName(1, 10, "M2")]
         [DescriptionAttribute("Value of the moment component per node in the direction of the second axis.")]
-        [TypeConverter(typeof(StringMomentConverter))]
+        [TypeConverter(typeof(EquationMomentConverter))]
         [Id(2, 3)]
-        public double M2 { get { return _momentLoad.M2; } set { _momentLoad.M2 = value; } }
+        public string M2 { get { return _momentLoad.M2.Equation; } set { _momentLoad.M2.Equation = value; } }
         //
         [CategoryAttribute("Moment components")]
         [OrderedDisplayName(2, 10, "M3")]
         [DescriptionAttribute("Value of the moment component per node in the direction of the third axis.")]
-        [TypeConverter(typeof(StringMomentConverter))]
+        [TypeConverter(typeof(EquationMomentConverter))]
         [Id(3, 3)]
-        public double M3 { get { return _momentLoad.M3; } set { _momentLoad.M3 = value; } }
+        public string M3 { get { return _momentLoad.M3.Equation; } set { _momentLoad.M3.Equation = value; } }
         //
         [CategoryAttribute("Moment magnitude")]
         [OrderedDisplayName(3, 10, "Magnitude")]
-        [DescriptionAttribute("Value of the moment load magnitude.")]
-        [TypeConverter(typeof(StringMomentConverter))]
+        [DescriptionAttribute("Value of the moment load magnitude per node.")]
+        [TypeConverter(typeof(EquationMomentConverter))]
         [Id(1, 4)]
-        public double Mlength
-        {
-            get { return Math.Sqrt(_momentLoad.M1 * _momentLoad.M1 + 
-                                   _momentLoad.M2 * _momentLoad.M2 + 
-                                   _momentLoad.M3 * _momentLoad.M3); }
-            set
-            {
-                if (value <= 0)
-                    throw new Exception("Value of the moment load magnitude must be greater than 0.");
-                //
-                double len = Math.Sqrt(_momentLoad.M1 * _momentLoad.M1 +
-                                       _momentLoad.M2 * _momentLoad.M2 +
-                                       _momentLoad.M3 * _momentLoad.M3);
-                double r;
-                if (len == 0) r = 0;
-                else r = value / len;
-                _momentLoad.M1 *= r;
-                _momentLoad.M2 *= r;
-                _momentLoad.M3 *= r;
-            }
-        }
+        public string Magnitude { get { return _momentLoad.Magnitude.Equation; } set { _momentLoad.Magnitude.Equation = value; } }
         //
         [CategoryAttribute("Moment phase")]
         [OrderedDisplayName(0, 10, "Phase")]

@@ -694,7 +694,7 @@ namespace FileInOut.Output
                         nodeId = referencePointsNodeIds[preTensionOnSurfaceEntry.Key][0];
                         CalPreTensionSection preTension;
                         if (ptl.AutoComputeDirection) preTension = new CalPreTensionSection(ptl.SurfaceName, nodeId);
-                        else preTension = new CalPreTensionSection(ptl.SurfaceName, nodeId, ptl.X, ptl.Y, ptl.Z);
+                        else preTension = new CalPreTensionSection(ptl.SurfaceName, nodeId, ptl.X.Value, ptl.Y.Value, ptl.Z.Value);
                         parent.AddKeyword(preTension);
                     }
                     else parent.AddKeyword(new CalDeactivated("Pre-tension " + ptl.SurfaceName));
@@ -1137,7 +1137,7 @@ namespace FileInOut.Output
                     if (ptl.Type == PreTensionLoadType.Force)
                     {
                         int nodeId = referencePointsNodeIds[name][0];
-                        CLoad cLoad = new CLoad(ptl.Name, nodeId, ptl.Magnitude, 0, 0, ptl.TwoD, ptl.Complex, ptl.PhaseDeg.Value);
+                        CLoad cLoad = new CLoad(ptl.Name, nodeId, ptl.GetMagnitudeValue(), 0, 0, ptl.TwoD, ptl.Complex, ptl.PhaseDeg.Value);
                         cLoad.AmplitudeName = ptl.AmplitudeName;
                         calKey = new CalCLoad(cLoad, referencePointsNodeIds, complexLoadType);
                     }
@@ -1145,7 +1145,7 @@ namespace FileInOut.Output
                     {
                         DisplacementRotation dr = new DisplacementRotation(ptl.Name, name, RegionTypeEnum.ReferencePointName,
                                                                            ptl.TwoD, ptl.Complex, ptl.PhaseDeg.Value);
-                        dr.U1 = ptl.Magnitude;
+                        dr.U1 = ptl.GetMagnitudeValue();
                         dr.AmplitudeName = ptl.AmplitudeName;
                         calKey = new CalDisplacementRotation(dr, referencePointsNodeIds, null, complexLoadType);
                     }

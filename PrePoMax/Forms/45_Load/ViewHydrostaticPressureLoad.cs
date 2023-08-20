@@ -46,33 +46,33 @@ namespace PrePoMax
         [CategoryAttribute("First point coordinates")]
         [OrderedDisplayName(1, 10, "X")]
         [DescriptionAttribute("X coordinate of the first point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(EquationLengthConverter))]
         [Id(2, 3)]
-        public double X1 { get { return _hpLoad.FirstPointCoor[0]; } set { _hpLoad.FirstPointCoor[0] = value; } }
+        public string X1 { get { return _hpLoad.X1.Equation; } set { _hpLoad.X1.Equation = value; } }
         //
         [CategoryAttribute("First point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
         [DescriptionAttribute("Y coordinate of the first point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(EquationLengthConverter))]
         [Id(3, 3)]
-        public double Y1 { get { return _hpLoad.FirstPointCoor[1]; } set { _hpLoad.FirstPointCoor[1] = value; } }
+        public string Y1 { get { return _hpLoad.Y1.Equation; } set { _hpLoad.Y1.Equation = value; } }
         //
         [CategoryAttribute("First point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
         [DescriptionAttribute("Z coordinate of the first point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(EquationLengthConverter))]
         [Id(4, 3)]
-        public double Z1 { get { return _hpLoad.FirstPointCoor[2]; } set { _hpLoad.FirstPointCoor[2] = value; } }
+        public string Z1 { get { return _hpLoad.Z1.Equation; } set { _hpLoad.Z1.Equation = value; } }
         //                                                                                                              
         [CategoryAttribute("First point pressure magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("Pressure magnitude at the first point.")]
-        [TypeConverter(typeof(StringPressureConverter))]
+        [TypeConverter(typeof(EquationPressureConverter))]
         [Id(1, 4)]
-        public double FirstPointPressure
+        public string FirstPointPressure
         {
-            get { return _hpLoad.FirstPointPressure; }
-            set { _hpLoad.FirstPointPressure = value; }
+            get { return _hpLoad.FirstPointPressure.Equation; }
+            set { _hpLoad.FirstPointPressure.Equation = value; }
         }
         //                                                                                                              
         [Category("Second point coordinates")]
@@ -93,33 +93,33 @@ namespace PrePoMax
         [CategoryAttribute("Second point coordinates")]    // must be a different name than for the first point !!!
         [OrderedDisplayName(1, 10, "X ")]
         [DescriptionAttribute("X coordinate of the second point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(EquationLengthConverter))]
         [Id(2, 5)]
-        public double X2 { get { return _hpLoad.SecondPointCoor[0]; } set { _hpLoad.SecondPointCoor[0] = value; } }
+        public string X2 { get { return _hpLoad.X2.Equation; } set { _hpLoad.X2.Equation = value; } }
         //
         [CategoryAttribute("Second point coordinates")]    // must be a different name than for the first point !!!
         [OrderedDisplayName(2, 10, "Y ")]
         [DescriptionAttribute("Y coordinate of the second point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(EquationLengthConverter))]
         [Id(3, 5)]
-        public double Y2 { get { return _hpLoad.SecondPointCoor[1]; } set { _hpLoad.SecondPointCoor[1] = value; } }
+        public string Y2 { get { return _hpLoad.Y2.Equation; } set { _hpLoad.Y2.Equation = value; } }
         //
         [CategoryAttribute("Second point coordinates")]    // must be a different name than for the first point !!!
         [OrderedDisplayName(3, 10, "Z ")]
         [DescriptionAttribute("Z coordinate of the second point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(EquationLengthConverter))]
         [Id(4, 5)]
-        public double Z2 { get { return _hpLoad.SecondPointCoor[2]; } set { _hpLoad.SecondPointCoor[2] = value; } }
+        public string Z2 { get { return _hpLoad.Z2.Equation; } set { _hpLoad.Z2.Equation = value; } }
         //                                                                                                                          
         [CategoryAttribute("Second point pressure magnitude")]        // must be a different name than for the first point !!!
         [OrderedDisplayName(0, 10, "Magnitude ")]
         [DescriptionAttribute("Pressure magnitude at the second point.")]
-        [TypeConverter(typeof(StringPressureConverter))]
+        [TypeConverter(typeof(EquationPressureConverter))]
         [Id(1, 6)]
-        public double SecondPointPressure
+        public string SecondPointPressure
         {
-            get { return _hpLoad.SecondPointPressure; }
-            set { _hpLoad.SecondPointPressure = value; }
+            get { return _hpLoad.SecondPointPressure.Equation; }
+            set { _hpLoad.SecondPointPressure.Equation = value; }
         }
         //                                                                                                                          
         [Category("Pressure change direction")]
@@ -140,23 +140,23 @@ namespace PrePoMax
         [CategoryAttribute("Pressure change direction")]
         [OrderedDisplayName(0, 10, "N1")]
         [DescriptionAttribute("Direction component in the direction of the first axis.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(EquationLengthConverter))]
         [Id(2, 7)]
-        public double N1 { get { return _hpLoad.N1; } set { _hpLoad.N1 = value; } }
+        public string N1 { get { return _hpLoad.N1.Equation; } set { _hpLoad.N1.Equation = value; } }
         //
         [CategoryAttribute("Pressure change direction")]
         [OrderedDisplayName(1, 10, "N2")]
         [DescriptionAttribute("Direction component in the direction of the second axis.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(EquationLengthConverter))]
         [Id(3, 7)]
-        public double N2 { get { return _hpLoad.N2; } set { _hpLoad.N2 = value; } }
+        public string N2 { get { return _hpLoad.N2.Equation; } set { _hpLoad.N2.Equation = value; } }
         //
         [CategoryAttribute("Pressure change direction")]
         [OrderedDisplayName(2, 10, "N3")]
         [DescriptionAttribute("Direction component in the direction of the third axis.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(EquationLengthConverter))]
         [Id(4, 7)]
-        public double N3 { get { return _hpLoad.N3; } set { _hpLoad.N3 = value; } }
+        public string N3 { get { return _hpLoad.N3.Equation; } set { _hpLoad.N3.Equation = value; } }
         //
         [CategoryAttribute("Pressure phase")]
         [OrderedDisplayName(0, 10, "Phase")]

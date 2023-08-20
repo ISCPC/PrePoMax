@@ -48,7 +48,7 @@ namespace FileInOut.Output.Calculix
             //
             double ratio = GetComplexRatio(_complexLoadType, _load.PhaseDeg.Value);
             //
-            Vec3D f = ratio * new Vec3D(_load.F1, _load.F2, _load.F3);
+            Vec3D f = ratio * new Vec3D(_load.F1.Value, _load.F2.Value, _load.F3.Value);
             double len = f.Normalize();
             //
             sb.AppendFormat("{0}, Grav, {1}, {2}, {3}, {4}", _load.RegionName, len.ToCalculiX16String(),

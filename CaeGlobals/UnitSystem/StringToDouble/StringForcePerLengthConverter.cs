@@ -11,7 +11,7 @@ using UnitsNet.Units;
 
 namespace CaeGlobals
 {
-    public class StringForcePerLenghtConverter : TypeConverter
+    public class StringForcePerLengthConverter : TypeConverter
     {
         // Variables                                                                                                                
         protected static ForcePerLengthUnit _forcePerLengthUnit = ForcePerLengthUnit.NewtonPerMeter;
@@ -28,7 +28,7 @@ namespace CaeGlobals
         }
 
         // Constructors                                                                                                             
-        public StringForcePerLenghtConverter()
+        public StringForcePerLengthConverter()
         {
         }
 

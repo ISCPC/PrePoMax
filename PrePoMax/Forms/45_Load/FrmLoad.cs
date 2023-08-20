@@ -314,12 +314,12 @@ namespace PrePoMax.Forms
             // check for 0 values
             if (FELoad is CLoad cl)
             {
-                if (cl.F1.Value == 0 && cl.F2.Value == 0 && cl.F3.Value == 0)
+                if (cl.Magnitude.Value == 0)
                     throw new CaeException("At least one force component must not be equal to 0.");
             }
             else if (FELoad is MomentLoad ml)
             {
-                if (ml.M1 == 0 && ml.M2 == 0 && ml.M3 == 0)
+                if (ml.Magnitude.Value == 0)
                     throw new CaeException("At least one moment component must not be equal to 0.");
             }
             else if (FELoad is DLoad dl)
@@ -337,17 +337,17 @@ namespace PrePoMax.Forms
             }
             else if (FELoad is STLoad stl)
             {
-                if (stl.F1 == 0 && stl.F2 == 0 && stl.F3 == 0)
+                if (stl.Magnitude.Value == 0)
                     throw new CaeException("At least one surface traction load component must not be equal to 0.");
             }
             else if (FELoad is ShellEdgeLoad sel)
             {
-                if (sel.Magnitude == 0)
+                if (sel.Magnitude.Value == 0)
                     throw new CaeException("The shell edge load magnitude must not be equal to 0.");
             }
             else if (FELoad is GravityLoad gl)
             {
-                if (gl.F1 == 0 && gl.F2 == 0 && gl.F3 == 0)
+                if (gl.Magnitude.Value == 0)
                     throw new CaeException("At least one gravity load component must not be equal to 0.");
             }
             else if (FELoad is CentrifLoad cfl)
@@ -359,9 +359,9 @@ namespace PrePoMax.Forms
             }
             else if (FELoad is PreTensionLoad ptl)
             {
-                if (!ptl.AutoComputeDirection && ptl.X == 0 && ptl.Y == 0 && ptl.Z == 0)
+                if (!ptl.AutoComputeDirection && ptl.X.Value == 0 && ptl.Y.Value == 0 && ptl.Z.Value == 0)
                     throw new CaeException("At least one pre-tension direction component must not be equal to 0.");
-                if (ptl.Type == PreTensionLoadType.Force && ptl.Magnitude == 0)
+                if (ptl.Type == PreTensionLoadType.Force && ptl.GetMagnitudeValue() == 0)
                     throw new CaeException("Pre-tension magnitude must not be equal to 0.");
             }
             // Thermal
@@ -1001,7 +1001,8 @@ namespace PrePoMax.Forms
                     // Secondary selection
                     if (FELoad is HydrostaticPressure hp)
                     {
-                        double[][] nodeCoor = new double[][] { hp.FirstPointCoor, hp.SecondPointCoor};
+                        double[][] nodeCoor = new double[][] { new double[] { hp.X1.Value, hp.Y1.Value, hp.Z1.Value },
+                                                               new double[] { hp.X2.Value, hp.Y2.Value, hp.Z2.Value } };
                         _controller.HighlightNodes(nodeCoor, true);
                     }
                     else if (FELoad is CentrifLoad cf)
@@ -1121,9 +1122,9 @@ namespace PrePoMax.Forms
                             if (ids.Length == 1)
                             {
                                 FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
-                                vhpl.X1 = node.X;
-                                vhpl.Y1 = node.Y;
-                                vhpl.Z1 = node.Z;
+                                vhpl.X1 = node.X.ToString();
+                                vhpl.Y1 = node.Y.ToString();
+                                vhpl.Z1 = node.Z.ToString();
                                 changed = true;
                             }
                         }
@@ -1132,9 +1133,9 @@ namespace PrePoMax.Forms
                             if (ids.Length == 1)
                             {
                                 FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
-                                vhpl.X2 = node.X;
-                                vhpl.Y2 = node.Y;
-                                vhpl.Z2 = node.Z;
+                                vhpl.X2 = node.X.ToString();
+                                vhpl.Y2 = node.Y.ToString();
+                                vhpl.Z2 = node.Z.ToString();
                                 changed = true;
                             }
                         }
@@ -1144,9 +1145,9 @@ namespace PrePoMax.Forms
                             {
                                 FeNode node1 = _controller.Model.Mesh.Nodes[ids[0]];
                                 FeNode node2 = _controller.Model.Mesh.Nodes[ids[1]];
-                                vhpl.N1 = node2.X - node1.X;
-                                vhpl.N2 = node2.Y - node1.Y;
-                                vhpl.N3 = node2.Z - node1.Z;
+                                vhpl.N1 = (node2.X - node1.X).ToString();
+                                vhpl.N2 = (node2.Y - node1.Y).ToString();
+                                vhpl.N3 = (node2.Z - node1.Z).ToString();
                                 changed = true;
                             }
                         }

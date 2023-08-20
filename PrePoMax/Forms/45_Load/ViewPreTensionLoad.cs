@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
+using CaeModel;
 
 namespace PrePoMax
 {
@@ -24,7 +25,7 @@ namespace PrePoMax
         [OrderedDisplayName(1, 10, "Type")]
         [DescriptionAttribute("Select the pre-tension type.")]
         [Id(2, 1)]
-        public CaeModel.PreTensionLoadType Type 
+        public PreTensionLoadType Type 
         { 
             get { return _preTenLoad.Type; } 
             set 
@@ -33,7 +34,7 @@ namespace PrePoMax
                 {
                     _preTenLoad.Type = value;
                     //
-                    _preTenLoad.Magnitude = 0;
+                    _preTenLoad.SetMagnitudeValue(0);
                 }
                 cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(ForceMagnitude));
                 cpd.SetIsBrowsable(_preTenLoad.Type == CaeModel.PreTensionLoadType.Force);
@@ -71,37 +72,45 @@ namespace PrePoMax
         [CategoryAttribute("Pre-tension direction")]
         [OrderedDisplayName(1, 10, "X")]
         [DescriptionAttribute("X component of the pre-tension direction.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(EquationLengthConverter))]
         [Id(2, 3)]
-        public double X { get { return _preTenLoad.X; } set { _preTenLoad.X = value; } }
+        public string X { get { return _preTenLoad.X.Equation; } set { _preTenLoad.X.Equation = value; } }
         //
         [CategoryAttribute("Pre-tension direction")]
         [OrderedDisplayName(2, 10, "Y")]
         [DescriptionAttribute("Y component of the pre-tension direction.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(EquationLengthConverter))]
         [Id(3, 3)]
-        public double Y { get { return _preTenLoad.Y; } set { _preTenLoad.Y = value; } }
+        public string Y { get { return _preTenLoad.Y.Equation; } set { _preTenLoad.Y.Equation = value; } }
         //
         [CategoryAttribute("Pre-tension direction")]
         [OrderedDisplayName(3, 10, "Z")]
         [DescriptionAttribute("Z component of the pre-tension direction.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(EquationLengthConverter))]
         [Id(4, 3)]
-        public double Z { get { return _preTenLoad.Z; } set { _preTenLoad.Z = value; } }
+        public string Z { get { return _preTenLoad.Z.Equation; } set { _preTenLoad.Z.Equation = value; } }
         //
         [CategoryAttribute("Magnitude")]
         [OrderedDisplayName(0, 10, "Force")]
         [DescriptionAttribute("Value of the force for the pre-tension load.")]
-        [TypeConverter(typeof(StringForceConverter))]
+        [TypeConverter(typeof(EquationForceConverter))]
         [Id(1, 4)]
-        public double ForceMagnitude { get { return _preTenLoad.Magnitude; } set { _preTenLoad.Magnitude = value; } }
+        public string ForceMagnitude
+        {
+            get { return _preTenLoad.ForceMagnitude.Equation; }
+            set { _preTenLoad.ForceMagnitude.Equation = value; }
+        }
         //
         [CategoryAttribute("Magnitude")]
         [OrderedDisplayName(0, 10, "Displacement")]
         [DescriptionAttribute("Value of the displacement for the pre-tension load.")]
-        [TypeConverter(typeof(StringLengthFixedDOFConverter))]
+        [TypeConverter(typeof(EquationLengthFixedDOFConverter))]
         [Id(1, 5)]
-        public double DisplacementMagnitude { get { return _preTenLoad.Magnitude; } set { _preTenLoad.Magnitude = value; } }
+        public string DisplacementMagnitude
+        {
+            get { return _preTenLoad.DisplacementMagnitude.Equation; }
+            set { _preTenLoad.DisplacementMagnitude.Equation = value; }
+        }
         //
         public override string AmplitudeName
         {
@@ -125,6 +134,8 @@ namespace PrePoMax
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             // Now lets display Yes/No instead of True/False
             base.DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo("AutoComputeDirection");
+            // 2D
+            DynamicCustomTypeDescriptor.GetProperty(nameof(Z)).SetIsBrowsable(!preTenLoad.TwoD);
             // Set initial visibilities
             Type = _preTenLoad.Type;
             AutoComputeDirection = _preTenLoad.AutoComputeDirection;

@@ -15,75 +15,87 @@ namespace CaeModel
         // Variables                                                                                                                
         private string _regionName;                         //ISerializable
         private RegionTypeEnum _regionType;                 //ISerializable
-        private DoubleValueContainer _x;                    //ISerializable
-        private DoubleValueContainer _y;                    //ISerializable
-        private DoubleValueContainer _z;                    //ISerializable
-        private DoubleValueContainer _n1;                   //ISerializable
-        private DoubleValueContainer _n2;                   //ISerializable
-        private DoubleValueContainer _n3;                   //ISerializable
-        private DoubleValueContainer _rotationalSpeed;      //ISerializable
+        private EquationContainer _x;                       //ISerializable
+        private EquationContainer _y;                       //ISerializable
+        private EquationContainer _z;                       //ISerializable
+        private EquationContainer _n1;                      //ISerializable
+        private EquationContainer _n2;                      //ISerializable
+        private EquationContainer _n3;                      //ISerializable
+        private EquationContainer _rotationalSpeed;         //ISerializable
         private bool _axisymmetric;                         //ISerializable
 
 
         // Properties                                                                                                               
         public override string RegionName { get { return _regionName; } set { _regionName = value; } }
         public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
-        public DoubleValueContainer X
+        public EquationContainer X
         {
             get { return _x; }
             set
             {
                 _x = value;
-                _x.CheckValue = CheckZero;  // perform the check
+                _x.CheckValue = CheckZero;
+                //
+                _x.CheckEquation();
             }
         }
-        public DoubleValueContainer Y
+        public EquationContainer Y
         {
             get { return _y; }
             set
             {
                 _y = value;
-                _y.CheckValue = CheckZero;  // perform the check
+                _y.CheckValue = CheckZero;
+                //
+                _y.CheckEquation();
             }
         }
-        public DoubleValueContainer Z
+        public EquationContainer Z
         {
             get { return _z; }
             set
             {
                 _z = value;
-                _z.CheckValue = CheckZero;  // perform the check
+                _z.CheckValue = CheckZero;
+                //
+                _z.CheckEquation();
             }
         }
-        public DoubleValueContainer N1
+        public EquationContainer N1
         {
             get { return _n1; }
             set
             {
                 _n1 = value;
-                _n1.CheckValue = CheckZero; // perform the check
+                _n1.CheckValue = CheckZero;
+                //
+                _n1.CheckEquation();
             }
         }
-        public DoubleValueContainer N2
+        public EquationContainer N2
         {
             get { return _n2; }
             set
             {
                 _n2 = value;
-                _n2.CheckValue = CheckOne;  // perform the check
+                _n2.CheckValue = CheckOne;
+                //
+                _n2.CheckEquation();
             }
         }
-        public DoubleValueContainer N3
+        public EquationContainer N3
         {
             get { return _n3; }
             set
             {
                 _n3 = value;
-                _n3.CheckValue = CheckZero; // perform the check
+                _n3.CheckValue = CheckZero;
+                //
+                _n3.CheckEquation();
             }
         }
         public double RotationalSpeed2 { get { return Math.Pow(_rotationalSpeed.Value, 2); } }
-        public DoubleValueContainer RotationalSpeed
+        public EquationContainer RotationalSpeed
         {
             get
             {
@@ -92,7 +104,9 @@ namespace CaeModel
             set
             {
                 _rotationalSpeed = value;
-                _rotationalSpeed.CheckValue = CheckNonNegative; // perform the check
+                _rotationalSpeed.CheckValue = CheckNonNegative;
+                //
+                _rotationalSpeed.CheckEquation();
             }
         }
         public bool Axisymmetric
@@ -132,15 +146,15 @@ namespace CaeModel
             _regionName = regionName;
             RegionType = regionType;
             //
-            _x = new DoubleValueContainer(typeof(StringLengthConverter), point[0], CheckZero);
-            _y = new DoubleValueContainer(typeof(StringLengthConverter), point[1], CheckZero);
-            _z = new DoubleValueContainer(typeof(StringLengthConverter), point[2], CheckZero);
+            X = new EquationContainer(typeof(StringLengthConverter), point[0]);
+            Y = new EquationContainer(typeof(StringLengthConverter), point[1]);
+            Z = new EquationContainer(typeof(StringLengthConverter), point[2]);
             //
-            _n1 = new DoubleValueContainer(typeof(StringLengthConverter), normal[0], CheckZero);
-            _n2 = new DoubleValueContainer(typeof(StringLengthConverter), normal[1], CheckOne);
-            _n3 = new DoubleValueContainer(typeof(StringLengthConverter), normal[2], CheckZero);
+            N1 = new EquationContainer(typeof(StringLengthConverter), normal[0]);
+            N2 = new EquationContainer(typeof(StringLengthConverter), normal[1]);
+            N3 = new EquationContainer(typeof(StringLengthConverter), normal[2]);
             //
-            _rotationalSpeed = new DoubleValueContainer(typeof(StringRotationalSpeedConverter), rotationalSpeed, CheckNonNegative);
+            RotationalSpeed = new EquationContainer(typeof(StringRotationalSpeedConverter), rotationalSpeed);
         }
         public CentrifLoad(SerializationInfo info, StreamingContext context)
             : base(info, context)
@@ -156,53 +170,53 @@ namespace CaeModel
                     case "_x":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valX)
-                            _x = new DoubleValueContainer(typeof(StringLengthConverter), valX, CheckZero);
+                            X = new EquationContainer(typeof(StringLengthConverter), valX);
                         else
-                            X = (DoubleValueContainer)entry.Value;
+                            X = (EquationContainer)entry.Value;
                         break;
                     case "_y":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valY)
-                            _y = new DoubleValueContainer(typeof(StringLengthConverter), valY, CheckZero);
+                            Y = new EquationContainer(typeof(StringLengthConverter), valY);
                         else
-                            Y = (DoubleValueContainer)entry.Value;
+                            Y = (EquationContainer)entry.Value;
                         break;
                     case "_z":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valZ)
-                            _z = new DoubleValueContainer(typeof(StringLengthConverter), valZ, CheckZero);
+                            Z = new EquationContainer(typeof(StringLengthConverter), valZ);
                         else
-                            Z = (DoubleValueContainer)entry.Value;
+                            Z = (EquationContainer)entry.Value;
                         break;
                     case "_n1":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valN1)
-                            _n1 = new DoubleValueContainer(typeof(StringLengthConverter), valN1, CheckZero);
+                            N1 = new EquationContainer(typeof(StringLengthConverter), valN1);
                         else
-                            N1 = (DoubleValueContainer)entry.Value;
+                            N1 = (EquationContainer)entry.Value;
                         break;
                     case "_n2":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valN2)
-                            _n2 = new DoubleValueContainer(typeof(StringLengthConverter), valN2, CheckOne);
+                            N2 = new EquationContainer(typeof(StringLengthConverter), valN2);
                         else
-                            N2 = (DoubleValueContainer)entry.Value;
+                            N2 = (EquationContainer)entry.Value;
                         break;
                     case "_n3":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valN3)
-                            _n3 = new DoubleValueContainer(typeof(StringLengthConverter), valN3, CheckZero);
+                            N3 = new EquationContainer(typeof(StringLengthConverter), valN3);
                         else
-                            N3 = (DoubleValueContainer)entry.Value;
+                            N3 = (EquationContainer)entry.Value;
                         break;
                     case "_rotationalSpeed":
                     case "<RotationalSpeed2>k__BackingField":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valRot)
-                            _rotationalSpeed = new DoubleValueContainer(typeof(StringRotationalSpeedConverter),
-                                                                        Math.Sqrt(Math.Abs(valRot)), CheckNonNegative);
+                            RotationalSpeed = new EquationContainer(typeof(StringRotationalSpeedConverter),
+                                                                    Math.Sqrt(Math.Abs(valRot)));
                         else
-                            RotationalSpeed = (DoubleValueContainer)entry.Value;
+                            RotationalSpeed = (EquationContainer)entry.Value;
                         break;
                     case "_axisymmetric":
                         _axisymmetric = (bool)entry.Value; break;
@@ -239,13 +253,13 @@ namespace CaeModel
             //
             info.AddValue("_regionName", _regionName, typeof(string));
             info.AddValue("_regionType", _regionType, typeof(RegionTypeEnum));
-            info.AddValue("_x", _x, typeof(DoubleValueContainer));
-            info.AddValue("_y", _y, typeof(DoubleValueContainer));
-            info.AddValue("_z", _z, typeof(DoubleValueContainer));
-            info.AddValue("_n1", _n1, typeof(DoubleValueContainer));
-            info.AddValue("_n2", _n2, typeof(DoubleValueContainer));
-            info.AddValue("_n3", _n3, typeof(DoubleValueContainer));
-            info.AddValue("_rotationalSpeed", _rotationalSpeed, typeof(DoubleValueContainer));
+            info.AddValue("_x", _x, typeof(EquationContainer));
+            info.AddValue("_y", _y, typeof(EquationContainer));
+            info.AddValue("_z", _z, typeof(EquationContainer));
+            info.AddValue("_n1", _n1, typeof(EquationContainer));
+            info.AddValue("_n2", _n2, typeof(EquationContainer));
+            info.AddValue("_n3", _n3, typeof(EquationContainer));
+            info.AddValue("_rotationalSpeed", _rotationalSpeed, typeof(EquationContainer));
             info.AddValue("_axisymmetric", _axisymmetric, typeof(bool));
         }
     }

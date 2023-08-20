@@ -1151,12 +1151,12 @@ namespace CaeModel
             CLoad cLoad;
             foreach (var entry in nodalForces)
             {
-                if (entry.Value != 0 && (load.F1 != 0 || load.F2 != 0 || load.F3 != 0))
+                if (entry.Value != 0 && (load.Magnitude.Value != 0))
                 {
                     cLoad = new CLoad("_CLoad_" + entry.Key.ToString(), entry.Key,
-                                      load.F1 / area * entry.Value,
-                                      load.F2 / area * entry.Value,
-                                      load.F3 / area * entry.Value,
+                                      load.F1.Value / area * entry.Value,
+                                      load.F2.Value / area * entry.Value,
+                                      load.F3.Value / area * entry.Value,
                                       load.TwoD, load.Complex,
                                       load.PhaseDeg.Value);
                     cLoad.AmplitudeName = load.AmplitudeName;

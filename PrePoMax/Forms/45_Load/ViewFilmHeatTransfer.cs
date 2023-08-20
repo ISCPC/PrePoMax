@@ -30,23 +30,23 @@ namespace PrePoMax
         [CategoryAttribute("Parameters")]
         [OrderedDisplayName(0, 10, "Sink temperature")]
         [DescriptionAttribute("Value of the sink temperature.")]
-        [TypeConverter(typeof(StringTemperatureConverter))]
+        [TypeConverter(typeof(EquationTemperatureConverter))]
         [Id(1, 3)]
-        public double SinkTemperature
+        public string SinkTemperature
         {
-            get { return _filmHeatTransfer.SinkTemperature; }
-            set { _filmHeatTransfer.SinkTemperature = value; }
+            get { return _filmHeatTransfer.SinkTemperature.Equation; }
+            set { _filmHeatTransfer.SinkTemperature.Equation = value; }
         }
         //
         [CategoryAttribute("Parameters")]
         [OrderedDisplayName(1, 10, "Film coefficient")]
         [DescriptionAttribute("Value of the film coefficient.")]
-        [TypeConverter(typeof(StringHeatTransferCoefficientConverter))]
+        [TypeConverter(typeof(EquationHeatTransferCoefficientConverter))]
         [Id(2, 3)]
-        public double FilmCoefficient
+        public string FilmCoefficient
         {
-            get { return _filmHeatTransfer.FilmCoefficient; }
-            set { _filmHeatTransfer.FilmCoefficient = value; }
+            get { return _filmHeatTransfer.FilmCoefficient.Equation; }
+            set { _filmHeatTransfer.FilmCoefficient.Equation = value; }
         }
         //
         public override string AmplitudeName

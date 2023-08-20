@@ -69,7 +69,7 @@ namespace FileInOut.Output.Calculix
                     else if (faceName == FeFaceName.S6) faceKey = "EDNOR4";
                 }
                 //
-                magnitude = ratio * _load.Magnitude;
+                magnitude = ratio * _load.Magnitude.Value;
                 sb.AppendFormat("{0}, {1}, {2}", entry.Value, faceKey, magnitude.ToCalculiX16String()).AppendLine();
             }
             return sb.ToString();

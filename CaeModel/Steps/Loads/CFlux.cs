@@ -16,14 +16,14 @@ namespace CaeModel
         private string _regionName;                 //ISerializable
         private RegionTypeEnum _regionType;         //ISerializable
         private bool _addFlux;                      //ISerializable
-        private DoubleValueContainer _magnitude;    //ISerializable
+        private EquationContainer _magnitude;       //ISerializable
 
 
         // Properties                                                                                                               
         public override string RegionName { get { return _regionName; } set { _regionName = value; } }
         public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public bool AddFlux { get { return _addFlux; } set { _addFlux = value; } }
-        public DoubleValueContainer Magnitude { get { return _magnitude; } set { _magnitude = value; } }
+        public EquationContainer Magnitude { get { return _magnitude; } set { _magnitude = value; } }
 
 
         // Constructors                                                                                                             
@@ -33,7 +33,7 @@ namespace CaeModel
             _regionName = regionName;
             RegionType = regionType;
             _addFlux = false;
-            _magnitude = new DoubleValueContainer(typeof(StringPowerConverter), magnitude);
+            Magnitude = new EquationContainer(typeof(StringPowerConverter), magnitude);
         }
         public CFlux(SerializationInfo info, StreamingContext context)
             : base(info, context)
@@ -53,9 +53,9 @@ namespace CaeModel
                     case "<Magnitude>k__BackingField":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueDouble)
-                            _magnitude = new DoubleValueContainer(typeof(StringPowerConverter), valueDouble);
+                            Magnitude = new EquationContainer(typeof(StringPowerConverter), valueDouble);
                         else
-                            _magnitude = (DoubleValueContainer)entry.Value;
+                            Magnitude = (EquationContainer)entry.Value;
                         break;
                     default:
                         break;
@@ -74,7 +74,7 @@ namespace CaeModel
             info.AddValue("_regionName", _regionName, typeof(string));
             info.AddValue("_regionType", _regionType, typeof(RegionTypeEnum));
             info.AddValue("_addFlux", _addFlux, typeof(bool));
-            info.AddValue("_magnitude", _magnitude, typeof(DoubleValueContainer));
+            info.AddValue("_magnitude", _magnitude, typeof(EquationContainer));
         }
     }
 }

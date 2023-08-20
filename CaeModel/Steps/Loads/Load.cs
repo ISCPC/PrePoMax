@@ -19,7 +19,7 @@ namespace CaeModel
         protected bool _twoD;                                       //ISerializable
         protected string _amplitudeName;                            //ISerializable
         protected bool _complex;                                    //ISerializable
-        protected DoubleValueContainer _phaseDeg;                   //ISerializable
+        protected EquationContainer _phaseDeg;                   //ISerializable
         protected Color _color;                                     //ISerializable
         public const string DefaultAmplitudeName = "Default";       //ISerializable
 
@@ -44,13 +44,15 @@ namespace CaeModel
             }
         }
         public bool Complex { get { return _complex; } set { _complex = value; } }
-        public DoubleValueContainer PhaseDeg
+        public EquationContainer PhaseDeg
         {
             get { return _phaseDeg; }
             set
             {
                 _phaseDeg = value;
                 _phaseDeg.CheckValue = CheckAngle;
+                //
+                _phaseDeg.CheckEquation();
             }
         }
         public Color Color
@@ -78,14 +80,14 @@ namespace CaeModel
             _twoD = twoD;
             _amplitudeName = null;
             _complex = complex;
-            _phaseDeg = new DoubleValueContainer(typeof(StringAngleDegConverter), phaseDeg, CheckAngle);
+            _phaseDeg = new EquationContainer(typeof(StringAngleDegConverter), phaseDeg, CheckAngle);
             _color = Color.RoyalBlue;
         }
         public Load(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             // Compatibility for version v1.4.0
-            _phaseDeg = new DoubleValueContainer(typeof(StringAngleDegConverter), 0, CheckAngle);
+            PhaseDeg = new EquationContainer(typeof(StringAngleDegConverter), 0);
             //
             foreach (SerializationEntry entry in info)
             {
@@ -109,9 +111,9 @@ namespace CaeModel
                     case "_phaseDeg":
                     case "Load+_phaseDeg":          // Compatibility for version v1.4.0
                         if (entry.Value is double valPhase)
-                            _phaseDeg = new DoubleValueContainer(typeof(StringAngleDegConverter), valPhase, CheckAngle);
+                            PhaseDeg = new EquationContainer(typeof(StringAngleDegConverter), valPhase);
                         else
-                            PhaseDeg = (DoubleValueContainer)entry.Value;
+                            PhaseDeg = (EquationContainer)entry.Value;
                         break;
                     case "_color":
                     case "Load+_color":             // Compatibility for version v1.4.0
@@ -139,7 +141,7 @@ namespace CaeModel
             info.AddValue("_twoD", _twoD, typeof(bool));
             info.AddValue("_amplitudeName", _amplitudeName, typeof(string));
             info.AddValue("_complex", _complex, typeof(bool));
-            info.AddValue("_phaseDeg", _phaseDeg, typeof(DoubleValueContainer));
+            info.AddValue("_phaseDeg", _phaseDeg, typeof(EquationContainer));
             info.AddValue("_color", _color, typeof(Color));
             
         }

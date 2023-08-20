@@ -7,21 +7,22 @@ using CaeMesh;
 using CaeGlobals;
 using CaeResults;
 using System.IO;
+using System.Runtime.Serialization;
 
 namespace CaeModel
 {
     [Serializable]
-    public class ImportedPressure : VariablePressure, IPreviewable
+    public class ImportedPressure : VariablePressure, IPreviewable, ISerializable
     {
         // Variables                                                                                                                
-        private string _fileName;
-        private string _pressureTime;
-        private string _pressureVariableName;
-        private InterpolatorEnum _interpolatorType;
-        private double _magnitudeFactor;
-        private double _geomScaleFactor;
+        private string _fileName;                       //ISerializable
+        private string _pressureTime;                   //ISerializable
+        private string _pressureVariableName;           //ISerializable
+        private InterpolatorEnum _interpolatorType;     //ISerializable
+        private EquationContainer _magnitudeFactor;     //ISerializable
+        private EquationContainer _geomScaleFactor;     //ISerializable
         //
-        private FileInfo _oldFileInfo;
+        private FileInfo _oldFileInfo;                  //ISerializable
         //
         [NonSerialized]
         private ResultsInterpolator _interpolator;
@@ -32,8 +33,8 @@ namespace CaeModel
         public string PressureTime { get { return _pressureTime; } set { _pressureTime = value; } }
         public string PressureVariableName { get { return _pressureVariableName; } set { _pressureVariableName = value; } }
         public InterpolatorEnum InterpolatorType { get { return _interpolatorType; } set { _interpolatorType = value; } }
-        public double MagnitudeFactor { get { return _magnitudeFactor; } set { _magnitudeFactor = value; } }
-        public double GeometryScaleFactor { get { return _geomScaleFactor; } set { _geomScaleFactor = value; } }
+        public EquationContainer MagnitudeFactor { get { return _magnitudeFactor; } set { _magnitudeFactor = value; } }
+        public EquationContainer GeometryScaleFactor { get { return _geomScaleFactor; } set { _geomScaleFactor = value; } }
 
 
         // Constructors                                                                                                             
@@ -45,10 +46,49 @@ namespace CaeModel
             _pressureTime = null;
             _pressureVariableName = null;
             _interpolatorType = InterpolatorEnum.ClosestNode;
-            _magnitudeFactor = 1;
-            _geomScaleFactor = 1;
+            MagnitudeFactor = new EquationContainer(typeof(StringDoubleConverter), 1);
+            GeometryScaleFactor = new EquationContainer(typeof(StringDoubleConverter), 1);
             //
             _oldFileInfo = null;
+        }
+        public ImportedPressure(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            // Compatibility for version v1.4.0
+            if (_regionType == RegionTypeEnum.PartName) _regionType = RegionTypeEnum.Selection;
+            //
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_fileName":
+                        _fileName = (string)entry.Value; break;
+                    case "_pressureTime":
+                        _pressureTime = (string)entry.Value; break;
+                    case "_pressureVariableName":
+                        _pressureVariableName = (string)entry.Value; break;
+                    case "_interpolatorType":
+                        _interpolatorType = (InterpolatorEnum)entry.Value; break;
+                    case "_magnitudeFactor":
+                        // Compatibility for version v1.4.0
+                        if (entry.Value is double valueMag)
+                            MagnitudeFactor = new EquationContainer(typeof(StringDoubleConverter), valueMag);
+                        else
+                            MagnitudeFactor = (EquationContainer)entry.Value;
+                        break;
+                    case "_geomScaleFactor":
+                        // Compatibility for version v1.4.0
+                        if (entry.Value is double valueSF)
+                            GeometryScaleFactor = new EquationContainer(typeof(StringDoubleConverter), valueSF);
+                        else
+                            GeometryScaleFactor = (EquationContainer)entry.Value;
+                        break;
+                    case "_oldFileInfo":
+                        _oldFileInfo = (FileInfo)entry.Value; break;
+                    default:
+                        break;
+                }
+            }
         }
 
 
@@ -88,7 +128,7 @@ namespace CaeModel
         {
             return _interpolator != null;
         }
-        public void ImportPressure()
+        public void ImportPressure(UnitSystemType unitSystemType)
         {
             bool updateData = false;
             FileInfo fileInfo = new FileInfo(_fileName);
@@ -112,10 +152,10 @@ namespace CaeModel
             {
                 _oldFileInfo = fileInfo;
                 // Get results
-                FeResults results = OpenFoamFileReader.Read(_fileName, double.Parse(_pressureTime), _pressureVariableName);
+                FeResults results = OpenFoamFileReader.Read(_fileName, double.Parse(_pressureTime), _pressureVariableName, unitSystemType);
                 if (results == null) throw new CaeException("No pressure was imported.");
                 // Scale geometry
-                if (_geomScaleFactor != 1) results.ScaleAllParts(_geomScaleFactor);
+                if (_geomScaleFactor.Value != 1) results.ScaleAllParts(_geomScaleFactor.Value);
                 // Get pressure field data
                 FieldData[] fieldData = results.GetAllFieldData(); // use GetResults for the first time to check existance
                 Dictionary<string, string[]> filedNameComponentNames = results.GetAllFiledNameComponentNames();
@@ -134,7 +174,7 @@ namespace CaeModel
         }
         public FeResults GetPreview(FeMesh targetMesh, string resultName, UnitSystemType unitSystemType)
         {
-            ImportPressure();
+            ImportPressure(unitSystemType);
             //
             PartExchangeData allData = new PartExchangeData();
             targetMesh.GetAllNodesAndCells(out allData.Nodes.Ids, out allData.Nodes.Coor, out allData.Cells.Ids,
@@ -213,13 +253,27 @@ namespace CaeModel
         public void GetPressureAndDistanceForPoint(double[] point, out double[] distance, out double value)
         {
             _interpolator.InterpolateAt(point, _interpolatorType, out distance, out value);
-            value *= _magnitudeFactor;
+            value *= _magnitudeFactor.Value;
         }
         public override double GetPressureForPoint(double[] point)
         {
             _interpolator.InterpolateAt(point, _interpolatorType, out double[] distance, out double value);
-            return value * _magnitudeFactor;
+            return value * _magnitudeFactor.Value;
         }
         
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // Using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_fileName", _fileName, typeof(string));
+            info.AddValue("_pressureTime", _pressureTime, typeof(string));
+            info.AddValue("_pressureVariableName", _pressureVariableName, typeof(string));
+            info.AddValue("_interpolatorType", _interpolatorType, typeof(InterpolatorEnum));
+            info.AddValue("_magnitudeFactor", _magnitudeFactor, typeof(EquationContainer));
+            info.AddValue("_geomScaleFactor", _geomScaleFactor, typeof(EquationContainer));
+            info.AddValue("_oldFileInfo", _oldFileInfo, typeof(FileInfo));
+        }
     }
 }

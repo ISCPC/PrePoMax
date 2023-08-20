@@ -566,7 +566,6 @@ namespace CaeGlobals
             }
             //
             SetConverterUnits();
-
         }
         public void SetConverterUnits()
         {
@@ -589,7 +588,7 @@ namespace CaeGlobals
             StringVelocityConverter.SetUnit = VelocityUnitAbbreviation;
             StringAccelerationConverter.SetUnit = AccelerationUnitAbbreviation;
             StringForceConverter.SetUnit = ForceUnitAbbreviation;
-            StringForcePerLenghtConverter.SetUnit = ForcePerLengthUnitAbbreviation;
+            StringForcePerLengthConverter.SetUnit = ForcePerLengthUnitAbbreviation;
             StringMomentConverter.SetUnit = MomentUnitAbbreviation;
             StringPressureConverter.SetUnit = PressureUnitAbbreviation;
             StringDensityConverter.SetUnit = DensityUnitAbbreviation;

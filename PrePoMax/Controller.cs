@@ -804,7 +804,7 @@ namespace PrePoMax
         }
         private void OpenFoam(string fileName)
         {
-            FeResults results = OpenFoamFileReader.Read(fileName);
+            FeResults results = OpenFoamFileReader.Read(fileName, _model.UnitSystem.UnitSystemType);
             if (results == null) throw new CaeException("The results file cannot be read.");
             // Load results
             _form.Clear3D();
@@ -11894,8 +11894,8 @@ namespace PrePoMax
                     {
                         // 2D
                         if (ipLoad.TwoD)
-                            DrawShellEdgeLoadSymbols(prefixName, ipLoad.SurfaceName, ipLoad.MagnitudeFactor, color,
-                                                     symbolSize, layer);
+                            DrawShellEdgeLoadSymbols(prefixName, ipLoad.SurfaceName, ipLoad.MagnitudeFactor.Value,
+                                                     color, symbolSize, layer);
                         // 3D
                         else DrawImportedPressureLoadSymbols(prefixName, ipLoad, color, symbolSize, layer);
                     }
@@ -11918,7 +11918,7 @@ namespace PrePoMax
                     //
                     count += DrawSurface(prefixName, shellEdgeLoad.SurfaceName, color, layer, true, false, onlyVisible);
                     //
-                    if (count > 0) DrawShellEdgeLoadSymbols(prefixName, shellEdgeLoad.SurfaceName, shellEdgeLoad.Magnitude,
+                    if (count > 0) DrawShellEdgeLoadSymbols(prefixName, shellEdgeLoad.SurfaceName, shellEdgeLoad.Magnitude.Value,
                                                             color, symbolSize, layer);
                 }
                 else if (load is GravityLoad gLoad)
@@ -12117,7 +12117,7 @@ namespace PrePoMax
         {
             // Arrows
             List<double[]> allLoadNormals = new List<double[]>();
-            double[] normal = new double[] { momentLoad.M1, momentLoad.M2, momentLoad.M3 };
+            double[] normal = new double[] { momentLoad.M1.Value, momentLoad.M2.Value, momentLoad.M3.Value };
             for (int i = 0; i < symbolCoor.GetLength(0); i++)
             {
                 allLoadNormals.Add(normal);
@@ -12267,7 +12267,7 @@ namespace PrePoMax
         public void DrawImportedPressureLoadSymbols(string prefixName, ImportedPressure ipLoad, Color color, int symbolSize,
                                                     vtkRendererLayer layer)
         {
-            if (!ipLoad.IsInitialized()) ipLoad.ImportPressure();
+            if (!ipLoad.IsInitialized()) ipLoad.ImportPressure(_model.UnitSystem.UnitSystemType);
             //
             FeSurface surface = _model.Mesh.Surfaces[ipLoad.SurfaceName];
             //
@@ -12339,7 +12339,7 @@ namespace PrePoMax
         {
             // Arrows
             List<double[]> allLoadNormals = new List<double[]>();
-            double[] normal = new double[] { stLoad.F1, stLoad.F2, stLoad.F3 };
+            double[] normal = new double[] { stLoad.F1.Value, stLoad.F2.Value, stLoad.F3.Value };
             for (int i = 0; i < symbolCoor.GetLength(0); i++)
             {
                 allLoadNormals.Add(normal);
@@ -12420,7 +12420,7 @@ namespace PrePoMax
                                           int symbolSize, vtkRendererLayer layer)
         {
             // Arrows
-            double[] normal = new double[] { gLoad.F1, gLoad.F2, gLoad.F3 };
+            double[] normal = new double[] { gLoad.F1.Value, gLoad.F2.Value, gLoad.F3.Value };
             //
             vtkMaxActorData data = new vtkMaxActorData();
             data.Name = prefixName;
@@ -12455,7 +12455,7 @@ namespace PrePoMax
             List<double[]> allLoadNormals = new List<double[]>();
             double[] normal;
             if (ptLoad.AutoComputeDirection) normal = _model.Mesh.GetSurfaceNormal(ptLoad.SurfaceName);
-            else normal = new double[] { ptLoad.X, ptLoad.Y, ptLoad.Z };
+            else normal = new double[] { ptLoad.X.Value, ptLoad.Y.Value, ptLoad.Z.Value };
             //
             allLoadNormals.Add(normal);
             allLoadNormals.Add(new double[] { -normal[0], -normal[1], -normal[2] });

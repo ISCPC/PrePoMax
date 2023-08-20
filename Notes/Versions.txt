@@ -231,6 +231,23 @@ Save as: Krilo 	... if a file Krilo with no extension exist it will ask for over
 
 
 DONE
+Version 1.4.1
+
+Added support for mixed axisymmetric models
+Added additional geometry analyze option: vertices by angle
+Added exploded view by center point method
+
+Version 1.4.0
+Added support for smoothing of the wear field
+Added support for creating additional field outputs: limit, envelope
+Added advanced/basic meshing options
+Added support for defining damping in dynamic steps
+Added additional filters for finding contact pairs
+Added a tool for finding item by ids
+Added support for initial velocity definition
+Added support for modal dynamic analysis
+Added support for steady state dynamic analysis
+Added support for dynamic analysis (implicit/explicit)
 
 Version 1.3.5.1
 All property field support equations

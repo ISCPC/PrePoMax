@@ -58,23 +58,23 @@ namespace PrePoMax
         [CategoryAttribute("Parameters")]
         [OrderedDisplayName(0, 10, "Sink temperature")]
         [DescriptionAttribute("Value of the sink temperature.")]
-        [TypeConverter(typeof(StringTemperatureConverter))]
+        [TypeConverter(typeof(EquationTemperatureConverter))]
         [Id(1, 3)]
-        public double SinkTemperature
+        public string SinkTemperature
         {
-            get { return _radiationHeatTransfer.SinkTemperature; }
-            set { _radiationHeatTransfer.SinkTemperature = value; }
+            get { return _radiationHeatTransfer.SinkTemperature.Equation; }
+            set { _radiationHeatTransfer.SinkTemperature.Equation = value; }
         }
         //
         [CategoryAttribute("Parameters")]
         [OrderedDisplayName(1, 10, "Emissivity")]
         [DescriptionAttribute("Value of the surface emissivity (blackbody radiation is characterized by 1).")]
-        [TypeConverter(typeof(StringDoubleConverter))]
+        [TypeConverter(typeof(EquationDoubleConverter))]
         [Id(2, 3)]
-        public double Emissivity
+        public string Emissivity
         {
-            get { return _radiationHeatTransfer.Emissivity; }
-            set { _radiationHeatTransfer.Emissivity = value; }
+            get { return _radiationHeatTransfer.Emissivity.Equation; }
+            set { _radiationHeatTransfer.Emissivity.Equation = value; }
         }
         //
         public override string AmplitudeName

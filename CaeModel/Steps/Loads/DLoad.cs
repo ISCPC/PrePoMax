@@ -16,14 +16,14 @@ namespace CaeModel
         // Variables                                                                                                                
         private string _surfaceName;                //ISerializable
         private RegionTypeEnum _regionType;         //ISerializable
-        private DoubleValueContainer _magnitude;    //ISerializable
+        private EquationContainer _magnitude;       //ISerializable
 
 
         // Properties                                                                                                               
         public override string RegionName { get { return _surfaceName; } set { _surfaceName = value; } }
         public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public string SurfaceName { get { return _surfaceName; } set { _surfaceName = value; } }
-        public DoubleValueContainer Magnitude { get { return _magnitude; } set { _magnitude = value; } }
+        public EquationContainer Magnitude { get { return _magnitude; } set { _magnitude = value; } }
 
 
         // Constructors                                                                                                             
@@ -33,7 +33,7 @@ namespace CaeModel
         {
             _surfaceName = surfaceName;
             _regionType = regionType;
-            _magnitude = new DoubleValueContainer(typeof(StringPressureConverter), magnitude);
+            Magnitude = new EquationContainer(typeof(StringPressureConverter), magnitude);
         }
         public DLoad(SerializationInfo info, StreamingContext context)
             : base(info, context)
@@ -49,9 +49,9 @@ namespace CaeModel
                     case "_magnitude":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueDouble)
-                            _magnitude = new DoubleValueContainer(typeof(StringPressureConverter), valueDouble);
+                            Magnitude = new EquationContainer(typeof(StringPressureConverter), valueDouble);
                         else
-                            _magnitude = (DoubleValueContainer)entry.Value;
+                            Magnitude = (EquationContainer)entry.Value;
                         break;
                     default:
                         break;
@@ -109,7 +109,7 @@ namespace CaeModel
             //
             info.AddValue("_surfaceName", _surfaceName, typeof(string));
             info.AddValue("_regionType", _regionType, typeof(RegionTypeEnum));
-            info.AddValue("_magnitude", _magnitude, typeof(DoubleValueContainer));
+            info.AddValue("_magnitude", _magnitude, typeof(EquationContainer));
         }
     }
 }
