@@ -34,8 +34,10 @@ namespace CaeGlobals
                     if (!e.HasErrors())
                     {
                         object result = e.Evaluate();
-                        if (result is int i) valueDouble = i;
-                        if (result is decimal dec) valueDouble = (double)dec;
+                        if (result is bool bl) valueDouble = bl ? 1 : 0;
+                        else if (result is byte byt) valueDouble = byt;
+                        else if (result is decimal dec) valueDouble = (double)dec;
+                        else if (result is int i) valueDouble = i;
                         else if (result is double d) valueDouble = d;
                     }
                     else

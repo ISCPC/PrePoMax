@@ -36,17 +36,15 @@ namespace CaeModel
                 else _cavityName = value;
             }
         }
-        public EquationContainer SinkTemperature { get { return _sinkTemperature; } set { _sinkTemperature = value; } }
+        public EquationContainer SinkTemperature
+        {
+            get { return _sinkTemperature; }
+            set { SetSinkTemperature(value); }
+        }
         public EquationContainer Emissivity
         {
             get { return _emissivity; }
-            set
-            {
-                _emissivity = value;
-                _emissivity.CheckValue = CheckEmisivity;
-                //
-                _emissivity.CheckEquation();
-            }
+            set { SetEmissivity(value); }
         }
 
 
@@ -83,14 +81,14 @@ namespace CaeModel
                         if (entry.Value is double valueTemp)
                             SinkTemperature = new EquationContainer(typeof(StringTemperatureConverter), valueTemp);
                         else
-                            SinkTemperature = (EquationContainer)entry.Value;
+                            SetSinkTemperature((EquationContainer)entry.Value, false);
                         break;
                     case "_emissivity":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueEm)
                             Emissivity = new EquationContainer(typeof(StringDoubleConverter), valueEm);
                         else
-                            Emissivity = (EquationContainer)entry.Value;
+                            SetEmissivity((EquationContainer)entry.Value, false);
                         break;
                     default:
                         break;
@@ -100,11 +98,28 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        private double CheckEmisivity(double value)
+        private void SetSinkTemperature(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _sinkTemperature, value, null, checkEquation);
+        }
+        private void SetEmissivity(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _emissivity, value, CheckEmissivity, checkEquation);
+        }
+        //
+        private double CheckEmissivity(double value)
         {
             if (value < 0) return 0;
             else if (value > 1) return 1;
             else return value;
+        }
+        // IContainsEquations
+        public override void CheckEquations()
+        {
+            base.CheckEquations();
+            //
+            _sinkTemperature.CheckEquation();
+            _emissivity.CheckEquation();
         }
 
         // ISerialization

@@ -23,8 +23,8 @@ namespace CaeModel
         public string SurfaceName { get { return _surfaceName; } set { _surfaceName = value; } }
         public override string RegionName { get { return _surfaceName; } set { _surfaceName = value; } }
         public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
-        public EquationContainer SinkTemperature { get { return _sinkTemperature; } set { _sinkTemperature = value; } }
-        public EquationContainer FilmCoefficient { get { return _filmCoefficient; } set { _filmCoefficient = value; } }
+        public EquationContainer SinkTemperature { get { return _sinkTemperature; } set { SetSinkTemperature(value); } }
+        public EquationContainer FilmCoefficient { get { return _filmCoefficient; } set { SetFilmCoefficient(value); } }
 
 
         // Constructors                                                                                                             
@@ -53,15 +53,15 @@ namespace CaeModel
                         if (entry.Value is double valueSink)
                             SinkTemperature = new EquationContainer(typeof(StringTemperatureConverter), valueSink);
                         else
-                            SinkTemperature = (EquationContainer)entry.Value;
+                            SetSinkTemperature((EquationContainer)entry.Value, false);
                         break;
                     case "_filmCoefficient":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueCoefficient)
                             FilmCoefficient = new EquationContainer(typeof(StringHeatTransferCoefficientConverter),
-                                                                        valueCoefficient);
+                                                                    valueCoefficient);
                         else
-                            FilmCoefficient = (EquationContainer)entry.Value;
+                            SetFilmCoefficient((EquationContainer)entry.Value);
                         break;
                     default:
                         break;
@@ -71,7 +71,22 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-
+        private void SetSinkTemperature(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _sinkTemperature, value, null, checkEquation);
+        }
+        private void SetFilmCoefficient(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _filmCoefficient, value, null, checkEquation);
+        }
+        // IContainsEquations
+        public override void CheckEquations()
+        {
+            base.CheckEquations();
+            //
+            _sinkTemperature.CheckEquation();
+            _filmCoefficient.CheckEquation();
+        }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {

@@ -83,7 +83,7 @@ namespace PrePoMax
             //
             SetBase(_gLoad, regionTypePropertyNamePairs);
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
-            //
+            // 2D
             DynamicCustomTypeDescriptor.GetProperty(nameof(F3)).SetIsBrowsable(!gLoad.TwoD);
             // Phase
             DynamicCustomTypeDescriptor.GetProperty(nameof(Phase)).SetIsBrowsable(gLoad.Complex);

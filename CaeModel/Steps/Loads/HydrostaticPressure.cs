@@ -28,47 +28,25 @@ namespace CaeModel
 
 
         // Properties                                                                                                               
-        public EquationContainer X1 { get { return _x1; } set { _x1 = value; } }
-        public EquationContainer Y1 { get { return _y1; } set { _y1 = value; } }
-        public EquationContainer Z1
+        public EquationContainer X1 { get { return _x1; } set { SetX1(value); } }
+        public EquationContainer Y1 { get { return _y1; } set { SetY1(value); } }
+        public EquationContainer Z1 { get { return _z1; } set { SetZ1(value); } }
+        public EquationContainer X2 { get { return _x2; } set { SetX2(value); } }
+        public EquationContainer Y2 { get { return _y2; } set { SetY2(value); } }
+        public EquationContainer Z2 { get { return _z2; } set { SetZ2(value); } }
+        public EquationContainer N1 { get { return _n1; } set { SetN1(value); } }
+        public EquationContainer N2 { get { return _n2; } set { SetN2(value); } }
+        public EquationContainer N3 { get { return _n3; } set { SetN3(value); } }
+        public EquationContainer FirstPointPressure
         {
-            get { return _z1; }
-            set
-            {
-                _z1 = value;
-                _z1.CheckValue = Check2D;
-                //
-                _z1.CheckEquation();
-            }
+            get { return _firstPointPressure; }
+            set { SetFirstPointPressure(value); }
         }
-        public EquationContainer X2 { get { return _x2; } set { _x2 = value; } }
-        public EquationContainer Y2 { get { return _y2; } set { _y2 = value; } }
-        public EquationContainer Z2
+        public EquationContainer SecondPointPressure
         {
-            get { return _z2; }
-            set
-            {
-                _z2 = value;
-                _z2.CheckValue = Check2D;
-                //
-                _z2.CheckEquation();
-            }
+            get { return _secondPointPressure; }
+            set { SetSecondPointPressure(value); }
         }
-        public EquationContainer N1 { get { return _n1; } set { _n1 = value; } }
-        public EquationContainer N2 { get { return _n2; } set { _n2 = value; } }
-        public EquationContainer N3
-        {
-            get { return _n3; }
-            set
-            {
-                _n3 = value;
-                _n3.CheckValue = Check2D;
-                //
-                _n3.CheckEquation();
-            }
-        }
-        public EquationContainer FirstPointPressure { get { return _firstPointPressure; } set { _firstPointPressure = value; } }
-        public EquationContainer SecondPointPressure { get { return _secondPointPressure; } set { _secondPointPressure = value; } }
 
 
         // Constructors                                                                                                             
@@ -121,51 +99,51 @@ namespace CaeModel
                         Z2 = new EquationContainer(typeof(StringLengthConverter), coor2[2]);
                         break;
                     case "_x1":
-                        X1 = (EquationContainer)entry.Value; break;
+                        SetX1((EquationContainer)entry.Value, false); break;
                     case "_y1":
-                        Y1 = (EquationContainer)entry.Value; break;
+                        SetY1((EquationContainer)entry.Value, false); break;
                     case "_z1":
-                        Z1 = (EquationContainer)entry.Value; break;
+                        SetZ1((EquationContainer)entry.Value, false); break;
                     case "_x2":
-                        X2 = (EquationContainer)entry.Value; break;
+                        SetX2((EquationContainer)entry.Value, false); break;
                     case "_y2":
-                        Y2 = (EquationContainer)entry.Value; break;
+                        SetY2((EquationContainer)entry.Value, false); break;
                     case "_z2":
-                        Z2 = (EquationContainer)entry.Value; break;
+                        SetZ2((EquationContainer)entry.Value, false); break;
                     case "_n1":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueN1)
                             N1 = new EquationContainer(typeof(StringLengthConverter), valueN1);
                         else
-                            N1 = (EquationContainer)entry.Value;
+                            SetN1((EquationContainer)entry.Value, false);
                         break;
                     case "_n2":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueN2)
                             N2 = new EquationContainer(typeof(StringLengthConverter), valueN2);
                         else
-                            N2 = (EquationContainer)entry.Value;
+                            SetN2((EquationContainer)entry.Value, false);
                         break;
                     case "_n3":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueN3)
                             N3 = new EquationContainer(typeof(StringLengthConverter), valueN3);
                         else
-                            N3 = (EquationContainer)entry.Value;
+                            SetN3((EquationContainer)entry.Value, false);
                         break;
                     case "_firstPointPressure":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueP1)
                             FirstPointPressure = new EquationContainer(typeof(StringPressureConverter), valueP1);
                         else
-                            FirstPointPressure = (EquationContainer)entry.Value;
+                            SetFirstPointPressure((EquationContainer)entry.Value, false);
                         break;
                     case "_secondPointPressure":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueP2)
                             SecondPointPressure = new EquationContainer(typeof(StringPressureConverter), valueP2);
                         else
-                            SecondPointPressure = (EquationContainer)entry.Value;
+                            SetSecondPointPressure((EquationContainer)entry.Value, false);
                         break;
                     default:
                         break;
@@ -175,11 +153,75 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
+        
+        private void SetX1(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _x1, value, null, checkEquation);
+        }
+        private void SetY1(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _y1, value, null, checkEquation);
+        }
+        private void SetZ1(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _z1, value, Check2D, checkEquation);
+        }
+        private void SetX2(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _x2, value, null, checkEquation);
+        }
+        private void SetY2(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _y2, value, null, checkEquation);
+        }
+        private void SetZ2(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _z2, value, Check2D, checkEquation);
+        }
+        private void SetN1(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _n1, value, null, checkEquation);
+        }
+        private void SetN2(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _n2, value, null, checkEquation);
+        }
+        private void SetN3(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _n3, value, Check2D, checkEquation);
+        }
+        private void SetFirstPointPressure(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _firstPointPressure, value, null, checkEquation);
+        }
+        private void SetSecondPointPressure(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _secondPointPressure, value, null, checkEquation);
+        }
+        //
         private double Check2D(double value)
         {
             if (_twoD) return 0;
             else return value;
+        }        
+        // IContainsEquations
+        public override void CheckEquations()
+        {
+            base.CheckEquations();
+            //
+            _x1.CheckEquation();
+            _y1.CheckEquation();
+            _z1.CheckEquation();
+            _x2.CheckEquation();
+            _y2.CheckEquation();
+            _z2.CheckEquation();
+            _n1.CheckEquation();
+            _n2.CheckEquation();
+            _n3.CheckEquation();
+            _firstPointPressure.CheckEquation();
+            _secondPointPressure.CheckEquation();
         }
+        //
         public bool IsProperlyDefined(out string error)
         {
             error = "";
@@ -265,7 +307,6 @@ namespace CaeModel
             //
             return p;
         }
-
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {

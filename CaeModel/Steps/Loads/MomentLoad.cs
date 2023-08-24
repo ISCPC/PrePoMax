@@ -26,60 +26,10 @@ namespace CaeModel
         public override string RegionName { get { return _regionName; } set { _regionName = value; } }
         public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public int NodeId { get { return _nodeId; } set { _nodeId = value; } }
-        public EquationContainer M1
-        {
-            get { return _m1; }
-            set
-            {
-                string prevEquation = _m1 != null ? _m1.Equation : value.Equation;
-                _m1 = value;
-                _m1.CheckValue = Check2D;
-                _m1.EquationChanged = M1EquationChanged;
-                //
-                _m1.CheckEquation();
-                if (prevEquation != _m1.Equation) M1EquationChanged();
-            }
-        }
-        public EquationContainer M2
-        {
-            get { return _m2; }
-            set
-            {
-                string prevEquation = _m2 != null ? _m2.Equation : value.Equation;
-                _m2 = value;
-                _m2.CheckValue = Check2D;
-                _m2.EquationChanged = M2EquationChanged;
-                //
-                _m2.CheckEquation();
-                if (prevEquation != _m2.Equation) M2EquationChanged();
-            }
-        }
-        public EquationContainer M3
-        {
-            get { return _m3; }
-            set
-            {
-                string prevEquation = _m3 != null ? _m3.Equation : value.Equation;
-                _m3 = value;
-                _m3.EquationChanged = M3EquationChanged;
-                //
-                if (prevEquation != _m3.Equation) M3EquationChanged();
-            }
-        }
-        public EquationContainer Magnitude
-        {
-            get { return _magnitude; }
-            set
-            {
-                string prevEquation = _magnitude != null ? _magnitude.Equation : value.Equation;
-                _magnitude = value;
-                _magnitude.CheckValue = CheckMagnitude;
-                _magnitude.EquationChanged = MagnitudeEquationChanged;
-                //
-                _magnitude.CheckEquation();
-                if (prevEquation != _magnitude.Equation) MagnitudeEquationChanged();
-            }
-        }
+        public EquationContainer M1 { get { UpdateEquations(); return _m1; } set { SetM1(value); } }
+        public EquationContainer M2 { get { UpdateEquations(); return _m2; } set { SetM2(value); } }
+        public EquationContainer M3 { get { UpdateEquations(); return _m3; } set { SetM3(value); } }
+        public EquationContainer Magnitude { get { UpdateEquations(); return _magnitude; } set { SetMagnitude(value); } }
         public double GetDirection(int direction)
         {
             if (direction == 0) return M1.Value;
@@ -128,24 +78,24 @@ namespace CaeModel
                         if (entry.Value is double valueM1)
                             M1 = new EquationContainer(typeof(StringMomentConverter), valueM1);
                         else
-                            M1 = (EquationContainer)entry.Value;
+                            SetM1((EquationContainer)entry.Value, false);
                         break;
                     case "_m2":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueM2)
                             M2 = new EquationContainer(typeof(StringMomentConverter), valueM2);
                         else
-                            M2 = (EquationContainer)entry.Value;
+                            SetM2((EquationContainer)entry.Value, false);
                         break;
                     case "_m3":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueM3)
                             M3 = new EquationContainer(typeof(StringMomentConverter), valueM3);
                         else
-                            M3 = (EquationContainer)entry.Value;
+                            SetM3((EquationContainer)entry.Value, false);
                         break;
                     case "_magnitude":
-                        Magnitude = (EquationContainer)entry.Value; break;
+                        SetMagnitude((EquationContainer)entry.Value, false); break;
                     default:
                         break;
                 }
@@ -160,17 +110,29 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        private void M1EquationChanged()
+        private void UpdateEquations()
         {
-            double mag = Math.Sqrt(_m1.Value * _m1.Value + _m2.Value * _m2.Value + _m3.Value * _m3.Value);
-            _magnitude.SetEquationFromValue(mag, false);
+            if (_m1.IsEquation() || _m2.IsEquation() || _m3.IsEquation()) MEquationChanged();
+            else if (_magnitude.IsEquation()) MagnitudeEquationChanged();
         }
-        private void M2EquationChanged()
+        private void SetM1(EquationContainer value, bool checkEquation = true)
         {
-            double mag = Math.Sqrt(_m1.Value * _m1.Value + _m2.Value * _m2.Value + _m3.Value * _m3.Value);
-            _magnitude.SetEquationFromValue(mag, false);
+            SetAndCheck(ref _m1, value, Check2D, MEquationChanged, checkEquation);
         }
-        private void M3EquationChanged()
+        private void SetM2(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _m2, value, Check2D, MEquationChanged, checkEquation);
+        }
+        private void SetM3(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _m3, value, null, MEquationChanged, checkEquation);
+        }
+        private void SetMagnitude(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _magnitude, value, CheckMagnitude, MagnitudeEquationChanged, checkEquation);
+        }
+        //
+        private void MEquationChanged()
         {
             double mag = Math.Sqrt(_m1.Value * _m1.Value + _m2.Value * _m2.Value + _m3.Value * _m3.Value);
             _magnitude.SetEquationFromValue(mag, false);
@@ -185,6 +147,7 @@ namespace CaeModel
             _m2.SetEquationFromValue(_m2.Value * r, false);
             _m3.SetEquationFromValue(_m3.Value * r, false);
         }
+        //
         private double Check2D(double value)
         {
             if (_twoD) return 0;
@@ -195,7 +158,16 @@ namespace CaeModel
             if (value < 0) throw new Exception("Value of the moment load magnitude must be non-negative.");
             else return value;
         }
-
+        // IContainsEquations
+        public override void CheckEquations()
+        {
+            base.CheckEquations();
+            //
+            _m1.CheckEquation();
+            _m2.CheckEquation();
+            _m3.CheckEquation();
+            _magnitude.CheckEquation();
+        }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {

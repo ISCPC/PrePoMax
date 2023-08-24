@@ -33,8 +33,16 @@ namespace CaeModel
         public string PressureTime { get { return _pressureTime; } set { _pressureTime = value; } }
         public string PressureVariableName { get { return _pressureVariableName; } set { _pressureVariableName = value; } }
         public InterpolatorEnum InterpolatorType { get { return _interpolatorType; } set { _interpolatorType = value; } }
-        public EquationContainer MagnitudeFactor { get { return _magnitudeFactor; } set { _magnitudeFactor = value; } }
-        public EquationContainer GeometryScaleFactor { get { return _geomScaleFactor; } set { _geomScaleFactor = value; } }
+        public EquationContainer MagnitudeFactor
+        {
+            get { return _magnitudeFactor; }
+            set { SetMagnitudeFactor(value); }
+        }
+        public EquationContainer GeometryScaleFactor
+        {
+            get { return _geomScaleFactor; }
+            set { SetGeomScaleFactor(value); }
+        }
 
 
         // Constructors                                                                                                             
@@ -74,14 +82,14 @@ namespace CaeModel
                         if (entry.Value is double valueMag)
                             MagnitudeFactor = new EquationContainer(typeof(StringDoubleConverter), valueMag);
                         else
-                            MagnitudeFactor = (EquationContainer)entry.Value;
+                            SetMagnitudeFactor((EquationContainer)entry.Value, false);
                         break;
                     case "_geomScaleFactor":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueSF)
                             GeometryScaleFactor = new EquationContainer(typeof(StringDoubleConverter), valueSF);
                         else
-                            GeometryScaleFactor = (EquationContainer)entry.Value;
+                            SetGeomScaleFactor((EquationContainer)entry.Value, false);
                         break;
                     case "_oldFileInfo":
                         _oldFileInfo = (FileInfo)entry.Value; break;
@@ -93,6 +101,23 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
+        private void SetMagnitudeFactor(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _magnitudeFactor, value, null, checkEquation);
+        }
+        private void SetGeomScaleFactor(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _geomScaleFactor, value, null, checkEquation);
+        }
+        // IContainsEquations
+        public override void CheckEquations()
+        {
+            base.CheckEquations();
+            //
+            _magnitudeFactor.CheckEquation();
+            _geomScaleFactor.CheckEquation();
+        }
+        //
         public bool IsProperlyDefined(out string error)
         {
             error = "";

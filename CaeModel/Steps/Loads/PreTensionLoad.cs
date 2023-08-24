@@ -39,22 +39,20 @@ namespace CaeModel
         public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public string SurfaceName { get { return _surfaceName; } set { _surfaceName = value; } }
         public bool AutoComputeDirection { get { return _autoComputeDirection; } set { _autoComputeDirection = value; } }
-        public EquationContainer X { get { return _x; } set { _x = value; } }
-        public EquationContainer Y { get { return _y; } set { _y = value; } }
-        public EquationContainer Z
-        {
-            get { return _z; }
-            set
-            {
-                _z = value;
-                _z.CheckValue = Check2D;
-                //
-                _z.CheckEquation();
-            }
-        }
+        public EquationContainer X { get { return _x; } set { SetX(value); } }
+        public EquationContainer Y { get { return _y; } set { SetY(value); } }
+        public EquationContainer Z { get { return _z; } set { SetZ(value); } }
         public PreTensionLoadType Type { get { return _type; } set { _type = value; } }
-        public EquationContainer ForceMagnitude { get { return _forceMagnitude; } set { _forceMagnitude = value; } }
-        public EquationContainer DisplacementMagnitude { get { return _dispMagnitude; } set { _dispMagnitude = value; } }
+        public EquationContainer ForceMagnitude
+        {
+            get { return _forceMagnitude; }
+            set { SetForceMagnitude(value); }
+        }
+        public EquationContainer DisplacementMagnitude
+        {
+            get { return _dispMagnitude; }
+            set { SetDisplacementMagnitude(value); }
+        }
         
 
         // Constructors                                                                                                             
@@ -94,21 +92,21 @@ namespace CaeModel
                         if (entry.Value is double valueX)
                             X = new EquationContainer(typeof(StringLengthConverter), valueX);
                         else
-                            X = (EquationContainer)entry.Value;
+                            SetX((EquationContainer)entry.Value, false);
                         break;
                     case "_y":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueY)
                             Y = new EquationContainer(typeof(StringLengthConverter), valueY);
                         else
-                            Y = (EquationContainer)entry.Value;
+                            SetY((EquationContainer)entry.Value, false);
                         break;
                     case "_z":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueZ)
                             Z = new EquationContainer(typeof(StringLengthConverter), valueZ);
                         else
-                            Z = (EquationContainer)entry.Value;
+                            SetZ((EquationContainer)entry.Value, false);
                         break;
                     case "_type":
                         _type = (PreTensionLoadType)entry.Value; break;
@@ -119,9 +117,9 @@ namespace CaeModel
                         DisplacementMagnitude = new EquationContainer(typeof(StringLengthFixedDOFConverter), valueMag);
                         break;
                     case "_forceMagnitude":
-                        ForceMagnitude = (EquationContainer)entry.Value; break;
+                        SetForceMagnitude((EquationContainer)entry.Value, false); break;
                     case "_dispMagnitude":
-                        DisplacementMagnitude = (EquationContainer)entry.Value; break;
+                        SetDisplacementMagnitude((EquationContainer)entry.Value, false); break;
                     default:
                         break;
                 }
@@ -129,11 +127,44 @@ namespace CaeModel
         }
 
         // Methods                                                                                                                  
+        private void SetX(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _x, value, null, checkEquation);
+        }
+        private void SetY(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _y, value, null, checkEquation);
+        }
+        private void SetZ(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _z, value, Check2D, checkEquation);
+        }
+        private void SetForceMagnitude(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _forceMagnitude, value, null, checkEquation);
+        }
+        private void SetDisplacementMagnitude(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _dispMagnitude, value, null, checkEquation);
+        }
+        //
         private double Check2D(double value)
         {
             if (_twoD) return 0;
             else return value;
         }
+        // IContainsEquations
+        public override void CheckEquations()
+        {
+            base.CheckEquations();
+            //
+            _x.CheckEquation();
+            _y.CheckEquation();
+            _z.CheckEquation();
+            _forceMagnitude.CheckEquation();
+            _dispMagnitude.CheckEquation();
+        }
+        //
         public void SetMagnitudeValue(double value)
         {
             if (_type == PreTensionLoadType.Force) _forceMagnitude.SetEquationFromValue(value);

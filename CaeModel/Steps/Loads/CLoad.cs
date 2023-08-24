@@ -112,10 +112,8 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void UpdateEquations()
         {
-            if (_f1.IsEquation() || _f2.IsEquation() || _f3.IsEquation())
-                FEquationChanged();
-            else if (_magnitude.IsEquation())
-                MagnitudeEquationChanged();
+            if (_f1.IsEquation() || _f2.IsEquation() || _f3.IsEquation()) FEquationChanged();
+            else if (_magnitude.IsEquation()) MagnitudeEquationChanged();
         }
         private void SetF1(EquationContainer value, bool checkEquation = true)
         {
