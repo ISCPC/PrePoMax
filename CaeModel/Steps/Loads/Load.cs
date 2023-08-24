@@ -123,6 +123,7 @@ namespace CaeModel
         {
             return Tools.GetPhase360(value);
         }
+        //
         protected static void SetAndCheck(ref EquationContainer variable, EquationContainer value, Func<double, double> CheckValue,
                                           Action EquationChangedCallback, bool check)
         {

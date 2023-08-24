@@ -61,7 +61,7 @@ namespace CaeModel
                             FilmCoefficient = new EquationContainer(typeof(StringHeatTransferCoefficientConverter),
                                                                     valueCoefficient);
                         else
-                            SetFilmCoefficient((EquationContainer)entry.Value);
+                            SetFilmCoefficient((EquationContainer)entry.Value, false);
                         break;
                     default:
                         break;

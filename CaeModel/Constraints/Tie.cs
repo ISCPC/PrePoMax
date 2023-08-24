@@ -74,20 +74,19 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void SetPositionTolerance(EquationContainer value, bool checkEquation = true)
         {
-            value.CheckValue = CheckPositionTolerance;
-            if (checkEquation) value.CheckEquation();
-            //
-            _positionTolerance = value;
+            SetAndCheck(ref _positionTolerance, value, CheckPositionTolerance, checkEquation);
         }
+        //
         private double CheckPositionTolerance(double value)
         {
             if (double.IsNaN(value) || value > 0) return value;
             else throw new CaeException(_positive);
         }
-        public void CheckEquations()
+        public override void CheckEquations()
         {
             _positionTolerance.CheckEquation();
         }
+        //
         public void SwapMasterSlave()
         {
             if (_name.Contains(Globals.MasterSlaveSeparator))
@@ -112,7 +111,6 @@ namespace CaeModel
             MasterCreationData = SlaveCreationData;
             SlaveCreationData = tmpCreationData;
         }
-
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {
