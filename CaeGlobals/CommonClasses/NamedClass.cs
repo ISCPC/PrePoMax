@@ -31,10 +31,17 @@ namespace CaeGlobals
                 _name = value;
             }
         }
+        //
+        [Browsable(false)]
         public virtual bool Active { get { return _active; } set { _active = value; } }
+        //
+        [Browsable(false)]
         public virtual bool Visible { get { return _visible; } set { _visible = value; } }
-        public virtual bool Valid { get { return _valid; }
-            set { _valid = value; } }
+        //
+        [Browsable(false)]
+        public virtual bool Valid { get { return _valid; } set { _valid = value; } }
+        //
+        [Browsable(false)]
         public virtual bool Internal { get { return _internal; } set { _internal = value; } }
 
 

@@ -178,7 +178,7 @@
     <Compile Include="Command\0061_Material\CReplaceMaterial.cs" />
     <Compile Include="Command\0062_Section\CAddSection.cs" />
     <Compile Include="Command\0062_Section\CRemoveSections.cs" />
-    <Compile Include="Command\0062_Section\CReplaceSection.cs" />
+    <Compile Include="Command\0075_InitialCondition\CReplaceInitialCondition.cs" />
     <Compile Include="Command\0071_Constraint\CAddConstraint.cs" />
     <Compile Include="Command\0071_Constraint\CHideConstraints.cs" />
     <Compile Include="Command\0071_Constraint\CRemoveConstraints.cs" />
@@ -193,7 +193,7 @@
     <Compile Include="Command\0073_ContactPair\CShowContactPairs.cs" />
     <Compile Include="Command\0075_InitialCondition\CAddInitialCondition.cs" />
     <Compile Include="Command\0075_InitialCondition\CRemoveInitialConditions.cs" />
-    <Compile Include="Command\0075_InitialCondition\CReplaceInitialCondition.cs" />
+    <Compile Include="Command\0062_Section\CReplaceSection.cs" />
     <Compile Include="Command\0074_Amplitude\CAddAmplitude.cs" />
     <Compile Include="Command\0074_Amplitude\CRemoveAmplitudes.cs" />
     <Compile Include="Command\0074_Amplitude\CReplaceAmplitude.cs" />
@@ -225,6 +225,9 @@
     <Compile Include="Command\0086_DefinedField\CPropagateDefinedField.cs" />
     <Compile Include="Command\0086_DefinedField\CRemoveDefinedFields.cs" />
     <Compile Include="Command\0086_DefinedField\CReplaceDefinedField.cs" />
+    <Compile Include="Command\0090_Tools\CAddParameter.cs" />
+    <Compile Include="Command\0090_Tools\CRemoveParameters.cs" />
+    <Compile Include="Command\0090_Tools\CReplaceParameter.cs" />
     <Compile Include="Command\0100_Analysis\CAddJob.cs" />
     <Compile Include="Command\0100_Analysis\CRemoveJobs.cs" />
     <Compile Include="Command\0100_Analysis\CReplaceJob.cs" />
@@ -255,6 +258,12 @@
     <Compile Include="Forms\00_Common\ViewStringValue.cs" />
     <Compile Include="Forms\00_Common\ViewUnitSystem.cs" />
     <Compile Include="Forms\00_Advisor\AdvisorCreator.cs" />
+    <Compile Include="Forms\00_Parameters\FrmEquationParameters.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\00_Parameters\FrmEquationParameters.Designer.cs">
+      <DependentUpon>FrmEquationParameters.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\31_Material\ViewSlipWear.cs" />
     <Compile Include="Forms\32_Section\ViewMembraneSection.cs" />
     <Compile Include="Forms\33_Constraint\ViewSpring.cs" />
@@ -651,6 +660,9 @@
     <EmbeddedResource Include="Forms\00_Common\FrmNewModel.resx">
       <DependentUpon>FrmNewModel.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\00_Parameters\FrmEquationParameters.resx">
+      <DependentUpon>FrmEquationParameters.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\36_SearchContactPairs\FrmSearchContactPairs.resx">
       <DependentUpon>FrmSearchContactPairs.cs</DependentUpon>
     </EmbeddedResource>
@@ -936,7 +948,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Command\0020_View\" />
-    <Folder Include="Command\0090_Tools\" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="c:\Program Files\ActiViz.NET 5.8.0 OpenSource Edition\bin\Kitware.mummy.Runtime.dll" />

@@ -541,16 +541,18 @@ namespace vtkControl
         }       
         public int GetWidth()
         {
-            return (int)Math.Round(_size[0]);
+            return (int)Math.Round(_size[0], MidpointRounding.AwayFromZero);
         }
         public int GetHeight()
         {
-            return (int)Math.Round(_size[1]);
+            return (int)Math.Round(_size[1], MidpointRounding.AwayFromZero);
         }
         public Rectangle GetRectangle()
         {
-            Point location = new Point((int)Math.Round(_position[0]), (int)Math.Round(_position[1]));
-            Size size = new Size((int)Math.Round(_size[0]), (int)Math.Round(_size[1]));
+            Point location = new Point((int)Math.Round(_position[0], MidpointRounding.AwayFromZero),
+                                       (int)Math.Round(_position[1], MidpointRounding.AwayFromZero));
+            Size size = new Size((int)Math.Round(_size[0], MidpointRounding.AwayFromZero),
+                                 (int)Math.Round(_size[1], MidpointRounding.AwayFromZero));
             return new Rectangle(location, size);
         }
 

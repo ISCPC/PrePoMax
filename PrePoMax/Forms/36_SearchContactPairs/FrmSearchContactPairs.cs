@@ -20,7 +20,7 @@ namespace PrePoMax.Forms
         private string missing = "Missing";
         private string[] _surfaceInteractionNames;
         private static string[] _contactPairMethodNames;
-        private CaeMesh.ContactSearch _contactSearch;
+        private ContactSearch _contactSearch;
         private List<SearchContactPair> _selectedContactPairs;
         private bool _firstTime;
 

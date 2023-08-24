@@ -411,6 +411,9 @@
             this.tsmiAppendResults = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiTools = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSettings = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerTools1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiParameters = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerTools2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiQuery = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiFind = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiHelp = new System.Windows.Forms.ToolStripMenuItem();
@@ -3589,6 +3592,9 @@
             // 
             this.tsmiTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiSettings,
+            this.tsmiDividerTools1,
+            this.tsmiParameters,
+            this.tsmiDividerTools2,
             this.tsmiQuery,
             this.tsmiFind});
             this.tsmiTools.Name = "tsmiTools";
@@ -3601,6 +3607,25 @@
             this.tsmiSettings.Size = new System.Drawing.Size(116, 22);
             this.tsmiSettings.Text = "Settings";
             this.tsmiSettings.Click += new System.EventHandler(this.tsmiSettings_Click);
+            //
+            // tsmiDividerTools1
+            // 
+            this.tsmiDividerTools1.Name = "tsmiDividerTools1";
+            //this.tsmiDividerTools1.Size = new System.Drawing.Size(116, 3);
+            // 
+            // tsmiParameters
+            // 
+            this.tsmiParameters.Name = "tsmiParameters";
+            //this.tsmiParameters.Size = new System.Drawing.Size(116, 22);
+            this.tsmiParameters.Text = "Parameters";
+            this.tsmiParameters.Click += new System.EventHandler(this.tsmiParameters_Click);
+            // 
+            // tsmiDividerTools2
+            // 
+            this.tsmiDividerTools2.Name = "tsmiDividerTools2";
+            //this.tsmiDividerTools2.Size = new System.Drawing.Size(116, 3);
+            // 
+            // tsmiQuery
             // 
             // tsmiQuery
             // 
@@ -3770,8 +3795,8 @@
             // tsslCancel
             // 
             this.tsslCancel.AutoSize = false;
-            this.tsslCancel.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
-            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right) 
+            this.tsslCancel.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
+            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
             | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
             this.tsslCancel.Margin = new System.Windows.Forms.Padding(1, 4, 1, 4);
             this.tsslCancel.Name = "tsslCancel";
@@ -3864,8 +3889,8 @@
             // 
             // tbOutput
             // 
-            this.tbOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.tbOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbOutput.BackColor = System.Drawing.Color.White;
             this.tbOutput.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -4357,6 +4382,9 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateConstraint;
         private System.Windows.Forms.ToolStripMenuItem tsmiResultsDeformedColorWireframe;
         private System.Windows.Forms.ToolStripMenuItem tsmiResultsDeformedColorSolid;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerTools1;
+        private System.Windows.Forms.ToolStripMenuItem tsmiParameters;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerTools2;
     }
 }
 

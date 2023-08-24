@@ -10,6 +10,8 @@ using Calculix = FileInOut.Output.Calculix;
 using System.IO;
 using System.Drawing;
 using System.Data;
+using System.Security.Cryptography;
+using System.Runtime.InteropServices;
 
 namespace CaeModel
 {
@@ -20,6 +22,7 @@ namespace CaeModel
         private string _hashName;                                                               //ISerializable
         private FeMesh _geometry;                                                               //ISerializable
         private FeMesh _mesh;                                                                   //ISerializable
+        private OrderedDictionary<string, EquationParameter> _parameters;                       //ISerializable
         private OrderedDictionary<string, Material> _materials;                                 //ISerializable
         private OrderedDictionary<string, Section> _sections;                                   //ISerializable
         private OrderedDictionary<string, Constraint> _constraints;                             //ISerializable
@@ -38,6 +41,7 @@ namespace CaeModel
         public string HashName { get { return _hashName; } }
         public FeMesh Geometry { get { return _geometry; } }
         public FeMesh Mesh { get { return _mesh; } }
+        public OrderedDictionary<string, EquationParameter> Parameters { get { return _parameters; } }
         public OrderedDictionary<string, Material> Materials { get { return _materials; } }
         public OrderedDictionary<string, Section> Sections { get { return _sections; } }
         public OrderedDictionary<string, Constraint> Constraints { get { return _constraints; } }
@@ -71,6 +75,7 @@ namespace CaeModel
             _hashName = Tools.GetRandomString(8);
             _geometry = new FeMesh(MeshRepresentation.Geometry);
             _mesh = new FeMesh(MeshRepresentation.Mesh);
+            _parameters = new OrderedDictionary<string, EquationParameter>("Parameters", sc);
             _materials = new OrderedDictionary<string, Material>("Materials", sc);
             _sections = new OrderedDictionary<string, Section>("Sections", sc);
             _constraints = new OrderedDictionary<string, Constraint>("Constraints", sc);
@@ -81,9 +86,9 @@ namespace CaeModel
             _stepCollection = new StepCollection();
             _properties = new ModelProperties();
             _unitSystem = new UnitSystem();
+            //
+            UpdateNCalcParameters();
         }
-        
-        // ISerialization
         public FeModel(SerializationInfo info, StreamingContext context)
         {
             StringComparer sc = StringComparer.OrdinalIgnoreCase;
@@ -98,6 +103,8 @@ namespace CaeModel
             _initialConditions = new OrderedDictionary<string, InitialCondition>("Initial Conditions", sc);
             // Compatibility for version v.1.2.1
             _amplitudes = new OrderedDictionary<string, Amplitude>("Amplitudes", sc);
+            // Compatibility for version v.1.4.0
+            _parameters = new OrderedDictionary<string, EquationParameter>("Parameters", sc);
             //
             foreach (SerializationEntry entry in info)
             {
@@ -110,6 +117,8 @@ namespace CaeModel
                         _geometry = (FeMesh)entry.Value; break;
                     case "_mesh":
                         _mesh = (FeMesh)entry.Value; break;
+                    case "_parameters":
+                        _parameters = (OrderedDictionary<string, EquationParameter>)entry.Value; break;
                     case "_materials":
                         if (entry.Value is Dictionary<string, Material> md)
                         {
@@ -176,6 +185,9 @@ namespace CaeModel
                         throw new NotSupportedException();
                 }
             }
+            //
+            _parameters.OnDeserialization(null);
+            UpdateNCalcParameters();
         }
 
 
@@ -218,7 +230,7 @@ namespace CaeModel
                 FeMesh.ReadFromBinaryFile(model.Mesh, br, version);
             }
         }
-        //
+        // Check                                                                                    
         public string[] CheckValidity(List<Tuple<NamedClass, string>> items)
         {
             // Tuple<NamedClass, string>   ...   Tuple<invalidItem, stepName>
@@ -782,7 +794,7 @@ namespace CaeModel
             }
             catch { }
         }        
-        // Import
+        // Import                                                                                   
         public string[] ImportGeometryFromStlFile(string fileName)
         {
             FeMesh mesh = FileInOut.Input.StlFileReader.Read(fileName);
@@ -1097,12 +1109,12 @@ namespace CaeModel
             }
             _mesh.AddMesh(mesh, reservedPartNames, forceRenameParts, renumberNodesAndElements);
         }
-        // Setters
+        // Setters                                                                                  
         public void SetMesh(FeMesh mesh)
         {
             _mesh = mesh;
         }
-        // Getters
+        // Getters                                                                                  
         public string[] GetAllMeshEntityNames()
         {
             if (_mesh != null) return _mesh.GetAllMeshEntityNames();
@@ -1115,7 +1127,7 @@ namespace CaeModel
             reservedPartNames.UnionWith(GetAllMeshEntityNames());
             return reservedPartNames;
         }
-        // Springs
+        // Springs                                                                                  
         public PointSpring[] GetPointSpringsFromSurfaceSpring(SurfaceSpring spring)
         {
             Dictionary<int, double> nodalStiffnesses;
@@ -1140,7 +1152,7 @@ namespace CaeModel
             //
             return springs.ToArray();
         }
-        // Loads
+        // Loads                                                                                    
         public CLoad[] GetNodalLoadsFromSurfaceTraction(STLoad load)
         {
             Dictionary<int, double> nodalForces;
@@ -1590,13 +1602,26 @@ namespace CaeModel
             //
             return loads.ToArray();
         }
-        // 3D - 2D
+        // Parameters                                                                               
+        public void UpdateNCalcParameters()
+        {
+            try
+            {
+                MyNCalc.ExistingParameters = new Dictionary<string, double>();
+                foreach (var entry in _parameters) MyNCalc.ExistingParameters.Add(entry.Key, entry.Value.Value);
+            }
+            catch
+            {
+                MessageBoxes.ShowError("The parameters colud not be evaluated. Check the parameter equations.");
+            }
+        }
+        // 3D - 2D                                                                                  
         public void UpdateMeshPartsElementTypes(bool allowMixedModel)
         {
             Dictionary<Type, HashSet<Enum>> elementTypeEnums = _properties.ModelSpace.GetAvailableElementTypes(allowMixedModel);
             if (_mesh != null) _mesh.UpdatePartsElementTypes(elementTypeEnums);
         }
-        // Boundary displacement method
+        // Boundary displacement method                                                             
         public FeModel PrepareBdmModel(Dictionary<int, double[]> deformations)
         {
             // Mesh
@@ -1672,6 +1697,7 @@ namespace CaeModel
             //
             return bdmModel;
         }
+        
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
@@ -1679,6 +1705,7 @@ namespace CaeModel
             info.AddValue("_name", Name, typeof(string));
             info.AddValue("_geometry", _geometry, typeof(FeMesh));
             info.AddValue("_mesh", _mesh, typeof(FeMesh));
+            info.AddValue("_parameters", _parameters, typeof(OrderedDictionary<string, EquationParameter>));
             info.AddValue("_materials", _materials, typeof(OrderedDictionary<string, Material>));
             info.AddValue("_sections", _sections, typeof(OrderedDictionary<string, Section>));
             info.AddValue("_constraints", _constraints, typeof(OrderedDictionary<string, Constraint>));

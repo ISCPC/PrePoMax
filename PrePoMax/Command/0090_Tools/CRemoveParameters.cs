@@ -12,32 +12,30 @@ using CaeGlobals;
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CReplaceInitialCondition : Command
+    class CRemoveParameters : Command
     {
         // Variables                                                                                                                
-        private string _oldInitialConditionName;
-        private InitialCondition _newInitialCondition;
+        private string[] _parameterNames;
 
 
         // Constructor                                                                                                              
-        public CReplaceInitialCondition(string oldInitialConditionName, InitialCondition newInitialCondition)
-            : base("Edit initial condition")
+        public CRemoveParameters(string[] parameterNames)
+            : base("Remove parameters")
         {
-            _oldInitialConditionName = oldInitialConditionName;
-            _newInitialCondition = newInitialCondition.DeepClone();
+            _parameterNames = parameterNames;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.ReplaceInitialCondition(_oldInitialConditionName, _newInitialCondition.DeepClone());
+            receiver.RemoveParameters(_parameterNames);
             return true;
         }
 
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _oldInitialConditionName + ", " + _newInitialCondition.ToString();
+            return base.GetCommandString() + GetArrayAsString(_parameterNames);
         }
     }
 }

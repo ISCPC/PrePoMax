@@ -302,6 +302,8 @@ namespace PrePoMax.Forms
             if (propertyGrid.SelectedObject is ViewError ve) throw new CaeException(ve.Message);
             //
             _viewLoad = (ViewLoad)propertyGrid.SelectedObject;
+            // Check equations
+            _viewLoad.GetBase().CheckEquations();
             //
             if (_viewLoad == null) throw new CaeException("No load selected.");
             // Check if the name exists

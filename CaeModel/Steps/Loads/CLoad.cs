@@ -28,58 +28,10 @@ namespace CaeModel
         public override string RegionName { get { return _regionName; } set { _regionName = value; } }
         public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public int NodeId { get { return _nodeId; } set { _nodeId = value; } }
-        public EquationContainer F1
-        {
-            get { return _f1; }
-            set
-            {
-                string prevEquation = _f1 != null ? _f1.Equation : value.Equation;
-                _f1 = value;
-                _f1.EquationChanged = F1EquationChanged;
-                //
-                if (prevEquation != _f1.Equation) F1EquationChanged();
-            }
-        }
-        public EquationContainer F2
-        {
-            get { return _f2; }
-            set
-            {
-                string prevEquation = _f2 != null ? _f2.Equation : value.Equation;
-                _f2 = value;
-                _f2.EquationChanged = F2EquationChanged;
-                //
-                if (prevEquation != _f2.Equation) F2EquationChanged();
-            }
-        }
-        public EquationContainer F3
-        {
-            get { return _f3; }
-            set
-            {
-                string prevEquation = _f3 != null ? _f3.Equation : value.Equation;
-                _f3 = value;
-                _f3.CheckValue = Check2D;
-                _f3.EquationChanged = F3EquationChanged;
-                //
-                _f3.CheckEquation();
-                if (prevEquation != _f3.Equation) F3EquationChanged();
-            }
-        }
-        public EquationContainer Magnitude
-        {
-            get { return _magnitude; }
-            set
-            {
-                string prevEquation = _magnitude != null ? _magnitude.Equation : value.Equation;
-                _magnitude = value;
-                _magnitude.CheckValue = CheckMagnitude;
-                _magnitude.EquationChanged = MagnitudeEquationChanged;
-                //
-                _magnitude.CheckEquation();
-                if (prevEquation != _magnitude.Equation) MagnitudeEquationChanged();
-            }
-        }
+        public EquationContainer F1 { get { UpdateEquations();  return _f1; } set { SetF1(value); } }
+        public EquationContainer F2 { get { UpdateEquations(); return _f2; } set { SetF2(value); } }
+        public EquationContainer F3 { get { UpdateEquations(); return _f3; } set { SetF3(value); } }
+        public EquationContainer Magnitude { get { UpdateEquations(); return _magnitude; } set { SetMagnitude(value); } }
         public double GetComponent(int direction)
         {
             if (direction == 0) return F1.Value;
@@ -126,24 +78,24 @@ namespace CaeModel
                         if (entry.Value is double valueF1)
                             F1 = new EquationContainer(typeof(StringForceConverter), valueF1);
                         else
-                            F1 = (EquationContainer)entry.Value;
+                            SetF1((EquationContainer)entry.Value, false);
                         break;
                     case "_f2":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueF2)
                             F2 = new EquationContainer(typeof(StringForceConverter), valueF2);
                         else
-                            F2 = (EquationContainer)entry.Value;
+                            SetF2((EquationContainer)entry.Value, false);
                         break;
                     case "_f3":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueF3)
                             F3 = new EquationContainer(typeof(StringForceConverter), valueF3);
                         else
-                            F3 = (EquationContainer)entry.Value;
+                            SetF3((EquationContainer)entry.Value, false);
                         break;
                     case "_magnitude":
-                        Magnitude = (EquationContainer)entry.Value; break;
+                        SetMagnitude((EquationContainer)entry.Value, false); break;
                     default:
                         break;
                 }
@@ -158,17 +110,31 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        private void F1EquationChanged()
+        private void UpdateEquations()
         {
-            double mag = Math.Sqrt(_f1.Value * _f1.Value + _f2.Value * _f2.Value + _f3.Value * _f3.Value);
-            _magnitude.SetEquationFromValue(mag, false);
+            if (_f1.IsEquation() || _f2.IsEquation() || _f3.IsEquation())
+                FEquationChanged();
+            else if (_magnitude.IsEquation())
+                MagnitudeEquationChanged();
         }
-        private void F2EquationChanged()
+        private void SetF1(EquationContainer value, bool checkEquation = true)
         {
-            double mag = Math.Sqrt(_f1.Value * _f1.Value + _f2.Value * _f2.Value + _f3.Value * _f3.Value);
-            _magnitude.SetEquationFromValue(mag, false);
+            SetAndCheck(ref _f1, value, null, FEquationChanged, checkEquation);
         }
-        private void F3EquationChanged()
+        private void SetF2(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _f2, value, null, FEquationChanged, checkEquation);
+        }
+        private void SetF3(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _f3, value, Check2D, FEquationChanged, checkEquation);
+        }
+        private void SetMagnitude(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _magnitude, value, CheckMagnitude, MagnitudeEquationChanged, checkEquation);
+        }
+        //
+        private void FEquationChanged()
         {
             double mag = Math.Sqrt(_f1.Value * _f1.Value + _f2.Value * _f2.Value + _f3.Value * _f3.Value);
             _magnitude.SetEquationFromValue(mag, false);
@@ -183,6 +149,7 @@ namespace CaeModel
             _f2.SetEquationFromValue(_f2.Value * r, false);
             _f3.SetEquationFromValue(_f3.Value * r, false);
         }
+        //
         private double Check2D(double value)
         {
             if (_twoD) return 0;
@@ -193,7 +160,16 @@ namespace CaeModel
             if (value < 0) throw new Exception("Value of the force load magnitude must be non-negative.");
             else return value;
         }
-
+        // IContainsEquations
+        public override void CheckEquations()
+        {
+            base.CheckEquations();
+            //
+            _f1.CheckEquation();
+            _f2.CheckEquation();
+            _f3.CheckEquation();
+            _magnitude.CheckEquation();
+        }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {

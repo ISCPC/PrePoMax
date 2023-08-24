@@ -23,7 +23,7 @@ namespace CaeModel
         public override string RegionName { get { return _regionName; } set { _regionName = value; } }
         public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public bool AddFlux { get { return _addFlux; } set { _addFlux = value; } }
-        public EquationContainer Magnitude { get { return _magnitude; } set { _magnitude = value; } }
+        public EquationContainer Magnitude { get { return _magnitude; } set { SetMagnitude(value); } }
 
 
         // Constructors                                                                                                             
@@ -55,7 +55,7 @@ namespace CaeModel
                         if (entry.Value is double valueDouble)
                             Magnitude = new EquationContainer(typeof(StringPowerConverter), valueDouble);
                         else
-                            Magnitude = (EquationContainer)entry.Value;
+                            SetMagnitude((EquationContainer)entry.Value, false);
                         break;
                     default:
                         break;
@@ -64,7 +64,17 @@ namespace CaeModel
         }
 
         // Methods                                                                                                                  
-
+        private void SetMagnitude(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _magnitude, value, null, checkEquation);
+        }
+        // IContainsEquations
+        public override void CheckEquations()
+        {
+            base.CheckEquations();
+            //
+            _magnitude.CheckEquation();
+        }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {

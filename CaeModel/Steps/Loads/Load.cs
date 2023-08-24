@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 namespace CaeModel
 {
     [Serializable]
-    public abstract class Load : NamedClass, IMultiRegion, ISerializable
+    public abstract class Load : NamedClass, IMultiRegion, IContainsEquations, ISerializable
     {
         // Variables                                                                                                                
         private int[] _creationIds;                                 //ISerializable
@@ -19,7 +19,7 @@ namespace CaeModel
         protected bool _twoD;                                       //ISerializable
         protected string _amplitudeName;                            //ISerializable
         protected bool _complex;                                    //ISerializable
-        protected EquationContainer _phaseDeg;                   //ISerializable
+        protected EquationContainer _phaseDeg;                      //ISerializable
         protected Color _color;                                     //ISerializable
         public const string DefaultAmplitudeName = "Default";       //ISerializable
 
@@ -44,17 +44,7 @@ namespace CaeModel
             }
         }
         public bool Complex { get { return _complex; } set { _complex = value; } }
-        public EquationContainer PhaseDeg
-        {
-            get { return _phaseDeg; }
-            set
-            {
-                _phaseDeg = value;
-                _phaseDeg.CheckValue = CheckAngle;
-                //
-                _phaseDeg.CheckEquation();
-            }
-        }
+        public EquationContainer PhaseDeg { get { return _phaseDeg; } set { SetPhaseDeg(value); } }
         public Color Color
         {
             get
@@ -113,7 +103,7 @@ namespace CaeModel
                         if (entry.Value is double valPhase)
                             PhaseDeg = new EquationContainer(typeof(StringAngleDegConverter), valPhase);
                         else
-                            PhaseDeg = (EquationContainer)entry.Value;
+                            SetPhaseDeg((EquationContainer)entry.Value, false);
                         break;
                     case "_color":
                     case "Load+_color":             // Compatibility for version v1.4.0
@@ -125,11 +115,46 @@ namespace CaeModel
         }
 
         // Methods                                                                                                                  
+        private void SetPhaseDeg(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _phaseDeg, value, CheckAngle, checkEquation);
+        }
         private double CheckAngle(double value)
         {
             return Tools.GetPhase360(value);
         }
-
+        protected static void SetAndCheck(ref EquationContainer variable, EquationContainer value, Func<double, double> CheckValue,
+                                          Action EquationChangedCallback, bool check)
+        {
+            if (value == null)
+            {
+                variable = null;
+                return;
+            }
+            //
+            string prevEquation = variable != null ? variable.Equation : value.Equation;
+            //
+            value.CheckValue = CheckValue;
+            value.EquationChanged = EquationChangedCallback;
+            //
+            if (check)
+            {
+                value.CheckEquation();
+                if (variable != null && prevEquation != variable.Equation) EquationChangedCallback?.Invoke();
+            }
+            //
+            variable = value;
+        }
+        protected static void SetAndCheck(ref EquationContainer variable, EquationContainer value, Func<double, double> CheckValue,
+                                          bool check)
+        {
+            SetAndCheck(ref variable, value, CheckValue, null, check);
+        }
+        // IContainsEquations
+        public virtual void CheckEquations()
+        {
+            _phaseDeg.CheckEquation();
+        }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {

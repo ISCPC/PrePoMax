@@ -61,32 +61,8 @@ namespace CaeGlobals
                 if (Equals(valueString, _default)) return int.MinValue;
                 else
                 {
-                    // From StringIntegerConverter
-                    double valueDouble;
-                    valueString = valueString.Trim();
-                    //
-                    if (valueString.Length == 0 || valueString == "=") return 0;   // empty string -> 0
-                    if (!double.TryParse(valueString, out valueDouble))
-                    {
-                        if (valueString.StartsWith("="))
-                        {
-                            valueString = valueString.Substring(1, valueString.Length - 1);
-                            NCalc.Expression e = MyNCalc.GetExpression(valueString);
-                            if (!e.HasErrors())
-                            {
-                                object result = e.Evaluate();
-                                if (result is int i) valueDouble = i;
-                                else if (result is double d) valueDouble = d;
-                            }
-                            else
-                            {
-                                throw new CaeException("Equation error:" + Environment.NewLine + e.Error);
-                            }
-                        }
-                        else throw new Exception(valueString + " is not a valid value for Int.");
-                    }
-                    //
-                    return (int)Math.Round(valueDouble);
+                    double valueDouble = MyNCalc.ConvertFromString(valueString, ConvertToCurrentUnits);
+                    return (int)Math.Round(valueDouble, MidpointRounding.AwayFromZero);
                 }
             }
             else return base.ConvertFrom(context, culture, value);
@@ -106,6 +82,10 @@ namespace CaeGlobals
             {
                 return base.ConvertTo(context, culture, value, destinationType);
             }
+        }
+        public static double ConvertToCurrentUnits(string valueWithUnitString)
+        {
+            throw new Exception(valueWithUnitString + " is not a valid value for Int.");
         }
     }
     

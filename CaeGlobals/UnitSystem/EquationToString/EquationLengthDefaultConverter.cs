@@ -13,12 +13,6 @@ namespace CaeGlobals
 {
     public class EquationLengthDefaultConverter : StringLengthDefaultConverter
     {
-        // Variables                                                                                                                
-
-
-        // Properties                                                                                                               
-
-
         // Constructors                                                                                                             
         public EquationLengthDefaultConverter()
         {

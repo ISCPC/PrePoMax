@@ -148,7 +148,10 @@ namespace CaeGlobals
                         _list = (List<TKey>)entry.Value; count++; break;
                     case "dictionary":  // Compatibility v1.3.4
                     case "_dictionary":
-                        _dictionary = (Dictionary<TKey, TValue>)entry.Value; count++; break;
+                        _dictionary = (Dictionary<TKey, TValue>)entry.Value;
+                        //_dictionary.OnDeserialization(null);
+                        count++;
+                        break;
                 }
                 // Compatibility v1.3.4
                 if (_name == null || _name == "") _name = "Ordered dictionary";
@@ -479,6 +482,10 @@ namespace CaeGlobals
         }
         
         // ISerialization
+        public void OnDeserialization(object sender)
+        {
+            _dictionary.OnDeserialization(sender);
+        }
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             // Using typeof() works also for null fields

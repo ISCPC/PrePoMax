@@ -120,6 +120,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalShellEdgeLoad.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalHydrostaticPressureLoad.cs" />
     <Compile Include="FileInOut\Output\Mmg\MmgFileWriter.cs" />
+    <Compile Include="IContainsEquations.cs" />
     <Compile Include="InitialConditions\InitialVelocity.cs" />
     <Compile Include="InitialConditions\InitialTemperature.cs" />
     <Compile Include="InitialConditions\InitialCondition.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="Materials\ThermalExpansion.cs" />
     <Compile Include="Materials\ElasticWithDensity.cs" />
     <Compile Include="ModelProperties.cs" />
+    <Compile Include="Parameters\EquationParameter.cs" />
     <Compile Include="Sections\MembraneSection.cs" />
     <Compile Include="Sections\ShellSection.cs" />
     <Compile Include="Constraints\PointSpring.cs" />

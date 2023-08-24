@@ -22,17 +22,7 @@ namespace CaeModel
 
 
         // Properties                                                                                                               
-        public EquationContainer PositionTolerance
-        {
-            get { return _positionTolerance; }
-            set
-            {
-                _positionTolerance = value;
-                _positionTolerance.CheckValue = CheckPositionTolerance;
-                //
-                _positionTolerance.CheckEquation();
-            }
-        }
+        public EquationContainer PositionTolerance { get { return _positionTolerance; } set { SetPositionTolerance(value); } }
         public bool Adjust { get { return _adjust; } set { _adjust = value; } }       
 
 
@@ -64,7 +54,7 @@ namespace CaeModel
                         if (entry.Value is double valueDouble)
                             PositionTolerance = new EquationContainer(typeof(StringLengthDefaultConverter), valueDouble);
                         else
-                            PositionTolerance = (EquationContainer)entry.Value;
+                            SetPositionTolerance((EquationContainer)entry.Value, false);
                         break;
                     case "_adjust":
                         _adjust = (bool)entry.Value; break;
@@ -82,6 +72,22 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
+        private void SetPositionTolerance(EquationContainer value, bool checkEquation = true)
+        {
+            value.CheckValue = CheckPositionTolerance;
+            if (checkEquation) value.CheckEquation();
+            //
+            _positionTolerance = value;
+        }
+        private double CheckPositionTolerance(double value)
+        {
+            if (double.IsNaN(value) || value > 0) return value;
+            else throw new CaeException(_positive);
+        }
+        public void CheckEquations()
+        {
+            _positionTolerance.CheckEquation();
+        }
         public void SwapMasterSlave()
         {
             if (_name.Contains(Globals.MasterSlaveSeparator))
@@ -106,12 +112,7 @@ namespace CaeModel
             MasterCreationData = SlaveCreationData;
             SlaveCreationData = tmpCreationData;
         }
-        private double CheckPositionTolerance(double value)
-        {
-            if (double.IsNaN(value) || value > 0) return value;
-            else throw new CaeException(_positive);
-        }
-        
+
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {

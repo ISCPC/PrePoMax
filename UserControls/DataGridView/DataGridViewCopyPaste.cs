@@ -290,7 +290,14 @@ namespace UserControls
         // Overrides                                                                                                                
         protected override void OnDataError(bool displayErrorDialogIfNoHandler, DataGridViewDataErrorEventArgs e)
         {
+            //Rows[e.RowIndex].ErrorText = "an error";
+            //Rows[e.RowIndex].Cells[e.ColumnIndex].ErrorText = "an error";
+            //
+            //e.ThrowException = false;
+            //
             MessageBoxes.ShowError(e.Exception.Message);
+            //
+            base.OnDataError(displayErrorDialogIfNoHandler, e);
         }
 
 

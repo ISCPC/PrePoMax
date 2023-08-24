@@ -28,87 +28,14 @@ namespace CaeModel
         // Properties                                                                                                               
         public override string RegionName { get { return _regionName; } set { _regionName = value; } }
         public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
-        public EquationContainer X
-        {
-            get { return _x; }
-            set
-            {
-                _x = value;
-                _x.CheckValue = CheckZero;
-                //
-                _x.CheckEquation();
-            }
-        }
-        public EquationContainer Y
-        {
-            get { return _y; }
-            set
-            {
-                _y = value;
-                _y.CheckValue = CheckZero;
-                //
-                _y.CheckEquation();
-            }
-        }
-        public EquationContainer Z
-        {
-            get { return _z; }
-            set
-            {
-                _z = value;
-                _z.CheckValue = CheckZero;
-                //
-                _z.CheckEquation();
-            }
-        }
-        public EquationContainer N1
-        {
-            get { return _n1; }
-            set
-            {
-                _n1 = value;
-                _n1.CheckValue = CheckZero;
-                //
-                _n1.CheckEquation();
-            }
-        }
-        public EquationContainer N2
-        {
-            get { return _n2; }
-            set
-            {
-                _n2 = value;
-                _n2.CheckValue = CheckOne;
-                //
-                _n2.CheckEquation();
-            }
-        }
-        public EquationContainer N3
-        {
-            get { return _n3; }
-            set
-            {
-                _n3 = value;
-                _n3.CheckValue = CheckZero;
-                //
-                _n3.CheckEquation();
-            }
-        }
+        public EquationContainer X { get { return _x; } set { SetX(value); } }
+        public EquationContainer Y { get { return _y; } set { SetY(value); } }
+        public EquationContainer Z { get { return _z; } set { SetZ(value); } }
+        public EquationContainer N1 { get { return _n1; } set { SetN1(value); } }
+        public EquationContainer N2 { get { return _n2; } set { SetN2(value); } }
+        public EquationContainer N3 { get { return _n3; } set { SetN3(value); } }
         public double RotationalSpeed2 { get { return Math.Pow(_rotationalSpeed.Value, 2); } }
-        public EquationContainer RotationalSpeed
-        {
-            get
-            {
-                return _rotationalSpeed;
-            } 
-            set
-            {
-                _rotationalSpeed = value;
-                _rotationalSpeed.CheckValue = CheckNonNegative;
-                //
-                _rotationalSpeed.CheckEquation();
-            }
-        }
+        public EquationContainer RotationalSpeed { get { return _rotationalSpeed; } set { SetRotationalSpeed(value); } }
         public bool Axisymmetric
         {
             get { return _axisymmetric; }
@@ -172,42 +99,42 @@ namespace CaeModel
                         if (entry.Value is double valX)
                             X = new EquationContainer(typeof(StringLengthConverter), valX);
                         else
-                            X = (EquationContainer)entry.Value;
+                            SetX((EquationContainer)entry.Value, false);
                         break;
                     case "_y":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valY)
                             Y = new EquationContainer(typeof(StringLengthConverter), valY);
                         else
-                            Y = (EquationContainer)entry.Value;
+                            SetY((EquationContainer)entry.Value, false);
                         break;
                     case "_z":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valZ)
                             Z = new EquationContainer(typeof(StringLengthConverter), valZ);
                         else
-                            Z = (EquationContainer)entry.Value;
+                            SetZ((EquationContainer)entry.Value, false);
                         break;
                     case "_n1":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valN1)
                             N1 = new EquationContainer(typeof(StringLengthConverter), valN1);
                         else
-                            N1 = (EquationContainer)entry.Value;
+                            SetN1((EquationContainer)entry.Value, false);
                         break;
                     case "_n2":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valN2)
                             N2 = new EquationContainer(typeof(StringLengthConverter), valN2);
                         else
-                            N2 = (EquationContainer)entry.Value;
+                            SetN2((EquationContainer)entry.Value, false);
                         break;
                     case "_n3":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valN3)
                             N3 = new EquationContainer(typeof(StringLengthConverter), valN3);
                         else
-                            N3 = (EquationContainer)entry.Value;
+                            SetN3((EquationContainer)entry.Value, false);
                         break;
                     case "_rotationalSpeed":
                     case "<RotationalSpeed2>k__BackingField":
@@ -216,7 +143,7 @@ namespace CaeModel
                             RotationalSpeed = new EquationContainer(typeof(StringRotationalSpeedConverter),
                                                                     Math.Sqrt(Math.Abs(valRot)));
                         else
-                            RotationalSpeed = (EquationContainer)entry.Value;
+                            SetRotationalSpeed((EquationContainer)entry.Value, false);
                         break;
                     case "_axisymmetric":
                         _axisymmetric = (bool)entry.Value; break;
@@ -228,6 +155,35 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
+        private void SetX(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _x, value, CheckZero, checkEquation);
+        }
+        private void SetY(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _y, value, CheckZero, checkEquation);
+        }
+        private void SetZ(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _z, value, CheckZero, checkEquation);
+        }
+        private void SetN1(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _n1, value, CheckZero, checkEquation);
+        }
+        private void SetN2(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _n2, value, CheckOne, checkEquation);
+        }
+        private void SetN3(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _n3, value, CheckZero, checkEquation);
+        }
+        private void SetRotationalSpeed(EquationContainer value, bool checkEquation = true)
+        {
+            SetAndCheck(ref _rotationalSpeed, value, CheckNonNegative, checkEquation);
+        }
+        //
         private double CheckZero(double value) 
         {
             if (_axisymmetric) return 0;
@@ -243,8 +199,19 @@ namespace CaeModel
             if (value < 0) throw new CaeException("The value of the rotational speed must be non-negative.");
             else return value;
         }
-
-
+        // IContainsEquations
+        public override void CheckEquations()
+        {
+            base.CheckEquations();
+            //
+            _x.CheckEquation();
+            _y.CheckEquation();
+            _z.CheckEquation();
+            _n1.CheckEquation();
+            _n2.CheckEquation();
+            _n3.CheckEquation();
+            _rotationalSpeed.CheckEquation();
+        }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {

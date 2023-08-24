@@ -25,6 +25,7 @@ using Newtonsoft.Json;
 using PrePoMax.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 using System.Security.Policy;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace PrePoMax
 {
@@ -66,7 +67,7 @@ namespace PrePoMax
         [NonSerialized] protected FeResults _wearResults;
         // History
         protected Commands.CommandsCollection _commands;
-       
+
 
 
         // Properties                                                                                                               
@@ -91,12 +92,12 @@ namespace PrePoMax
                 catch
                 { }
             }
-        }        
+        }
         public OrderedDictionary<string, AnalysisJob> Jobs { get { return _jobs; } }
         // States
         public bool ModelInitialized
         {
-            get { return _commands != null && _commands.CurrPositionIndex > 0; } 
+            get { return _commands != null && _commands.CurrPositionIndex > 0; }
         }
         public bool ResultsInitialized
         {
@@ -149,7 +150,7 @@ namespace PrePoMax
                 }
             }
         }
-        
+
         // Section view
         public bool IsSectionViewActive()
         {
@@ -171,7 +172,7 @@ namespace PrePoMax
         // Annotate
         public AnnotateWithColorEnum AnnotateWithColor
         {
-            get { return _annotateWithColor; } 
+            get { return _annotateWithColor; }
             set
             {
                 _annotateWithColor = value;
@@ -354,7 +355,7 @@ namespace PrePoMax
 
         // Constructors                                                                                                             
         public Controller(FrmMain form)
-        {            
+        {
             // Form
             _form = form;
             _form.Controller = this;
@@ -480,7 +481,7 @@ namespace PrePoMax
             //
             if (_form != null)
             {
-                _form.ClearControls();                
+                _form.ClearControls();
                 _form.SetCurrentView(_currentView);
             }
             //
@@ -758,7 +759,7 @@ namespace PrePoMax
                     _form.SetCurrentView(_currentView);
                     // Regenerate tree
                     _form.RegenerateTree();
-                    
+
                 }
                 // Model changed
                 _modelChanged = true;
@@ -772,7 +773,7 @@ namespace PrePoMax
             //
             if (nodeSetNames == null || nodeSetNames.Length == 0)
             {
-                MessageBoxes.ShowError("The file "+ fileName + " does not exist or is empty.");
+                MessageBoxes.ShowError("The file " + fileName + " does not exist or is empty.");
                 return;
             }
             else
@@ -858,7 +859,7 @@ namespace PrePoMax
                 }
                 //
                 ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
-            }            
+            }
             // Model changed
             _modelChanged = true;
             // Open .cel file
@@ -921,7 +922,7 @@ namespace PrePoMax
                             results.Mesh.MergePartsBasedOnMesh(_allResults.CurrentResult.Mesh, typeof(ResultPart));
                         }
                         _allResults.CurrentResult.AddResults(results);
-                    }                    
+                    }
                     // First resume exploded view
                     ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
                     //
@@ -1026,7 +1027,7 @@ namespace PrePoMax
                             }
                         }
                         // Compatibility v.1.3.3
-                        if (tmp._allResults == null)    
+                        if (tmp._allResults == null)
                         {
                             oldResults = true;
                             allResults = new ResultsCollection();
@@ -1125,7 +1126,7 @@ namespace PrePoMax
                         _form.WriteDataToOutput("Use the following menu to turn it back on: Geometry -> Find Model Edges by Angle");
                     }
                 }
-            }            
+            }
             else if (extension == ".stp" || extension == ".step")
                 ImportCADAssemblyFile(fileName, "STEP_ASSEMBLY_SPLIT_TO_COMPOUNDS");
             else if (extension == ".igs" || extension == ".iges")
@@ -1142,12 +1143,12 @@ namespace PrePoMax
                 _errors = _model.ImportModelFromInpFile(fileName, _form.WriteDataToOutput);
             else if (extension == ".unv")
                 _model.ImportMeshFromUnvFile(fileName);
-            else throw new NotSupportedException();            
+            else throw new NotSupportedException();
             //
             UpdateAfterImport(extension);
         }
         private void UpdateAfterImport(string extension)
-        {            
+        {
             // Exploded view
             UpdateExplodedView(false);
             // Visualization
@@ -1257,7 +1258,7 @@ namespace PrePoMax
                 return brepFiles.ToArray();
             }
             else return null;
-        }        
+        }
         public void CreateAndImportCompoundPart(string[] partNames, out string compoundPartName, out string[] importedPartNames)
         {
             compoundPartName = null;
@@ -1407,7 +1408,7 @@ namespace PrePoMax
                 if (showError) MessageBoxes.ShowError("Importing brep file failed.");
                 return null;
             }
-        }        
+        }
         private void netgenJob_AppendOutput(string data)
         {
             _form.WriteDataToOutput(data);
@@ -1456,7 +1457,7 @@ namespace PrePoMax
                 }
                 _form.WriteDataToOutput("Nodes: " + numPoints);
                 _form.WriteDataToOutput("Elements: " + numElements);
-            }            
+            }
             // This is not executed for the first meshing                               
             // For geometry based sets the part id must remain the same after remesh    
             bool renumbered = false;
@@ -1591,7 +1592,7 @@ namespace PrePoMax
         public void SaveToPmx(string fileName)
         {
             try
-            {                
+            {
                 _savingFile = true;
                 //
                 PrepareForSaving(this);
@@ -1616,7 +1617,7 @@ namespace PrePoMax
                         _allResults = new ResultsCollection();
                     }
                     // Controller
-                    data.DumpToStream(bw);                    
+                    data.DumpToStream(bw);
                     // Model - data is saved inside data[0]._model but without mesh data - speed up
                     FeModel.WriteToFile(_model, bw);
                     // Results - data is saved inside data[0]._results but without mesh data - speed up
@@ -1735,7 +1736,7 @@ namespace PrePoMax
                 else brepFileName = Path.Combine(directory, fileNameWithoutExtension + "_" + partName + extension);
                 File.WriteAllText(brepFileName, part.CADFileData);
                 //
-                _form.WriteDataToOutput("Part " + partName +" exported to file: " + brepFileName);
+                _form.WriteDataToOutput("Part " + partName + " exported to file: " + brepFileName);
             }
         }
         public void ExportCADGeometryPartAsStep(GeometryPart part, string stepFileName)
@@ -1955,7 +1956,7 @@ namespace PrePoMax
         {
             _sectionViews.RemoveCurrentSectionView();
             _form.RemoveSectionView();
-        }        
+        }
         //
         public double[] GetViewPlaneNormal()
         {
@@ -1996,7 +1997,7 @@ namespace PrePoMax
             mesh.RemoveExplodedView();
             //
             Dictionary<string, double[]> partOffsets;
-            partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Method, parameters.Center, 
+            partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Method, parameters.Center,
                                                       (int)parameters.Direction, parameters.ScaleFactor * parameters.Magnification,
                                                       partNames);
             mesh.ApplyExplodedView(partOffsets);
@@ -2315,7 +2316,7 @@ namespace PrePoMax
             }
             return parts.ToArray();
         }
-        
+
         public GeometryPart[] GetSubParts(string compoundPartName)
         {
             BasePart part;
@@ -2325,7 +2326,7 @@ namespace PrePoMax
             if (part is CompoundGeometryPart cgp)
             {
                 parts = new GeometryPart[cgp.SubPartNames.Length];
-                for (int i = 0; i < cgp.SubPartNames.Length; i++) 
+                for (int i = 0; i < cgp.SubPartNames.Length; i++)
                     parts[i] = (GeometryPart)_model.Geometry.Parts[cgp.SubPartNames[i]];
             }
             //
@@ -2361,7 +2362,7 @@ namespace PrePoMax
                 if (entry.Value is GeometryPart gp && gp.CADFileData == null) parts.Add(gp);
             }
             return parts.ToArray();
-        }        
+        }
         public GeometryPart[] GetCompoundParts()
         {
             if (_model.Geometry == null) return null;
@@ -2910,7 +2911,7 @@ namespace PrePoMax
             //
             itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(verticesSelection.GeometryIds[0]);
             part1 = _model.Geometry.GetPartById(itemTypePartIds[2]);
-            node1Id = part1.Visualization.VertexNodeIds[itemTypePartIds[0]];            
+            node1Id = part1.Visualization.VertexNodeIds[itemTypePartIds[0]];
             //
             itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(verticesSelection.GeometryIds[1]);
             part2 = _model.Geometry.GetPartById(itemTypePartIds[2]);
@@ -3741,7 +3742,7 @@ namespace PrePoMax
             //
             string executable = Application.StartupPath + Globals.MmgsMesher;
             string mmgInFileName = Path.Combine(settings.WorkDirectory, Globals.MmgMeshFileName);
-            string mmgOutFileName = Path.Combine(settings.WorkDirectory, Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) + 
+            string mmgOutFileName = Path.Combine(settings.WorkDirectory, Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) +
                                                  ".o" + Path.GetExtension(Globals.MmgMeshFileName));
             string mmgSolFileName = Path.Combine(settings.WorkDirectory,
                                                  Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) +
@@ -3955,7 +3956,7 @@ namespace PrePoMax
             }
             //
             File.WriteAllText(fileName, sb.ToString());
-        }        
+        }
         //
         public void StopNetGenJob()
         {
@@ -5104,7 +5105,7 @@ namespace PrePoMax
             {
                 if (_model.Mesh.ElementSets.TryRemove(name, out elementSet) && !elementSet.Internal)
                 {
-                    
+
                     _form.RemoveTreeNode<FeElementSet>(ViewGeometryModelResults.Model, name, null);
                     update = true;
                 }
@@ -5465,7 +5466,7 @@ namespace PrePoMax
                 }
             }
         }
-        
+
         #endregion #################################################################################################################
 
         #region Reference point menu   #############################################################################################
@@ -5507,7 +5508,7 @@ namespace PrePoMax
             //
             _model.Mesh.ReferencePoints.Add(referencePoint.Name, referencePoint);
             //
-            _form.AddTreeNode(ViewGeometryModelResults.Model, referencePoint, null);            
+            _form.AddTreeNode(ViewGeometryModelResults.Model, referencePoint, null);
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
@@ -5627,7 +5628,7 @@ namespace PrePoMax
             AnnotateWithColorLegend();
             //
             CheckAndUpdateModelValidity();
-        }        
+        }
         public Material GetMaterial(string materialName)
         {
             return _model.Materials[materialName];
@@ -6479,7 +6480,7 @@ namespace PrePoMax
                         contactPairMethods.Add(contactPair.Method);
                     }
                 }
-                
+
             }
             // Merge
             if (surfaceInteractionNames.Count != 1)
@@ -6625,7 +6626,7 @@ namespace PrePoMax
                 contactPair.SlaveCreationData = null;
                 contactPair.SlaveCreationIds = null;
             }
-         
+
         }
         private void DeleteSelectionBasedContactPairSets(string oldContactPairName)
         {
@@ -6653,7 +6654,7 @@ namespace PrePoMax
                 }
                 foreach (var contactPair in contactPairs)
                 {
-                    name = contactPair.Name;                    
+                    name = contactPair.Name;
                     if (nameCounter[name] > 1 || _model.ContactPairs.ContainsKey(name))
                         name = _model.ContactPairs.GetNextNumberedKey(name);
                     //
@@ -7080,7 +7081,7 @@ namespace PrePoMax
                 else
                     AddHistoryOutput(nextStepName, historyOutput);
             }
-            
+
         }
         public void ActivateDeactivateHistoryOutput(string stepName, string historyOutputName, bool active)
         {
@@ -7141,7 +7142,7 @@ namespace PrePoMax
                 historyOutput.CreationData = null;
                 historyOutput.CreationIds = null;
             }
-        }        
+        }
         private void DeleteSelectionBasedHistoryOutputSets(string stepName, string oldHistoryOutputName)
         {
             HistoryOutput historyOutput = GetHistoryOutput(stepName, oldHistoryOutputName);
@@ -7341,7 +7342,7 @@ namespace PrePoMax
             foreach (var name in boundaryConditionNames)
             {
                 _model.StepCollection.GetStep(stepName).BoundaryConditions[name].Visible = false;
-                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, 
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name,
                                      _model.StepCollection.GetStep(stepName).BoundaryConditions[name], stepName, false);
             }
             FeModelUpdate(UpdateType.RedrawSymbols);
@@ -7890,6 +7891,47 @@ namespace PrePoMax
             }
         }
 
+        #endregion #################################################################################################################
+
+        #region Parameters menu   ##################################################################################################
+        // COMMANDS ********************************************************************************
+        public void AddParameterCommand(EquationParameter parameter)
+        {
+            Commands.CAddParameter comm = new Commands.CAddParameter(parameter);
+            _commands.AddAndExecute(comm);
+        }
+        public void ReplaceParameterCommand(string oldParameterName, EquationParameter newParameter)
+        {
+            Commands.CReplaceParameter comm = new Commands.CReplaceParameter(oldParameterName, newParameter);
+            _commands.AddAndExecute(comm);
+        }
+        public void RemoveParametersCommand(string[] parameterNames)
+        {
+            Commands.CRemoveParameters comm = new Commands.CRemoveParameters(parameterNames);
+            _commands.AddAndExecute(comm);
+        }
+        //******************************************************************************************
+        public void AddParameter(EquationParameter parameter)
+        {
+            _model.Parameters.Add(parameter.Name, parameter);
+            UpdateNCalcParameters();
+        }
+        public void ReplaceParameter(string oldParameterName, EquationParameter parameter)
+        {
+            _model.Parameters.Replace(oldParameterName, parameter.Name, parameter);
+            UpdateNCalcParameters();
+        }
+        public void RemoveParameters(string[] parameterNames)
+        {
+            foreach (var name in parameterNames) _model.Parameters.Remove(name);
+            UpdateNCalcParameters();
+        }
+        //
+        public void UpdateNCalcParameters()
+        {
+            _model.UpdateNCalcParameters();
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
         #endregion #################################################################################################################
 
         #region Query menu   #######################################################################################################

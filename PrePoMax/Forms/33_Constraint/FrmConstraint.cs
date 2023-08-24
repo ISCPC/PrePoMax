@@ -211,6 +211,8 @@ namespace PrePoMax.Forms
                 bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
                 var tmp = new Tie(tie.Name, tie.MasterRegionName, tie.MasterRegionType,
                                   tie.SlaveRegionName, tie.SlaveRegionType, twoD);
+                // Equation
+                tie.CheckEquations();
             }
             // Check if the name exists
             CheckName(_constraintToEditName, Constraint.Name, _constraintNames, "constraint");

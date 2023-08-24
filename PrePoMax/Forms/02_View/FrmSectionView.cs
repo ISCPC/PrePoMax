@@ -323,7 +323,7 @@ namespace PrePoMax.Forms
                 //
                 ratio = (ratio + 1) / 2;        // to iterval from 0 to 1;
                 //
-                hsbPosition.Value = (int)Math.Round((hsbPosition.Maximum - hsbPosition.Minimum) * ratio, 0);
+                hsbPosition.Value = (int)Math.Round((hsbPosition.Maximum - hsbPosition.Minimum) * ratio, MidpointRounding.AwayFromZero);
             }
             catch
             { }

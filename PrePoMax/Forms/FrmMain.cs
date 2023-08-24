@@ -4149,7 +4149,7 @@ namespace PrePoMax
             {
                 FrmMaterialLibrary fml = new FrmMaterialLibrary(_controller);
                 CloseAllForms();
-                SetFormLoaction((Form)fml);
+                SetFormLoaction(fml);
                 fml.ShowDialog();                
             }
         }
@@ -5530,9 +5530,6 @@ namespace PrePoMax
         {
             try
             {
-                //string settingsName = Globals.GraphicsSettingsName;
-                //if (_controller.CurrentView == ViewGeometryMeshResults.Results) settingsName = Globals.PostSettingsName;
-
                 if (!_frmSettings.Visible)
                 {
                     CloseAllForms();
@@ -5546,6 +5543,25 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
            
+        }
+        private void tsmiParameters_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_controller.Model != null)
+                {
+                    FrmParametersEditor fpe = new FrmParametersEditor(_controller);
+                    fpe.Icon = Icon;
+                    fpe.Owner = this;
+                    CloseAllForms();
+                    SetFormLoaction(fpe);
+                    fpe.ShowDialog();
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
         }
         private void tsmiQuery_Click(object sender, EventArgs e)
         {
@@ -8829,6 +8845,6 @@ namespace PrePoMax
             }
         }
 
-       
+        
     }
 }

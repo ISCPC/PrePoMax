@@ -29,7 +29,7 @@ namespace PrePoMax.Forms
         //
         [Category("Data")]
         [OrderedDisplayName(1, 10, "Mesh settings")]
-        [Description("Turn on advanced mash settings.")]
+        [Description("Turn on advanced mesh settings.")]
         [Id(2, 1)]
         public bool AdvancedView
         {

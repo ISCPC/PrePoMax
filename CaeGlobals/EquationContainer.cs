@@ -52,29 +52,44 @@ namespace CaeGlobals
         }
         public void SetEquation(string equation, bool enableEquationChanged = false)
         {
-            double equationValue = GetValueFromEquation(equation);
-            double checkedValue = _checkValue != null ? _checkValue(equationValue) : equationValue;
-            if (equationValue != checkedValue)
+            try
             {
-                _equation = GetEquationFromValue(checkedValue);
-                if (enableEquationChanged) _equationChanged?.Invoke();
-            }
-            else
-            {
-                if (_equation != equation)
+                if (equation == null || equation.Trim() == "") equation = "0";
+                //
+                double equationValue = GetValueFromEquation(equation);
+                double checkedValue = _checkValue != null ? _checkValue(equationValue) : equationValue;
+                if (equationValue != checkedValue)
                 {
-                    _equation = equation;
+                    _equation = GetEquationFromValue(checkedValue);
                     if (enableEquationChanged) _equationChanged?.Invoke();
                 }
+                else
+                {
+                    if (_equation != equation)
+                    {
+                        _equation = equation.Replace(" ", "");
+                        if (enableEquationChanged) _equationChanged?.Invoke();
+                    }
+                }
             }
-        }
-        public void CheckEquation()
-        {
-            SetEquation(_equation);
+            catch (Exception ex)
+            {
+                throw new CaeException("Equation error: " + equation + Environment.NewLine + ex.Message);
+            }
         }
         public void SetEquationFromValue(double value, bool enableEquationChanged = false)
         {
             SetEquation(GetEquationFromValue(value), enableEquationChanged);
         }
+        public void CheckEquation()
+        {
+            SetEquation(_equation);
+        }
+        public bool IsEquation()
+        {
+            if (_equation != null && _equation.StartsWith("=")) return true;
+            else return false;
+        }
+        
     }
 }
