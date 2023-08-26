@@ -120,7 +120,6 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalShellEdgeLoad.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalHydrostaticPressureLoad.cs" />
     <Compile Include="FileInOut\Output\Mmg\MmgFileWriter.cs" />
-    <Compile Include="IContainsEquations.cs" />
     <Compile Include="InitialConditions\InitialVelocity.cs" />
     <Compile Include="InitialConditions\InitialTemperature.cs" />
     <Compile Include="InitialConditions\InitialCondition.cs" />

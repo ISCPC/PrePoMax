@@ -202,16 +202,16 @@ namespace PrePoMax.Forms
                 //
                 if (ids.Length == 0)
                 {
-                    _viewReferencePoint.X = 0;
-                    _viewReferencePoint.Y = 0;
-                    _viewReferencePoint.Z = 0;
+                    _viewReferencePoint.X = "0";
+                    _viewReferencePoint.Y = "0";
+                    _viewReferencePoint.Z = "0";
                 }
                 else if (ids.Length == 1 && rp.CreatedFrom == FeReferencePointCreatedFrom.Selection)
                 {
                     FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
-                    _viewReferencePoint.X = node.X;
-                    _viewReferencePoint.Y = node.Y;
-                    _viewReferencePoint.Z = node.Z;
+                    _viewReferencePoint.X = node.X.ToString();
+                    _viewReferencePoint.Y = node.Y.ToString();
+                    _viewReferencePoint.Z = node.Z.ToString();
                     //
                     propertyGrid.Refresh();
                     //
@@ -225,9 +225,9 @@ namespace PrePoMax.Forms
                 {
                     FeNode node1 = _controller.Model.Mesh.Nodes[ids[0]];
                     FeNode node2 = _controller.Model.Mesh.Nodes[ids[1]];
-                    _viewReferencePoint.X = (node1.X + node2.X) / 2;
-                    _viewReferencePoint.Y = (node1.Y + node2.Y) / 2;
-                    _viewReferencePoint.Z = (node1.Z + node2.Z) / 2;
+                    _viewReferencePoint.X = ((node1.X + node2.X) / 2).ToString();
+                    _viewReferencePoint.Y = ((node1.Y + node2.Y) / 2).ToString();
+                    _viewReferencePoint.Z = ((node1.Z + node2.Z) / 2).ToString();
                     //
                     propertyGrid.Refresh();
                     //
@@ -243,9 +243,9 @@ namespace PrePoMax.Forms
                     Vec3D v2 = new Vec3D(_controller.Model.Mesh.Nodes[ids[1]].Coor);
                     Vec3D v3 = new Vec3D(_controller.Model.Mesh.Nodes[ids[2]].Coor);
                     Vec3D.GetCircle(v1, v2, v3, out double r, out Vec3D center, out Vec3D axis);
-                    _viewReferencePoint.X = center.X;
-                    _viewReferencePoint.Y = center.Y;
-                    _viewReferencePoint.Z = center.Z;
+                    _viewReferencePoint.X = center.X.ToString();
+                    _viewReferencePoint.Y = center.Y.ToString();
+                    _viewReferencePoint.Z = center.Z.ToString();
                     //
                     propertyGrid.Refresh();
                     //
@@ -263,9 +263,7 @@ namespace PrePoMax.Forms
         }
         private void HighlightReferencePoint()
         {
-            _coorNodesToDraw[0][0] = _viewReferencePoint.X;
-            _coorNodesToDraw[0][1] = _viewReferencePoint.Y;
-            _coorNodesToDraw[0][2] = _viewReferencePoint.Z;
+            _coorNodesToDraw[0] = _viewReferencePoint.GetBase().Coor();
             //
             _controller.HighlightNodes(_coorNodesToDraw);
         }

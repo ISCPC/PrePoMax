@@ -96,6 +96,7 @@
     <Compile Include="ExceptionTools.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Editors\FilteredFileNameEditor.cs" />
+    <Compile Include="IContainsEquations.cs" />
     <Compile Include="IMasterSlaveMultiRegion.cs" />
     <Compile Include="IMultiRegion.cs" />
     <Compile Include="KeyboardHook.cs" />
