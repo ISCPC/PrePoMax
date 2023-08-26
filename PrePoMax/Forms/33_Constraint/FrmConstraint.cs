@@ -173,6 +173,8 @@ namespace PrePoMax.Forms
             if (propertyGrid.SelectedObject is ViewError ve) throw new CaeException(ve.Message);
             //
             _viewConstraint = (ViewConstraint)propertyGrid.SelectedObject;
+            // Check equations
+            _viewConstraint.GetBase().CheckEquations();
             //
             if (Constraint == null) throw new CaeException("No constraint was selected.");
             //
@@ -211,8 +213,6 @@ namespace PrePoMax.Forms
                 bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
                 var tmp = new Tie(tie.Name, tie.MasterRegionName, tie.MasterRegionType,
                                   tie.SlaveRegionName, tie.SlaveRegionType, twoD);
-                // Equation
-                tie.CheckEquations();
             }
             // Check if the name exists
             CheckName(_constraintToEditName, Constraint.Name, _constraintNames, "constraint");

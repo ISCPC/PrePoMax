@@ -1143,9 +1143,9 @@ namespace CaeModel
                 {
                     springs.Add(new PointSpring(spring.Name + "_" + entry.Key.ToString(),
                                 entry.Key,
-                                spring.K1 / area * entry.Value,
-                                spring.K2 / area * entry.Value,
-                                spring.K3 / area * entry.Value,
+                                spring.K1.Value / area * entry.Value,
+                                spring.K2.Value / area * entry.Value,
+                                spring.K3.Value / area * entry.Value,
                                 spring.TwoD));
                 }
             }

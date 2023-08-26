@@ -50,6 +50,20 @@ namespace CaeGlobals
             TypeConverter stringDoubleConverter = (TypeConverter)Activator.CreateInstance(_stringDoubleConverterType);
             return (double)stringDoubleConverter.ConvertFrom(equation);
         }
+        public void SetConverterType(Type stringDoubleConverterType)
+        {
+            if (IsEquation())
+            {
+                _stringDoubleConverterType = stringDoubleConverterType;
+            }
+            else
+            {
+                double value = Value;
+                _stringDoubleConverterType = stringDoubleConverterType;
+                SetEquationFromValue(value);
+            }
+            
+        }
         public void SetEquation(string equation, bool enableEquationChanged = false)
         {
             try

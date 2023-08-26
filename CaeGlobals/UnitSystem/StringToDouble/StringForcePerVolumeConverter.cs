@@ -101,7 +101,7 @@ namespace CaeGlobals
                 if ((int)_forceUnit == MyUnit.NoUnit || (int)_volumeUnit == MyUnit.NoUnit) return force.Value;
                 else force = force.ToUnit(_forceUnit);
                 //
-                tmp[1] = tmp[1].Replace("(", " ("); // fix space before (U.S.) anf (imp.)
+                tmp[1] = tmp[1].Replace("(", " ("); // fix space before (U.S.) and (imp.)
                 VolumeUnit volumeUnit = Volume.ParseUnit(tmp[1]);
                 Volume volume = Volume.From(1, volumeUnit).ToUnit(_volumeUnit);
                 double value = force.Value / volume.Value;

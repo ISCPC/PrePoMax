@@ -135,6 +135,7 @@
     <Compile Include="UnitSystem\EquationToString\EquationAngleDegConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationAccelerationConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationDoubleConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationForcePerVolumeConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationForcePerLengthConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationLengthFixedDOFConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationMomentConverter.cs" />

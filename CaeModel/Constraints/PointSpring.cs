@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 namespace CaeModel
 {
     [Serializable]
-    public class PointSpring : SpringConstraint, ISerializable // ISerializable must be here
+    public class PointSpring : SpringConstraint, ISerializable
     {
         // Variables                                                                                                                
         private int _nodeId;                  //ISerializable
@@ -30,9 +30,9 @@ namespace CaeModel
            : base(name, null, RegionTypeEnum.NodeId, twoD)
         {
             _nodeId = nodeId;
-            K1 = k1;
-            K2 = k2;
-            K3 = k3;
+            K1.SetEquationFromValue(k1);
+            K2.SetEquationFromValue(k2);
+            K3.SetEquationFromValue(k3);
         }
 
         public PointSpring(SerializationInfo info, StreamingContext context)

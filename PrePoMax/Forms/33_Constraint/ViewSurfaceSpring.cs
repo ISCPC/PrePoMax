@@ -42,45 +42,46 @@ namespace PrePoMax
         [CategoryAttribute("Stiffness")]
         [OrderedDisplayName(0, 10, "K1")]
         [DescriptionAttribute("Value of the stiffness in the direction of the first axis.")]
-        [TypeConverter(typeof(StringForcePerLengthConverter))]
+        [TypeConverter(typeof(EquationForcePerLengthConverter))]
         [Id(1, 4)]
-        public override double K1 { get { return _spring.K1; } set { _spring.K1 = value; } }
+        public override string K1 { get { return _spring.K1.Equation; } set { _spring.K1.Equation = value; } }
         //
         [CategoryAttribute("Stiffness")]
         [OrderedDisplayName(1, 10, "K2")]
         [DescriptionAttribute("Value of the stiffness in the direction of the second axis.")]
-        [TypeConverter(typeof(StringForcePerLengthConverter))]
+        [TypeConverter(typeof(EquationForcePerLengthConverter))]
         [Id(2, 4)]
-        public override double K2 { get { return _spring.K2; } set { _spring.K2 = value; } }
+        public override string K2 { get { return _spring.K2.Equation; } set { _spring.K2.Equation = value; } }
         //
         [CategoryAttribute("Stiffness")]
         [OrderedDisplayName(2, 10, "K3")]
         [DescriptionAttribute("Value of the stiffness in the direction of the third axis.")]
-        [TypeConverter(typeof(StringForcePerLengthConverter))]
+        [TypeConverter(typeof(EquationForcePerLengthConverter))]
         [Id(3, 4)]
-        public override double K3 { get { return _spring.K3; } set { _spring.K3 = value; } }
+        public override string K3 { get { return _spring.K3.Equation; } set { _spring.K3.Equation = value; } }
         //                                  
         //
         [CategoryAttribute("Stiffness per area")]
         [OrderedDisplayName(0, 10, "K1")]
         [DescriptionAttribute("Value of the stiffness per area in the direction of the first axis.")]
-        [TypeConverter(typeof(StringForcePerVolumeConverter))]
+        [TypeConverter(typeof(EquationForcePerVolumeConverter))]
         [Id(1, 4)]
-        public double K1A { get { return _spring.K1; } set { _spring.K1 = value; } }
+        public string K1A { get { return _spring.K1.Equation; } set { _spring.K1.Equation = value; } }
         //
         [CategoryAttribute("Stiffness per area")]
         [OrderedDisplayName(1, 10, "K2")]
         [DescriptionAttribute("Value of the stiffness per area in the direction of the second axis.")]
-        [TypeConverter(typeof(StringForcePerVolumeConverter))]
+        [TypeConverter(typeof(EquationForcePerVolumeConverter))]
         [Id(2, 4)]
-        public double K2A { get { return _spring.K2; } set { _spring.K2 = value; } }
+        public string K2A { get { return _spring.K2.Equation; } set { _spring.K2.Equation = value; } }
         //
         [CategoryAttribute("Stiffness per area")]
         [OrderedDisplayName(2, 10, "K3")]
         [DescriptionAttribute("Value of the stiffness per area in the direction of the third axis.")]
-        [TypeConverter(typeof(StringForcePerVolumeConverter))]
+        [TypeConverter(typeof(EquationForcePerVolumeConverter))]
         [Id(3, 4)]
-        public double K3A { get { return _spring.K3; } set { _spring.K3 = value; } }
+        public string K3A { get { return _spring.K3.Equation; } set { _spring.K3.Equation = value; } }
+
 
         // Constructors                                                                                                             
         public ViewSurfaceSpring(SurfaceSpring surfaceSpring)
