@@ -1370,7 +1370,7 @@ namespace FileInOut.Input
                     string name = sections.GetNextNumberedKey("Section");
                     ShellSection section = new ShellSection(name, materialName, regionName, RegionTypeEnum.ElementSetName,
                                                             thickness, false);
-                    section.Offset = offset;
+                    section.Offset.SetEquationFromValue(offset);
                     //
                     return section;
                 }

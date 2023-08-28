@@ -20,15 +20,19 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Thickness")]
         [DescriptionAttribute("Set the membrane thickness.")]
-        [TypeConverter(typeof(StringLengthConverter))]
-        public double Thickness { get { return _membraneSection.Thickness; } set { _membraneSection.Thickness = value; } }
+        [TypeConverter(typeof(EquationLengthConverter))]
+        public string Thickness
+        {
+            get { return _membraneSection.Thickness.Equation; }
+            set { _membraneSection.Thickness.Equation = value; }
+        }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(3, 10, "Offset")]
         [DescriptionAttribute("Set the offset of the membrane mid-surface in regard to the selected geometry. "
                               + "The unit is the shell thickness.")]
-        [TypeConverter(typeof(StringDoubleConverter))]
-        public double Offset { get { return _membraneSection.Offset; } set { _membraneSection.Offset = value; } }
+        [TypeConverter(typeof(EquationDoubleConverter))]
+        public string Offset { get { return _membraneSection.Offset.Equation; } set { _membraneSection.Offset.Equation = value; } }
 
 
         // Constructors                                                                                                             

@@ -104,13 +104,16 @@ namespace PrePoMax.Forms
             //
             if (_viewSection == null) throw new CaeException("No section was selected.");
             //
-            if (Section.RegionType == RegionTypeEnum.Selection && (Section.CreationIds == null || Section.CreationIds.Length == 0))
+            if (Section.RegionType == RegionTypeEnum.Selection &&
+                (Section.CreationIds == null || Section.CreationIds.Length == 0))
                 throw new CaeException("The section selection must contain at least one item.");
             //
             if (!CheckSectionElementTypes())
                 throw new CaeException("The section type and the section region are not compatible.");
             //
-            if ((Section is ShellSection ss && ss.Thickness <= 0) || (Section is MembraneSection ms && ms.Thickness <= 0))
+            if ((Section is SolidSection sos && sos.TwoD && sos.Thickness.Value <= 0) ||
+                (Section is ShellSection ss && ss.Thickness.Value <= 0) ||
+                (Section is MembraneSection ms && ms.Thickness.Value <= 0))
                 throw new CaeException("The section thickness must be larger than 0.");
             // Check if the name exists
             CheckName(_sectionToEditName, Section.Name, _sectionNames, "section");

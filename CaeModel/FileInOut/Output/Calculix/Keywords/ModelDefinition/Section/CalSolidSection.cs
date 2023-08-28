@@ -36,7 +36,7 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            if (_section.TwoD) return string.Format("{0}{1}", _section.Thickness.ToCalculiX16String(), Environment.NewLine);
+            if (_section.TwoD) return string.Format("{0}{1}", _section.Thickness.Value.ToCalculiX16String(), Environment.NewLine);
             else return "";
         }
     }

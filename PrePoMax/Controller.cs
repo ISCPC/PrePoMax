@@ -10802,13 +10802,10 @@ namespace PrePoMax
                     int count = 0;
                     foreach (var entry in _model.Sections)
                     {
-                        if (entry.Value is ShellSection ss)
+                        if (!sectionThickness.Contains(entry.Value.Thickness.Value))
                         {
-                            if (!sectionThickness.Contains(ss.Thickness))
-                            {
-                                sectionThicknessColors.Add(colorSettings.ColorTable[count++]);
-                                sectionThickness.Add(ss.Thickness);
-                            }
+                            sectionThicknessColors.Add(colorSettings.ColorTable[count++]);
+                            sectionThickness.Add(entry.Value.Thickness.Value);
                         }
                     }
                     // Sort thicknesses

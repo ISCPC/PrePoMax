@@ -70,7 +70,7 @@ namespace CaeModel
             _twoD = twoD;
             _amplitudeName = null;
             _complex = complex;
-            _phaseDeg = new EquationContainer(typeof(StringAngleDegConverter), phaseDeg, CheckAngle);
+            PhaseDeg = new EquationContainer(typeof(StringAngleDegConverter), phaseDeg);
             _color = Color.RoyalBlue;
         }
         public Load(SerializationInfo info, StreamingContext context)
@@ -100,8 +100,9 @@ namespace CaeModel
                         _complex = (bool)entry.Value; break;
                     case "_phaseDeg":
                     case "Load+_phaseDeg":          // Compatibility for version v1.4.0
-                        if (entry.Value is double valPhase)
-                            PhaseDeg = new EquationContainer(typeof(StringAngleDegConverter), valPhase);
+                        // Compatibility for version v1.4.0
+                        if (entry.Value is double valuePhase)
+                            PhaseDeg = new EquationContainer(typeof(StringAngleDegConverter), valuePhase);
                         else
                             SetPhaseDeg((EquationContainer)entry.Value, false);
                         break;
@@ -114,16 +115,12 @@ namespace CaeModel
             }
         }
 
+
         // Methods                                                                                                                  
         private void SetPhaseDeg(EquationContainer value, bool checkEquation = true)
         {
             SetAndCheck(ref _phaseDeg, value, CheckAngle, checkEquation);
         }
-        private double CheckAngle(double value)
-        {
-            return Tools.GetPhase360(value);
-        }
-        //
         protected static void SetAndCheck(ref EquationContainer variable, EquationContainer value, Func<double, double> CheckValue,
                                           Action EquationChangedCallback, bool check)
         {
@@ -150,6 +147,11 @@ namespace CaeModel
                                           bool check)
         {
             SetAndCheck(ref variable, value, CheckValue, null, check);
+        }
+        //
+        private double CheckAngle(double value)
+        {
+            return Tools.GetPhase360(value);
         }
         // IContainsEquations
         public virtual void CheckEquations()

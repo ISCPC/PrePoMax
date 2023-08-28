@@ -757,7 +757,8 @@ namespace CaeModel
             Dictionary<double, List<int>> thicknessSectionIds = new Dictionary<double, List<int>>();
             foreach (var entry in _sections)
             {
-                if (entry.Value is ShellSection ss) thickness = ss.Thickness;
+                if (entry.Value is ShellSection ss) thickness = ss.Thickness.Value;
+                else if (entry.Value is MembraneSection ms) thickness = ms.Thickness.Value;
                 else thickness = -1;
                 //
                 if (thicknessSectionIds.TryGetValue(thickness, out sectionIds)) sectionIds.Add(count);
@@ -1198,10 +1199,7 @@ namespace CaeModel
             GetSectionAssignments(out elementIdSectionId);
             foreach (var entry in _sections)
             {
-                if (entry.Value is SolidSection solid) thickness = solid.Thickness;
-                else if (entry.Value is ShellSection shell) thickness = shell.Thickness;
-                else throw new NotSupportedException();
-                //
+                thickness = entry.Value.Thickness.Value;
                 sectionIdThickness.Add(sectionId++, thickness);
             }
             //
@@ -1247,10 +1245,7 @@ namespace CaeModel
             string surfaceName = load.SurfaceName;
             foreach (var entry in _sections)
             {
-                if (entry.Value is SolidSection solid) thickness = solid.Thickness;
-                else if (entry.Value is ShellSection shell) thickness = shell.Thickness;
-                else throw new NotSupportedException();
-                //
+                thickness = entry.Value.Thickness.Value;
                 sectionIdThickness[sectionId++] = thickness;
             }
             // Surface

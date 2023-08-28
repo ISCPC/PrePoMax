@@ -20,15 +20,19 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Thickness")]
         [DescriptionAttribute("Set the shell thickness.")]
-        [TypeConverter(typeof(StringLengthConverter))]
-        public double Thickness { get { return _shellSection.Thickness; } set { _shellSection.Thickness = value; } }
+        [TypeConverter(typeof(EquationLengthConverter))]
+        public string Thickness
+        {
+            get { return _shellSection.Thickness.Equation; }
+            set { _shellSection.Thickness.Equation = value; }
+        }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(3, 10, "Offset")]
         [DescriptionAttribute("Set the offset of the shell mid-surface in regard to the selected geometry. " +
                               "The unit is the shell thickness.")]
-        [TypeConverter(typeof(StringDoubleConverter))]
-        public double Offset { get { return _shellSection.Offset; } set { _shellSection.Offset = value; } }
+        [TypeConverter(typeof(EquationDoubleConverter))]
+        public string Offset { get { return _shellSection.Offset.Equation; } set { _shellSection.Offset.Equation = value; } }
 
 
         // Constructors                                                                                                             
