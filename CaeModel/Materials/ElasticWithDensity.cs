@@ -9,12 +9,12 @@ using System.Runtime.Serialization;
 namespace CaeModel
 {
     [Serializable]
-    public class ElasticWithDensity : MaterialProperty
+    public class ElasticWithDensity : MaterialProperty, ISerializable
     {
         // Variables                                                                                                                
-        private double _youngsModulus;
-        private double _poissonsRatio;
-        private double _density;
+        private double _youngsModulus;          //ISerializable
+        private double _poissonsRatio;          //ISerializable
+        private double _density;                //ISerializable
 
 
         // Properties                                                                                                               
@@ -45,8 +45,37 @@ namespace CaeModel
             // The constructor must wotk with rho = 0
             _density = density;
         }
+        public ElasticWithDensity(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_youngsModulus":
+                        _youngsModulus = (double)entry.Value; break;
+                    case "_poissonsRatio":
+                        _poissonsRatio = (double)entry.Value; break;
+                    case "_density":
+                        _density = (double)entry.Value; break;
+                    default:
+                        break;
+                }
+            }
+        }
 
 
         // Methods                                                                                                                  
+
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // Using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_youngsModulus", _youngsModulus, typeof(double));
+            info.AddValue("_poissonsRatio", _poissonsRatio, typeof(double));
+            info.AddValue("_density", _density, typeof(double));
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using CaeGlobals;
@@ -8,10 +9,10 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
-    public class Density : MaterialProperty
+    public class Density : MaterialProperty, ISerializable
     {
         // Variables                                                                                                                
-        private double[][] _densityTemp;
+        private double[][] _densityTemp;        //ISerializable
 
 
         // Properties                                                                                                               
@@ -37,8 +38,31 @@ namespace CaeModel
         {
             _densityTemp = densityTemp;
         }
+        public Density(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_densityTemp":
+                        _densityTemp = (double[][])entry.Value; break;
+                    default:
+                        break;
+                }
+            }
+        }
 
 
         // Methods                                                                                                                  
+
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // Using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_densityTemp", _densityTemp, typeof(double[][]));
+        }
     }
 }

@@ -12,11 +12,11 @@ using System.Xml.Linq;
 namespace CaeModel
 {
     [Serializable]
-    public class Elastic : MaterialProperty
+    public class Elastic : MaterialProperty, ISerializable
     {
         // Variables                                                                                                                
-        private double[][] _youngsPoissonsTemp;
-        
+        private double[][] _youngsPoissonsTemp;         //ISerializable
+
 
         // Properties                                                                                                               
         public double[][] YoungsPoissonsTemp
@@ -42,9 +42,31 @@ namespace CaeModel
             // The constructor must wotk with E = 0
             _youngsPoissonsTemp = youngsPoissonsTemp;
         }
+        public Elastic(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_youngsPoissonsTemp":
+                        _youngsPoissonsTemp = (double[][])entry.Value; break;
+                    default:
+                        break;
+                }
+            }
+        }
 
 
         // Methods                                                                                                                  
 
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // Using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_youngsPoissonsTemp", _youngsPoissonsTemp, typeof(double[][]));
+        }
     }
 }
