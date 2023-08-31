@@ -512,7 +512,7 @@ namespace PrePoMax.Forms
                 {
                     for (int i = 0; i < vd.DataPoints.Count; i++)
                     {
-                        if (vd.DataPoints[i].Density <= 0) throw new CaeException("The density must be larger than 0.");
+                        if (vd.DataPoints[i].Density.Value <= 0) throw new CaeException("The density must be larger than 0.");
                     }
                 }
                 else if (property is ViewElastic ve && ve.YoungsModulus <= 0)
@@ -575,7 +575,7 @@ namespace PrePoMax.Forms
         {
             string noUnit = "/";
             // Density
-            SetGridViewUnit(nameof(DensityDataPoint.Density), _controller.Model.UnitSystem.DensityUnitAbbreviation);
+            SetGridViewUnit(nameof(DensityDataPoint.DensityEq), _controller.Model.UnitSystem.DensityUnitAbbreviation);
             // Elastic
             SetGridViewUnit(nameof(ElasticDataPoint.YoungsModulus), _controller.Model.UnitSystem.PressureUnitAbbreviation);
             SetGridViewUnit(nameof(ElasticDataPoint.PoissonsRatio), noUnit);

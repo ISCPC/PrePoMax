@@ -103,6 +103,10 @@ namespace PrePoMax.Forms
             _viewSection = (ViewSection)propertyGrid.SelectedObject;
             //
             if (_viewSection == null) throw new CaeException("No section was selected.");
+            // Check if the name exists
+            CheckName(_sectionToEditName, Section.Name, _sectionNames, "section");
+            // Check equations
+            _viewSection.GetBase().CheckEquations();
             //
             if (Section.RegionType == RegionTypeEnum.Selection &&
                 (Section.CreationIds == null || Section.CreationIds.Length == 0))
@@ -115,8 +119,6 @@ namespace PrePoMax.Forms
                 (Section is ShellSection ss && ss.Thickness.Value <= 0) ||
                 (Section is MembraneSection ms && ms.Thickness.Value <= 0))
                 throw new CaeException("The section thickness must be larger than 0.");
-            // Check if the name exists
-            CheckName(_sectionToEditName, Section.Name, _sectionNames, "section");
             // Create
             if (_sectionToEditName == null)
             {

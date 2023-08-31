@@ -302,12 +302,12 @@ namespace PrePoMax.Forms
             if (propertyGrid.SelectedObject is ViewError ve) throw new CaeException(ve.Message);
             //
             _viewLoad = (ViewLoad)propertyGrid.SelectedObject;
-            // Check equations
-            _viewLoad.GetBase().CheckEquations();
             //
             if (_viewLoad == null) throw new CaeException("No load selected.");
             // Check if the name exists
             CheckName(_loadToEditName, FELoad.Name, _loadNames, "load");
+            // Check equations
+            _viewLoad.GetBase().CheckEquations();
             //
             if (FELoad.RegionType == RegionTypeEnum.Selection &&
                 (FELoad.CreationIds == null || FELoad.CreationIds.Length == 0))

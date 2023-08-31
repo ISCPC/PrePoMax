@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
+using CaeGlobals;
 
 namespace PrePoMax
 {
@@ -12,22 +13,35 @@ namespace PrePoMax
     public class DensityDataPoint : TempDataPoint
     {
         // Variables                                                                                                                
-        private double _density;
+        private EquationContainer _density;
 
 
         // Properties                                                                                                               
         [DisplayName("Density\n[?]")]
-        [TypeConverter(typeof(CaeGlobals.StringDensityFromConverter))]
-        public double Density { get { return _density; } set { _density = value; } }
+        [TypeConverter(typeof(EquationDensityFromConverter2))]
+        public EquationString DensityEq
+        {
+            get
+            {
+                return _density.EquationStr;
+            }
+            set
+            {
+                _density.EquationStr = value;
+            }
+        }
+        //
+        [Browsable(false)]
+        public EquationContainer Density { get { return _density; } set { _density = value; } }
 
 
         // Constructors                                                                                                             
         public DensityDataPoint()
             :base(0)
         {
-            _density = 0;
+            _density = new EquationContainer(typeof(StringDensityFromConverter), 0);
         }
-        public DensityDataPoint(double density, double temperature)
+        public DensityDataPoint(EquationContainer density, double temperature)
             :base(temperature)
         {
             _density = density;

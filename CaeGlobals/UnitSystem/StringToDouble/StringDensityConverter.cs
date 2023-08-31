@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
+using System.Security.AccessControl;
 
 namespace CaeGlobals
 {

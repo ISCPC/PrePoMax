@@ -135,7 +135,10 @@
     <Compile Include="CommonClasses\Vec3D.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationAngleDegConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationAccelerationConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationDensityFromConverter2.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationDensityFromConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationDoubleConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationDensityConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationForcePerVolumeConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationForcePerLengthConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationLengthFixedDOFConverter.cs" />

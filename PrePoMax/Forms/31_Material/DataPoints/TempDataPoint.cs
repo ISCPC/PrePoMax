@@ -17,7 +17,8 @@ namespace PrePoMax
         // Properties                                                                                                               
         [DisplayName("Temperature\n[?]")]
         [TypeConverter(typeof(CaeGlobals.StringTemperatureFromConverter))]
-        public double Temperature { get { return _temperature; } set { _temperature = value; } }
+        public double Temperature { get { return _temperature; } 
+            set { _temperature = value; } }
 
 
         // Constructors                                                                                                             

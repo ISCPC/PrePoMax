@@ -47,7 +47,7 @@ namespace PrePoMax.Forms
                     // Binding
                     SetDataGridViewBinding(parameters);
                     //
-                    UpdateNCalacParameters();
+                    UpdateNCalcParameters();
                 }
             }
             catch (Exception ex)
@@ -62,11 +62,11 @@ namespace PrePoMax.Forms
         //
         private void dgvData_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
-            UpdateNCalacParameters();
+            UpdateNCalcParameters();
         }
         private void dgvData_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
         {
-            UpdateNCalacParameters();
+            UpdateNCalcParameters();
         }
         //
         private void dgvData_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -76,19 +76,6 @@ namespace PrePoMax.Forms
         }
         private void dgvData_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
-            //string headerText = dgvData.Columns[e.ColumnIndex].HeaderText;
-            //// Abort validation if cell is not in the CompanyName column.
-            //if (!headerText.Equals("Name")) return;
-
-            //// Confirm that the cell is not empty.
-            //if (string.IsNullOrEmpty(e.FormattedValue.ToString()))
-            //{
-            //    dataGridView1.Rows[e.RowIndex].ErrorText =
-            //        "Company Name must not be empty";
-            //    e.Cancel = true;
-            //}
-
-
             try
             {
                 if (e.RowIndex == _cellRow && e.ColumnIndex == _cellCol)
@@ -128,7 +115,7 @@ namespace PrePoMax.Forms
             {
                 if (e.RowIndex == _cellRow && e.ColumnIndex == _cellCol)
                 {
-                    UpdateNCalacParameters();
+                    UpdateNCalcParameters();
                     dgvData.Refresh();
                 }
             }
@@ -218,7 +205,7 @@ namespace PrePoMax.Forms
         private void Binding_ListChanged(object sender, ListChangedEventArgs e)
         {
         }
-        private void UpdateNCalacParameters()
+        private void UpdateNCalcParameters()
         {
             try
             {

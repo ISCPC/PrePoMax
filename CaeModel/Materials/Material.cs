@@ -63,10 +63,13 @@ namespace CaeModel
                     {
                         for (int i = 0; i < den.DensityTemp.Length; i++)
                         {
+                            if (den.DensityTemp[i][0].IsEquation()) throw new NotSupportedException();
                             // Desity
-                            den.DensityTemp[i][0] = fromSystem.Convert(den.DensityTemp[i][0], sdc, toSystem);
+                            den.DensityTemp[i][0].SetEquationFromValue(fromSystem.Convert(den.DensityTemp[i][0].Value,
+                                                                                          sdc, toSystem));
                             // Temp
-                            den.DensityTemp[i][1] = fromSystem.Convert(den.DensityTemp[i][1], stc, toSystem);
+                            den.DensityTemp[i][1].SetEquationFromValue(fromSystem.Convert(den.DensityTemp[i][1].Value,
+                                                                                          stc, toSystem));
                         }
                     }
                     else if (property is SlipWear sw)

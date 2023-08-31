@@ -8,6 +8,7 @@ using CaeGlobals;
 using CaeModel;
 using System.Windows.Forms;
 using System.Drawing;
+using UserControls;
 
 namespace PrePoMax.Forms
 {
@@ -106,8 +107,10 @@ namespace PrePoMax.Forms
         protected override void OnApply(bool onOkAddNew)
         {
             _viewReferencePoint = (ViewFeReferencePoint)propertyGrid.SelectedObject;
-            //
+            // Check name
             CheckName(_referencePointToEditName, _viewReferencePoint.Name, _referencePointNames, "reference point");
+            // Check if the name exists
+            _viewReferencePoint.GetBase().CheckEquations();
             // Create
             if (_referencePointToEditName == null)
             {

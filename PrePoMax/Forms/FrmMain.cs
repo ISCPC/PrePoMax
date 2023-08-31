@@ -1551,7 +1551,7 @@ namespace PrePoMax
             {
                 _controller.CurrentView = ViewGeometryModelResults.Model;
                 //
-                if (CheckValiditiy())
+                if (CheckValidity())
                 {
                     using (SaveFileDialog saveFileDialog = new SaveFileDialog())
                     {
@@ -1582,7 +1582,7 @@ namespace PrePoMax
             {
                 _controller.CurrentView = ViewGeometryModelResults.Model;
                 //
-                if (CheckValiditiy())
+                if (CheckValidity())
                 {
                     using (SaveFileDialog saveFileDialog = new SaveFileDialog())
                     {
@@ -3407,7 +3407,7 @@ namespace PrePoMax
             // This is also called from the model tree - needs try, catch
             try
             {
-                if (CheckValiditiy())
+                if (CheckValidity())
                 {
                     _frmCalculixKeywordEditor = new FrmCalculixKeywordEditor();
                     _frmCalculixKeywordEditor.Keywords = _controller.GetCalculixModelKeywords();
@@ -5997,7 +5997,7 @@ namespace PrePoMax
         private void RunAnalysis(string jobName, bool onlyCheckModel)
         {
             // Check validity
-            if (CheckValiditiy())
+            if (CheckValidity())
             {
                 string workDirectory = _controller.Settings.GetWorkDirectory();
                 //
@@ -7507,12 +7507,12 @@ namespace PrePoMax
         {
             InvokeIfRequired(() => this.Text = title);
         }
-        private bool CheckValiditiy()
+        private bool CheckValidity()
         {
             string[] invalidItems = _controller.CheckAndUpdateModelValidity();
             if (invalidItems.Length > 0)
             {
-                string text = "The model contains active invlaid items:" + Environment.NewLine;
+                string text = "The model contains active invalid items:" + Environment.NewLine;
                 foreach (var item in invalidItems) text += Environment.NewLine + item;
                 text += Environment.NewLine + Environment.NewLine + "Continue?";
                 return MessageBoxes.ShowWarningQuestion(text) == DialogResult.OK;

@@ -36,15 +36,15 @@ namespace FileInOut.Output.Calculix
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-            double[][] data = _density.DensityTemp;
+            EquationContainer[][] data = _density.DensityTemp;
             for (int i = 0; i < data.Length; i++)
             {
                 if (_temperatureDependent)
-                    sb.AppendFormat("{0}, {1}{2}", data[i][0].ToCalculiX16String(), data[i][1].ToCalculiX16String(),
+                    sb.AppendFormat("{0}, {1}{2}", data[i][0].Value.ToCalculiX16String(), data[i][1].Value.ToCalculiX16String(),
                                     Environment.NewLine);
                 else
                 {
-                    sb.AppendFormat("{0}{1}", data[i][0].ToCalculiX16String(), Environment.NewLine);
+                    sb.AppendFormat("{0}{1}", data[i][0].Value.ToCalculiX16String(), Environment.NewLine);
                     break;
                 }
             }

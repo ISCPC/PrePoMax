@@ -293,7 +293,8 @@ namespace UserControls
             //Rows[e.RowIndex].ErrorText = "an error";
             //Rows[e.RowIndex].Cells[e.ColumnIndex].ErrorText = "an error";
             //
-            //e.ThrowException = false;
+            e.ThrowException = false;
+            displayErrorDialogIfNoHandler = false;
             //
             MessageBoxes.ShowError(e.Exception.Message);
             //
