@@ -60,7 +60,7 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the sink temperature.")]
         [TypeConverter(typeof(EquationTemperatureConverter))]
         [Id(1, 3)]
-        public string SinkTemperature
+        public EquationString SinkTemperature
         {
             get { return _radiationHeatTransfer.SinkTemperature.Equation; }
             set { _radiationHeatTransfer.SinkTemperature.Equation = value; }
@@ -71,7 +71,7 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the surface emissivity (blackbody radiation is characterized by 1).")]
         [TypeConverter(typeof(EquationDoubleConverter))]
         [Id(2, 3)]
-        public string Emissivity
+        public EquationString Emissivity
         {
             get { return _radiationHeatTransfer.Emissivity.Equation; }
             set { _radiationHeatTransfer.Emissivity.Equation = value; }

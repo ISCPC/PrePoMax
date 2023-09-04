@@ -32,21 +32,21 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the stiffness per node in the direction of the first axis.")]
         [TypeConverter(typeof(EquationForcePerLengthConverter))]
         [Id(1, 3)]
-        public virtual string K1 { get { return _spring.K1.Equation; } set { _spring.K1.Equation = value; } }
+        public virtual EquationString K1 { get { return _spring.K1.Equation; } set { _spring.K1.Equation = value; } }
         //
         [CategoryAttribute("Stiffness")]
         [OrderedDisplayName(1, 10, "K2")]
         [DescriptionAttribute("Value of the stiffness per node in the direction of the second axis.")]
         [TypeConverter(typeof(EquationForcePerLengthConverter))]
         [Id(2, 3)]
-        public virtual string K2 { get { return _spring.K2.Equation; } set { _spring.K2.Equation = value; } }
+        public virtual EquationString K2 { get { return _spring.K2.Equation; } set { _spring.K2.Equation = value; } }
         //
         [CategoryAttribute("Stiffness")]
         [OrderedDisplayName(2, 10, "K3")]
         [DescriptionAttribute("Value of the stiffness per node in the direction of the third axis.")]
         [TypeConverter(typeof(EquationForcePerLengthConverter))]
         [Id(3, 3)]
-        public virtual string K3 { get { return _spring.K3.Equation; } set { _spring.K3.Equation = value; } }
+        public virtual EquationString K3 { get { return _spring.K3.Equation; } set { _spring.K3.Equation = value; } }
         //
         [Category("Appearance")]
         [DisplayName("Color")]

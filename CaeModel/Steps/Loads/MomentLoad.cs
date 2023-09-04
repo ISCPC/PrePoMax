@@ -112,24 +112,29 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void UpdateEquations()
         {
-            if (_m1.IsEquation() || _m2.IsEquation() || _m3.IsEquation()) MEquationChanged();
-            else if (_magnitude.IsEquation()) MagnitudeEquationChanged();
+            try
+            {
+                // If error catch it silently
+                if (_m1.IsEquation() || _m2.IsEquation() || _m3.IsEquation()) MEquationChanged();
+                else if (_magnitude.IsEquation()) MagnitudeEquationChanged();
+            }
+            catch (Exception ex) { }
         }
         private void SetM1(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _m1, value, Check2D, MEquationChanged, checkEquation);
+            EquationContainer.SetAndCheck(ref _m1, value, Check2D, MEquationChanged, checkEquation);
         }
         private void SetM2(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _m2, value, Check2D, MEquationChanged, checkEquation);
+            EquationContainer.SetAndCheck(ref _m2, value, Check2D, MEquationChanged, checkEquation);
         }
         private void SetM3(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _m3, value, null, MEquationChanged, checkEquation);
+            EquationContainer.SetAndCheck(ref _m3, value, null, MEquationChanged, checkEquation);
         }
         private void SetMagnitude(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _magnitude, value, CheckMagnitude, MagnitudeEquationChanged, checkEquation);
+            EquationContainer.SetAndCheck(ref _magnitude, value, CheckMagnitude, MagnitudeEquationChanged, checkEquation);
         }
         //
         private void MEquationChanged()

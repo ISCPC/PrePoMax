@@ -10,7 +10,7 @@ using CaeMesh;
 namespace CaeModel
 {
     [Serializable]
-    public abstract class MaterialProperty : ISerializable
+    public abstract class MaterialProperty : ISerializable, IContainsEquations
     {
         // Variables                                                                                                                
         [NonSerialized]
@@ -30,44 +30,16 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        protected static void SetAndCheck(ref EquationContainer[][] variable, EquationContainer[][] value,
-                                          Func<double, double> CheckValue, bool check)
+        // IContainsEquations
+        public abstract void CheckEquations();
+        public virtual bool TryCheckEquations()
         {
-            variable = new EquationContainer[value.Length][];
-            //
-            for (int i = 0; i < value.Length; i++)
+            try
             {
-                variable[i] = new EquationContainer[2];
-                SetAndCheck(ref variable[i][0], value[i][0], CheckValue, null, check);
-                SetAndCheck(ref variable[i][1], value[i][1], CheckValue, null, check);
+                CheckEquations();
+                return true;
             }
-        }
-        protected static void SetAndCheck(ref EquationContainer variable, EquationContainer value, Func<double, double> CheckValue,
-                                          bool check)
-        {
-            SetAndCheck(ref variable, value, CheckValue, null, check);
-        }
-        protected static void SetAndCheck(ref EquationContainer variable, EquationContainer value, Func<double, double> CheckValue,
-                                          Action EquationChangedCallback, bool check)
-        {
-            if (value == null)
-            {
-                variable = null;
-                return;
-            }
-            //
-            string prevEquation = variable != null ? variable.Equation : value.Equation;
-            //
-            value.CheckValue = CheckValue;
-            value.EquationChanged = EquationChangedCallback;
-            //
-            if (check)
-            {
-                value.CheckEquation();
-                if (variable != null && prevEquation != variable.Equation) EquationChangedCallback?.Invoke();
-            }
-            //
-            variable = value;
+            catch (Exception ex) { return false; }
         }
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)

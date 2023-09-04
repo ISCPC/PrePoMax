@@ -84,7 +84,8 @@
     <Compile Include="CommonClasses\OrderedDictionary.cs" />
     <Compile Include="Comparers\CompareDoubleArray.cs" />
     <Compile Include="Comparers\CompareIntArray.cs" />
-    <Compile Include="EquationContainer.cs" />
+    <Compile Include="Equation\EquationString.cs" />
+    <Compile Include="Equation\EquationContainer.cs" />
     <Compile Include="DynamicTypeDescriptor\CustomComponentModel.cs" />
     <Compile Include="DynamicTypeDescriptor\DynamicTypeDescriptor.cs" />
     <Compile Include="DynamicTypeDescriptor\StandardValueEditorUI.cs">
@@ -135,8 +136,14 @@
     <Compile Include="CommonClasses\Vec3D.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationAngleDegConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationAccelerationConverter.cs" />
-    <Compile Include="UnitSystem\EquationToString\EquationDensityFromConverter2.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationThermalConductivityConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationSpecificHeatConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationThermalExpansionConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationThermalExpansionFromConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationThermalConductivityFromConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationSpecificHeatFromConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationDensityFromConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationDoubleNoResultConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationDoubleConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationDensityConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationForcePerVolumeConverter.cs" />
@@ -144,6 +151,8 @@
     <Compile Include="UnitSystem\EquationToString\EquationLengthFixedDOFConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationMomentConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationHeatTransferCoefficientConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationPressureFromConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationTemperatureFromConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationTemperatureConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationPressureConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationPowerPerAreaConverter.cs" />
@@ -223,6 +232,7 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

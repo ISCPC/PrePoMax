@@ -32,7 +32,7 @@ namespace PrePoMax
         [DescriptionAttribute("Magnitude of the edge load.")]
         [TypeConverter(typeof(EquationForcePerLengthConverter))]
         [Id(1, 3)]
-        public string Magnitude
+        public EquationString Magnitude
         {
             get { return _shellEdgeLoad.Magnitude.Equation; }
             set { _shellEdgeLoad.Magnitude.Equation = value; }
@@ -43,7 +43,11 @@ namespace PrePoMax
         [DescriptionAttribute("Phase of the edge load.")]
         [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 4)]
-        public string Phase { get { return _shellEdgeLoad.PhaseDeg.Equation; } set { _shellEdgeLoad.PhaseDeg.Equation = value; } }
+        public EquationString Phase
+        {
+            get { return _shellEdgeLoad.PhaseDeg.Equation; }
+            set { _shellEdgeLoad.PhaseDeg.Equation = value; }
+        }
         //
         public override string AmplitudeName
         {

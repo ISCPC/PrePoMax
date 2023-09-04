@@ -22,37 +22,35 @@ namespace PrePoMax.PropertyViews
             get { return "ElasticWithDensity"; }
         }
         //
-        [Browsable(false)]
-        public override CaeModel.MaterialProperty Base
-        {
-            get { return _elasticWithDensity; }
-        }
-        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(0, 5, "Young's modulus")]
         [DescriptionAttribute("The value of the Young's modulus.")]
-        [TypeConverter(typeof(StringPressureConverter))]
-        public double YoungsModulus
+        [TypeConverter(typeof(EquationPressureConverter))]
+        public EquationString YoungsModulus
         {
-            get { return _elasticWithDensity.YoungsModulus; }
-            set { _elasticWithDensity.YoungsModulus = value; }
+            get { return _elasticWithDensity.YoungsModulus.Equation; }
+            set { _elasticWithDensity.YoungsModulus.Equation = value; }
         }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 5, "Poisson's ratio")]
         [DescriptionAttribute("The value of the Poisson's ratio.")]
-        [TypeConverter(typeof(StringDoubleConverter))]
-        public double PoissonsRatio
+        [TypeConverter(typeof(EquationDoubleConverter))]
+        public EquationString PoissonsRatio
         {
-            get { return _elasticWithDensity.PoissonsRatio; }
-            set { _elasticWithDensity.PoissonsRatio = value; }
+            get { return _elasticWithDensity.PoissonsRatio.Equation; }
+            set { _elasticWithDensity.PoissonsRatio.Equation = value; }
         }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 5, "Density")]
         [DescriptionAttribute("The value of the density.")]
-        [TypeConverter(typeof(StringDensityConverter))]
-        public double Density { get { return _elasticWithDensity.Density; } set { _elasticWithDensity.Density = value; } }
+        [TypeConverter(typeof(EquationDensityConverter))]
+        public EquationString Density
+        {
+            get { return _elasticWithDensity.Density.Equation; }
+            set { _elasticWithDensity.Density.Equation = value; }
+        }
 
 
         // Constructors                                                                                                             
@@ -65,5 +63,17 @@ namespace PrePoMax.PropertyViews
 
 
         // Methods                                                                                                                  
+        public override CaeModel.MaterialProperty GetBase()
+        {
+            return _elasticWithDensity;
+        }
+        public double GetYoungsModulusValue()
+        {
+            return _elasticWithDensity.YoungsModulus.Value;
+        }
+        public double GetDensityValue()
+        {
+            return _elasticWithDensity.Density.Value;
+        }
     }
 }

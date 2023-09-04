@@ -610,10 +610,11 @@ namespace FileInOut.Output
                         }
                         else if (property is ElasticWithDensity ewd)
                         {
-                            Density density = new Density(new double[][] { new double[] { ewd.Density } });
+                            Density density = new Density(new double[][] { new double[] { ewd.Density.Value } });
                             material.AddKeyword(new CalDensity(density, entry.Value.TemperatureDependent));
                             //
-                            Elastic elastic = new Elastic(new double[][] { new double[] { ewd.YoungsModulus, ewd.PoissonsRatio } });
+                            Elastic elastic = new Elastic(new double[][] { new double[] { ewd.YoungsModulus.Value,
+                                                                                          ewd.PoissonsRatio.Value } });
                             material.AddKeyword(new CalElastic(elastic, entry.Value.TemperatureDependent));
                         }
                         else if (property is Plastic pl)

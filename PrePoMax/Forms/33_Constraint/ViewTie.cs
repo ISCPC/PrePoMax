@@ -28,7 +28,11 @@ namespace PrePoMax
                               "included in the tie constraint. Default value equals 2.5 % of the typical element size.")]
         [TypeConverter(typeof(EquationLengthDefaultConverter))]
         [Id(2, 1)]
-        public string PositionTolerance { get { return _tie.PositionTolerance.Equation; } set { _tie.PositionTolerance.Equation = value; } }
+        public EquationString PositionTolerance
+        {
+            get { return _tie.PositionTolerance.Equation; }
+            set { _tie.PositionTolerance.Equation = value; }
+        }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Adjust")]

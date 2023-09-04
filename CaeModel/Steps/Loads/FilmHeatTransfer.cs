@@ -73,11 +73,11 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void SetSinkTemperature(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _sinkTemperature, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _sinkTemperature, value, null, checkEquation);
         }
         private void SetFilmCoefficient(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _filmCoefficient, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _filmCoefficient, value, null, checkEquation);
         }
         // IContainsEquations
         public override void CheckEquations()

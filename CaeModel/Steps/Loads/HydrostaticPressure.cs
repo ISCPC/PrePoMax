@@ -156,47 +156,47 @@ namespace CaeModel
         
         private void SetX1(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _x1, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _x1, value, null, checkEquation);
         }
         private void SetY1(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _y1, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _y1, value, null, checkEquation);
         }
         private void SetZ1(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _z1, value, Check2D, checkEquation);
+            EquationContainer.SetAndCheck(ref _z1, value, Check2D, checkEquation);
         }
         private void SetX2(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _x2, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _x2, value, null, checkEquation);
         }
         private void SetY2(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _y2, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _y2, value, null, checkEquation);
         }
         private void SetZ2(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _z2, value, Check2D, checkEquation);
+            EquationContainer.SetAndCheck(ref _z2, value, Check2D, checkEquation);
         }
         private void SetN1(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _n1, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _n1, value, null, checkEquation);
         }
         private void SetN2(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _n2, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _n2, value, null, checkEquation);
         }
         private void SetN3(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _n3, value, Check2D, checkEquation);
+            EquationContainer.SetAndCheck(ref _n3, value, Check2D, checkEquation);
         }
         private void SetFirstPointPressure(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _firstPointPressure, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _firstPointPressure, value, null, checkEquation);
         }
         private void SetSecondPointPressure(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _secondPointPressure, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _secondPointPressure, value, null, checkEquation);
         }
         //
         private double Check2D(double value)

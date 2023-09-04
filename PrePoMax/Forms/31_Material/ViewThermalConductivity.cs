@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
 using CaeModel;
+using CaeGlobals;
 
 namespace PrePoMax
 {
@@ -23,43 +24,22 @@ namespace PrePoMax
         }
         //
         [Browsable(false)]
-        public override MaterialProperty Base
-        {
-            get
-            {
-                int i = 0;
-                double[][] thermalConductivityTemp = new double[_points.Count][];
-                //
-                foreach (ThermalConductivityDataPoint point in _points)
-                {
-                    thermalConductivityTemp[i] = new double[2];
-                    thermalConductivityTemp[i][0] = point.ThermalConductivity;
-                    thermalConductivityTemp[i][1] = point.Temperature;
-                    i++;
-                }
-                ThermalConductivity thermalConductivity = new ThermalConductivity(thermalConductivityTemp);
-                //
-                return thermalConductivity;
-            }
-        }
-        //
-        [Browsable(false)]
         public List<ThermalConductivityDataPoint> DataPoints { get { return _points; } set { _points = value; } }
         //
         [CategoryAttribute("Data"),
         DisplayName("Thermal conductivity"),
         DescriptionAttribute("The value of the thermal conductivity coefficient.")]
-        [TypeConverter(typeof(CaeGlobals.StringThermalConductivityConverter))]
-        public double ThermalConductivity
+        [TypeConverter(typeof(EquationThermalConductivityConverter))]
+        public EquationString ThermalConductivity
         {
             get
             {
-                if (_points != null && _points.Count > 0) return _points[0].ThermalConductivity;
-                else return 0;
+                if (_points != null && _points.Count > 0) return _points[0].ThermalConductivity.Equation;
+                else return new EquationString("0");
             }
             set
             {
-                if (_points != null && _points.Count > 0) _points[0].ThermalConductivity = value;
+                if (_points != null && _points.Count > 0) _points[0].ThermalConductivity.Equation = value;
             }
         }
 
@@ -79,6 +59,21 @@ namespace PrePoMax
 
 
         // Methods                                                                                                                  
-
+        public override MaterialProperty GetBase()
+        {
+            int i = 0;
+            EquationContainer[][] thermalConductivityTemp = new EquationContainer[_points.Count][];
+            //
+            foreach (ThermalConductivityDataPoint point in _points)
+            {
+                thermalConductivityTemp[i] = new EquationContainer[2];
+                thermalConductivityTemp[i][0] = point.ThermalConductivity;
+                thermalConductivityTemp[i][1] = point.Temperature;
+                i++;
+            }
+            ThermalConductivity thermalConductivity = new ThermalConductivity(thermalConductivityTemp);
+            //
+            return thermalConductivity;
+        }
     }
 }

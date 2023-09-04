@@ -36,35 +36,43 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the moment component per node in the direction of the first axis.")]
         [TypeConverter(typeof(EquationMomentConverter))]
         [Id(1, 3)]
-        public string M1 { get { return _momentLoad.M1.Equation; } set { _momentLoad.M1.Equation = value; } }
+        public EquationString M1 { get { return _momentLoad.M1.Equation; } set { _momentLoad.M1.Equation = value; } }
         //
         [CategoryAttribute("Moment components")]
         [OrderedDisplayName(1, 10, "M2")]
         [DescriptionAttribute("Value of the moment component per node in the direction of the second axis.")]
         [TypeConverter(typeof(EquationMomentConverter))]
         [Id(2, 3)]
-        public string M2 { get { return _momentLoad.M2.Equation; } set { _momentLoad.M2.Equation = value; } }
+        public EquationString M2 { get { return _momentLoad.M2.Equation; } set { _momentLoad.M2.Equation = value; } }
         //
         [CategoryAttribute("Moment components")]
         [OrderedDisplayName(2, 10, "M3")]
         [DescriptionAttribute("Value of the moment component per node in the direction of the third axis.")]
         [TypeConverter(typeof(EquationMomentConverter))]
         [Id(3, 3)]
-        public string M3 { get { return _momentLoad.M3.Equation; } set { _momentLoad.M3.Equation = value; } }
+        public EquationString M3 { get { return _momentLoad.M3.Equation; } set { _momentLoad.M3.Equation = value; } }
         //
         [CategoryAttribute("Moment magnitude")]
         [OrderedDisplayName(3, 10, "Magnitude")]
         [DescriptionAttribute("Value of the moment load magnitude per node.")]
         [TypeConverter(typeof(EquationMomentConverter))]
         [Id(1, 4)]
-        public string Magnitude { get { return _momentLoad.Magnitude.Equation; } set { _momentLoad.Magnitude.Equation = value; } }
+        public EquationString Magnitude
+        {
+            get { return _momentLoad.Magnitude.Equation; }
+            set { _momentLoad.Magnitude.Equation = value; }
+        }
         //
         [CategoryAttribute("Moment phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Value of the moment phase.")]
         [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 5)]
-        public string Phase { get { return _momentLoad.PhaseDeg.Equation; } set { _momentLoad.PhaseDeg.Equation = value; } }
+        public EquationString Phase
+        {
+            get { return _momentLoad.PhaseDeg.Equation; }
+            set { _momentLoad.PhaseDeg.Equation = value; }
+        }
         //
         public override string AmplitudeName
         {

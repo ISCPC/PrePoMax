@@ -21,7 +21,7 @@ namespace UserControls
         [OrderedDisplayName(3, 10, "Thickness")]
         [DescriptionAttribute("Set the thickness in the case of 2D plain strain/stress state.")]
         [TypeConverter(typeof(EquationLengthConverter))]
-        public string Thickness
+        public EquationString Thickness
         {
             get { return _solidSection.Thickness.Equation; }
             set { _solidSection.Thickness.Equation = value; }

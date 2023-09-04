@@ -50,7 +50,7 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void SetOffset(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _offset, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _offset, value, null, checkEquation);
         }
         // IContainsEquations
         public override void CheckEquations()

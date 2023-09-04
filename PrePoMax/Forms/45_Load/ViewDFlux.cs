@@ -32,7 +32,7 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the flux per area.")]
         [TypeConverter(typeof(EquationPowerPerAreaConverter))]
         [Id(1, 3)]
-        public string Magnitude { get { return _flux.Magnitude.Equation; } set { _flux.Magnitude.Equation = value; } }
+        public EquationString Magnitude { get { return _flux.Magnitude.Equation; } set { _flux.Magnitude.Equation = value; } }
         //
         public override string AmplitudeName { get { return _flux.AmplitudeName; } set { _flux.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _flux.Color; } set { _flux.Color = value; } }

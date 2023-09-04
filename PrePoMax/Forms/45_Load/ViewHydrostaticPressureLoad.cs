@@ -48,28 +48,28 @@ namespace PrePoMax
         [DescriptionAttribute("X coordinate of the first point.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(2, 3)]
-        public string X1 { get { return _hpLoad.X1.Equation; } set { _hpLoad.X1.Equation = value; } }
+        public EquationString X1 { get { return _hpLoad.X1.Equation; } set { _hpLoad.X1.Equation = value; } }
         //
         [CategoryAttribute("First point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
         [DescriptionAttribute("Y coordinate of the first point.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(3, 3)]
-        public string Y1 { get { return _hpLoad.Y1.Equation; } set { _hpLoad.Y1.Equation = value; } }
+        public EquationString Y1 { get { return _hpLoad.Y1.Equation; } set { _hpLoad.Y1.Equation = value; } }
         //
         [CategoryAttribute("First point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
         [DescriptionAttribute("Z coordinate of the first point.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(4, 3)]
-        public string Z1 { get { return _hpLoad.Z1.Equation; } set { _hpLoad.Z1.Equation = value; } }
+        public EquationString Z1 { get { return _hpLoad.Z1.Equation; } set { _hpLoad.Z1.Equation = value; } }
         //                                                                                                              
         [CategoryAttribute("First point pressure magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("Pressure magnitude at the first point.")]
         [TypeConverter(typeof(EquationPressureConverter))]
         [Id(1, 4)]
-        public string FirstPointPressure
+        public EquationString FirstPointPressure
         {
             get { return _hpLoad.FirstPointPressure.Equation; }
             set { _hpLoad.FirstPointPressure.Equation = value; }
@@ -95,28 +95,28 @@ namespace PrePoMax
         [DescriptionAttribute("X coordinate of the second point.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(2, 5)]
-        public string X2 { get { return _hpLoad.X2.Equation; } set { _hpLoad.X2.Equation = value; } }
+        public EquationString X2 { get { return _hpLoad.X2.Equation; } set { _hpLoad.X2.Equation = value; } }
         //
         [CategoryAttribute("Second point coordinates")]    // must be a different name than for the first point !!!
         [OrderedDisplayName(2, 10, "Y ")]
         [DescriptionAttribute("Y coordinate of the second point.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(3, 5)]
-        public string Y2 { get { return _hpLoad.Y2.Equation; } set { _hpLoad.Y2.Equation = value; } }
+        public EquationString Y2 { get { return _hpLoad.Y2.Equation; } set { _hpLoad.Y2.Equation = value; } }
         //
         [CategoryAttribute("Second point coordinates")]    // must be a different name than for the first point !!!
         [OrderedDisplayName(3, 10, "Z ")]
         [DescriptionAttribute("Z coordinate of the second point.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(4, 5)]
-        public string Z2 { get { return _hpLoad.Z2.Equation; } set { _hpLoad.Z2.Equation = value; } }
+        public EquationString Z2 { get { return _hpLoad.Z2.Equation; } set { _hpLoad.Z2.Equation = value; } }
         //                                                                                                                          
         [CategoryAttribute("Second point pressure magnitude")]        // must be a different name than for the first point !!!
         [OrderedDisplayName(0, 10, "Magnitude ")]
         [DescriptionAttribute("Pressure magnitude at the second point.")]
         [TypeConverter(typeof(EquationPressureConverter))]
         [Id(1, 6)]
-        public string SecondPointPressure
+        public EquationString SecondPointPressure
         {
             get { return _hpLoad.SecondPointPressure.Equation; }
             set { _hpLoad.SecondPointPressure.Equation = value; }
@@ -142,28 +142,28 @@ namespace PrePoMax
         [DescriptionAttribute("Direction component in the direction of the first axis.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(2, 7)]
-        public string N1 { get { return _hpLoad.N1.Equation; } set { _hpLoad.N1.Equation = value; } }
+        public EquationString N1 { get { return _hpLoad.N1.Equation; } set { _hpLoad.N1.Equation = value; } }
         //
         [CategoryAttribute("Pressure change direction")]
         [OrderedDisplayName(1, 10, "N2")]
         [DescriptionAttribute("Direction component in the direction of the second axis.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(3, 7)]
-        public string N2 { get { return _hpLoad.N2.Equation; } set { _hpLoad.N2.Equation = value; } }
+        public EquationString N2 { get { return _hpLoad.N2.Equation; } set { _hpLoad.N2.Equation = value; } }
         //
         [CategoryAttribute("Pressure change direction")]
         [OrderedDisplayName(2, 10, "N3")]
         [DescriptionAttribute("Direction component in the direction of the third axis.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(4, 7)]
-        public string N3 { get { return _hpLoad.N3.Equation; } set { _hpLoad.N3.Equation = value; } }
+        public EquationString N3 { get { return _hpLoad.N3.Equation; } set { _hpLoad.N3.Equation = value; } }
         //
         [CategoryAttribute("Pressure phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Value of the pressure phase.")]
         [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 8)]
-        public string Phase { get { return _hpLoad.PhaseDeg.Equation; } set { _hpLoad.PhaseDeg.Equation = value; } }
+        public EquationString Phase { get { return _hpLoad.PhaseDeg.Equation; } set { _hpLoad.PhaseDeg.Equation = value; } }
         //
         public override string AmplitudeName { get { return _hpLoad.AmplitudeName; } set { _hpLoad.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _hpLoad.Color; } set { _hpLoad.Color = value; } }

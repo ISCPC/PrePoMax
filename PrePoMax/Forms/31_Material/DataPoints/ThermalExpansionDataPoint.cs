@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
+using CaeGlobals;
 
 namespace PrePoMax
 {
@@ -12,26 +13,37 @@ namespace PrePoMax
     public class ThermalExpansionDataPoint : TempDataPoint
     {
         // Variables                                                                                                                
-        private double _thermalExpansion;
+        private EquationContainer _thermalExpansion;
 
 
         // Properties                                                                                                               
         [DisplayName("Thermal expansion\n[?]")]
-        [TypeConverter(typeof(CaeGlobals.StringThermalExpansionFromConverter))]
-        public double ThermalExpansion { get { return _thermalExpansion; } set { _thermalExpansion = value; } }
+        [TypeConverter(typeof(EquationThermalExpansionFromConverter))]
+        public EquationString ThermalExpansionEq
+        {
+            get { return _thermalExpansion.Equation; }
+            set { _thermalExpansion.Equation = value; }
+        }
+        //
+        [Browsable(false)]
+        public EquationContainer ThermalExpansion { get { return _thermalExpansion; } set { _thermalExpansion = value; } }
 
 
         // Constructors                                                                                                             
         public ThermalExpansionDataPoint()
             :base(0)
         {
-            _thermalExpansion = 0;
+            _thermalExpansion = new EquationContainer(typeof(StringThermalExpansionFromConverter), 0);
         }
-        public ThermalExpansionDataPoint(double thermalExpansion, double temperature)
+        public ThermalExpansionDataPoint(EquationContainer thermalExpansion, EquationContainer temperature)
             :base(temperature)
         {
             _thermalExpansion = thermalExpansion;
         }
+
+
+        // Methods                                                                                                                  
+       
     }
 }
 

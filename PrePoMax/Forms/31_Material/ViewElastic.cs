@@ -7,8 +7,6 @@ using System.ComponentModel;
 using DynamicTypeDescriptor;
 using CaeGlobals;
 using CaeModel;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
-using CaeResults;
 
 namespace PrePoMax
 {
@@ -26,61 +24,39 @@ namespace PrePoMax
         }
         //
         [Browsable(false)]
-        public override MaterialProperty Base
-        {
-            get
-            {
-                int i = 0;
-                double[][] youngsPoissonsTemp = new double[_points.Count][];
-                //
-                foreach (ElasticDataPoint point in _points)
-                {
-                    youngsPoissonsTemp[i] = new double[3];
-                    youngsPoissonsTemp[i][0] = point.YoungsModulus;
-                    youngsPoissonsTemp[i][1] = point.PoissonsRatio;
-                    youngsPoissonsTemp[i][2] = point.Temperature;
-                    i++;
-                }
-                Elastic elastic = new Elastic(youngsPoissonsTemp);
-                //
-                return elastic;
-            }
-        }
-        //
-        [Browsable(false)]
         public List<ElasticDataPoint> DataPoints { get { return _points; } set { _points = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(0, 2, "Young's modulus")]
         [DescriptionAttribute("The value of the Young's modulus.")]
-        [TypeConverter(typeof(StringPressureConverter))]
-        public double YoungsModulus
+        [TypeConverter(typeof(EquationPressureConverter))]
+        public EquationString YoungsModulus
         {
             get
             {
-                if (_points != null && _points.Count > 0) return _points[0].YoungsModulus;
-                else return 0;
+                if (_points != null && _points.Count > 0) return _points[0].YoungsModulus.Equation;
+                else return new EquationString("0");
             }
             set
             {
-                if (_points != null && _points.Count > 0) _points[0].YoungsModulus = value;
+                if (_points != null && _points.Count > 0) _points[0].YoungsModulus.Equation = value;
             }
         }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 2, "Poisson's ratio")]
         [DescriptionAttribute("The value of the Poisson's ratio.")]
-        [TypeConverter(typeof(StringDoubleConverter))]
-        public double PoissonsRatio
+        [TypeConverter(typeof(EquationDoubleConverter))]
+        public EquationString PoissonsRatio
         {
             get
             {
-                if (_points != null && _points.Count > 0) return _points[0].PoissonsRatio;
-                else return 0;
+                if (_points != null && _points.Count > 0) return _points[0].PoissonsRatio.Equation;
+                else return new EquationString("0");
             }
             set
             {
-                if (_points != null && _points.Count > 0) _points[0].PoissonsRatio = value;
+                if (_points != null && _points.Count > 0) _points[0].PoissonsRatio.Equation = value;
             }
         }
 
@@ -101,7 +77,28 @@ namespace PrePoMax
 
 
         // Methods                                                                                                                  
-
+        public override MaterialProperty GetBase()
+        {
+            int i = 0;
+            EquationContainer[][] youngsPoissonsTemp = new EquationContainer[_points.Count][];
+            //
+            foreach (ElasticDataPoint point in _points)
+            {
+                youngsPoissonsTemp[i] = new EquationContainer[3];
+                youngsPoissonsTemp[i][0] = point.YoungsModulus;
+                youngsPoissonsTemp[i][1] = point.PoissonsRatio;
+                youngsPoissonsTemp[i][2] = point.Temperature;
+                i++;
+            }
+            Elastic elastic = new Elastic(youngsPoissonsTemp);
+            //
+            return elastic;
+        }
+        public double GetYoungsModulusValue()
+        {
+            if (_points != null && _points.Count > 0) return _points[0].PoissonsRatio.Value;
+            else return 0;
+        }
 
     }
 }

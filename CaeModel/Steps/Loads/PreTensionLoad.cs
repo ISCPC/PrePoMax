@@ -129,23 +129,23 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void SetX(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _x, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _x, value, null, checkEquation);
         }
         private void SetY(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _y, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _y, value, null, checkEquation);
         }
         private void SetZ(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _z, value, Check2D, checkEquation);
+            EquationContainer.SetAndCheck(ref _z, value, Check2D, checkEquation);
         }
         private void SetForceMagnitude(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _forceMagnitude, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _forceMagnitude, value, null, checkEquation);
         }
         private void SetDisplacementMagnitude(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _dispMagnitude, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _dispMagnitude, value, null, checkEquation);
         }
         //
         private double Check2D(double value)

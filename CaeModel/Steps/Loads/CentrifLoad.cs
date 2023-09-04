@@ -157,31 +157,31 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void SetX(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _x, value, CheckZero, checkEquation);
+            EquationContainer.SetAndCheck(ref _x, value, CheckZero, checkEquation);
         }
         private void SetY(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _y, value, CheckZero, checkEquation);
+            EquationContainer.SetAndCheck(ref _y, value, CheckZero, checkEquation);
         }
         private void SetZ(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _z, value, CheckZero, checkEquation);
+            EquationContainer.SetAndCheck(ref _z, value, CheckZero, checkEquation);
         }
         private void SetN1(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _n1, value, CheckZero, checkEquation);
+            EquationContainer.SetAndCheck(ref _n1, value, CheckZero, checkEquation);
         }
         private void SetN2(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _n2, value, CheckOne, checkEquation);
+            EquationContainer.SetAndCheck(ref _n2, value, CheckOne, checkEquation);
         }
         private void SetN3(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _n3, value, CheckZero, checkEquation);
+            EquationContainer.SetAndCheck(ref _n3, value, CheckZero, checkEquation);
         }
         private void SetRotationalSpeed(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _rotationalSpeed, value, CheckNonNegative, checkEquation);
+            EquationContainer.SetAndCheck(ref _rotationalSpeed, value, CheckNonNegative, checkEquation);
         }
         //
         private double CheckZero(double value) 

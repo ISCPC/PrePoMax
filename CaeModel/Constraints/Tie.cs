@@ -74,7 +74,7 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void SetPositionTolerance(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _positionTolerance, value, CheckPositionTolerance, checkEquation);
+            EquationContainer.SetAndCheck(ref _positionTolerance, value, CheckPositionTolerance, checkEquation);
         }
         //
         private double CheckPositionTolerance(double value)

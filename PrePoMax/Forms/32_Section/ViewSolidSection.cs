@@ -23,7 +23,7 @@ namespace PrePoMax
                               "For the mixed axisymmetric model the thickness of the plane stress elements must be " +
                               "defined for an angle of 360°.")]
         [TypeConverter(typeof(EquationLengthConverter))]
-        public string Thickness
+        public EquationString Thickness
         {
             get { return _solidSection.Thickness.Equation; }
             set { _solidSection.Thickness.Equation = value; }

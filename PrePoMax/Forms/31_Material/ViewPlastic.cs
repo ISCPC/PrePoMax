@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
 using CaeModel;
+using CaeGlobals;
 
 namespace PrePoMax
 {
@@ -21,29 +22,6 @@ namespace PrePoMax
         public override string Name
         {
             get { return "Plastic"; }
-        }
-        //
-        [Browsable(false)]
-        public override MaterialProperty Base
-        {
-            get
-            {
-                int i = 0;
-                double[][] stressStrainTemp = new double[_points.Count][];
-                //
-                foreach (PlasticDataPoint point in _points)
-                {
-                    stressStrainTemp[i] = new double[3];
-                    stressStrainTemp[i][0] = point.Stress;
-                    stressStrainTemp[i][1] = point.Strain;
-                    stressStrainTemp[i][2] = point.Temperature;
-                    i++;
-                }
-                Plastic plastic = new Plastic(stressStrainTemp);
-                plastic.Hardening = _hardening;
-                //
-                return plastic;
-            }
         }
         //
         [Browsable(false)]
@@ -71,5 +49,23 @@ namespace PrePoMax
 
 
         // Methods                                                                                                                  
+        public override MaterialProperty GetBase()
+        {
+            int i = 0;
+            EquationContainer[][] stressStrainTemp = new EquationContainer[_points.Count][];
+            //
+            foreach (PlasticDataPoint point in _points)
+            {
+                stressStrainTemp[i] = new EquationContainer[3];
+                stressStrainTemp[i][0] = point.Stress;
+                stressStrainTemp[i][1] = point.Strain;
+                stressStrainTemp[i][2] = point.Temperature;
+                i++;
+            }
+            Plastic plastic = new Plastic(stressStrainTemp);
+            plastic.Hardening = _hardening;
+            //
+            return plastic;
+        }
     }
 }

@@ -32,21 +32,22 @@ namespace FileInOut.Output.Calculix
         public override string GetKeywordString()
         {
             string zeroTemperature = "";
-            if (_thermalExpansion.ZeroTemperature != 0) zeroTemperature = ", Zero=" + _thermalExpansion.ZeroTemperature;
+            if (_thermalExpansion.ZeroTemperature.Value != 0)
+                zeroTemperature = ", Zero=" + _thermalExpansion.ZeroTemperature.Value.ToCalculiX16String();
             return string.Format("*Expansion{0}{1}", zeroTemperature, Environment.NewLine);
         }
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-            double[][] data = _thermalExpansion.ThermalExpansionTemp;
+            EquationContainer[][] data = _thermalExpansion.ThermalExpansionTemp;
             for (int i = 0; i < data.Length; i++)
             {
                 if (_temperatureDependent)
-                    sb.AppendFormat("{0}, {1}{2}", data[i][0].ToCalculiX16String(), data[i][1].ToCalculiX16String(),
+                    sb.AppendFormat("{0}, {1}{2}", data[i][0].Value.ToCalculiX16String(), data[i][1].Value.ToCalculiX16String(),
                                     Environment.NewLine);
                 else
                 {
-                    sb.AppendFormat("{0}{1}", data[i][0].ToCalculiX16String(), Environment.NewLine);
+                    sb.AppendFormat("{0}{1}", data[i][0].Value.ToCalculiX16String(), Environment.NewLine);
                     break;
                 }
             }

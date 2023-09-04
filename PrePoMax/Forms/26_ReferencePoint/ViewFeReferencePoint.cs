@@ -67,21 +67,21 @@ namespace PrePoMax.Forms
         [Description("X coordinate of the reference point.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(2, 3)]
-        public string X { get { return _referencePoint.X.Equation; } set { _referencePoint.X.Equation = value; } }
+        public EquationString X { get { return _referencePoint.X.Equation; } set { _referencePoint.X.Equation = value; } }
         //
         [Category("Coordinates")]
         [DisplayName("Y")]
         [Description("Y coordinate of the reference point.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(3, 3)]
-        public string Y { get { return _referencePoint.Y.Equation; } set { _referencePoint.Y.Equation = value; } }
+        public EquationString Y { get { return _referencePoint.Y.Equation; } set { _referencePoint.Y.Equation = value; } }
         //
         [Category("Coordinates")]
         [DisplayName("Z")]
         [Description("Z coordinate of the reference point.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(4, 3)]
-        public string Z { get { return _referencePoint.Z.Equation; } set { _referencePoint.Z.Equation = value; } }
+        public EquationString Z { get { return _referencePoint.Z.Equation; } set { _referencePoint.Z.Equation = value; } }
         //
         [Category("Appearance")]
         [DisplayName("Color")]

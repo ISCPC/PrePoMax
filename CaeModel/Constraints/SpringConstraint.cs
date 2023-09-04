@@ -78,15 +78,15 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void SetK1(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _k1, value, CheckPositive, checkEquation);
+            EquationContainer.SetAndCheck(ref _k1, value, CheckPositive, checkEquation);
         }
         private void SetK2(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _k2, value, CheckPositive, checkEquation);
+            EquationContainer.SetAndCheck(ref _k2, value, CheckPositive, checkEquation);
         }
         private void SetK3(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _k3, value, CheckPositiveAnd2D, checkEquation);
+            EquationContainer.SetAndCheck(ref _k3, value, CheckPositiveAnd2D, checkEquation);
         }
         //
         protected double CheckPositive(double value)

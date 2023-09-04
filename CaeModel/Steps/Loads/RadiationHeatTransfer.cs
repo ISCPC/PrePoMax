@@ -100,11 +100,11 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void SetSinkTemperature(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _sinkTemperature, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _sinkTemperature, value, null, checkEquation);
         }
         private void SetEmissivity(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _emissivity, value, CheckEmissivity, checkEquation);
+            EquationContainer.SetAndCheck(ref _emissivity, value, CheckEmissivity, checkEquation);
         }
         //
         private double CheckEmissivity(double value)

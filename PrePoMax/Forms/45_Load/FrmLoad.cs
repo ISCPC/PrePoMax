@@ -1110,9 +1110,9 @@ namespace PrePoMax.Forms
                             if (ids.Length == 1)
                             {
                                 FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
-                                vcl.X = node.X.ToString();
-                                vcl.Y = node.Y.ToString();
-                                vcl.Z = node.Z.ToString();
+                                vcl.X.SetEquation(node.X.ToString());
+                                vcl.Y.SetEquation(node.Y.ToString());
+                                vcl.Z.SetEquation(node.Z.ToString());
                                 changed = true;
                             }
                         }
@@ -1124,9 +1124,9 @@ namespace PrePoMax.Forms
                             if (ids.Length == 1)
                             {
                                 FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
-                                vhpl.X1 = node.X.ToString();
-                                vhpl.Y1 = node.Y.ToString();
-                                vhpl.Z1 = node.Z.ToString();
+                                vhpl.X1.SetEquation(node.X.ToString());
+                                vhpl.Y1.SetEquation(node.Y.ToString());
+                                vhpl.Z1.SetEquation(node.Z.ToString());
                                 changed = true;
                             }
                         }
@@ -1135,9 +1135,9 @@ namespace PrePoMax.Forms
                             if (ids.Length == 1)
                             {
                                 FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
-                                vhpl.X2 = node.X.ToString();
-                                vhpl.Y2 = node.Y.ToString();
-                                vhpl.Z2 = node.Z.ToString();
+                                vhpl.X2.SetEquation(node.X.ToString());
+                                vhpl.Y2.SetEquation(node.Y.ToString());
+                                vhpl.Z2.SetEquation(node.Z.ToString());
                                 changed = true;
                             }
                         }
@@ -1147,9 +1147,9 @@ namespace PrePoMax.Forms
                             {
                                 FeNode node1 = _controller.Model.Mesh.Nodes[ids[0]];
                                 FeNode node2 = _controller.Model.Mesh.Nodes[ids[1]];
-                                vhpl.N1 = (node2.X - node1.X).ToString();
-                                vhpl.N2 = (node2.Y - node1.Y).ToString();
-                                vhpl.N3 = (node2.Z - node1.Z).ToString();
+                                vhpl.N1.SetEquation((node2.X - node1.X).ToString());
+                                vhpl.N2.SetEquation((node2.Y - node1.Y).ToString());
+                                vhpl.N3.SetEquation((node2.Z - node1.Z).ToString());
                                 changed = true;
                             }
                         }

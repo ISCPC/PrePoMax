@@ -35,32 +35,54 @@ namespace CaeGlobals
             }
             return ConvertTo(context, culture, value, destinationType);
         }
+        //
+        public static object ConvertFromStringToEquationString(ITypeDescriptorContext context, CultureInfo culture, object value,
+                                                               Func<ITypeDescriptorContext, CultureInfo, object, object> ConvertFrom)
+        {
+            if (value is string valueString)
+            {
+                string equation = valueString.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries)[0];
+                // Test the conversion
+                ConvertFrom(context, culture, equation);
+                // Return the equation
+                return new EquationString(equation);
+            }
+            else return ConvertFrom(context, culture, value);
+        }
+        //
+        public static object ConvertToStringFromEquationString(ITypeDescriptorContext context, CultureInfo culture,
+                                                               object value, Type destinationType,
+                                                               Func<ITypeDescriptorContext, CultureInfo, object, object> ConvertFrom,
+                                                               Func<ITypeDescriptorContext, CultureInfo, object, Type, object> ConvertTo,
+                                                               bool addResult = true)
+        {
+            try
+            {
+                if (destinationType == typeof(string) && value is EquationString equationString)
+                {
+                    double result = (double)ConvertFrom(context, culture, equationString.Equation);
+                    string resultStr = (string)ConvertTo(context, culture, result, typeof(string));
+                    //
+                    if (equationString.IsEquation())
+                    {
+                        string equation = equationString.Equation.Trim().Replace(" ", "");
+                        if (addResult) return equation + "; (" + resultStr + ")";
+                        else return equation;
+                    }
+                    else return resultStr;
+                }
+                return ConvertTo(context, culture, value, destinationType);
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.StartsWith("Parameter was not defined")) return ((EquationString)value).Equation + "; (Error)";
+                else throw ex;
+            }
+        }
 
-        //public static object ConvertFromEquationToString2(ITypeDescriptorContext context, CultureInfo culture, object value,
-        //                                                Func<ITypeDescriptorContext, CultureInfo, object, object> ConvertFrom)
-        //{
-        //    if (value is string valueString)
-        //    {
-        //        valueString = valueString.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries)[0];
-        //        EquationString es = new EquationString(valueString);
-        //        return es;
-        //    }
-        //    else return ConvertFrom(context, culture, value);
-        //}
-        //public static object ConvertFromStringToEquation2(ITypeDescriptorContext context, CultureInfo culture,
-        //                                                object value, Type destinationType,
-        //                                                Func<ITypeDescriptorContext, CultureInfo, object, object> ConvertFrom,
-        //                                                Func<ITypeDescriptorContext, CultureInfo, object, Type, object> ConvertTo)
-        //{
-        //    if (destinationType == typeof(string))
-        //    {
-        //        string valueString = ((EquationString)value).Equation;
-        //        double result = (double)ConvertFrom(context, culture, valueString);
-        //        string resultStr = (string)ConvertTo(context, culture, result, typeof(string));
-        //        if (valueString.Contains("=")) return valueString.Trim().Replace(" ", "") + "; (" + resultStr + ")";
-        //        else return resultStr;
-        //    }
-        //    return ConvertTo(context, culture, value, destinationType);
-        //}
+
+
+
+       
     }
 }

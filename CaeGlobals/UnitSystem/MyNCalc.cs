@@ -38,7 +38,12 @@ namespace CaeGlobals
                         else if (result is byte byt) valueDouble = byt;
                         else if (result is decimal dec) valueDouble = (double)dec;
                         else if (result is int i) valueDouble = i;
+                        else if (result is float f) valueDouble = f;
                         else if (result is double d) valueDouble = d;
+                        else
+                        {
+                            double.TryParse(result.ToString(), out valueDouble);
+                        }
                     }
                     else
                     {

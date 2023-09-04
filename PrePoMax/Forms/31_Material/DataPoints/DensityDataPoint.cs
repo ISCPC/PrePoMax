@@ -18,18 +18,8 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         [DisplayName("Density\n[?]")]
-        [TypeConverter(typeof(EquationDensityFromConverter2))]
-        public EquationString DensityEq
-        {
-            get
-            {
-                return _density.EquationStr;
-            }
-            set
-            {
-                _density.EquationStr = value;
-            }
-        }
+        [TypeConverter(typeof(EquationDensityFromConverter))]
+        public EquationString DensityEq { get { return _density.Equation; } set { _density.Equation = value; } }
         //
         [Browsable(false)]
         public EquationContainer Density { get { return _density; } set { _density = value; } }
@@ -41,7 +31,7 @@ namespace PrePoMax
         {
             _density = new EquationContainer(typeof(StringDensityFromConverter), 0);
         }
-        public DensityDataPoint(EquationContainer density, double temperature)
+        public DensityDataPoint(EquationContainer density, EquationContainer temperature)
             :base(temperature)
         {
             _density = density;

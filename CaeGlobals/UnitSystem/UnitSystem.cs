@@ -678,5 +678,9 @@ namespace CaeGlobals
             // Using typeof() works also for null fields
             info.AddValue("_unitSystemType", _unitSystemType, typeof(UnitSystemType));
         }
+        public override string ToString()
+        {
+            return _unitSystemType.ToString();
+        }
     }
 }

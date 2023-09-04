@@ -32,14 +32,14 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the pressure load magnitude.")]
         [TypeConverter(typeof(EquationPressureConverter))]
         [Id(1, 3)]
-        public string Magnitude { get { return _dLoad.Magnitude.Equation; } set { _dLoad.Magnitude.Equation = value; } }
+        public EquationString Magnitude { get { return _dLoad.Magnitude.Equation; } set { _dLoad.Magnitude.Equation = value; } }
         //
         [CategoryAttribute("Pressure phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Value of the pressure phase.")]
         [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 4)]
-        public string Phase { get { return _dLoad.PhaseDeg.Equation; } set { _dLoad.PhaseDeg.Equation = value; } }
+        public EquationString Phase { get { return _dLoad.PhaseDeg.Equation; } set { _dLoad.PhaseDeg.Equation = value; } }
         //
         public override string AmplitudeName { get { return _dLoad.AmplitudeName; } set { _dLoad.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _dLoad.Color; } set { _dLoad.Color = value; } }

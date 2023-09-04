@@ -21,7 +21,6 @@ using System.Runtime.InteropServices;
 using System.IO.Ports;
 using System.Collections.ObjectModel;
 using System.Xml.Linq;
-using Newtonsoft.Json;
 using PrePoMax.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 using System.Security.Policy;

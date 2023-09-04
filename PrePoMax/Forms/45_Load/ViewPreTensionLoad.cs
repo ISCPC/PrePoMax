@@ -74,28 +74,28 @@ namespace PrePoMax
         [DescriptionAttribute("X component of the pre-tension direction.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(2, 3)]
-        public string X { get { return _preTenLoad.X.Equation; } set { _preTenLoad.X.Equation = value; } }
+        public EquationString X { get { return _preTenLoad.X.Equation; } set { _preTenLoad.X.Equation = value; } }
         //
         [CategoryAttribute("Pre-tension direction")]
         [OrderedDisplayName(2, 10, "Y")]
         [DescriptionAttribute("Y component of the pre-tension direction.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(3, 3)]
-        public string Y { get { return _preTenLoad.Y.Equation; } set { _preTenLoad.Y.Equation = value; } }
+        public EquationString Y { get { return _preTenLoad.Y.Equation; } set { _preTenLoad.Y.Equation = value; } }
         //
         [CategoryAttribute("Pre-tension direction")]
         [OrderedDisplayName(3, 10, "Z")]
         [DescriptionAttribute("Z component of the pre-tension direction.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(4, 3)]
-        public string Z { get { return _preTenLoad.Z.Equation; } set { _preTenLoad.Z.Equation = value; } }
+        public EquationString Z { get { return _preTenLoad.Z.Equation; } set { _preTenLoad.Z.Equation = value; } }
         //
         [CategoryAttribute("Magnitude")]
         [OrderedDisplayName(0, 10, "Force")]
         [DescriptionAttribute("Value of the force for the pre-tension load.")]
         [TypeConverter(typeof(EquationForceConverter))]
         [Id(1, 4)]
-        public string ForceMagnitude
+        public EquationString ForceMagnitude
         {
             get { return _preTenLoad.ForceMagnitude.Equation; }
             set { _preTenLoad.ForceMagnitude.Equation = value; }
@@ -106,7 +106,7 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the displacement for the pre-tension load.")]
         [TypeConverter(typeof(EquationLengthFixedDOFConverter))]
         [Id(1, 5)]
-        public string DisplacementMagnitude
+        public EquationString DisplacementMagnitude
         {
             get { return _preTenLoad.DisplacementMagnitude.Equation; }
             set { _preTenLoad.DisplacementMagnitude.Equation = value; }

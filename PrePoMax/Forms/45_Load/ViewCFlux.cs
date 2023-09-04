@@ -37,7 +37,7 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the flux per node.")]
         [TypeConverter(typeof(EquationPowerConverter))]
         [Id(1, 3)]
-        public string Magnitude { get { return _cFlux.Magnitude.Equation; } set { _cFlux.Magnitude.Equation = value; } }
+        public EquationString Magnitude { get { return _cFlux.Magnitude.Equation; } set { _cFlux.Magnitude.Equation = value; } }
         //
         public override string AmplitudeName { get { return _cFlux.AmplitudeName; } set { _cFlux.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _cFlux.Color; } set { _cFlux.Color = value; } }

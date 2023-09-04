@@ -577,6 +577,9 @@ namespace CaeMesh
                                (_nodeSets.ContainsValidKey(referencePoint.RegionName) ||
                                _surfaces.ContainsValidKey(referencePoint.RegionName)));
                 valid = validFromCoordinates || validFromBB || validFromCG;
+                // Check equations
+                valid &= referencePoint.TryCheckEquations();
+                //
                 SetItemValidity(referencePoint, valid, items);
                 if (!valid && referencePoint.Active) invalidItems.Add("Reference point: " + referencePoint.Name);
             }

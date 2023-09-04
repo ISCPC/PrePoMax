@@ -13,28 +13,34 @@ namespace PrePoMax
     public class ElasticDataPoint : TempDataPoint
     {
         // Variables                                                                                                                
-        private double _youngsModulus;
-        private double _poissonsRatio;
+        private EquationContainer _youngsModulus;
+        private EquationContainer _poissonsRatio;
 
 
         // Properties                                                                                                               
         [DisplayName("Youngs modulus\n[?]")]
-        [TypeConverter(typeof(StringPressureFromConverter))]
-        public double YoungsModulus { get { return _youngsModulus; } set { _youngsModulus = value; } }
+        [TypeConverter(typeof(EquationPressureFromConverter))]
+        public EquationString YoungsModulusEq { get { return _youngsModulus.Equation; } set { _youngsModulus.Equation = value; } }
+        //
+        [Browsable(false)]
+        public EquationContainer YoungsModulus { get { return _youngsModulus; } set { _youngsModulus = value; } }
         //
         [DisplayName("Poissons ratio\n[?]")]
-        [TypeConverter(typeof(StringDoubleConverter))]
-        public double PoissonsRatio { get { return _poissonsRatio; } set { _poissonsRatio = value; } }
+        [TypeConverter(typeof(EquationDoubleConverter))]
+        public EquationString PoissonsRatioEq { get { return _poissonsRatio.Equation; } set { _poissonsRatio.Equation = value; } }
+        //
+        [Browsable(false)]
+        public EquationContainer PoissonsRatio { get { return _poissonsRatio; } set { _poissonsRatio = value; } }
 
 
         // Constructors                                                                                                             
         public ElasticDataPoint()
-            : base(0)
+            :base(0)
         {
-            _youngsModulus = 0;
-            _poissonsRatio = 0;
+            _youngsModulus = new EquationContainer(typeof(StringPressureFromConverter), 0);
+            _poissonsRatio = new EquationContainer(typeof(StringDoubleConverter), 0);
         }
-        public ElasticDataPoint(double youngsModulus, double poissonsRatio, double temperature)
+        public ElasticDataPoint(EquationContainer youngsModulus, EquationContainer poissonsRatio, EquationContainer temperature)
             :base(temperature)
         {
             _youngsModulus = youngsModulus;

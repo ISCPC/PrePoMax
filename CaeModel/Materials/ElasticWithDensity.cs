@@ -12,38 +12,26 @@ namespace CaeModel
     public class ElasticWithDensity : MaterialProperty, ISerializable
     {
         // Variables                                                                                                                
-        private double _youngsModulus;          //ISerializable
-        private double _poissonsRatio;          //ISerializable
-        private double _density;                //ISerializable
+        private EquationContainer _youngsModulus;          //ISerializable
+        private EquationContainer _poissonsRatio;          //ISerializable
+        private EquationContainer _density;                //ISerializable
 
 
         // Properties                                                                                                               
-        public double YoungsModulus 
-        { 
-            get { return _youngsModulus; }
-            set { if (value > 0) _youngsModulus = value; else throw new CaeException(_positive); } 
-        }
-        public double PoissonsRatio
-        {
-            get { return _poissonsRatio; }
-            set { _poissonsRatio = value; }
-        }
-        public double Density
-        {
-            get { return _density; }
-            set { if (value > 0) _density = value; else throw new CaeException(_positive); }
-        }
+        public EquationContainer YoungsModulus { get { return _youngsModulus; } set { SetYoungsModulus(value); } }
+        public EquationContainer PoissonsRatio { get { return _poissonsRatio; } set { SetPoissonsRatio(value); } }
+        public EquationContainer Density { get { return _density; } set { SetDensity(value); } }
 
 
         // Constructors                                                                                                             
         public ElasticWithDensity(double youngsModulus, double poissonsRatio, double density)
         {
-            // The constructor must wotk with E = 0
-            _youngsModulus = youngsModulus;
+            // The constructor must work with E = 0
+            SetYoungsModulus(new EquationContainer(typeof(StringPressureConverter), youngsModulus), false);
             // Use the method to perform any checks necessary
-            PoissonsRatio = poissonsRatio;
-            // The constructor must wotk with rho = 0
-            _density = density;
+            PoissonsRatio = new EquationContainer(typeof(StringDoubleConverter), poissonsRatio);
+            // The constructor must work with rho = 0
+            SetDensity(new EquationContainer(typeof(StringDensityConverter), density), false);
         }
         public ElasticWithDensity(SerializationInfo info, StreamingContext context)
             : base(info, context)
@@ -53,11 +41,26 @@ namespace CaeModel
                 switch (entry.Name)
                 {
                     case "_youngsModulus":
-                        _youngsModulus = (double)entry.Value; break;
+                        // Compatibility for version v1.4.0
+                        if (entry.Value is double valueE)
+                            YoungsModulus = new EquationContainer(typeof(StringPressureConverter), valueE);
+                        else
+                            SetYoungsModulus((EquationContainer)entry.Value, false);
+                        break;
                     case "_poissonsRatio":
-                        _poissonsRatio = (double)entry.Value; break;
+                        // Compatibility for version v1.4.0
+                        if (entry.Value is double valueV)
+                            PoissonsRatio = new EquationContainer(typeof(StringDoubleConverter), valueV);
+                        else
+                            SetPoissonsRatio((EquationContainer)entry.Value, false);
+                        break;
                     case "_density":
-                        _density = (double)entry.Value; break;
+                        // Compatibility for version v1.4.0
+                        if (entry.Value is double valueRho)
+                            Density = new EquationContainer(typeof(StringDensityConverter), valueRho);
+                        else
+                            SetDensity((EquationContainer)entry.Value, false);
+                        break;
                     default:
                         break;
                 }
@@ -66,16 +69,40 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-
+        private void SetYoungsModulus(EquationContainer value, bool checkEquation = true)
+        {
+            EquationContainer.SetAndCheck(ref _youngsModulus, value, CheckPositive, checkEquation);
+        }
+        private void SetPoissonsRatio(EquationContainer value, bool checkEquation = true)
+        {
+            EquationContainer.SetAndCheck(ref _poissonsRatio, value, null, checkEquation);
+        }
+        private void SetDensity(EquationContainer value, bool checkEquation = true)
+        {
+            EquationContainer.SetAndCheck(ref _density, value, CheckPositive, checkEquation);
+        }
+        //
+        private double CheckPositive(double value)
+        {
+            if (value <= 0) throw new CaeException(_positive);
+            else return value;
+        }
+        // IContainsEquations
+        public override void CheckEquations()
+        {
+            _youngsModulus.CheckEquation();
+            _poissonsRatio.CheckEquation();
+            _density.CheckEquation();
+        }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             // Using typeof() works also for null fields
             base.GetObjectData(info, context);
             //
-            info.AddValue("_youngsModulus", _youngsModulus, typeof(double));
-            info.AddValue("_poissonsRatio", _poissonsRatio, typeof(double));
-            info.AddValue("_density", _density, typeof(double));
+            info.AddValue("_youngsModulus", _youngsModulus, typeof(EquationContainer));
+            info.AddValue("_poissonsRatio", _poissonsRatio, typeof(EquationContainer));
+            info.AddValue("_density", _density, typeof(EquationContainer));
         }
     }
 }

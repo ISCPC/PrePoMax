@@ -240,6 +240,21 @@ namespace CaeModel
             bool valid = false;
             invalidItems.AddRange(_geometry.CheckValidity(items));
             invalidItems.AddRange(_mesh.CheckValidity(items));
+            // Materials
+            Material material;
+            foreach (var entry in _materials)
+            {
+                material = entry.Value;
+                valid = true;
+                foreach (var property in material.Properties)
+                {
+                    // Check equations
+                    valid &= property.TryCheckEquations();
+                }
+                //
+                SetItemValidity(null, material, valid, items);
+                if (!valid && material.Active) invalidItems.Add("Material: " + material.Name);
+            }
             // Sections
             Section section;
             foreach (var entry in _sections)
@@ -267,6 +282,8 @@ namespace CaeModel
                             && _mesh.ElementSets.ContainsValidKey(section.RegionName)));
                 }
                 else throw new NotSupportedException();
+                // Check equations
+                valid &= section.TryCheckEquations();
                 //
                 SetItemValidity(null, section, valid, items);
                 if (!valid && section.Active) invalidItems.Add("Section: " + section.Name);
@@ -300,6 +317,8 @@ namespace CaeModel
                             && (t.SlaveRegionName != t.MasterRegionName);
                 }
                 else throw new NotSupportedException();
+                // Check equations
+                valid &= constraint.TryCheckEquations();
                 //
                 SetItemValidity(null, constraint, valid, items);
                 if (!valid && constraint.Active) invalidItems.Add("Constraint: " + constraint.Name);
@@ -396,6 +415,8 @@ namespace CaeModel
                     // Amplitude
                     if (load.AmplitudeName != BoundaryCondition.DefaultAmplitudeName && 
                         !_amplitudes.ContainsValidKey(load.AmplitudeName)) valid = false;
+                    // Check equations
+                    valid &= load.TryCheckEquations();
                     //
                     SetItemValidity(step.Name, load, valid, items);
                     if (!valid && load.Active) invalidItems.Add("Load: " + step.Name + ", " + load.Name);
@@ -691,7 +712,7 @@ namespace CaeModel
                 {
                     if (property is SlipWear sw)
                     {
-                        coefficient = sw.WearCoefficient / sw.Hardness * _properties.CyclesIncrement;
+                        coefficient = sw.WearCoefficient.Value / sw.Hardness.Value * _properties.CyclesIncrement;
                         containsWear = true;
                         break;
                     }

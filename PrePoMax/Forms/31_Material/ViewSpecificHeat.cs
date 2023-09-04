@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
 using CaeModel;
+using CaeGlobals;
 
 namespace PrePoMax
 {
@@ -23,43 +24,22 @@ namespace PrePoMax
         }
         //
         [Browsable(false)]
-        public override MaterialProperty Base
-        {
-            get
-            {
-                int i = 0;
-                double[][] specificHeatTemp = new double[_points.Count][];
-                //
-                foreach (SpecificHeatDataPoint point in _points)
-                {
-                    specificHeatTemp[i] = new double[2];
-                    specificHeatTemp[i][0] = point.SpecificHeat;
-                    specificHeatTemp[i][1] = point.Temperature;
-                    i++;
-                }
-                SpecificHeat specificHeat = new SpecificHeat(specificHeatTemp);
-                //
-                return specificHeat;
-            }
-        }
-        //
-        [Browsable(false)]
         public List<SpecificHeatDataPoint> DataPoints { get { return _points; } set { _points = value; } }
         //
         [CategoryAttribute("Data"),
         DisplayName("Specific heat"),
         DescriptionAttribute("The value of the specific heat.")]
-        [TypeConverter(typeof(CaeGlobals.StringSpecificHeatConverter))]
-        public double SpecificHeat
+        [TypeConverter(typeof(EquationSpecificHeatConverter))]
+        public EquationString SpecificHeat
         {
             get
             {
-                if (_points != null && _points.Count > 0) return _points[0].SpecificHeat;
-                else return 0;
+                if (_points != null && _points.Count > 0) return _points[0].SpecificHeat.Equation;
+                else return new EquationString("0");
             }
             set
             {
-                if (_points != null && _points.Count > 0) _points[0].SpecificHeat = value;
+                if (_points != null && _points.Count > 0) _points[0].SpecificHeat.Equation = value;
             }
         }
 
@@ -78,6 +58,21 @@ namespace PrePoMax
 
 
         // Methods                                                                                                                  
-
+        public override MaterialProperty GetBase()
+        {
+            int i = 0;
+            EquationContainer[][] specificHeatTemp = new EquationContainer[_points.Count][];
+            //
+            foreach (SpecificHeatDataPoint point in _points)
+            {
+                specificHeatTemp[i] = new EquationContainer[2];
+                specificHeatTemp[i][0] = point.SpecificHeat;
+                specificHeatTemp[i][1] = point.Temperature;
+                i++;
+            }
+            SpecificHeat specificHeat = new SpecificHeat(specificHeatTemp);
+            //
+            return specificHeat;
+        }
     }
 }

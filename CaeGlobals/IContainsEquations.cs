@@ -9,5 +9,6 @@ namespace CaeGlobals
     public interface IContainsEquations
     {
         void CheckEquations();
+        bool TryCheckEquations();
     }
 }

@@ -54,56 +54,60 @@ namespace PrePoMax
         [DescriptionAttribute("X coordinate of the axis point.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(2, 3)]
-        public string X { get { return _cenLoad.X.Equation; } set { _cenLoad.X.Equation = value; } }
+        public EquationString X { get { return _cenLoad.X.Equation; } set { _cenLoad.X.Equation = value; } }
         //
         [CategoryAttribute("Rotation center coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
         [DescriptionAttribute("Y coordinate of the axis point.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(3, 3)]
-        public string Y { get { return _cenLoad.Y.Equation; } set { _cenLoad.Y.Equation = value; } }
+        public EquationString Y { get { return _cenLoad.Y.Equation; } set { _cenLoad.Y.Equation = value; } }
         //
         [CategoryAttribute("Rotation center coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
         [DescriptionAttribute("Z coordinate of the axis point.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(4, 3)]
-        public string Z { get { return _cenLoad.Z.Equation; } set { _cenLoad.Z.Equation = value; } }
+        public EquationString Z { get { return _cenLoad.Z.Equation; } set { _cenLoad.Z.Equation = value; } }
         //
         [CategoryAttribute("Rotation axis components")]
         [OrderedDisplayName(0, 10, "N1")]
         [DescriptionAttribute("Axis component in the direction of the first axis.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(1, 4)]
-        public string N1 { get { return _cenLoad.N1.Equation; } set { _cenLoad.N1.Equation = value; } }
+        public EquationString N1 { get { return _cenLoad.N1.Equation; } set { _cenLoad.N1.Equation = value; } }
         //
         [CategoryAttribute("Rotation axis components")]
         [OrderedDisplayName(1, 10, "N2")]
         [DescriptionAttribute("Axis component in the direction of the second axis.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(2, 4)]
-        public string N2 { get { return _cenLoad.N2.Equation; } set { _cenLoad.N2.Equation = value; } }
+        public EquationString N2 { get { return _cenLoad.N2.Equation; } set { _cenLoad.N2.Equation = value; } }
         //
         [CategoryAttribute("Rotation axis components")]
         [OrderedDisplayName(2, 10, "N3")]
         [DescriptionAttribute("Axis component in the direction of the third axis.")]
         [TypeConverter(typeof(EquationLengthConverter))]
         [Id(3, 4)]
-        public string N3 { get { return _cenLoad.N3.Equation; } set { _cenLoad.N3.Equation = value; } }
+        public EquationString N3 { get { return _cenLoad.N3.Equation; } set { _cenLoad.N3.Equation = value; } }
         //
         [CategoryAttribute("Rotational speed magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("Value of the rotational speed magnitude around the axis defined by the point and direction.")]
         [TypeConverter(typeof(EquationRotationalSpeedConverter))]
         [Id(1, 5)]
-        public string RotationalSpeed { get { return _cenLoad.RotationalSpeed.Equation; } set { _cenLoad.RotationalSpeed.Equation = value; } }
+        public EquationString RotationalSpeed
+        {
+            get { return _cenLoad.RotationalSpeed.Equation; }
+            set { _cenLoad.RotationalSpeed.Equation = value; }
+        }
         //
         [CategoryAttribute("Rotational speed phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Value of the rotational speed phase.")]
         [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 6)]
-        public string Phase { get { return _cenLoad.PhaseDeg.Equation; } set { _cenLoad.PhaseDeg.Equation = value; } }
+        public EquationString Phase { get { return _cenLoad.PhaseDeg.Equation; } set { _cenLoad.PhaseDeg.Equation = value; } }
         //
         public override string AmplitudeName { get { return _cenLoad.AmplitudeName; } set { _cenLoad.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _cenLoad.Color; } set { _cenLoad.Color = value; } }

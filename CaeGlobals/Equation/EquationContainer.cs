@@ -12,35 +12,6 @@ using UnitsNet;
 namespace CaeGlobals
 {
     [Serializable]
-    public class EquationString
-    {
-        private string _equation;
-        public string Equation { get { return _equation; } set { _equation = value; } }
-        public EquationString()
-            : this(null)
-        {
-        }
-        public EquationString(string equation)
-        {
-            _equation = equation;
-        }
-        //
-        //public static implicit operator string(EquationString equationString)
-        //{
-        //    return equationString._equation;
-        //}
-        //public static implicit operator EquationString(string equation)
-        //{
-        //    return new EquationString(equation);
-        //}
-        //
-        public bool IsEquation()
-        {
-            if (_equation != null && _equation.StartsWith("=")) return true;
-            else return false;
-        }
-    }
-    [Serializable]
     public class EquationContainer
     {
         // Variables                                                                                                                
@@ -54,12 +25,13 @@ namespace CaeGlobals
 
         // Properties                                                                                                               
         public double Value { get { return GetValueFromEquation(_equation); } }
-        public string Equation { get { return _equation; } set { SetEquation(value, true); } }
-        public EquationString EquationStr
+        //public string Equation { get { return _equation; } set { SetEquation(value, true); } }
+        public EquationString Equation
         {
             get { return new EquationString(_equation); }
-            set { SetEquation(value, true); }
+            set { SetEquation(value.Equation, true); }
         }
+        public string String { get { return _equation; } }
         public Func<double, double> CheckValue { get { return _checkValue; } set { _checkValue = value; } }
         public Action EquationChanged { get { return _equationChanged; } set { _equationChanged = value; } }
        
@@ -74,14 +46,6 @@ namespace CaeGlobals
 
 
         // Methods                                                                                                                  
-        private string GetEquation()
-        {
-            if (_stringDoubleConverterType == null) throw new NotSupportedException();
-            TypeConverter stringDoubleConverter = (TypeConverter)Activator.CreateInstance(_stringDoubleConverterType);
-            double result = (double)stringDoubleConverter.ConvertFrom(_equation);
-            string resultStr = (string)stringDoubleConverter.ConvertTo(result, typeof(string));
-            return _equation.Trim().Replace(" ", "") + "; (" + resultStr + ")";
-        }
         private string GetEquationFromValue(double value)
         {
             if (_stringDoubleConverterType == null) throw new NotSupportedException();
@@ -108,6 +72,10 @@ namespace CaeGlobals
             }
             
         }
+        public void SetEquation(EquationString equation)
+        {
+            SetEquation(equation.Equation);
+        }
         public void SetEquation(string equation, bool enableEquationChanged = false)
         {
             try
@@ -126,7 +94,8 @@ namespace CaeGlobals
                 {
                     if (_equation != equation)
                     {
-                        _equation = equation.Replace(" ", "");
+                        if (equation.StartsWith("=")) equation = equation.Replace(" ", "");
+                        _equation = equation;
                         if (enableEquationChanged) _equationChanged?.Invoke();
                     }
                 }
@@ -149,6 +118,51 @@ namespace CaeGlobals
             if (_equation != null && _equation.StartsWith("=")) return true;
             else return false;
         }
-        
+        //
+        public static void SetAndCheck(ref EquationContainer variable, EquationContainer value, Func<double, double> CheckValue,
+                                          bool check)
+        {
+            SetAndCheck(ref variable, value, CheckValue, null, check);
+        }
+        public static void SetAndCheck(ref EquationContainer[][] variable, EquationContainer[][] value,
+                                       Func<double, double>[] CheckValue, bool check)
+        {
+            Func<double, double> checkFunction;
+            variable = new EquationContainer[value.Length][];
+            //
+            for (int i = 0; i < value.Length; i++)
+            {
+                variable[i] = new EquationContainer[value[i].Length];
+                for (int j = 0; j < value[i].Length; j++)
+                {
+                    if (CheckValue == null) checkFunction = null;
+                    else checkFunction = CheckValue[j];
+                    SetAndCheck(ref variable[i][j], value[i][j], checkFunction, null, check);
+                }
+            }
+        }
+
+        public static void SetAndCheck(ref EquationContainer variable, EquationContainer value, Func<double, double> CheckValue,
+                                           Action EquationChangedCallback, bool check)
+        {
+            if (value == null)
+            {
+                variable = null;
+                return;
+            }
+            //
+            string prevEquation = variable != null ? variable.String : value.String;
+            //
+            value.CheckValue = CheckValue;
+            value.EquationChanged = EquationChangedCallback;
+            //
+            if (check)
+            {
+                value.CheckEquation();
+                if (variable != null && prevEquation != variable.String) EquationChangedCallback?.Invoke();
+            }
+            //
+            variable = value;
+        }
     }
 }

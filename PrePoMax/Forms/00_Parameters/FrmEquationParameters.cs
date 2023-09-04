@@ -76,6 +76,7 @@ namespace PrePoMax.Forms
         }
         private void dgvData_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
+
             try
             {
                 if (e.RowIndex == _cellRow && e.ColumnIndex == _cellCol)
@@ -89,26 +90,18 @@ namespace PrePoMax.Forms
                         //
                         foreach (var parameter in parameters)
                         {
-                            if (count++ < e.RowIndex)
-                                MyNCalc.ExistingParameters.Add(parameter.Name, parameter.Value);
+                            if (count++ < e.RowIndex) MyNCalc.ExistingParameters.Add(parameter.Name, parameter.Value);
                             else break;
                         }
                         //
-                        if (e.ColumnIndex == 0)
-                        {
-                            parameters[e.RowIndex].Name = e.FormattedValue.ToString();
-                        }
-                        else if (e.ColumnIndex == 1)
-                        {
-                            parameters[e.RowIndex].Equation = e.FormattedValue.ToString();
-                        }
+                        if (e.ColumnIndex == 0) parameters[e.RowIndex].Name = e.FormattedValue.ToString();
+                        else if (e.ColumnIndex == 1) parameters[e.RowIndex].Equation.SetEquation(e.FormattedValue.ToString());
                     }
                 }
             }
             catch (Exception ex)
             {
                 MessageBoxes.ShowError(ex.Message);
-                dgvData.Rows[e.RowIndex].ErrorText = ex.Message;
                 e.Cancel = true;
             }
             finally
@@ -124,8 +117,6 @@ namespace PrePoMax.Forms
         {
             _cellRow = -1;
             _cellCol = -1;
-            // Clear the row error in case the user presses ESC.
-            dgvData.Rows[e.RowIndex].ErrorText = null;
         }
         //
         private void btnOK_Click(object sender, EventArgs e)

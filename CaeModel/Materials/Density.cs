@@ -37,8 +37,8 @@ namespace CaeModel
                 {
                     case "_densityTemp":
                         // Compatibility for version v1.4.0
-                        if (entry.Value is double[][] value)
-                            SetDensityTemp(value, false);
+                        if (entry.Value is double[][] values)
+                            SetDensityTemp(values, false);
                         else
                             SetDensityTemp((EquationContainer[][])entry.Value, false);
                         break;
@@ -64,7 +64,8 @@ namespace CaeModel
         }
         private void SetDensityTemp(EquationContainer[][] value, bool checkEquation = true)
         {
-            SetAndCheck(ref _densityTemp, value, CheckPositive, checkEquation);
+            EquationContainer.SetAndCheck(ref _densityTemp, value, new Func<double, double>[] { CheckPositive, null },
+                                          checkEquation);
         }
         //
         private double CheckPositive(double value)
@@ -73,7 +74,7 @@ namespace CaeModel
             else return value;
         }
         // IContainsEquations
-        public void CheckEquations()
+        public override void CheckEquations()
         {
             for (int i = 0; i < _densityTemp.Length; i++)
             {

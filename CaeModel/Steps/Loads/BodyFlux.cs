@@ -60,7 +60,7 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void SetMagnitude(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _magnitude, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _magnitude, value, null, checkEquation);
         }
         // IContainsEquations
         public override void CheckEquations()

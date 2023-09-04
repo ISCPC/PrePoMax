@@ -103,11 +103,11 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void SetMagnitudeFactor(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _magnitudeFactor, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _magnitudeFactor, value, null, checkEquation);
         }
         private void SetGeomScaleFactor(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _geomScaleFactor, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _geomScaleFactor, value, null, checkEquation);
         }
         // IContainsEquations
         public override void CheckEquations()

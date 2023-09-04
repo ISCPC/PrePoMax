@@ -16,26 +16,28 @@ namespace PrePoMax
         // Variables                                                                                                                
         private SlipWear _slipWear;
 
+
         // Properties                                                                                                               
         public override string Name
         {
             get { return "Slip Wear"; }
         }
         //
-        [Browsable(false)]
-        public override MaterialProperty Base { get { return _slipWear; } }
-        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(0, 10, "Hardness")]
         [DescriptionAttribute("The value of the surface hardness.")]
-        [TypeConverter(typeof(StringPressureConverter))]
-        public double Hardness { get { return _slipWear.Hardness; } set { _slipWear.Hardness = value; } }
+        [TypeConverter(typeof(EquationPressureConverter))]
+        public EquationString Hardness { get { return _slipWear.Hardness.Equation; } set { _slipWear.Hardness.Equation = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Wear coefficient")]
         [DescriptionAttribute("The value of the wear coefficient.")]
-        [TypeConverter(typeof(StringDoubleConverter))]
-        public double WearCoefficient { get { return _slipWear.WearCoefficient; } set { _slipWear.WearCoefficient = value; } }
+        [TypeConverter(typeof(EquationDoubleConverter))]
+        public EquationString WearCoefficient
+        {
+            get { return _slipWear.WearCoefficient.Equation; }
+            set { _slipWear.WearCoefficient.Equation = value; }
+        }
 
 
         // Constructors                                                                                                             
@@ -47,5 +49,17 @@ namespace PrePoMax
 
 
         // Methods                                                                                                                  
+        public override MaterialProperty GetBase()
+        {
+            return _slipWear;
+        }
+        public double GetHardnessValue()
+        {
+            return _slipWear.Hardness.Value;
+        }
+        public double GetWearCoefficientValue()
+        {
+            return _slipWear.WearCoefficient.Value;
+        }
     }
 }

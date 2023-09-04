@@ -36,7 +36,7 @@ namespace PrePoMax
                     conductancePressureTemp[i] = new double[3];
                     conductancePressureTemp[i][0] = point.Conductance;
                     conductancePressureTemp[i][1] = point.Pressure;
-                    conductancePressureTemp[i][2] = point.Temperature;
+                    conductancePressureTemp[i][2] = point.Temperature.Value;
                     i++;
                 }
                 _gapConductance.ConductnancePressureTemp = conductancePressureTemp;
@@ -86,7 +86,7 @@ namespace PrePoMax
             {
                 _points.Add(new GapConductanceDataPoint(_gapConductance.ConductnancePressureTemp[i][0],
                                                         _gapConductance.ConductnancePressureTemp[i][1],
-                                                        _gapConductance.ConductnancePressureTemp[i][2]));
+                    new EquationContainer(typeof(StringTemperatureConverter), _gapConductance.ConductnancePressureTemp[i][2])));
             }
             //
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);

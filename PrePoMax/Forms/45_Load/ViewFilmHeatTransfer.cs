@@ -32,7 +32,7 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the sink temperature.")]
         [TypeConverter(typeof(EquationTemperatureConverter))]
         [Id(1, 3)]
-        public string SinkTemperature
+        public EquationString SinkTemperature
         {
             get { return _filmHeatTransfer.SinkTemperature.Equation; }
             set { _filmHeatTransfer.SinkTemperature.Equation = value; }
@@ -43,7 +43,7 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the film coefficient.")]
         [TypeConverter(typeof(EquationHeatTransferCoefficientConverter))]
         [Id(2, 3)]
-        public string FilmCoefficient
+        public EquationString FilmCoefficient
         {
             get { return _filmHeatTransfer.FilmCoefficient.Equation; }
             set { _filmHeatTransfer.FilmCoefficient.Equation = value; }

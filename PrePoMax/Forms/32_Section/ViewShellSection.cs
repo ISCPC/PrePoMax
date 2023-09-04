@@ -21,7 +21,7 @@ namespace PrePoMax
         [OrderedDisplayName(2, 10, "Thickness")]
         [DescriptionAttribute("Set the shell thickness.")]
         [TypeConverter(typeof(EquationLengthConverter))]
-        public string Thickness
+        public EquationString Thickness
         {
             get { return _shellSection.Thickness.Equation; }
             set { _shellSection.Thickness.Equation = value; }
@@ -32,7 +32,11 @@ namespace PrePoMax
         [DescriptionAttribute("Set the offset of the shell mid-surface in regard to the selected geometry. " +
                               "The unit is the shell thickness.")]
         [TypeConverter(typeof(EquationDoubleConverter))]
-        public string Offset { get { return _shellSection.Offset.Equation; } set { _shellSection.Offset.Equation = value; } }
+        public EquationString Offset
+        {
+            get { return _shellSection.Offset.Equation; }
+            set { _shellSection.Offset.Equation = value; }
+        }
 
 
         // Constructors                                                                                                             

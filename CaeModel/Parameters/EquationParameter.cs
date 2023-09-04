@@ -26,18 +26,18 @@ namespace CaeModel
             set
             {
                 base.Name = value;
-                if (_equation != null) CheckSelfReference(value, _equation.Equation);
+                if (_equation != null) CheckSelfReference(value, _equation.Equation.Equation);
             }
         }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Value/Equation")]
         [DescriptionAttribute("Parameter equation.")]
-        [TypeConverter(typeof(EquationDoubleConverter))]
-        public string Equation
+        [TypeConverter(typeof(EquationDoubleNoResultConverter))]
+        public EquationString Equation
         {
             get { return _equation.Equation; }
-            set { CheckSelfReference(_name, value); _equation.Equation = value; }
+            set { CheckSelfReference(_name, value.Equation); _equation.Equation = value; }
         }
         //
         [ReadOnly(true)]

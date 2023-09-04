@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
+using CaeGlobals;
 
 namespace PrePoMax
 {
@@ -18,11 +19,11 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         [DisplayName("Conductance\n[?]")]
-        [TypeConverter(typeof(CaeGlobals.StringHeatTransferCoefficientFromConverter))]
+        [TypeConverter(typeof(StringHeatTransferCoefficientFromConverter))]
         public double Conductance { get { return _conductance; } set { _conductance = value; } }
         //
         [DisplayName("Pressure\n[?]")]
-        [TypeConverter(typeof(CaeGlobals.StringPressureFromConverter))]
+        [TypeConverter(typeof(StringPressureFromConverter))]
         public double Pressure { get { return _pressure; } set { _pressure = value; } }
 
 
@@ -33,7 +34,7 @@ namespace PrePoMax
             _conductance = 0;
             _pressure = 0;
         }
-        public GapConductanceDataPoint(double conductance, double pressure, double temperature)
+        public GapConductanceDataPoint(double conductance, double pressure, EquationContainer temperature)
             :base(temperature)
         {
             _conductance = conductance;

@@ -119,34 +119,7 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void SetPhaseDeg(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _phaseDeg, value, CheckAngle, checkEquation);
-        }
-        protected static void SetAndCheck(ref EquationContainer variable, EquationContainer value, Func<double, double> CheckValue,
-                                          Action EquationChangedCallback, bool check)
-        {
-            if (value == null)
-            {
-                variable = null;
-                return;
-            }
-            //
-            string prevEquation = variable != null ? variable.Equation : value.Equation;
-            //
-            value.CheckValue = CheckValue;
-            value.EquationChanged = EquationChangedCallback;
-            //
-            if (check)
-            {
-                value.CheckEquation();
-                if (variable != null && prevEquation != variable.Equation) EquationChangedCallback?.Invoke();
-            }
-            //
-            variable = value;
-        }
-        protected static void SetAndCheck(ref EquationContainer variable, EquationContainer value, Func<double, double> CheckValue,
-                                          bool check)
-        {
-            SetAndCheck(ref variable, value, CheckValue, null, check);
+            EquationContainer.SetAndCheck(ref _phaseDeg, value, CheckAngle, checkEquation);
         }
         //
         private double CheckAngle(double value)
@@ -157,6 +130,15 @@ namespace CaeModel
         public virtual void CheckEquations()
         {
             _phaseDeg.CheckEquation();
+        }
+        public virtual bool TryCheckEquations()
+        {
+            try
+            {
+                CheckEquations();
+                return true;
+            }
+            catch (Exception ex) { return false; }
         }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)

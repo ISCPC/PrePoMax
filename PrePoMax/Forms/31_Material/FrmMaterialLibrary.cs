@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CaeModel;
-using Newtonsoft.Json;
+using PrePoMax.Commands;
 
 namespace PrePoMax.Forms
 {
@@ -257,9 +257,7 @@ namespace PrePoMax.Forms
                     {
                         if (_frmMaterial != null)
                         {
-                            // Convert material unit system
                             Material previewMaterial = (Material)cltvLibrary.SelectedNode.Tag.DeepClone();
-                            previewMaterial.ConvertUnits(_controller.Model.UnitSystem, _libraryUnitSystem, _controller.Model.UnitSystem);
                             _frmMaterial.Material = previewMaterial;
                         }
                         
@@ -348,7 +346,7 @@ namespace PrePoMax.Forms
                     parentNode.Expand();
                     cltvLibrary.SelectedNode = node;
                     cltvLibrary.SelectedNode.EnsureVisible();
-                    ApplyFormatingRecursive(node);
+                    ApplyFormattingRecursive(node);
                     cltvLibrary.Focus();
 
                     tbCategoryName.Text = node.Name;
@@ -446,11 +444,12 @@ namespace PrePoMax.Forms
                     ListViewItem libraryMaterialItem = lvModelMaterials.SelectedItems[0];
                     Material libraryMaterial = (Material)libraryMaterialItem.Tag.DeepClone();
                     libraryMaterial.Name = materialName;
+                    // Check for equations
+                    if (libraryMaterial.ContainsEquation())
+                        throw new CaeException("A material containing equations cannot be added to the library.");
                     //
                     TreeNode newMaterialNode = categoryNode.Nodes.Add(libraryMaterial.Name);
                     newMaterialNode.Name = newMaterialNode.Text;
-                    // Convert material unit system
-                    libraryMaterial.ConvertUnits(_controller.Model.UnitSystem, _controller.Model.UnitSystem, _libraryUnitSystem);
                     newMaterialNode.Tag = libraryMaterial;
                     //
                     categoryNode.Expand();
@@ -483,10 +482,9 @@ namespace PrePoMax.Forms
                     }
                     ListViewItem modelMaterialItem = lvModelMaterials.Items.Add(materialName);
                     modelMaterialItem.Name = modelMaterialItem.Text;
-                    // Convert material unit system
+                    //
                     Material modelMaterial = (Material)cltvLibrary.SelectedNode.Tag.DeepClone();
                     modelMaterial.Name = modelMaterialItem.Name;
-                    modelMaterial.ConvertUnits(_controller.Model.UnitSystem, _libraryUnitSystem, _controller.Model.UnitSystem);
                     modelMaterialItem.Tag = modelMaterial;
                     //
                     lvModelMaterials_Enter(null, null);
@@ -605,9 +603,7 @@ namespace PrePoMax.Forms
         }
         private void SaveMaterialLibraryToFile(string fileName, MaterialLibraryItem materialLibrary)
         {
-            JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
-            string json = JsonConvert.SerializeObject(materialLibrary, Formatting.Indented, settings);
-            File.WriteAllText(fileName, json);
+            materialLibrary.DumpToFile(fileName);
         }
         private void TreeNodesToItemList(TreeNode node, MaterialLibraryItem materialLibraryItem)
         {
@@ -631,10 +627,7 @@ namespace PrePoMax.Forms
                 {
                     if (item.Name == fileName) throw new CaeException("The selected material library is already open.");
                 }
-                JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
-                string contents = File.ReadAllText(fileName);
-                //
-                MaterialLibraryItem materialLibrary = JsonConvert.DeserializeObject<MaterialLibraryItem>(contents, settings);
+                MaterialLibraryItem materialLibrary = Tools.LoadDumpFromFile<MaterialLibraryItem>(fileName);
                 //
                 lvLibraries.SelectedIndices.Clear();
                 ListViewItem libraryItem = lvLibraries.Items.Add(fileName);
@@ -648,7 +641,7 @@ namespace PrePoMax.Forms
             node.TreeView.BeginUpdate();
             //
             ItemListToTreeNodes(materialLibraryItem, node);
-            ApplyFormatingRecursive(cltvLibrary.Nodes[0]);
+            ApplyFormattingRecursive(cltvLibrary.Nodes[0]);
             //
             node.TreeView.EndUpdate();
         }
@@ -667,14 +660,14 @@ namespace PrePoMax.Forms
             if (materialLibraryItem.Expanded) node.Expand();
         }
         //
-        private void ApplyFormatingRecursive(TreeNode node)
+        private void ApplyFormattingRecursive(TreeNode node)
         {
             if (node.Tag == null) node.ForeColor = SystemColors.Highlight;
             else node.ForeColor = Color.Black;
             //
             foreach (TreeNode childNode in node.Nodes)
             {
-                ApplyFormatingRecursive(childNode);
+                ApplyFormattingRecursive(childNode);
             }
         }
         //

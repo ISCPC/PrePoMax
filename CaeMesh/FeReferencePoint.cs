@@ -174,15 +174,15 @@ namespace CaeMesh
         // Methods                                                                                                                  
         private void SetX(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _x, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _x, value, null, checkEquation);
         }
         private void SetY(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _y, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _y, value, null, checkEquation);
         }
         private void SetZ(EquationContainer value, bool checkEquation = true)
         {
-            SetAndCheck(ref _z, value, Check2D, checkEquation);
+            EquationContainer.SetAndCheck(ref _z, value, Check2D, checkEquation);
         }
         //
         private double Check2D(double value)
@@ -197,33 +197,14 @@ namespace CaeMesh
             _y.CheckEquation();
             _z.CheckEquation();
         }
-        //
-        protected static void SetAndCheck(ref EquationContainer variable, EquationContainer value, Func<double, double> CheckValue,
-                                          Action EquationChangedCallback, bool check)
+        public bool TryCheckEquations()
         {
-            if (value == null)
+            try
             {
-                variable = null;
-                return;
+                CheckEquations();
+                return true;
             }
-            //
-            string prevEquation = variable != null ? variable.Equation : value.Equation;
-            //
-            value.CheckValue = CheckValue;
-            value.EquationChanged = EquationChangedCallback;
-            //
-            if (check)
-            {
-                value.CheckEquation();
-                if (variable != null && prevEquation != variable.Equation) EquationChangedCallback?.Invoke();
-            }
-            //
-            variable = value;
-        }
-        protected static void SetAndCheck(ref EquationContainer variable, EquationContainer value, Func<double, double> CheckValue,
-                                          bool check)
-        {
-            SetAndCheck(ref variable, value, CheckValue, null, check);
+            catch (Exception ex) { return false; }
         }
         //
         private void Clear()

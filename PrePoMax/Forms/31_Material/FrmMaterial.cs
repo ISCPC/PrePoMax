@@ -505,9 +505,14 @@ namespace PrePoMax.Forms
             _material.TemperatureDependent = cbTemperatureDependent.Checked;
             //
             ViewMaterialProperty property;
+            MaterialProperty materialProperty;
             foreach (ListViewItem item in lvAddedProperties.Items)
             {
                 property = (ViewMaterialProperty)item.Tag;
+                materialProperty = property.GetBase();
+                // Check equations
+                materialProperty.CheckEquations();
+                //
                 if (property is ViewDensity vd)
                 {
                     for (int i = 0; i < vd.DataPoints.Count; i++)
@@ -515,20 +520,20 @@ namespace PrePoMax.Forms
                         if (vd.DataPoints[i].Density.Value <= 0) throw new CaeException("The density must be larger than 0.");
                     }
                 }
-                else if (property is ViewElastic ve && ve.YoungsModulus <= 0)
+                else if (property is ViewElastic ve && ve.GetYoungsModulusValue() <= 0)
                 {
                     throw new CaeException("The Young's modulus must be larger than 0.");
                 }
                 else if (property is ViewElasticWithDensity ewd)
                 {
-                    if (ewd.YoungsModulus <= 0) throw new CaeGlobals.CaeException("The Young's modulus must be larger than 0.");
-                    if (ewd.Density <= 0) throw new CaeGlobals.CaeException("The density must be larger than 0.");
+                    if (ewd.GetYoungsModulusValue() <= 0) throw new CaeException("The Young's modulus must be larger than 0.");
+                    if (ewd.GetDensityValue() <= 0) throw new CaeException("The density must be larger than 0.");
                 }
                 else if (property is ViewThermalExpansion vex)
                 {
                     for (int i = 0; i < vex.DataPoints.Count; i++)
                     {
-                        if (vex.DataPoints[i].ThermalExpansion <= 0)
+                        if (vex.DataPoints[i].ThermalExpansion.Value <= 0)
                             throw new CaeException("The thermal expansion coefficient must be larger than 0.");
                     }
                 }
@@ -536,7 +541,7 @@ namespace PrePoMax.Forms
                 {
                     for (int i = 0; i < vtc.DataPoints.Count; i++)
                     {
-                        if (vtc.DataPoints[i].ThermalConductivity <= 0)
+                        if (vtc.DataPoints[i].ThermalConductivity.Value <= 0)
                             throw new CaeException("The thermal conductivity coefficient must be larger than 0.");
                     }
                 }
@@ -544,17 +549,17 @@ namespace PrePoMax.Forms
                 {
                     for (int i = 0; i < vsh.DataPoints.Count; i++)
                     {
-                        if (vsh.DataPoints[i].SpecificHeat <= 0)
+                        if (vsh.DataPoints[i].SpecificHeat.Value <= 0)
                             throw new CaeException("The thermal conductivity coefficient must be larger than 0.");
                     }
                 }
                 else if (property is ViewSlipWear vsw)
                 {
-                    if (vsw.Hardness <= 0) throw new CaeException("The hardness must be larger than 0.");
-                    if (vsw.WearCoefficient <= 0) throw new CaeException("The wear coefficient must be larger than 0.");
+                    if (vsw.GetHardnessValue() <= 0) throw new CaeException("The hardness must be larger than 0.");
+                    if (vsw.GetWearCoefficientValue() <= 0) throw new CaeException("The wear coefficient must be larger than 0.");
                 }
                 //
-                _material.AddProperty(property.Base);
+                _material.AddProperty(materialProperty);
             }
             //
             if (_materialToEditName == null)
@@ -577,21 +582,21 @@ namespace PrePoMax.Forms
             // Density
             SetGridViewUnit(nameof(DensityDataPoint.DensityEq), _controller.Model.UnitSystem.DensityUnitAbbreviation);
             // Elastic
-            SetGridViewUnit(nameof(ElasticDataPoint.YoungsModulus), _controller.Model.UnitSystem.PressureUnitAbbreviation);
-            SetGridViewUnit(nameof(ElasticDataPoint.PoissonsRatio), noUnit);
+            SetGridViewUnit(nameof(ElasticDataPoint.YoungsModulusEq), _controller.Model.UnitSystem.PressureUnitAbbreviation);
+            SetGridViewUnit(nameof(ElasticDataPoint.PoissonsRatioEq), noUnit);
             // Plastic
-            SetGridViewUnit(nameof(PlasticDataPoint.Stress), _controller.Model.UnitSystem.PressureUnitAbbreviation);
-            SetGridViewUnit(nameof(PlasticDataPoint.Strain), noUnit);
+            SetGridViewUnit(nameof(PlasticDataPoint.StressEq), _controller.Model.UnitSystem.PressureUnitAbbreviation);
+            SetGridViewUnit(nameof(PlasticDataPoint.StrainEq), noUnit);
             // Thermal expansion
-            SetGridViewUnit(nameof(ThermalExpansionDataPoint.ThermalExpansion),
+            SetGridViewUnit(nameof(ThermalExpansionDataPoint.ThermalExpansionEq),
                             _controller.Model.UnitSystem.ThermalExpansionUnitAbbreviation);
             // Thermal conductivity
-            SetGridViewUnit(nameof(ThermalConductivityDataPoint.ThermalConductivity),
+            SetGridViewUnit(nameof(ThermalConductivityDataPoint.ThermalConductivityEq),
                             _controller.Model.UnitSystem.ThermalConductivityUnitAbbreviation);
             // Specific heat
-            SetGridViewUnit(nameof(SpecificHeatDataPoint.SpecificHeat), _controller.Model.UnitSystem.SpecificHeatUnitAbbreviation);
+            SetGridViewUnit(nameof(SpecificHeatDataPoint.SpecificHeatEq), _controller.Model.UnitSystem.SpecificHeatUnitAbbreviation);
             // Temperature
-            SetGridViewUnit(nameof(TempDataPoint.Temperature), _controller.Model.UnitSystem.TemperatureUnitAbbreviation);
+            SetGridViewUnit(nameof(TempDataPoint.TemperatureEq), _controller.Model.UnitSystem.TemperatureUnitAbbreviation);
             //
             dgvData.XColIndex = 1;
             dgvData.StartPlotAtZero = true;

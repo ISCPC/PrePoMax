@@ -38,15 +38,18 @@ namespace FileInOut.Output.Calculix
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-            double[][] data = _plastic.StressStrainTemp;
+            EquationContainer[][] data = _plastic.StressStrainTemp;
             for (int i = 0; i < data.Length; i++)
             {
                 if (_temperatureDependent)
-                    sb.AppendFormat("{0}, {1}, {2}{3}", data[i][0].ToCalculiX16String(), data[i][1].ToCalculiX16String(),
-                                    data[i][2].ToCalculiX16String(), Environment.NewLine);
+                    sb.AppendFormat("{0}, {1}, {2}{3}", data[i][0].Value.ToCalculiX16String(),
+                                                        data[i][1].Value.ToCalculiX16String(),
+                                                        data[i][2].Value.ToCalculiX16String(),
+                                                        Environment.NewLine);
                 else
-                    sb.AppendFormat("{0}, {1}{2}", data[i][0].ToCalculiX16String(), data[i][1].ToCalculiX16String(),
-                                    Environment.NewLine);
+                    sb.AppendFormat("{0}, {1}{2}", data[i][0].Value.ToCalculiX16String(),
+                                                   data[i][1].Value.ToCalculiX16String(),
+                                                   Environment.NewLine);
             }
             return sb.ToString();
         }

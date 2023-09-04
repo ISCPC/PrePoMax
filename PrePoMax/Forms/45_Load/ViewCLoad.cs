@@ -37,35 +37,35 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the force component per node in the direction of the first axis.")]
         [TypeConverter(typeof(EquationForceConverter))]
         [Id(1, 3)]
-        public string F1 { get { return _cLoad.F1.Equation; } set { _cLoad.F1.Equation = value; } }
+        public EquationString F1 { get { return _cLoad.F1.Equation; } set { _cLoad.F1.Equation = value; } }
         //
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(1, 10, "F2")]
         [DescriptionAttribute("Value of the force component per node in the direction of the second axis.")]
         [TypeConverter(typeof(EquationForceConverter))]
         [Id(2, 3)]
-        public string F2 { get { return _cLoad.F2.Equation; } set { _cLoad.F2.Equation = value; } }
+        public EquationString F2 { get { return _cLoad.F2.Equation; } set { _cLoad.F2.Equation = value; } }
         //
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(2, 10, "F3")]
         [DescriptionAttribute("Value of the force component per node in the direction of the third axis.")]
         [TypeConverter(typeof(EquationForceConverter))]
         [Id(3, 3)]
-        public string F3 { get { return _cLoad.F3.Equation; } set { _cLoad.F3.Equation = value; } }
+        public EquationString F3 { get { return _cLoad.F3.Equation; } set { _cLoad.F3.Equation = value; } }
         //
         [CategoryAttribute("Force magnitude")]
         [OrderedDisplayName(3, 10, "Magnitude")]
         [DescriptionAttribute("Value of the force load magnitude per node.")]
         [TypeConverter(typeof(EquationForceConverter))]
         [Id(1, 4)]
-        public string Magnitude { get { return _cLoad.Magnitude.Equation; } set { _cLoad.Magnitude.Equation = value; } }
+        public EquationString Magnitude { get { return _cLoad.Magnitude.Equation; } set { _cLoad.Magnitude.Equation = value; } }
         //
         [CategoryAttribute("Force phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Value of the force phase.")]
         [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 5)]
-        public string Phase { get { return _cLoad.PhaseDeg.Equation; } set { _cLoad.PhaseDeg.Equation = value; } }
+        public EquationString Phase { get { return _cLoad.PhaseDeg.Equation; } set { _cLoad.PhaseDeg.Equation = value; } }
         //
         public override string AmplitudeName { get { return _cLoad.AmplitudeName; } set { _cLoad.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _cLoad.Color; } set { _cLoad.Color = value; } }

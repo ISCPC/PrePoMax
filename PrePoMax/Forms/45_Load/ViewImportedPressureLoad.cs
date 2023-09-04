@@ -90,7 +90,7 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the pressure magnitude scale factor.")]
         [TypeConverter(typeof(EquationDoubleConverter))]
         [Id(5, 3)]
-        public string MagnitudeFactor
+        public EquationString MagnitudeFactor
         {
             get { return _importedPressure.MagnitudeFactor.Equation; }
             set { _importedPressure.MagnitudeFactor.Equation = value; }
@@ -101,14 +101,18 @@ namespace PrePoMax
         [DescriptionAttribute("Value of the pressure phase.")]
         [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 4)]
-        public string Phase { get { return _importedPressure.PhaseDeg.Equation; } set { _importedPressure.PhaseDeg.Equation = value; } }
+        public EquationString Phase
+        {
+            get { return _importedPressure.PhaseDeg.Equation; }
+            set { _importedPressure.PhaseDeg.Equation = value; }
+        }
         ////
         [CategoryAttribute("Imported geometry")]
         [OrderedDisplayName(0, 10, "Scale factor")]
         [DescriptionAttribute("Value of the imported geometry scale factor.")]
         [TypeConverter(typeof(EquationDoubleConverter))]
         [Id(1, 5)]
-        public string GeometryScaleFactor
+        public EquationString GeometryScaleFactor
         {
             get { return _importedPressure.GeometryScaleFactor.Equation; }
             set { _importedPressure.GeometryScaleFactor.Equation = value; }
