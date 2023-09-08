@@ -232,7 +232,12 @@ Save as: Krilo 	... if a file Krilo with no extension exist it will ask for over
 
 DONE
 Version 1.4.1
-
+Added support for parameters: Tools -> Parameters
+Added support for equations with parameters to reference points
+Added support for equations with parameters to materials
+Added support for equations with parameters to sections
+Added support for equations with parameters to constraints
+Added support for equations with parameters to loads
 Added support for mixed axisymmetric models
 Added additional geometry analyze option: vertices by angle
 Added exploded view by center point method

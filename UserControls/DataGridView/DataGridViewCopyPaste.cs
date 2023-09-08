@@ -15,6 +15,7 @@ namespace UserControls
     {
         // Variables                                                                                                                
         private int _xColIndex;
+        private bool _showErrorMsg;
         //
         private ContextMenuStrip cmsCopyPaste;
         private IContainer components;
@@ -36,6 +37,7 @@ namespace UserControls
                 if (_xColIndex < 0) _xColIndex = 0;
             }
         }
+        public bool ShowErrorMsg { get { return _showErrorMsg; } set { _showErrorMsg = value; } }
         public bool EnableCutMenu { get { return tsmiCut.Enabled; } set { tsmiCut.Enabled = value; } }
         public bool EnablePasteMenu { get { return tsmiPaste.Enabled; } set { tsmiPaste.Enabled = value; } }
         public bool EnablePlotMenu { get { return tsmiPlot.Enabled; } set { tsmiPlot.Enabled = value; } }
@@ -53,6 +55,7 @@ namespace UserControls
             //
             this.KeyDown += DataGridViewCopyPaste_KeyDown;
             //
+            _showErrorMsg = true;
             frmDiagramView = new FrmDiagramView();
         }
         private void InitializeComponent()
@@ -296,7 +299,7 @@ namespace UserControls
             e.ThrowException = false;
             displayErrorDialogIfNoHandler = false;
             //
-            MessageBoxes.ShowError(e.Exception.Message);
+            if (_showErrorMsg) MessageBoxes.ShowError(e.Exception.Message);
             //
             base.OnDataError(displayErrorDialogIfNoHandler, e);
         }

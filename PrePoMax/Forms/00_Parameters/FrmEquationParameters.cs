@@ -20,6 +20,7 @@ namespace PrePoMax.Forms
     {
         // Variables                                                                                                                
         private Controller _controller;
+        private List<EquationParameter> _parameters;
         private int _cellRow;
         private int _cellCol;
 
@@ -32,6 +33,7 @@ namespace PrePoMax.Forms
             _controller = controller;
             _cellRow = -1;
             _cellCol = -1;
+            dgvData.ShowErrorMsg = false;
         }
 
 
@@ -42,10 +44,10 @@ namespace PrePoMax.Forms
             {
                 if (_controller.Model != null)
                 {
-                    List<EquationParameter> parameters = new List<EquationParameter>();
-                    foreach (var entry in _controller.Model.Parameters) parameters.Add(entry.Value.DeepClone());
+                    _parameters = new List<EquationParameter>();
+                    foreach (var entry in _controller.Model.Parameters) _parameters.Add(entry.Value.DeepClone());
                     // Binding
-                    SetDataGridViewBinding(parameters);
+                    SetDataGridViewBinding(_parameters);
                     //
                     UpdateNCalcParameters();
                 }
@@ -76,26 +78,30 @@ namespace PrePoMax.Forms
         }
         private void dgvData_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
-
             try
             {
                 if (e.RowIndex == _cellRow && e.ColumnIndex == _cellCol)
                 {
-                    BindingSource binding = dgvData.DataSource as BindingSource;
-                    if (binding != null)
+                    HashSet<string> existingNames = new HashSet<string>(MyNCalc.ExistingParameters.Keys);
+                    existingNames.Remove(_parameters[e.RowIndex].Name);
+                    //
+                    UpdateNCalcParameters(e.RowIndex);
+                    //
+                    string value = e.FormattedValue.ToString();
+                    EquationParameter ep = new EquationParameter();
+                    // Test the name
+                    if (e.ColumnIndex == 0)
                     {
-                        int count = 0;
-                        MyNCalc.ExistingParameters = new Dictionary<string, double>();
-                        List<EquationParameter> parameters = binding.DataSource as List<EquationParameter>;
+                        if (existingNames.Contains(value))
+                            throw new CaeException("The parameter named '" + value + "' already exists.");
                         //
-                        foreach (var parameter in parameters)
-                        {
-                            if (count++ < e.RowIndex) MyNCalc.ExistingParameters.Add(parameter.Name, parameter.Value);
-                            else break;
-                        }
-                        //
-                        if (e.ColumnIndex == 0) parameters[e.RowIndex].Name = e.FormattedValue.ToString();
-                        else if (e.ColumnIndex == 1) parameters[e.RowIndex].Equation.SetEquation(e.FormattedValue.ToString());
+                        ep.Name = value;
+                    }
+                    // Test the equation
+                    else if (e.ColumnIndex == 1)
+                    {
+                        ep.Equation.SetEquation(value);
+                        double tmp = ep.Value;
                     }
                 }
             }
@@ -109,7 +115,6 @@ namespace PrePoMax.Forms
                 if (e.RowIndex == _cellRow && e.ColumnIndex == _cellCol)
                 {
                     UpdateNCalcParameters();
-                    dgvData.Refresh();
                 }
             }
         }
@@ -123,31 +128,41 @@ namespace PrePoMax.Forms
         {
             try
             {
-                BindingSource binding = dgvData.DataSource as BindingSource;
-                if (binding != null)
+                double tmp;
+                EquationParameter existingParameter;
+                HashSet<string> parameterNames = new HashSet<string>();
+                // Check all equation
+                foreach (var parameter in _parameters)
                 {
-                    EquationParameter existingParameter;
-                    HashSet<string> parameterNames = new HashSet<string>();
-                    List<EquationParameter> parameters = binding.DataSource as List<EquationParameter>;
-                    //
-                    foreach (var parameter in parameters)
+                    try
                     {
-                        parameterNames.Add(parameter.Name);
-                        if (_controller.Model.Parameters.TryGetValue(parameter.Name, out existingParameter))
-                        {
-                            if (parameter.Equation == existingParameter.Equation) { }
-                            // Replace
-                            else _controller.ReplaceParameterCommand(existingParameter.Name, parameter);
-                        }
-                        // Add
-                        else _controller.AddParameterCommand(parameter);
+                        tmp = parameter.Value;
                     }
-                    // Remove
-                    string[] parameterNamesToRemove = _controller.Model.Parameters.Keys.Except(parameterNames).ToArray();
-                    if (parameterNamesToRemove.Length > 0) _controller.RemoveParametersCommand(parameterNamesToRemove);
-                    //
-                    btnCancel_Click(null, null);
+                    catch (Exception ex)
+                    {
+                        throw new CaeException("There is an error in the '" + parameter.Name + "' parameter equation.");
+                    }
                 }
+                // Add parameters
+                foreach (var parameter in _parameters)
+                {
+                    parameterNames.Add(parameter.Name);
+                        
+                    if (_controller.Model.Parameters.TryGetValue(parameter.Name, out existingParameter))
+                    {
+                        if (parameter.EquationStr == existingParameter.EquationStr) { }
+                        // Replace
+                        else _controller.ReplaceParameterCommand(existingParameter.Name, parameter);
+                    }
+                    // Add
+                    else _controller.AddParameterCommand(parameter);
+                }
+                // Remove
+                string[] parameterNamesToRemove = _controller.Model.Parameters.Keys.Except(parameterNames).ToArray();
+                if (parameterNamesToRemove.Length > 0) _controller.RemoveParametersCommand(parameterNamesToRemove);
+                //
+                btnCancel_Click(null, null);
+                
             }
             catch (Exception ex)
             {
@@ -196,26 +211,20 @@ namespace PrePoMax.Forms
         private void Binding_ListChanged(object sender, ListChangedEventArgs e)
         {
         }
-        private void UpdateNCalcParameters()
+        private void UpdateNCalcParameters(int upToRow = int.MaxValue)
         {
-            try
+            int rowCount = 0;
+            MyNCalc.ExistingParameters.Clear();
+            foreach (var parameter in _parameters)
             {
-                BindingSource binding = dgvData.DataSource as BindingSource;
-                if (binding != null)
+                if (rowCount < upToRow)
                 {
-                    List<EquationParameter> parameters = binding.DataSource as List<EquationParameter>;
-                    MyNCalc.ExistingParameters = new Dictionary<string, double>();
-                    foreach (var parameter in parameters)
-                    {
-                        MyNCalc.ExistingParameters.Add(parameter.Name, parameter.Value);
-                    }
+                    try { MyNCalc.ExistingParameters.Add(parameter.Name, parameter.Value); }
+                    catch { }
                 }
+                rowCount++;
             }
-            catch (Exception ex)
-            {
-
-            }
-            
+            dgvData.Refresh();
         }
 
         

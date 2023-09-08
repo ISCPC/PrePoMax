@@ -34,7 +34,7 @@ namespace CaeModel
         [OrderedDisplayName(1, 10, "Value/Equation")]
         [DescriptionAttribute("Parameter equation.")]
         [TypeConverter(typeof(EquationDoubleNoResultConverter))]
-        public EquationString Equation
+        public EquationString EquationStr
         {
             get { return _equation.Equation; }
             set { CheckSelfReference(_name, value.Equation); _equation.Equation = value; }
@@ -45,7 +45,10 @@ namespace CaeModel
         [OrderedDisplayName(2, 10, "Evaluates to")]
         [DescriptionAttribute("Parameter value.")]
         public double Value { get { return _equation.Value; } }
-        
+        //
+        [Browsable(false)]
+        public EquationContainer Equation { get { return _equation; } set { _equation = value; } }
+
 
         // Constructors                                                                                                             
         public EquationParameter()
