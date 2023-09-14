@@ -54,7 +54,7 @@ namespace CaeGlobals
         }
         public static async Task<T> LoadDumpFromFileAsync<T>(string fileName)
         {
-            T a = default(T);
+            T a = default;
             await Task.Run(() => a = LoadDumpFromFile<T>(fileName));
             return a;
         }
@@ -392,6 +392,7 @@ namespace CaeGlobals
                                                             ref double x1, ref double x2, ref double x3)
         {
             // https://en.wikipedia.org/wiki/Cubic_function
+            // https://www.easycalculation.com/algebra/cubic-equation.php - check source
             double p;
             double q;
             double tmp1;
@@ -401,17 +402,28 @@ namespace CaeGlobals
             p = (3.0 * a * c - b * b) / (3.0 * a * a);
             if (p > 0)
             {
+                // One root real, two are complex
                 x1 = x2 = x3 = 0;
+            }
+            else if (p == 0)
+            {
+                // All roots real, at least two are equal.
+                double term1 = b * _oneThird;
+                double r = -(27f * d) + b * (9f * c - 2f * b * b);
+                double r13 = (r < 0) ? -Math.Pow(-r, _oneThird) : Math.Pow(r, _oneThird);
+                x1 = -term1 + 2f * r13;
+                x2 = -(r13 + term1);
+                x3 = x2;
             }
             else
             {
                 q = (2.0 * b * b * b - 9.0 * a * b * c + 27.0 * a * a * d) / (27.0 * a * a * a);
-
+                //
                 tmp1 = (3.0 * q) / (2.0 * p) * Math.Sqrt(-3.0 / p);
                 if (tmp1 > 1.0) tmp1 = 1.0;
                 else if (tmp1 < -1.0) tmp1 = -1.0;
                 alpha = 1.0 / 3.0 * Math.Acos(tmp1);
-
+                //
                 tmp1 = 2.0 * Math.Sqrt(-p / 3.0);
                 tmp2 = b / (3.0 * a);
                 x1 = tmp1 * Math.Cos(alpha) - tmp2;
@@ -423,6 +435,7 @@ namespace CaeGlobals
                                                              ref float x1, ref float x2, ref float x3)
         {
             // https://en.wikipedia.org/wiki/Cubic_function
+            // https://www.easycalculation.com/algebra/cubic-equation.php - check source
             float p;
             float q;
             float tmp1;
@@ -432,7 +445,18 @@ namespace CaeGlobals
             p = (3f * a * c - b * b) / (3f * a * a);
             if (p > 0)
             {
+                // One root real, two are complex
                 x1 = x2 = x3 = 0;
+            }
+            else if (p == 0)
+            {
+                // All roots real, at least two are equal.
+                float term1 = b * _oneThird;
+                float r = -(27f * d) + b * (9f * c - 2f * (b * b));
+                float r13 = (r < 0) ? (float)(-Math.Pow(-r, _oneThird)) : (float)Math.Pow(r, _oneThird);
+                x1 = -term1 + 2f * r13;
+                x2 = -(r13 + term1);
+                x3 = x2;
             }
             else
             {
@@ -442,13 +466,33 @@ namespace CaeGlobals
                 if (tmp1 > 1f) tmp1 = 1f;
                 else if (tmp1 < -1f) tmp1 = -1f;
                 alpha = _oneThird * (float)Math.Acos(tmp1);
-
+                //
                 tmp1 = 2f * (float)Math.Sqrt(-p / 3f);
                 tmp2 = b / (3f * a);
                 x1 = tmp1 * (float)Math.Cos(alpha) - tmp2;
                 x2 = tmp1 * (float)Math.Cos(alpha - _twoPiThirds) - tmp2;
                 x3 = tmp1 * (float)Math.Cos(alpha - _fourPiThirds) - tmp2;
             }
+        }
+        public static void GetPrincipalValuesFromMatrix(double s11, double s22, double s33,
+                                                        double s12, double s23, double s31,
+                                                        ref float x1f, ref float x2f, ref float x3f)
+        {
+            // https://en.wikipedia.org/wiki/Cubic_function
+            // https://www.easycalculation.com/algebra/cubic-equation.php - check source
+            double x1 = 0;
+            double x2 = 0;
+            double x3 = 0;
+            //
+            double I1 = s11 + s22 + s33;
+            double I2 = s11 * s22 + s22 * s33 + s33 * s11 - s12 * s12 - s23 * s23 - s31 * s31;
+            double I3 = s11 * s22 * s33 - s11 * s23 * s23 - s22 * s31 * s31 - s33 * s12 * s12 + 2.0 * s12 * s23 * s31;
+            //
+            SolveQubicEquationDepressedCubic(1, -I1, I2, -I3, ref x1, ref x2, ref x3);
+            //
+            x1f = (float)x1;
+            x2f = (float)x2;
+            x3f = (float)x3;
         }
         public static float Sin(float x) //x in radians
         {

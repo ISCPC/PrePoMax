@@ -32,6 +32,11 @@ namespace PrePoMax.Commands
             receiver.AddMeshingParameters(_meshingParameters.DeepClone());
             return true;
         }
+        public bool ExecuteWithDialogs(Controller receiver)
+        {
+            _meshingParameters = receiver.EditMeshingParametersByForm(_meshingParameters.DeepClone());
+            return Execute(receiver);
+        }
         public override string GetCommandString()
         {
             return base.GetCommandString() + _meshingParameters.ToString();

@@ -187,7 +187,14 @@ namespace PrePoMax.Forms
                     {
                         itemName = "Surface " + itemTypePartIds[0];
                     }
-                    else throw new NotSupportedException();
+                    else
+                    {
+                        try
+                        {
+                            throw new NotSupportedException();
+                        }
+                        catch { }
+                    }
                     //
                     if (itemName != null)
                     {

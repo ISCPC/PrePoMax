@@ -123,17 +123,17 @@ namespace PrePoMax.Commands
         }
         public void ExecuteAllCommands()
         {
-            ExecuteAllCommands(false, null);
+            ExecuteAllCommands(false, false, null);
         }
-        public void ExecuteAllCommands(bool showImportDialog)
+        public void ExecuteAllCommands(bool showImportDialog, bool showMeshDialog)
         {
-            ExecuteAllCommands(showImportDialog, null);
+            ExecuteAllCommands(showImportDialog, showMeshDialog, null);
         }
         public void ExecuteAllCommandsFromLastSave(CSaveToPmx lastSave)
         {
-            ExecuteAllCommands(false, lastSave);
+            ExecuteAllCommands(false, false, lastSave);
         }
-        public void ExecuteAllCommands(bool showImportDialog, CSaveToPmx lastSave)
+        public void ExecuteAllCommands(bool showImportDialog, bool showMeshDialog, CSaveToPmx lastSave)
         {
             int count = 0;
             _history.Clear();
@@ -162,6 +162,10 @@ namespace PrePoMax.Commands
                             if (showImportDialog && command is CImportFile cif)
                             {
                                 cif.ExecuteWithDialogs(_controller);
+                            }
+                            else if (showMeshDialog && command is CAddMeshingParameters camp)
+                            {
+                                camp.ExecuteWithDialogs(_controller);
                             }
                             // Execute without dialog
                             else command.Execute(_controller);

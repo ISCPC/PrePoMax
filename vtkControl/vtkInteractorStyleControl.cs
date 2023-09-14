@@ -733,6 +733,19 @@ namespace vtkControl
             //
             _selectionBackgroundActor.VisibilityOn();
             _selectionBorderActor.VisibilityOn();
+            // Border
+            if (_clickPos[0] > x)
+            {
+                _selectionBorderActor.GetProperty().SetColor(0.3, 1.0, 0.3);
+                _selectionBackgroundActor.GetProperty().SetColor(0.2, 1, 0.5);
+                //_selectionBorderActor.GetProperty().SetLineStipplePattern(65280);
+            }
+            else
+            {
+                _selectionBorderActor.GetProperty().SetColor(0.3, 0.3, 1.0);
+                _selectionBackgroundActor.GetProperty().SetColor(0.2, 0.5, 1);
+                //_selectionBorderActor.GetProperty().SetLineStipplePattern(0xffff);
+            }
             //
             vtkRenderWindowInteractor rwi = this.GetInteractor();
             vtkPoints backgroundPoints = _selectionBackgroundMapper.GetInput().GetPoints();

@@ -12,29 +12,29 @@ using CaeGlobals;
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CAddInitialCondition : Command
+    class CDuplicateInitialConditions : Command
     {
         // Variables                                                                                                                
-        private InitialCondition _initialCondition;
+        private string[] _initialConditionNames;
 
 
         // Constructor                                                                                                              
-        public CAddInitialCondition(InitialCondition initialCondition)
-            : base("Add initial condition")
+        public CDuplicateInitialConditions(string[] initialConditionNames)
+            : base("Duplicate initial conditions")
         {
-            _initialCondition = initialCondition.DeepClone();
+            _initialConditionNames = initialConditionNames;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.AddInitialCondition(_initialCondition.DeepClone());
+            receiver.DuplicateInitialConditions(_initialConditionNames);
             return true;
         }
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _initialCondition.ToString();
+            return base.GetCommandString() + GetArrayAsString(_initialConditionNames);
         }
     }
 }

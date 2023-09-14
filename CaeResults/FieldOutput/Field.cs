@@ -318,10 +318,6 @@ namespace CaeResults
             float s23;
             float s31;
             //
-            float I1;
-            float I2;
-            float I3;
-            //
             float sp1, sp2, sp3;
             sp1 = sp2 = sp3 = 0;
             //
@@ -334,11 +330,7 @@ namespace CaeResults
                 s23 = values[4][i];
                 s31 = values[5][i];
                 //
-                I1 = s11 + s22 + s33;
-                I2 = s11 * s22 + s22 * s33 + s33 * s11 - s12 * s12 - s23 * s23 - s31 * s31;
-                I3 = s11 * s22 * s33 - s11 * s23 * s23 - s22 * s31 * s31 - s33 * s12 * s12 + 2f * s12 * s23 * s31;
-                //
-                Tools.SolveQubicEquationDepressedCubicF(1f, -I1, I2, -I3, ref sp1, ref sp2, ref sp3);
+                Tools.GetPrincipalValuesFromMatrix(s11, s22, s33, s12, s23, s31, ref sp1, ref sp2, ref sp3);
                 Tools.Sort3_descending(ref sp1, ref sp2, ref sp3);
                 //
                 s0[i] = Math.Abs(sp1) > Math.Abs(sp3) ? sp1 : sp3;

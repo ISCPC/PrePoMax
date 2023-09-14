@@ -151,7 +151,9 @@
     <Compile Include="Command\0050_Model\14_ElementSet\CDuplicateElementSets.cs" />
     <Compile Include="Command\0050_Model\14_ElementSet\CRemoveElementSets.cs" />
     <Compile Include="Command\0050_Model\14_ElementSet\CReplaceElementSet.cs" />
+    <Compile Include="Command\0050_Model\15_Surface\CDuplicateSurfaces.cs" />
     <Compile Include="Command\0050_Model\16_ReferencePoint\CAddReferencePoint.cs" />
+    <Compile Include="Command\0050_Model\16_ReferencePoint\CDuplicateReferencePoints.cs" />
     <Compile Include="Command\0050_Model\16_ReferencePoint\CHideReferencePoints.cs" />
     <Compile Include="Command\0050_Model\16_ReferencePoint\CRemoveReferencePoints.cs" />
     <Compile Include="Command\0050_Model\16_ReferencePoint\CReplaceReferencePoint.cs" />
@@ -162,7 +164,9 @@
     <Compile Include="Command\0050_Model\CSetModelUnitSystem.cs" />
     <Compile Include="Command\0050_Model\CSetNewModelProperties.cs" />
     <Compile Include="Command\0050_Model\CCreateBoundaryLayer.cs" />
+    <Compile Include="Command\0061_Material\CDuplicateMaterials.cs" />
     <Compile Include="Command\0061_Material\CDuplicateMaterial.cs" />
+    <Compile Include="Command\0062_Section\CDuplicateSections.cs" />
     <Compile Include="Command\0071_Constraint\CDuplicateConstraints.cs" />
     <Compile Include="Command\0071_Constraint\CMergeByMasterSlaveConstraints.cs" />
     <Compile Include="Command\0071_Constraint\CSwapMasterSlaveConstraints.cs" />
@@ -175,6 +179,9 @@
     <Compile Include="Command\0061_Material\CReplaceMaterial.cs" />
     <Compile Include="Command\0062_Section\CAddSection.cs" />
     <Compile Include="Command\0062_Section\CRemoveSections.cs" />
+    <Compile Include="Command\0073_ContactPair\CDuplicateContactPairs.cs" />
+    <Compile Include="Command\0074_Amplitude\CDuplicateAmplitudes.cs" />
+    <Compile Include="Command\0075_InitialCondition\CDuplicateInitialConditions.cs" />
     <Compile Include="Command\0075_InitialCondition\CReplaceInitialCondition.cs" />
     <Compile Include="Command\0071_Constraint\CAddConstraint.cs" />
     <Compile Include="Command\0071_Constraint\CHideConstraints.cs" />
@@ -213,6 +220,7 @@
     <Compile Include="Command\0084_BoundaryConditions\CReplaceBC.cs" />
     <Compile Include="Command\0084_BoundaryConditions\CShowBCs.cs" />
     <Compile Include="Command\0085_Load\CAddLoad.cs" />
+    <Compile Include="Command\0085_Load\CDuplicateLoads.cs" />
     <Compile Include="Command\0085_Load\CHideLoads.cs" />
     <Compile Include="Command\0085_Load\CRemoveLoads.cs" />
     <Compile Include="Command\0085_Load\CPropagateLoad.cs" />

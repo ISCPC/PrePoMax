@@ -93,6 +93,7 @@ namespace PrePoMax.Forms
             {
                 if (cbPreview.Checked) cbPreview.Checked = false;
             }
+
         }
         private void gbLibraries_OnCollapsedChanged(object sender)
         {
@@ -584,6 +585,7 @@ namespace PrePoMax.Forms
             }
             catch
             { }
+            finally { _controller.SetSelectByToDefault(); }
         }
 
 

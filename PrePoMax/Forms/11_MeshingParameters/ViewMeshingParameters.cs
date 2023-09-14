@@ -196,6 +196,10 @@ namespace PrePoMax.Forms
         {
             return _parameters;
         }
+        public void HideName()
+        {
+            _dctd.GetProperty(nameof(Name)).SetIsBrowsable(false);
+        }
         protected void UpdateVisibility()
         {
             bool visible = _parameters.RelativeSize || _settingsView;

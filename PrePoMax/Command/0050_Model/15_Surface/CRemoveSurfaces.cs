@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
             receiver.RemoveSurfaces(_surfaceNames);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + GetArrayAsString(_surfaceNames);

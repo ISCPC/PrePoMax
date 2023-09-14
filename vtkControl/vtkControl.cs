@@ -18,7 +18,7 @@ namespace vtkControl
     public delegate vtkMaxActorData GetSurfaceEdgesActorDataFromElementIdDelegate
         (int nodeIds, int[] elementIds, out string noEdgePartName);
     public delegate vtkMaxActorData GetSurfaceEdgesActorDataFromNodeAndElementIdsDelegate
-        (int[] nodeIds, int[] elementIds, out string[] noEdgePartNames);
+        (int[] nodeIds, int[] elementIds, bool completelyInside, out string[] noEdgePartNames);
     public delegate vtkMaxActorData GetGeometryActorDataDelegate
         (double[] point, int elementId, int[] edgeNodeIds, int[] cellFaceNodeIds, out string noEdgePartName);
 
@@ -232,7 +232,7 @@ namespace vtkControl
 
 
         // Events                                                                                                                   
-        public event Action<double[], double[], double[][], vtkSelectOperation, string[]> OnMouseLeftButtonUpSelection;
+        public event Action<double[], double[], double[][], bool, vtkSelectOperation, string[]> OnMouseLeftButtonUpSelection;
 
 
         // Constructors                                                                                                             
@@ -505,13 +505,15 @@ namespace vtkControl
                 else selectOperation = vtkSelectOperation.None;
                 //
                 vtkActor pickedActor = null;
+                bool completelyInside = mea.Location.X > x2;
                 // Point selection
                 if (!rubberBandSelection)
                 {
                     double[] pickedPoint = GetPickPoint(out pickedActor, mea.Location.X, mea.Location.Y);
                     double[] direction = _renderer.GetActiveCamera().GetDirectionOfProjection();
                     pickedActorNames = new string[] { GetActorName(pickedActor) };
-                    OnMouseLeftButtonUpSelection?.Invoke(pickedPoint, direction,  null, selectOperation, pickedActorNames);
+                    OnMouseLeftButtonUpSelection?.Invoke(pickedPoint, direction,  null, completelyInside,
+                                                         selectOperation, pickedActorNames);
                 }
                 // Area selection
                 else
@@ -531,7 +533,9 @@ namespace vtkControl
                         planeParameters[i] = new double[] { origin[0], origin[1], origin[2], normal[0], normal[1], normal[2] };
                     }
                     //
-                    OnMouseLeftButtonUpSelection?.Invoke(null, null, planeParameters, selectOperation, pickedActorNames);
+                    
+                    OnMouseLeftButtonUpSelection?.Invoke(null, null, planeParameters, completelyInside,
+                                                         selectOperation, pickedActorNames);
                 }
             }
         }
@@ -1197,6 +1201,7 @@ namespace vtkControl
             pickedActorNames = selectedActorNames.ToArray();
             //
             // Graphics
+            bool completelyInside = x1 > x2;
             if (highlight)
             {
                 int[] pointIds = new int[selectedPointGlobalIds.Count];
@@ -1239,6 +1244,7 @@ namespace vtkControl
                     //
                     string[] noEdgePartNames;
                     vtkMaxActorData actorData = Controller_GetSurfaceEdgesActorDataFromNodeAndElementIds(pointIds, cellIds,
+                                                                                                         completelyInside,
                                                                                                          out noEdgePartNames);
                     actorData.CanHaveElementEdges = true;
                     // Append actors
@@ -1891,7 +1897,8 @@ namespace vtkControl
                 diffuse = 0.6;
             }
             // if the point size was already set, do not change it
-            if (actor.GeometryProperty.GetPointSize() <= 1) actor.GeometryProperty.SetPointSize(7);
+            //if (actor.GeometryProperty.GetPointSize() <= 1)
+                actor.GeometryProperty.SetPointSize(actor.GeometryProperty.GetPointSize() + 2);
             //
             Color highlightColor;
             if (actor.UseSecondaryHighightColor) highlightColor = _secondaryHighlightColor;
@@ -3280,7 +3287,7 @@ namespace vtkControl
             // Actor
             data.Name += Globals.NameSeparator + "arrow";
             vtkMaxActor actor = new vtkMaxActor(data, mapper);
-            actor.Color = Color.Blue;
+            actor.Color = data.Color;// Color.Blue;
             actor.GeometryProperty.SetRepresentationToSurface();
             // Add
             ApplySymbolFormatingToActor(actor);

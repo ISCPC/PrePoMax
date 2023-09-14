@@ -14,6 +14,7 @@ namespace CaeGlobals
         private double[] _pickedPoint;                                  //ISerializable
         private double[] _selectionDirection;                           //ISerializable
         private double[][] _planeParameters; // Ox,Oy,Oz,Nx,Ny,Nz       //ISerializable
+        private bool _completelyInside;                                 //ISerializable
         private vtkSelectBy _selectBy;                                  //ISerializable
         private double _angle;                                          //ISerializable
         private int[] _partIds;                                         //ISerializable
@@ -25,6 +26,7 @@ namespace CaeGlobals
         public double[] PickedPoint { get { return _pickedPoint; } set { _pickedPoint = value; } }
         public double[] SelectionDirection { get { return _selectionDirection; } set { _selectionDirection = value; } }
         public double[][] PlaneParameters { get { return _planeParameters; } set { _planeParameters = value; } }
+        public bool CompletelyInside { get { return _completelyInside; } }
         public vtkSelectBy SelectBy { get { return _selectBy; } set { _selectBy = value; } }
         public double Angle { get { return _angle; } set { _angle = value; } }        
         public int[] PartIds { get { return _partIds; } }
@@ -34,14 +36,16 @@ namespace CaeGlobals
 
 
         // Constructors                                                                                                             
-        public SelectionNodeMouse(double[] pickedPoint, double[] selectionDirection, double[][] planeParameters,
-                                  vtkSelectOperation selectOpreation, int[] partIds, double[][] partOffsets, 
+        public SelectionNodeMouse(double[] pickedPoint, double[] selectionDirection,
+                                  double[][] planeParameters, bool completelyInside,
+                                  vtkSelectOperation selectOperation, int[] partIds, double[][] partOffsets, 
                                   vtkSelectBy selectBy, double angle)
-            : base(selectOpreation)
+            : base(selectOperation)
         {
             _pickedPoint = pickedPoint;
             _selectionDirection = selectionDirection;
             _planeParameters = planeParameters;
+            _completelyInside = completelyInside;
             _selectBy = selectBy;
             _angle = angle;
             _partIds = partIds;
@@ -55,6 +59,7 @@ namespace CaeGlobals
             _precision = -1;            // Compatibility for version v0.5.2
             _selectionDirection = null; // Compatibility for version v0.9.0
             _partOffsets = null;        // Compatibility for version v0.9.0
+            _completelyInside = false;  // Compatibility for version v0.9.0
             //
             foreach (SerializationEntry entry in info)
             {
@@ -66,6 +71,8 @@ namespace CaeGlobals
                         _selectionDirection = (double[])entry.Value; break;
                     case "_planeParameters":
                         _planeParameters = (double[][])entry.Value; break;
+                    case "_completelyInside":
+                        _completelyInside = (bool)entry.Value; break;
                     case "_selectBy":
                         _selectBy = (vtkSelectBy)entry.Value; break;
                     case "_angle":
@@ -134,6 +141,7 @@ namespace CaeGlobals
             info.AddValue("_pickedPoint", _pickedPoint, typeof(double[]));
             info.AddValue("_selectionDirection", _selectionDirection, typeof(double[]));
             info.AddValue("_planeParameters", _planeParameters, typeof(double[][]));
+            info.AddValue("_completelyInside", _completelyInside, typeof(bool));
             info.AddValue("_selectBy", _selectBy, typeof(vtkSelectBy));
             info.AddValue("_angle", _angle, typeof(double));
             info.AddValue("_partIds", _partIds, typeof(int[]));

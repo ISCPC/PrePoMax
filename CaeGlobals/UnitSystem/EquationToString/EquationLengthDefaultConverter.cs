@@ -8,6 +8,8 @@ using System.ComponentModel;
 using System.Globalization;
 using UnitsNet.Units;
 using UnitsNet;
+using System.Security.AccessControl;
+using System.Runtime.Remoting.Contexts;
 
 namespace CaeGlobals
 {
@@ -27,7 +29,8 @@ namespace CaeGlobals
         public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
         {
             // Initializes the standard values list with string defaults.
-            values = new ArrayList(new string[] { _default, (string)ConvertTo(context, null, _initialValue, typeof(string)) });
+            string initialValueStr = (string)ConvertTo(context, null, _initialValue, typeof(string));
+            values = new ArrayList(new EquationString[] { new EquationString(_default), new EquationString(initialValueStr) });
             // Passes the local integer array.
             StandardValuesCollection svc = new StandardValuesCollection(values);
             return svc;

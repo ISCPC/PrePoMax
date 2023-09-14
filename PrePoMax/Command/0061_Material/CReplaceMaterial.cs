@@ -33,7 +33,6 @@ namespace PrePoMax.Commands
             receiver.ReplaceMaterial(_oldMaterialName, _newMaterial.DeepClone());
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _oldMaterialName + ", " + _newMaterial.ToString();

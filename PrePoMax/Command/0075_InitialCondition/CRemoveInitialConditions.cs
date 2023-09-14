@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
             receiver.RemoveInitialConditions(_initialConditionNames);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + GetArrayAsString(_initialConditionNames);

@@ -33,7 +33,6 @@ namespace PrePoMax.Commands
             receiver.ReplaceSurfaceInteraction(_oldSurfaceInteractionName, _newSurfaceInteraction.DeepClone());
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _oldSurfaceInteractionName + ", " + _newSurfaceInteraction.ToString();

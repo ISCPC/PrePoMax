@@ -136,6 +136,20 @@ namespace PrePoMax.Forms
         private void FrmMeshingParameters_VisibleChanged(object sender, EventArgs e)
         {
             _controller.Selection.LimitSelectionToFirstMesherType = Visible;
+            if (Visible)
+            {
+                // When opened from regenerate
+                if (this.Modal)
+                {
+                    btnOkAddNew.Visible = false;
+                    btnPreview.Visible = false;
+                    //
+                    _viewMeshingParameters.HideName();
+                    propertyGrid.Refresh();
+                }
+                //
+                ShowHideSelectionForm();
+            }
         }
         private void tsmiResetAll_Click(object sender, EventArgs e)
         {
@@ -193,19 +207,24 @@ namespace PrePoMax.Forms
             //
             if (MeshingParameters.CreationIds == null || MeshingParameters.CreationIds.Length == 0)
                 throw new CaeException("The meshing parameters selection must contain at least one item.");
-            //
-            if (_meshingParametersToEditName == null)
-            {
-                // Create
-                _controller.AddMeshingParametersCommand(MeshingParameters);
-            }
+            // When opened from regenerate
+            if (this.Modal) { }
+            // When opened normally
             else
             {
-                // Replace
-                if (_propertyItemChanged || !MeshingParameters.Valid)
+                if (_meshingParametersToEditName == null)
                 {
-                    MeshingParameters.Valid = true;
-                    _controller.ReplaceMeshingParametersCommand(_meshingParametersToEditName, MeshingParameters);
+                    // Create
+                    _controller.AddMeshingParametersCommand(MeshingParameters);
+                }
+                else
+                {
+                    // Replace
+                    if (_propertyItemChanged || !MeshingParameters.Valid)
+                    {
+                        MeshingParameters.Valid = true;
+                        _controller.ReplaceMeshingParametersCommand(_meshingParametersToEditName, MeshingParameters);
+                    }
                 }
             }
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
@@ -229,11 +248,13 @@ namespace PrePoMax.Forms
             if (meshingParametersToEditName == null)
             {
                 btnOkAddNew.Visible = true;
+                btnPreview.Visible = true;
                 btnPreview.Location = new System.Drawing.Point(btnOkAddNew.Left - _previewBtnDx - btnPreview.Width, btnOkAddNew.Top);
             }
             else
             {
                 btnOkAddNew.Visible = false;
+                btnPreview.Visible = true;
                 btnPreview.Location = new System.Drawing.Point(btnOK.Left - _previewBtnDx - btnPreview.Width, btnOkAddNew.Top);
             }
             //
@@ -261,9 +282,6 @@ namespace PrePoMax.Forms
             //
             propertyGrid.SelectedObject = _viewMeshingParameters;
             propertyGrid.Select();
-            // Show ItemSetDataForm
-            ItemSetDataEditor.SelectionForm.ItemSetData = new ItemSetData(MeshingParameters.CreationIds);
-            ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             //
             SetSelectItem();
             //
@@ -320,6 +338,17 @@ namespace PrePoMax.Forms
                 }
             }
             catch { }
+        }
+        private void ShowHideSelectionForm()
+        {
+            // When opened from regenerate
+            if (this.Modal) ItemSetDataEditor.SelectionForm.Hide();
+            // When opened normally
+            else
+            {
+                ItemSetDataEditor.SelectionForm.ItemSetData = new ItemSetData(MeshingParameters.CreationIds);
+                ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            }
         }
         private void SetSelectItem()
         {

@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
             receiver.RemoveMaterials(_materialNames);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + GetArrayAsString(_materialNames);

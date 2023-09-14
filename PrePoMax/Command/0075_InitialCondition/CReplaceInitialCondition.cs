@@ -34,7 +34,6 @@ namespace PrePoMax.Commands
             receiver.ReplaceInitialCondition(_oldInitialConditionName, _newInitialCondition.DeepClone());
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _oldInitialConditionName + ", " + _newInitialCondition.ToString();

@@ -18,6 +18,8 @@ using CaeMesh;
 using CaeResults;
 using vtkControl;
 using System.Threading;
+using System.Runtime.InteropServices;
+using PrePoMax.Commands;
 
 namespace PrePoMax
 {
@@ -891,7 +893,7 @@ namespace PrePoMax
         {
             tsmiQuery_Click(null, null);
         }
-        private void ModelTree_DuplicateEvent(NamedClass[] items)
+        private void ModelTree_DuplicateEvent(NamedClass[] items, string[] stepNames)
         {
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             { }
@@ -899,14 +901,25 @@ namespace PrePoMax
             {
                 ApplyActionOnItems<FeNodeSet>(items, DuplicateNodeSets);
                 ApplyActionOnItems<FeElementSet>(items, DuplicateElementSets);
+                ApplyActionOnItems<FeSurface>(items, DuplicateSurfaces);
+                ApplyActionOnItems<FeReferencePoint>(items, DuplicateReferencePoints);
                 //
                 ApplyActionOnItems<Material>(items, DuplicateMaterials);
+                //
+                ApplyActionOnItems<Section>(items, DuplicateSections);
                 //
                 ApplyActionOnItems<CaeModel.Constraint>(items, DuplicateConstraints);
                 //
                 ApplyActionOnItems<SurfaceInteraction>(items, DuplicateSurfaceInteractions);
+                ApplyActionOnItems<ContactPair>(items, DuplicateContactPairs);
+                //
+                ApplyActionOnItems<Amplitude>(items, DuplicateAmplitudes);
+                //
+                ApplyActionOnItems<InitialCondition>(items, DuplicateInitialConditions);
                 //
                 ApplyActionOnItems<Step>(items, DuplicateSteps);
+                //
+                ApplyActionOnItemsInStep<Load>(items, stepNames, DuplicateLoads);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             { }
@@ -935,7 +948,7 @@ namespace PrePoMax
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
-                ApplyActionOnItems<InitialCondition>(items, PreviewInitialCondition);
+                ApplyActionOnItems<InitialCondition>(items, PreviewInitialConditions);
                 ApplyActionOnItemsInStep<Load>(items, stepNames, PreviewLoad);
                 ApplyActionOnItemsInStep<DefinedField>(items, stepNames, PreviewDefinedField);
             }
@@ -1035,11 +1048,11 @@ namespace PrePoMax
                 ApplyActionOnItems<Amplitude>(items, DeleteAmplitudes);
                 ApplyActionOnItems<InitialCondition>(items, DeleteInitialConditions);
                 // First delete step items and then steps
-                DeleteParentItems<HistoryOutput>(items, parentNames, DeleteHistoryOutputs);
-                DeleteParentItems<FieldOutput>(items, parentNames, DeleteFieldOutputs);
-                DeleteParentItems<BoundaryCondition>(items, parentNames, DeleteBoundaryConditions);
-                DeleteParentItems<Load>(items, parentNames, DeleteLoads);
-                DeleteParentItems<DefinedField>(items, parentNames, DeleteDefinedFields);
+                ApplyActionOnItemsInStep<HistoryOutput>(items, parentNames, DeleteHistoryOutputs);
+                ApplyActionOnItemsInStep<FieldOutput>(items, parentNames, DeleteFieldOutputs);
+                ApplyActionOnItemsInStep<BoundaryCondition>(items, parentNames, DeleteBoundaryConditions);
+                ApplyActionOnItemsInStep<Load>(items, parentNames, DeleteLoads);
+                ApplyActionOnItemsInStep<DefinedField>(items, parentNames, DeleteDefinedFields);
                 ApplyActionOnItems<Step>(items, DeleteSteps);
                 //
                 ApplyActionOnItems<AnalysisJob>(items, DeleteAnalyses);
@@ -1051,12 +1064,12 @@ namespace PrePoMax
                 ApplyActionOnItems<ResultPart>(items, DeleteResultParts);
                 ApplyActionOnItems<GeometryPart>(items, DeleteResultParts);
                 // First delete components and then field outputs
-                DeleteParentItems<FieldData>(items, parentNames, DeleteResultFieldOutputComponents);
+                ApplyActionOnItemsInStep<FieldData>(items, parentNames, DeleteResultFieldOutputComponents);
                 ApplyActionOnItems<Field>(items, DeleteResultFieldOutputs);
                 ApplyActionOnItems<ResultFieldOutput>(items, DeleteResultFieldOutputs);
                 //
                 DeleteResultHistoryResultCompoments(items);
-                DeleteParentItems<HistoryResultField>(items, parentNames, DeleteResultHistoryResultFields);
+                ApplyActionOnItemsInStep<HistoryResultField>(items, parentNames, DeleteResultHistoryResultFields);
                 ApplyActionOnItems<HistoryResultSet>(items, RemoveResultHistoryResultSets);
                 
             }
@@ -1131,7 +1144,7 @@ namespace PrePoMax
                 if (items[i] is T) Action(steps[i], items[i].Name);
             }
         }
-        private void DeleteParentItems<T>(NamedClass[] items, string[] parentNames, Action<string, string[]> Delete)
+        private void ApplyActionOnItemsInStep<T>(NamedClass[] items, string[] parentNames, Action<string, string[]> Action)
         {
             List<string> itemList;
             Dictionary<string, List<string>> parentItems = new Dictionary<string, List<string>>();
@@ -1148,7 +1161,7 @@ namespace PrePoMax
             {
                 foreach (var entry in parentItems)
                 {
-                    Delete(entry.Key, entry.Value.ToArray());
+                    Action(entry.Key, entry.Value.ToArray());
                 }
             }
         }
@@ -1988,35 +2001,19 @@ namespace PrePoMax
         {
             System.Diagnostics.Process.Start(_controller.GetHistoryFileNameTxt());
         }
-        private async void tsmiRegenerate_Click(object sender, EventArgs e)
+        private void tsmiRegenerate_Click(object sender, EventArgs e)
         {
-            try
-            {
-                CloseAllForms();
-                Clear3D();
-                Application.DoEvents();
-                SetStateWorking(Globals.RegeneratingText);
-                _modelTree.ScreenUpdating = false;
-                await Task.Run(() => _controller.RegenerateHistoryCommands());
-                //
-                SetMenuAndToolStripVisibility();
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-            finally
-            {
-                SetStateReady(Globals.RegeneratingText);
-                _modelTree.ScreenUpdating = true;
-                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.CurrentResult);
-                //
-                SetMenuAndToolStripVisibility();
-                //
-                SetZoomToFit(true);
-            }
+            RegenerateHistory(false, false);
         }
-        private async void tsmiRegenerteUsingOtherFiles_Click(object sender, EventArgs e)
+        private void tsmiRegenerateUsingOtherFiles_Click(object sender, EventArgs e)
+        {
+            RegenerateHistory(true, false);
+        }
+        private void tsmiRegenerateForRemeshing_Click(object sender, EventArgs e)
+        {
+            RegenerateHistory(false, true);
+        }
+        private async void RegenerateHistory(bool showImportDialog, bool showMeshDialog)
         {
             try
             {
@@ -2025,7 +2022,9 @@ namespace PrePoMax
                 Application.DoEvents();
                 SetStateWorking(Globals.RegeneratingText);
                 _modelTree.ScreenUpdating = false;
-                await Task.Run(() => _controller.RegenerateHistoryCommandsWithDialogs(true));
+                await Task.Run(() => _controller.RegenerateHistoryCommands(showImportDialog, showMeshDialog));
+                //
+                SetMenuAndToolStripVisibility();
             }
             catch (Exception ex)
             {
@@ -3159,6 +3158,26 @@ namespace PrePoMax
             _frmSelectItemSet.SetOnlyGeometrySelection(true);
             ShowForm(_frmMeshingParameters, "Edit Meshing Parameters", meshingParametersName);
         }
+        public MeshingParameters EditMeshingParametersFromHistory(MeshingParameters meshingParameters)
+        {
+            InvokeIfRequired(() =>
+            {
+                ItemSetDataEditor.SelectionForm = _frmSelectItemSet; // must be set in order to use its Hide property
+                //
+                CloseAllForms();
+                SetFormLoaction(_frmMeshingParameters);
+                _frmMeshingParameters.Text = "Redefine " + meshingParameters.Name;
+                //
+                _frmMeshingParameters.PrepareForm(null, null);
+                _frmMeshingParameters.MeshingParameters = meshingParameters.DeepClone();
+                _frmMeshingParameters.ShowDialog();
+                //
+                if (_frmMeshingParameters.DialogResult == DialogResult.OK) 
+                    meshingParameters = _frmMeshingParameters.MeshingParameters;
+            });
+            //
+            return meshingParameters;
+        }
         private void DeleteMeshingParameters(string[] meshingParametersNames)
         {
             if (MessageBoxes.ShowWarningQuestion("OK to delete selected meshing parameters?" + Environment.NewLine
@@ -3680,7 +3699,7 @@ namespace PrePoMax
         //
         private void MergeModelParts(string[] partNames)
         {
-            if (_controller.AreModelPartsMergable(partNames))
+            if (_controller.AreModelPartsMergeable(partNames))
             {
                 if (MessageBoxes.ShowWarningQuestion("OK to merge selected parts?") == DialogResult.OK)
                 {
@@ -3922,7 +3941,18 @@ namespace PrePoMax
         {
             try
             {
-                SelectOneEntity("Surfaces", _controller.GetAllSurfaces(), EditSurface);
+                SelectOneEntity("Surfaces", _controller.GetUserSurfaces(), EditSurface);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDuplicateSurface_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Surfaces", _controller.GetUserSurfaces(), DuplicateSurfaces);
             }
             catch (Exception ex)
             {
@@ -3933,13 +3963,14 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Surfaces", _controller.GetAllSurfaces(), DeleteSurfaces);
+                SelectMultipleEntities("Surfaces", _controller.GetUserSurfaces(), DeleteSurfaces);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
+        //
         private void EditSurface(string surfaceName)
         {
             // Data editor
@@ -3947,6 +3978,10 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmSurface;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmSurface, "Edit Surface", surfaceName);
+        }
+        private void DuplicateSurfaces(string[] surfaceNames)
+        {
+            _controller.DuplicateSurfacesCommand(surfaceNames);
         }
         private void DeleteSurfaces(string[] surfaceNames)
         {
@@ -3984,6 +4019,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateRP_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Reference points", _controller.GetAllReferencePoints(), DuplicateReferencePoints);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeleteRP_Click(object sender, EventArgs e)
         {
             try
@@ -3995,18 +4041,22 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void EditRP(string referencePointName)
         {
             ShowForm(_frmReferencePoint, "Edit Reference Point", referencePointName);
         }
-        private void HideRPs(string[] constraintNames)
+        private void DuplicateReferencePoints(string[] referencePointNames)
         {
-            _controller.HideReferencePointsCommand(constraintNames);
+            _controller.DuplicateReferencePointsCommand(referencePointNames);
         }
-        private void ShowRPs(string[] constraintNames)
+        private void HideRPs(string[] referencePointNames)
         {
-            _controller.ShowReferencePointsCommand(constraintNames);
+            _controller.HideReferencePointsCommand(referencePointNames);
+        }
+        private void ShowRPs(string[] referencePointNames)
+        {
+            _controller.ShowReferencePointsCommand(referencePointNames);
         }
         private void ShowOnlyRPs(string[] referencePointNames)
         {
@@ -4183,6 +4233,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateSection_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Sections", _controller.GetAllSections(), DuplicateSections);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDelete_Click(object sender, EventArgs e)
         {
             try
@@ -4211,6 +4272,10 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmSection;
             _frmSelectItemSet.SetOnlyGeometrySelection(true);
             ShowForm(_frmSection, "Edit Section", sectionName);
+        }
+        private void DuplicateSections(string[] sectionNames)
+        {
+            _controller.DuplicateSectionsCommand(sectionNames);
         }
         private void DeleteSections(string[] sectionNames)
         {
@@ -4330,7 +4395,7 @@ namespace PrePoMax
         }
         private void DuplicateConstraints(string[] constraintNames)
         {
-            _controller.DuplicateConstraintsCommnad(constraintNames);
+            _controller.DuplicateConstraintsCommand(constraintNames);
         }
         private void SwapMasterSlaveConstraints(string[] constraintNames)
         {
@@ -4464,6 +4529,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateContactPair_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Contact pairs", _controller.GetAllContactPairs(), DuplicateContactPairs);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiSwapMasterSlaveContactPair_Click(object sender, EventArgs e)
         {
             try
@@ -4527,6 +4603,10 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmContactPair;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmContactPair, "Edit Contact Pair", contactPairName);
+        }
+        private void DuplicateContactPairs(string[] contactPairNames)
+        {
+            _controller.DuplicateContactPairsCommand(contactPairNames);
         }
         private void SwapMasterSlaveContactPairs(string[] contactPairNames)
         {
@@ -4610,6 +4690,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateAmplitude_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Amplitudes", _controller.GetAllAmplitudes(), DuplicateAmplitudes);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeleteAmplitude_Click(object sender, EventArgs e)
         {
             try
@@ -4630,6 +4721,10 @@ namespace PrePoMax
         private void EditAmplitude(string amplitudeName)
         {
             ShowForm(_frmAmplitude, "Edit Amplitude", amplitudeName);
+        }
+        private void DuplicateAmplitudes(string[] amplitudeNames)
+        {
+            _controller.DuplicateAmplitudesCommand(amplitudeNames);
         }
         private void DeleteAmplitudes(string[] amplitudeNames)
         {
@@ -4659,6 +4754,17 @@ namespace PrePoMax
             try
             {
                 SelectOneEntity("Initial Conditions", _controller.GetAllInitialConditions(), EditInitialCondition);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDuplicateInitialCondition_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Initial Conditions", _controller.GetAllInitialConditions(), DuplicateInitialConditions);
             }
             catch (Exception ex)
             {
@@ -4705,7 +4811,11 @@ namespace PrePoMax
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmInitialCondition, "Edit Initial Condition", initialConditionName);
         }
-        private void PreviewInitialCondition(string[] initialConditionNames)
+        private void DuplicateInitialConditions(string[] initialConditionNames)
+        {
+            _controller.DuplicateInitialConditionsCommand(initialConditionNames);
+        }
+        private void PreviewInitialConditions(string[] initialConditionNames)
         {
             foreach (var name in initialConditionNames) PreviewInitialCondition(name);
         }
@@ -4797,14 +4907,14 @@ namespace PrePoMax
         }
         private void DuplicateSteps(string[] stepNames)
         {
-            _controller.DuplicateStepsCommnad(stepNames);
+            _controller.DuplicateStepsCommand(stepNames);
         }
         private void DeleteSteps(string[] stepNames)
         {
             if (MessageBoxes.ShowWarningQuestion("OK to delete selected steps?" + Environment.NewLine
                                                  + stepNames.ToRows()) == DialogResult.OK)
             {
-                _controller.RemoveStepsCommnad(stepNames);
+                _controller.RemoveStepsCommand(stepNames);
             }
         }
 
@@ -5212,6 +5322,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateLoad_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndDuplicateLoad);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiPropagateLoad_Click(object sender, EventArgs e)
         {
             try
@@ -5272,6 +5393,10 @@ namespace PrePoMax
         {
             SelectOneEntityInStep("Loads", _controller.GetStepLoads(stepName), stepName, EditLoad);
         }
+        private void SelectAndDuplicateLoad(string stepName)
+        {
+            SelectMultipleEntitiesInStep("Loads", _controller.GetStepLoads(stepName), stepName, DuplicateLoads);
+        }
         private void SelectAndPropagateLoad(string stepName)
         {
             SelectOneEntityInStep("Loads", _controller.GetStepLoads(stepName), stepName, PropagateLoad);
@@ -5317,6 +5442,10 @@ namespace PrePoMax
             //
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmLoad, "Edit Load", stepName, loadName);
+        }
+        private void DuplicateLoads(string stepName, string[] loadNames)
+        {
+            _controller.DuplicateLoadsCommand(stepName, loadNames);
         }
         private void PropagateLoad(string stepName, string loadName)
         {
@@ -6602,10 +6731,13 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Mouse selection methods  ###########################################################################################
-        public void SelectPointOrArea(double[] pickedPoint, double[] selectionDirection, double[][] planeParameters,
+        public void SelectPointOrArea(double[] pickedPoint, double[] selectionDirection,
+                                      double[][] planeParameters, bool completelyInside,
                                       vtkSelectOperation selectOperation, string[] pickedPartNames)
         {
-            _controller.SelectPointOrArea(pickedPoint, selectionDirection, planeParameters, selectOperation, pickedPartNames);
+            _controller.SelectPointOrArea(pickedPoint, selectionDirection,
+                                          planeParameters, completelyInside,
+                                          selectOperation, pickedPartNames);
             //
             int[] ids = _controller.GetSelectionIds();
             // Must be here since it calls Clear which calls SelectionChanged
@@ -8849,6 +8981,6 @@ namespace PrePoMax
             }
         }
 
-        
+       
     }
 }

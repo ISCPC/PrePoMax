@@ -33,7 +33,6 @@ namespace PrePoMax.Commands
             receiver.ReplaceElementSet(_oldElementSetName, _newElementSet.DeepClone(), true);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _oldElementSetName + ", " + _newElementSet.ToString();

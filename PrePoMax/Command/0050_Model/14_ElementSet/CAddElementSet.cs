@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
             receiver.AddElementSet(_elementSet.DeepClone());
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _elementSet.ToString();

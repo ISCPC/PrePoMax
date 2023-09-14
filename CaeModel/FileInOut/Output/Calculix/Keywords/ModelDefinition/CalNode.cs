@@ -71,8 +71,10 @@ namespace FileInOut.Output.Calculix
                 {
                     if (_referencePoints.TryGetValue(entry.Key, out rp))
                     {
-                        sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", entry.Value[0], rp.X, rp.Y, rp.Z).AppendLine();
-                        sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", entry.Value[1], rp.X, rp.Y, rp.Z).AppendLine();
+                        sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", entry.Value[0], rp.X.Value,
+                                                                       rp.Y.Value, rp.Z.Value).AppendLine();
+                        sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", entry.Value[1], rp.X.Value,
+                                                                       rp.Y.Value, rp.Z.Value).AppendLine();
                     }
                     else
                     {
@@ -83,8 +85,8 @@ namespace FileInOut.Output.Calculix
                 {
                     if (_referencePoints.TryGetValue(entry.Key, out rp))
                     {
-                        sb.AppendFormat("{0}, {1:E8}, {2:E8}", entry.Value[0], rp.X, rp.Y).AppendLine();
-                        sb.AppendFormat("{0}, {1:E8}, {2:E8}", entry.Value[1], rp.X, rp.Y).AppendLine();
+                        sb.AppendFormat("{0}, {1:E8}, {2:E8}", entry.Value[0], rp.X.Value, rp.Y.Value).AppendLine();
+                        sb.AppendFormat("{0}, {1:E8}, {2:E8}", entry.Value[1], rp.X.Value, rp.Y.Value).AppendLine();
                     }
                     else
                     {

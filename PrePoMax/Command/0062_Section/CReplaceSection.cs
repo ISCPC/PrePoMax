@@ -34,7 +34,6 @@ namespace PrePoMax.Commands
             receiver.ReplaceSection(_oldSectionName, _newSection.DeepClone());
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _oldSectionName + ", " + _newSection.ToString();

@@ -844,6 +844,8 @@ namespace CaeModel
                 }
             }
             //
+            //if (true) mesh.SplitShellPartToFaceParts();
+            //
             string[] addedPartNames = ImportGeometry(mesh, GetReservedPartNames());
             //
             return addedPartNames;
@@ -896,7 +898,7 @@ namespace CaeModel
                 mesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh, convertToSecondorder);
             else throw new NotSupportedException();
             // Split compound mesh
-            if (splitCompoundMesh) mesh.SplitCompoundMesh();
+            if (splitCompoundMesh) mesh.SplitSolidCompoundMesh();
             // Get part names
             string[] partNames = mesh.Parts.Keys.ToArray();
             string[] prevPartNames;

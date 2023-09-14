@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
 using CaeGlobals;
-
+using System.Runtime.Serialization;
 
 namespace PrePoMax.Commands
 {
     [Serializable]
-    public abstract class Command
+    public abstract class Command   //: ISerializable - this would mean that all derived classes must be Serializable !!!
     {
         // Variables                                                                                                                
         protected string _name;
@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
         // Methods                                                                                                                  
         public virtual bool Execute(Controller receiver)
         {
-            //if (CommnadFinished != null) CommnadFinished();
             return true;
         }
         public virtual string GetCommandString()

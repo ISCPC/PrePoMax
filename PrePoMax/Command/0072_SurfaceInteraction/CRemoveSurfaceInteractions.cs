@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
             receiver.RemoveSurfaceInteractions(_surfaceInteractionNames);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + GetArrayAsString(_surfaceInteractionNames);

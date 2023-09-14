@@ -48,10 +48,6 @@ namespace CaeGlobals
         //
 
         // Methods                                                                                                                  
-        public void SetEquation(string equation)
-        {
-            _equation = equation;
-        }
         public bool IsEquation()
         {
             if (_equation != null && _equation.StartsWith("=")) return true;

@@ -32,7 +32,6 @@ namespace CaeMesh
         {
             _creationData = null;
             _creationIds = null;
-            _createdFromParts = false;
             _createdFromParts = createdFromParts;
         }
         public FeElementSet(FeElementSet elementSet)

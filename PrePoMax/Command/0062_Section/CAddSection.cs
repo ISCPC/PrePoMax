@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
             receiver.AddSection(_section.DeepClone());
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _section.ToString();

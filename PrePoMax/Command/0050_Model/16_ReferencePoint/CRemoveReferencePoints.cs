@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
             receiver.RemoveReferencePoints(_referencePointNames);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + GetArrayAsString(_referencePointNames);

@@ -33,7 +33,6 @@ namespace PrePoMax.Commands
             receiver.ReplaceReferencePoint(_oldReferencePointName, _newReferencePoint.DeepClone());
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _oldReferencePointName + ", " + _newReferencePoint.ToString();

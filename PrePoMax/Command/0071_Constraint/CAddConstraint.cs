@@ -34,7 +34,6 @@ namespace PrePoMax.Commands
             receiver.AddConstraint(_constraint.DeepClone(), _update);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _constraint.ToString();

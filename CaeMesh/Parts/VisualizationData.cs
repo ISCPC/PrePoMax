@@ -529,9 +529,12 @@ namespace CaeMesh
         {
             HashSet<int> edgeNodeIds = new HashSet<int>();
             //
-            for (int i = 0; i < _edgeCellIdsByEdge[edgeId].Length; i++)
+            if (_edgeCellIdsByEdge != null)
             {
-                edgeNodeIds.UnionWith(_edgeCells[_edgeCellIdsByEdge[edgeId][i]]);
+                for (int i = 0; i < _edgeCellIdsByEdge[edgeId].Length; i++)
+                {
+                    edgeNodeIds.UnionWith(_edgeCells[_edgeCellIdsByEdge[edgeId][i]]);
+                }
             }
             return edgeNodeIds;
         }
@@ -540,16 +543,35 @@ namespace CaeMesh
             HashSet<int> edgeNodeIds;
             Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
             //
-            for (int i = 0; i < _edgeCellIdsByEdge.Length; i++)
+            if (_edgeCellIdsByEdge != null)
             {
-                edgeNodeIds = new HashSet<int>();
-                for (int j = 0; j < _edgeCellIdsByEdge[i].Length; j++)
+                for (int i = 0; i < _edgeCellIdsByEdge.Length; i++)
                 {
-                    edgeNodeIds.UnionWith(_edgeCells[_edgeCellIdsByEdge[i][j]]);
+                    edgeNodeIds = new HashSet<int>();
+                    for (int j = 0; j < _edgeCellIdsByEdge[i].Length; j++)
+                    {
+                        edgeNodeIds.UnionWith(_edgeCells[_edgeCellIdsByEdge[i][j]]);
+                    }
+                    edgeIdNodeIds.Add(i, edgeNodeIds);
                 }
-                edgeIdNodeIds.Add(i, edgeNodeIds);
             }
             return edgeIdNodeIds;
+        }
+        public HashSet<int> GetNodeIdsForAllEdges()
+        {
+            HashSet<int> edgeNodeIds = new HashSet<int>();
+            //
+            if (_edgeCellIdsByEdge != null)
+            {
+                for (int i = 0; i < _edgeCellIdsByEdge.Length; i++)
+                {
+                    for (int j = 0; j < _edgeCellIdsByEdge[i].Length; j++)
+                    {
+                        edgeNodeIds.UnionWith(_edgeCells[_edgeCellIdsByEdge[i][j]]);
+                    }
+                }
+            }
+            return edgeNodeIds;
         }
         public int[] GetOrderedNodeIdsForEdge(int edgeId)
         {

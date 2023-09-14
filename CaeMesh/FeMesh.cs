@@ -1148,13 +1148,13 @@ namespace CaeMesh
         }
         private void ExtractEdgesFromShellByAngle(BasePart part, double angle)
         {
-            // Find shared nodes witn neighbouring parts
+            // Find shared nodes with neighbouring parts
             HashSet<int> sharedNodes = new HashSet<int>();
             if (part.PartType == PartType.Shell)
             {
                 foreach (var entry in _parts)
                 {
-                    if (entry.Value != part) sharedNodes.UnionWith(entry.Value.NodeLabels.Intersect(part.NodeLabels));
+                    if (entry.Value != part) sharedNodes.UnionWith(entry.Value.Visualization.GetNodeIdsForAllEdges());
                 }
             }
             //
@@ -2213,7 +2213,7 @@ namespace CaeMesh
             // Skip wire parts
             if (vis.EdgeCellIdsByEdge == null) return null;
             // Split edges with midpoints
-            if (SplitVizualizationEdges(vis, edgeIdNodeIds)) ComputeEdgeLengths(part);
+            if (SplitVisualizationEdges(vis, edgeIdNodeIds)) ComputeEdgeLengths(part);
             //
             edgeCount = 0;
             newEdgeIds = new int[vis.EdgeCellIdsByEdge.Length];
@@ -2280,7 +2280,7 @@ namespace CaeMesh
             //
             return oldIdNewId;
         }
-        private bool SplitVizualizationEdges(VisualizationData visualization, Dictionary<int, HashSet<int>> edgeIdNodeIds)
+        private bool SplitVisualizationEdges(VisualizationData visualization, Dictionary<int, HashSet<int>> edgeIdNodeIds)
         {
             bool edgeFound;
             bool parabolic = false;
@@ -2410,7 +2410,7 @@ namespace CaeMesh
         }
         
         // Merge and split parts
-        public bool ArePartsMergable(string[] partNames)
+        public bool ArePartsMergeable(string[] partNames)
         {
             HashSet<PartType> partTypes = new HashSet<PartType>();
             foreach (var partName in partNames) partTypes.Add(_parts[partName].PartType);
@@ -2610,7 +2610,48 @@ namespace CaeMesh
             // Update bounding boxes
             ComputeBoundingBox();
         }
-        public void SplitCompoundMesh()
+        public void SplitShellPartToFaceParts()
+        {
+            // Create element sets
+            int[] elementIds;
+            string elementSetName;
+            FeElementSet elementSet;
+            List<string> newElementSetNames = new List<string>();
+            foreach (var entry in _parts)
+            {
+                if (entry.Value.PartType == PartType.Shell)
+                {
+                    for (int i = 0; i < entry.Value.Visualization.CellIdsByFace.Length; i++)
+                    {
+                        elementSetName = _elementSets.GetNextNumberedKey(entry.Key, "_Face-" + (i + 1));
+                        newElementSetNames.Add(elementSetName);
+                        // Get element ids from face
+                        elementIds = new int[entry.Value.Visualization.CellIdsByFace[i].Length];
+                        for (int j = 0; j < entry.Value.Visualization.CellIdsByFace[i].Length; j++)
+                        {
+                            elementIds[j] = entry.Value.Visualization.CellIds[entry.Value.Visualization.CellIdsByFace[i][j]];
+                        }
+                        // Create
+                        elementSet = new FeElementSet(elementSetName, elementIds);
+                        _elementSets.Add(elementSet.Name, elementSet);
+                    }
+                }
+            }
+            // Create face parts
+            BasePart[] modifiedParts;
+            BasePart[] newParts;
+            CreatePartsFromElementSets(newElementSetNames.ToArray(), out modifiedParts, out newParts);
+            // Remove old parts
+            if (modifiedParts.Length > 0)
+            {
+                string[] partNamesToRemove = new string[modifiedParts.Length];
+                string[] removedPartNames;
+                for (int i = 0; i < modifiedParts.Length; i++) partNamesToRemove[i] = modifiedParts[i].Name;
+                //
+                RemoveParts(partNamesToRemove, out removedPartNames, false);
+            }
+        }
+        public void SplitSolidCompoundMesh()
         {
             bool found;
             foreach (var entry1 in _parts)
@@ -2623,11 +2664,11 @@ namespace CaeMesh
                     // Skip the same part
                     if (!found || entry1.Key == entry2.Key) continue;
                     // Split the parts which share the same nodes
-                    SplitCompoundParts(entry1.Value, entry2.Value);
+                    SplitSolidCompoundParts(entry1.Value, entry2.Value);
                 }
             }
         }
-        public void SplitCompoundParts(BasePart part1, BasePart part2)
+        public void SplitSolidCompoundParts(BasePart part1, BasePart part2)
         {
             HashSet<int> nodeIds1 = new HashSet<int>(part1.NodeLabels);
             HashSet<int> nodeIds2 = new HashSet<int>(part2.NodeLabels);
@@ -5235,50 +5276,74 @@ namespace CaeMesh
             geometryId = GetGeometryId(itemId, typeId, partId);
             return geometryId;
         }
-        public int[] GetGeometryIds(int[] nodeIds, int[] elementIds)
+        public int[] GetGeometryIds(int[] nodeIds, int[] elementIds, bool completelyInside = true)
         {
             // geometryId = itemId * 100000 + typeId * 10000 + partId       
-            int itemId = -1;
-            int typeId = (int)GeometryType.Unknown;
-            int partId = -1;
+            int itemId;// = -1;
+            int typeId;// = (int)GeometryType.Unknown;
+            int partId;// = -1;
             HashSet<int> geometryIds = new HashSet<int>();
             VisualizationData visualization;
             HashSet<int> selectedNodes = new HashSet<int>(nodeIds);
             HashSet<int> nodesToRemove = new HashSet<int>();
             Dictionary<int, HashSet<int>> nodeIdsByItems;
-            //
+            // Surfaces
             foreach (var entry in _parts)
             {
                 if (entry.Value is CompoundGeometryPart) continue;
+                if (!entry.Value.Visible) continue;
                 //
                 partId = entry.Value.PartId;
                 visualization = entry.Value.Visualization;
-                // Surfaces
+                //
                 if (entry.Value.PartType == PartType.Shell) typeId = (int)GeometryType.ShellFrontSurface;
                 else if (entry.Value.PartType == PartType.SolidAsShell) typeId = (int)GeometryType.ShellFrontSurface;
                 else if (entry.Value.PartType == PartType.Solid) typeId = (int)GeometryType.SolidSurface;
                 else throw new NotSupportedException();
                 //
-                nodesToRemove.Clear();
                 nodeIdsByItems = visualization.GetNodeIdsBySurfaces();
                 foreach (var surfaceEntry in nodeIdsByItems)
                 {
-                    // Check for one first - speed?
-                    if (selectedNodes.Count >= surfaceEntry.Value.Count && selectedNodes.Contains(surfaceEntry.Value.First()))
+                    if (completelyInside)
                     {
-                        if (surfaceEntry.Value.IsSubsetOf(selectedNodes))
+                        // Check for one first - speed?
+                        if (selectedNodes.Count >= surfaceEntry.Value.Count && selectedNodes.Contains(surfaceEntry.Value.First()))
+                        {
+                            int[] intersect = selectedNodes.Intersect(surfaceEntry.Value).ToArray();
+                            int[] intersect2 = surfaceEntry.Value.Except(intersect).ToArray();
+
+                            if (surfaceEntry.Value.IsSubsetOf(selectedNodes))
+                            {
+                                itemId = surfaceEntry.Key;
+                                geometryIds.Add(GetGeometryId(itemId, typeId, partId));
+                                nodesToRemove.UnionWith(surfaceEntry.Value);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (selectedNodes.Intersect(surfaceEntry.Value).Count() > 0)
                         {
                             itemId = surfaceEntry.Key;
                             geometryIds.Add(GetGeometryId(itemId, typeId, partId));
                             nodesToRemove.UnionWith(surfaceEntry.Value);
-                            
                         }
                     }
                 }
-                selectedNodes.ExceptWith(nodesToRemove);
-                // Edges
+            }
+            selectedNodes.ExceptWith(nodesToRemove);
+            nodesToRemove.Clear();
+            // Edges
+            foreach (var entry in _parts)
+            {
+                if (entry.Value is CompoundGeometryPart) continue;
+                if (!entry.Value.Visible) continue;
+                //
+                partId = entry.Value.PartId;
+                visualization = entry.Value.Visualization;
+                //
                 typeId = (int)GeometryType.Edge;
-                nodesToRemove.Clear();
+                //
                 nodeIdsByItems = visualization.GetNodeIdsByEdges();
                 foreach (var edgeEntry in nodeIdsByItems)
                 {
@@ -5289,13 +5354,24 @@ namespace CaeMesh
                         {
                             itemId = edgeEntry.Key;
                             geometryIds.Add(GetGeometryId(itemId, typeId, partId));
-                            nodesToRemove.UnionWith(edgeEntry.Value);                            
+                            nodesToRemove.UnionWith(edgeEntry.Value);
                         }
                     }
                 }
-                selectedNodes.ExceptWith(nodesToRemove);
-                // Vertices
+            }
+            selectedNodes.ExceptWith(nodesToRemove);
+            nodesToRemove.Clear();
+            // vertices
+            foreach (var entry in _parts)
+            {
+                if (entry.Value is CompoundGeometryPart) continue;
+                if (!entry.Value.Visible) continue;
+                //
+                partId = entry.Value.PartId;
+                visualization = entry.Value.Visualization;
+                //
                 typeId = (int)GeometryType.Vertex;
+                //
                 for (int i = 0; i < visualization.VertexNodeIds.Length; i++)
                 {
                     if (selectedNodes.Contains(visualization.VertexNodeIds[i]))
@@ -5305,6 +5381,7 @@ namespace CaeMesh
                     }
                 }
             }
+            //
             return geometryIds.ToArray();
         }
         public int[] GetGeometryIds2(int[] elementIds)
@@ -5601,15 +5678,19 @@ namespace CaeMesh
                     newSurfaceIds.Clear();
                     foreach (var notVisitedSurfaceId in notVisitedSurfaceIds)
                     {
-                        foreach (var neighbourId in allFaceNeighbours[notVisitedSurfaceId])
+
+                        if (allFaceNeighbours.TryGetValue(notVisitedSurfaceId, out faceNeighbours))
                         {
-                            if (!surfaceIds.Contains(neighbourId) && !newSurfaceIds.Contains(neighbourId))
+                            foreach (var neighbourId in faceNeighbours)
                             {
-                                alpha = edgeAngles[new int[] { Math.Min(notVisitedSurfaceId, neighbourId),
-                                                               Math.Max(notVisitedSurfaceId, neighbourId) }][0];
-                                if (alpha <= angle)
+                                if (!surfaceIds.Contains(neighbourId) && !newSurfaceIds.Contains(neighbourId))
                                 {
-                                    newSurfaceIds.Add(neighbourId);
+                                    alpha = edgeAngles[new int[] { Math.Min(notVisitedSurfaceId, neighbourId),
+                                                               Math.Max(notVisitedSurfaceId, neighbourId) }][0];
+                                    if (alpha <= angle)
+                                    {
+                                        newSurfaceIds.Add(neighbourId);
+                                    }
                                 }
                             }
                         }

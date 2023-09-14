@@ -14,6 +14,8 @@ namespace PrePoMax.Commands
     [Serializable]
     class CDuplicateMaterial : Command
     {
+        // Compatibility v1.4.0 - the name of the class is missing one s - CDuplicateMaterials
+
         // Variables                                                                                                                
         private string[] _materialNames;
 
@@ -32,7 +34,6 @@ namespace PrePoMax.Commands
             receiver.DuplicateMaterials(_materialNames);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + GetArrayAsString(_materialNames);

@@ -33,7 +33,6 @@ namespace PrePoMax.Commands
             receiver.ReplaceSurface(_oldSurfaceName, _newSurface.DeepClone(), true);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _oldSurfaceName + ", " + _newSurface.ToString();

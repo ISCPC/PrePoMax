@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
             receiver.RemoveSections(_sectionNames);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + GetArrayAsString(_sectionNames);

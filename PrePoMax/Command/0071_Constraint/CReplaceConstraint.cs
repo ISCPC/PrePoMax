@@ -33,7 +33,6 @@ namespace PrePoMax.Commands
             receiver.ReplaceConstraint(_oldConstraintName, _newConstraint.DeepClone());
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _oldConstraintName + ", " + _newConstraint.ToString();

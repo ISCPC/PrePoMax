@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
             receiver.DuplicateElementSets(_elementSetNames);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + GetArrayAsString(_elementSetNames);

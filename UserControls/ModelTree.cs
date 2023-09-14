@@ -248,7 +248,7 @@ namespace UserControls
         public event Action<string, string> CreateEvent;
         public event Action<NamedClass, string> EditEvent;
         public event Action QueryEvent;
-        public event Action<NamedClass[]> DuplicateEvent;
+        public event Action<NamedClass[], string[]> DuplicateEvent;
         public event Action<NamedClass[], string[]> PropagateEvent;
         public event Action<NamedClass[], string[]> PreviewEvent;
         public event Action<string[]> CreateCompoundPart;
@@ -905,19 +905,28 @@ namespace UserControls
         {
             try
             {
+                string stepName;
                 List<NamedClass> items = new List<NamedClass>();
+                List<string> stepNames = new List<string>();
                 //
                 foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
                 {
                     if (selectedNode.Tag == null) continue;
                     //
+                    stepName = null;
+                    if (selectedNode.Parent != null && selectedNode.Parent.Parent != null && selectedNode.Parent.Parent.Tag is Step)
+                        stepName = selectedNode.Parent.Parent.Text;
+                    //
+                    if (stepNames == null) continue;
+                    //
                     items.Add((NamedClass)selectedNode.Tag);
+                    stepNames.Add(stepName);
                 }
                 //
                 if (items.Count > 0)
                 {
                     RenderingOff?.Invoke();
-                    DuplicateEvent?.Invoke(items.ToArray());
+                    DuplicateEvent?.Invoke(items.ToArray(), stepNames.ToArray());
                     RenderingOn?.Invoke();
                 }
             }
@@ -2850,10 +2859,17 @@ namespace UserControls
         {
             if (node.TreeView == cltvModel && node.Tag is FeNodeSet) return true;
             else if (node.TreeView == cltvModel && node.Tag is FeElementSet) return true;
+            else if (node.TreeView == cltvModel && node.Tag is FeSurface) return true;
+            else if (node.TreeView == cltvModel && node.Tag is FeReferencePoint) return true;
             else if (node.Tag is Material) return true;
+            else if (node.Tag is Section) return true;
             else if (node.Tag is Constraint) return true;
             else if (node.Tag is SurfaceInteraction) return true;
+            else if (node.Tag is ContactPair) return true;
+            else if (node.Tag is Amplitude) return true;
+            else if (node.Tag is InitialCondition) return true;
             else if (node.Tag is Step) return true;
+            else if (node.Tag is Load) return true;
             else return false;
         }
         private bool CanPropagate(TreeNode node)

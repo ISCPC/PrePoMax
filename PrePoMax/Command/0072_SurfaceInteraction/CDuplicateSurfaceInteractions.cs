@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
             receiver.DuplicateSurfaceInteractions(_surfaceInteractionNames);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + GetArrayAsString(_surfaceInteractionNames);

@@ -128,6 +128,10 @@ namespace CaeMesh
             {
                 _partType = partType;
             }
+            else if (_partType == PartType.Shell && partType == PartType.Shell)
+            {
+                _partType = partType;
+            }
             else throw new NotSupportedException();
         }
 

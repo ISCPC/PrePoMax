@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
             receiver.MergeByMasterSlaveConstraints(_constraintNames);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + GetArrayAsString(_constraintNames);

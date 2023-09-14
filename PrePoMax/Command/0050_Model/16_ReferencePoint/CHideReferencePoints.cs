@@ -32,7 +32,6 @@ namespace PrePoMax.Commands
             receiver.HideReferencePoints(_referencePoints);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + GetArrayAsString(_referencePoints);

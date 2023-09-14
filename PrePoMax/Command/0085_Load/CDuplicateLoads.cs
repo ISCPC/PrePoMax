@@ -7,34 +7,36 @@ using PrePoMax;
 using CaeModel;
 using CaeMesh;
 using CaeGlobals;
-
+using System.Runtime.Serialization;
 
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CAddInitialCondition : Command
+    class CDuplicateLoads : Command
     {
         // Variables                                                                                                                
-        private InitialCondition _initialCondition;
+        private string _stepName;
+        private string[] _loadNames;
 
 
         // Constructor                                                                                                              
-        public CAddInitialCondition(InitialCondition initialCondition)
-            : base("Add initial condition")
+        public CDuplicateLoads(string stepName, string[] loadNames)
+            :base("Duplicate loads")
         {
-            _initialCondition = initialCondition.DeepClone();
+            _stepName = stepName;
+            _loadNames = loadNames;
         }
-
+       
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.AddInitialCondition(_initialCondition.DeepClone());
+            receiver.DuplicateLoads(_stepName, _loadNames);
             return true;
         }
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _initialCondition.ToString();
+            return base.GetCommandString() + _stepName + ": " + GetArrayAsString(_loadNames);
         }
     }
 }

@@ -205,16 +205,19 @@ namespace PrePoMax.Forms
                 //
                 if (ids.Length == 0)
                 {
-                    _viewReferencePoint.X.SetEquation("0");
-                    _viewReferencePoint.Y.SetEquation("0");
-                    _viewReferencePoint.Z.SetEquation("0");
+                    _viewReferencePoint.X = new EquationString("0");
+                    _viewReferencePoint.Y = new EquationString("0");
+                    _viewReferencePoint.Z = new EquationString("0");
                 }
                 else if (ids.Length == 1 && rp.CreatedFrom == FeReferencePointCreatedFrom.Selection)
                 {
                     FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
-                    _viewReferencePoint.X.SetEquation(node.X.ToString());
-                    _viewReferencePoint.Y.SetEquation(node.Y.ToString());
-                    _viewReferencePoint.Z.SetEquation(node.Z.ToString());
+                    _viewReferencePoint.X = new EquationString(node.X.ToString());
+                    _viewReferencePoint.Y = new EquationString(node.Y.ToString());
+                    _viewReferencePoint.Z = new EquationString(node.Z.ToString());
+
+                    //_viewReferencePoint.Y.SetEquation(node.Y.ToString());
+                    //_viewReferencePoint.Z.SetEquation(node.Z.ToString());
                     //
                     propertyGrid.Refresh();
                     //
@@ -228,9 +231,9 @@ namespace PrePoMax.Forms
                 {
                     FeNode node1 = _controller.Model.Mesh.Nodes[ids[0]];
                     FeNode node2 = _controller.Model.Mesh.Nodes[ids[1]];
-                    _viewReferencePoint.X.SetEquation(((node1.X + node2.X) / 2).ToString());
-                    _viewReferencePoint.Y.SetEquation(((node1.Y + node2.Y) / 2).ToString());
-                    _viewReferencePoint.Z.SetEquation(((node1.Z + node2.Z) / 2).ToString());
+                    _viewReferencePoint.X = new EquationString(((node1.X + node2.X) / 2).ToString());
+                    _viewReferencePoint.Y = new EquationString(((node1.Y + node2.Y) / 2).ToString());
+                    _viewReferencePoint.Z = new EquationString(((node1.Z + node2.Z) / 2).ToString());
                     //
                     propertyGrid.Refresh();
                     //
@@ -246,9 +249,9 @@ namespace PrePoMax.Forms
                     Vec3D v2 = new Vec3D(_controller.Model.Mesh.Nodes[ids[1]].Coor);
                     Vec3D v3 = new Vec3D(_controller.Model.Mesh.Nodes[ids[2]].Coor);
                     Vec3D.GetCircle(v1, v2, v3, out double r, out Vec3D center, out Vec3D axis);
-                    _viewReferencePoint.X.SetEquation(center.X.ToString());
-                    _viewReferencePoint.Y.SetEquation(center.Y.ToString());
-                    _viewReferencePoint.Z.SetEquation(center.Z.ToString());
+                    _viewReferencePoint.X = new EquationString(center.X.ToString());
+                    _viewReferencePoint.Y = new EquationString(center.Y.ToString());
+                    _viewReferencePoint.Z = new EquationString(center.Z.ToString());
                     //
                     propertyGrid.Refresh();
                     //

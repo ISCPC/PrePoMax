@@ -33,7 +33,8 @@ namespace CaeGlobals
         public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
         {
             // Initializes the standard values list with string defaults.
-            values = new ArrayList(new string[] { _fixed, (string)ConvertTo(context, null, 0, typeof(string)) });
+            string initialValueStr = (string)ConvertTo(context, null, 0, typeof(string));
+            values = new ArrayList(new EquationString[] { new EquationString(_fixed), new EquationString(initialValueStr) });
             // Passes the local integer array.
             StandardValuesCollection svc = new StandardValuesCollection(values);
             return svc;
