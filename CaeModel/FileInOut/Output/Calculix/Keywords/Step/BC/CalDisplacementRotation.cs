@@ -68,7 +68,7 @@ namespace FileInOut.Output.Calculix
                 directions = _displacementRotation.GetConstrainedDirections();
             }
             //
-            double ratio = GetComplexRatio(_complexLoadType, _displacementRotation.PhaseDeg);
+            double ratio = GetComplexRatio(_complexLoadType, _displacementRotation.PhaseDeg.Value);
             //
             double[] values = _displacementRotation.GetConstrainValues();
             string[] stringValues = new string[values.Length];

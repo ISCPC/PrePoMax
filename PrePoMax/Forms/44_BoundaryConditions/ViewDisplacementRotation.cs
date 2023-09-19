@@ -26,14 +26,14 @@ namespace PrePoMax
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(0, 10, "U1")]
         [DescriptionAttribute("Displacement in the direction of the first axis.")]
-        [TypeConverter(typeof(StringLengthDOFConverter))]
+        [TypeConverter(typeof(EquationLengthDOFConverter))]
         [Id(1, 3)]
-        public double U1
+        public EquationString U1
         {
-            get { return _displacementRotation.U1; }
+            get { return _displacementRotation.U1.Equation; }
             set
             {
-                _displacementRotation.U1 = value;
+                _displacementRotation.U1.Equation = value;
                 UpdateVisibility();
             }
         }
@@ -41,14 +41,14 @@ namespace PrePoMax
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(1, 10, "U2")]        
         [DescriptionAttribute("Displacement in the direction of the second axis.")]
-        [TypeConverter(typeof(StringLengthDOFConverter))]
+        [TypeConverter(typeof(EquationLengthDOFConverter))]
         [Id(2, 3)]
-        public double U2
+        public EquationString U2
         {
-            get { return _displacementRotation.U2; }
+            get { return _displacementRotation.U2.Equation; }
             set
             {
-                _displacementRotation.U2 = value;
+                _displacementRotation.U2.Equation = value;
                 UpdateVisibility();
             }
         }
@@ -56,14 +56,14 @@ namespace PrePoMax
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(2, 10, "U3")]
         [DescriptionAttribute("Displacement in the direction of the third axis.")]
-        [TypeConverter(typeof(StringLengthDOFConverter))]
+        [TypeConverter(typeof(EquationLengthDOFConverter))]
         [Id(3, 3)]
-        public double U3
+        public EquationString U3
         {
-            get { return _displacementRotation.U3; }
+            get { return _displacementRotation.U3.Equation; }
             set
             {
-                _displacementRotation.U3 = value;
+                _displacementRotation.U3.Equation = value;
                 UpdateVisibility();
             }
         }
@@ -71,14 +71,14 @@ namespace PrePoMax
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(3, 10, "UR1")]
         [DescriptionAttribute("Rotation around the first axis.")]
-        [TypeConverter(typeof(StringAngleDOFConverter))]
+        [TypeConverter(typeof(EquationAngleDOFConverter))]
         [Id(4, 3)]
-        public double UR1
+        public EquationString UR1
         {
-            get { return _displacementRotation.UR1; }
+            get { return _displacementRotation.UR1.Equation; }
             set
             {
-                _displacementRotation.UR1 = value;
+                _displacementRotation.UR1.Equation = value;
                 UpdateVisibility();
             }
         }
@@ -86,14 +86,14 @@ namespace PrePoMax
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(4, 10, "UR2")]
         [DescriptionAttribute("Rotation around the second axis.")]
-        [TypeConverter(typeof(StringAngleDOFConverter))]
+        [TypeConverter(typeof(EquationAngleDOFConverter))]
         [Id(5, 3)]
-        public double UR2
+        public EquationString UR2
         {
-            get { return _displacementRotation.UR2; }
+            get { return _displacementRotation.UR2.Equation; }
             set
             {
-                _displacementRotation.UR2 = value;
+                _displacementRotation.UR2.Equation = value;
                 UpdateVisibility();
             }
         }
@@ -101,14 +101,14 @@ namespace PrePoMax
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(5, 10, "UR3")]
         [DescriptionAttribute("Rotation around the third axis.")]
-        [TypeConverter(typeof(StringAngleDOFConverter))]
+        [TypeConverter(typeof(EquationAngleDOFConverter))]
         [Id(6, 3)]
-        public double UR3
+        public EquationString UR3
         {
-            get { return _displacementRotation.UR3; }
+            get { return _displacementRotation.UR3.Equation; }
             set
             {
-                _displacementRotation.UR3 = value;
+                _displacementRotation.UR3.Equation = value;
                 UpdateVisibility();
             }
         }
@@ -116,9 +116,13 @@ namespace PrePoMax
         [CategoryAttribute("Phase")]
         [OrderedDisplayName(0, 10, "Phase")]
         [DescriptionAttribute("Value of the boundary condition phase.")]
-        [TypeConverter(typeof(StringAngleDegConverter))]
+        [TypeConverter(typeof(EquationAngleDegConverter))]
         [Id(1, 4)]
-        public double Phase { get { return _displacementRotation.PhaseDeg; } set { _displacementRotation.PhaseDeg = value; } }
+        public EquationString Phase
+        {
+            get { return _displacementRotation.PhaseDeg.Equation; }
+            set { _displacementRotation.PhaseDeg.Equation = value; }
+        }
         //
         public override string AmplitudeName
         {

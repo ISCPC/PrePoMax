@@ -7,6 +7,7 @@ using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
 using System.Drawing.Design;
+using CaeModel;
 
 namespace PrePoMax
 {
@@ -14,7 +15,7 @@ namespace PrePoMax
     public class ViewHydrostaticPressureLoad : ViewLoad
     {
         // Variables                                                                                                                
-        private CaeModel.HydrostaticPressure _hpLoad;
+        private HydrostaticPressure _hpLoad;
         private ItemSetData _singlePointItemSetData;
         private ItemSetData _twoPointPointItemSetData;
 
@@ -165,12 +166,24 @@ namespace PrePoMax
         [Id(1, 8)]
         public EquationString Phase { get { return _hpLoad.PhaseDeg.Equation; } set { _hpLoad.PhaseDeg.Equation = value; } }
         //
+        //
+        [CategoryAttribute("Pressure cutoff")]
+        [OrderedDisplayName(0, 10, "Cutoff")]
+        [DescriptionAttribute("A positive pressure cutoff sets all positive pressure values to 0, " +
+                              "while a negative pressure cutoff sets all negative pressure values to 0.")]
+        [Id(1, 9)]
+        public HydrostaticPressureCutoffEnum HydrostaticPressureType
+        {
+            get { return _hpLoad.HydrostaticPressureCutoff; }
+            set { _hpLoad.HydrostaticPressureCutoff = value; }
+        }
+        //
         public override string AmplitudeName { get { return _hpLoad.AmplitudeName; } set { _hpLoad.AmplitudeName = value; } }
         public override System.Drawing.Color Color { get { return _hpLoad.Color; } set { _hpLoad.Color = value; } }
 
 
         // Constructors                                                                                                             
-        public ViewHydrostaticPressureLoad(CaeModel.HydrostaticPressure hpLoad)
+        public ViewHydrostaticPressureLoad(HydrostaticPressure hpLoad)
         {
             // The order is important
             _hpLoad = hpLoad;
@@ -196,7 +209,7 @@ namespace PrePoMax
 
 
         // Methods                                                                                                                  
-        public override CaeModel.Load GetBase()
+        public override Load GetBase()
         {
             return _hpLoad;
         }

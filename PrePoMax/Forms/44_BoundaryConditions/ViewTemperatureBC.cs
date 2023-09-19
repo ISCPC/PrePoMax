@@ -30,9 +30,13 @@ namespace PrePoMax
         [CategoryAttribute("Temperature magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("Value of the temperature.")]
-        [TypeConverter(typeof(StringTemperatureConverter))]
+        [TypeConverter(typeof(EquationTemperatureConverter))]
         [Id(1, 3)]
-        public double Temperature { get { return _temperatureBC.Temperature; } set { _temperatureBC.Temperature = value; } }
+        public EquationString Temperature
+        {
+            get { return _temperatureBC.Temperature.Equation; }
+            set { _temperatureBC.Temperature.Equation = value; }
+        }
         //
         public override string AmplitudeName
         {

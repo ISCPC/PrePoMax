@@ -60,7 +60,7 @@ namespace FileInOut.Output.Calculix
             }
             else throw new NotSupportedException();
             //
-            sb.AppendFormat("{0}, 11, 11, {1}{2}", regionName, _temperatureBC.Temperature.ToCalculiX16String(),
+            sb.AppendFormat("{0}, 11, 11, {1}{2}", regionName, _temperatureBC.Temperature.Value.ToCalculiX16String(),
                             Environment.NewLine);
             //
             return sb.ToString();

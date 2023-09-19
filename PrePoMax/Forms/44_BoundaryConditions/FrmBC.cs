@@ -157,12 +157,14 @@ namespace PrePoMax.Forms
             _viewBc = (ViewBoundaryCondition)propertyGrid.SelectedObject;
             //
             if (BoundaryCondition == null) throw new CaeException("No boundary condition was selected.");
+            // Check if the name exists
+            CheckName(_boundaryConditionToEditName, BoundaryCondition.Name, _boundaryConditionNames, "boundary condition");
+            // Check equations
+            BoundaryCondition.CheckEquations();
             //
             if (BoundaryCondition.RegionType == RegionTypeEnum.Selection &&
                 (BoundaryCondition.CreationIds == null || BoundaryCondition.CreationIds.Length == 0))
                 throw new CaeException("The boundary condition selection must contain at least one item.");
-            // Check if the name exists
-            CheckName(_boundaryConditionToEditName, BoundaryCondition.Name, _boundaryConditionNames, "boundary condition");
             //
             if (BoundaryCondition is DisplacementRotation dr)
             {

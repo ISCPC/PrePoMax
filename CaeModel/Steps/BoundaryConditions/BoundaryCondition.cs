@@ -6,23 +6,23 @@ using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
 using System.Drawing;
+using System.Runtime.Serialization;
 
 namespace CaeModel
 {
     [Serializable]
-    public class BoundaryCondition : NamedClass, IMultiRegion
+    public class BoundaryCondition : NamedClass, IMultiRegion, IContainsEquations, ISerializable
     {
         // Variables                                                                                                                
-        private string _regionName;
-        private RegionTypeEnum _regionType;
-        private int[] _creationIds;
-        private Selection _creationData;
-        protected bool _twoD;
-        protected string _amplitudeName;
-        protected bool _complex;
-        protected double _phaseDeg;
-        protected bool _boundaryDisplacementBC;
-        protected Color _color;
+        private string _regionName;                             //ISerializable
+        private RegionTypeEnum _regionType;                     //ISerializable
+        private int[] _creationIds;                             //ISerializable
+        private Selection _creationData;                        //ISerializable
+        protected bool _twoD;                                   //ISerializable
+        protected string _amplitudeName;                        //ISerializable
+        protected bool _complex;                                //ISerializable
+        protected EquationContainer _phaseDeg;                  //ISerializable
+        protected Color _color;                                 //ISerializable
         public const string DefaultAmplitudeName = "Default";
 
 
@@ -46,7 +46,7 @@ namespace CaeModel
             }
         }
         public bool Complex { get { return _complex; } set { _complex = value; } }
-        public double PhaseDeg { get { return _phaseDeg; } set { _phaseDeg = Tools.GetPhase360(value); } }
+        public EquationContainer PhaseDeg { get { return _phaseDeg; } set { SetPhaseDeg(value); } }
         public Color Color
         {
             get
@@ -72,11 +72,94 @@ namespace CaeModel
             _twoD = twoD;
             _amplitudeName = null;
             _complex = complex;
-            PhaseDeg = phaseDeg;    // 360°
+            PhaseDeg = new EquationContainer(typeof(StringAngleDegConverter), phaseDeg);
             _color = Color.Lime;
+        }
+        public BoundaryCondition(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_regionName":
+                    case "BoundaryCondition+_regionName":               // Compatibility for version v1.4.0
+                        _regionName = (string)entry.Value; break;
+                    case "_regionType":
+                    case "BoundaryCondition+_regionType":               // Compatibility for version v1.4.0
+                        _regionType = (RegionTypeEnum)entry.Value; break;
+                    case "_creationIds":
+                    case "BoundaryCondition+_creationIds":              // Compatibility for version v1.4.0
+                        _creationIds = (int[])entry.Value; break;
+                    case "_creationData":
+                    case "BoundaryCondition+_creationData":             // Compatibility for version v1.4.0
+                        _creationData = (Selection)entry.Value; break;
+                    case "_twoD":
+                    case "BoundaryCondition+_twoD":                     // Compatibility for version v1.4.0
+                        _twoD = (bool)entry.Value; break;
+                    case "_amplitudeName":
+                    case "BoundaryCondition+_amplitudeName":            // Compatibility for version v1.4.0
+                        _amplitudeName = (string)entry.Value; break;
+                    case "_complex":
+                    case "BoundaryCondition+_complex":                  // Compatibility for version v1.4.0
+                        _complex = (bool)entry.Value; break;
+                    case "_phaseDeg":
+                    case "BoundaryCondition+_phaseDeg":                 // Compatibility for version v1.4.0
+                        // Compatibility for version v1.4.0
+                        if (entry.Value is double valuePhase)
+                            PhaseDeg = new EquationContainer(typeof(StringAngleDegConverter), valuePhase);
+                        else
+                            SetPhaseDeg((EquationContainer)entry.Value, false);
+                        break;
+                    case "_color":
+                    case "BoundaryCondition+_color":                    // Compatibility for version v1.4.0
+                        _color = (Color)entry.Value; break;
+                    default:
+                        break;
+                }
+            }
         }
 
 
         // Methods                                                                                                                  
+        private void SetPhaseDeg(EquationContainer value, bool checkEquation = true)
+        {
+            EquationContainer.SetAndCheck(ref _phaseDeg, value, CheckAngle, checkEquation);
+        }
+        //
+        private double CheckAngle(double value)
+        {
+            return Tools.GetPhase360(value);
+        }
+        // IContainsEquations
+        public virtual void CheckEquations()
+        {
+            _phaseDeg.CheckEquation();
+        }
+        public virtual bool TryCheckEquations()
+        {
+            try
+            {
+                CheckEquations();
+                return true;
+            }
+            catch (Exception ex) { return false; }
+        }
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // Using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_regionName", _regionName, typeof(string));
+            info.AddValue("_regionType", _regionType, typeof(RegionTypeEnum));
+            info.AddValue("_creationIds", _creationIds, typeof(int[]));
+            info.AddValue("_creationData", _creationData, typeof(Selection));
+            info.AddValue("_twoD", _twoD, typeof(bool));
+            info.AddValue("_amplitudeName", _amplitudeName, typeof(string));
+            info.AddValue("_complex", _complex, typeof(bool));
+            info.AddValue("_phaseDeg", _phaseDeg, typeof(EquationContainer));
+            info.AddValue("_color", _color, typeof(Color));
+        }
     }
 }

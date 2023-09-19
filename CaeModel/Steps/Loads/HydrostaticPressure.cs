@@ -7,24 +7,37 @@ using CaeMesh;
 using CaeGlobals;
 using CaeResults;
 using System.Runtime.Serialization;
+using DynamicTypeDescriptor;
 
 namespace CaeModel
 {
     [Serializable]
+    public enum HydrostaticPressureCutoffEnum
+    {
+        [StandardValue("None", Description = "None", DisplayName = "None")]
+        None,
+        [StandardValue("Positive", Description = "Positive cutoff", DisplayName = "Positive cutoff")]
+        Positive,
+        [StandardValue("Negative", Description = "Negative cutoff", DisplayName = "Negative cutoff")]
+        Negative
+    }
+
+    [Serializable]
     public class HydrostaticPressure : VariablePressure, IPreviewable, ISerializable
     {
         // Variables                                                                                                                
-        private EquationContainer _x1;                         //ISerializable
-        private EquationContainer _y1;                         //ISerializable
-        private EquationContainer _z1;                         //ISerializable
-        private EquationContainer _x2;                         //ISerializable
-        private EquationContainer _y2;                         //ISerializable
-        private EquationContainer _z2;                         //ISerializable
-        private EquationContainer _n1;                         //ISerializable
-        private EquationContainer _n2;                         //ISerializable
-        private EquationContainer _n3;                         //ISerializable
-        private EquationContainer _firstPointPressure;         //ISerializable
-        private EquationContainer _secondPointPressure;        //ISerializable
+        private EquationContainer _x1;                                      //ISerializable
+        private EquationContainer _y1;                                      //ISerializable
+        private EquationContainer _z1;                                      //ISerializable
+        private EquationContainer _x2;                                      //ISerializable
+        private EquationContainer _y2;                                      //ISerializable
+        private EquationContainer _z2;                                      //ISerializable
+        private EquationContainer _n1;                                      //ISerializable
+        private EquationContainer _n2;                                      //ISerializable
+        private EquationContainer _n3;                                      //ISerializable
+        private EquationContainer _firstPointPressure;                      //ISerializable
+        private EquationContainer _secondPointPressure;                     //ISerializable
+        private HydrostaticPressureCutoffEnum _hydrostaticPressureCutoff;   //ISerializable
 
 
         // Properties                                                                                                               
@@ -46,6 +59,11 @@ namespace CaeModel
         {
             get { return _secondPointPressure; }
             set { SetSecondPointPressure(value); }
+        }
+        public HydrostaticPressureCutoffEnum HydrostaticPressureCutoff
+        {
+            get { return _hydrostaticPressureCutoff; }
+            set { _hydrostaticPressureCutoff = value; }
         }
 
 
@@ -73,12 +91,15 @@ namespace CaeModel
             //
             FirstPointPressure = new EquationContainer(typeof(StringPressureConverter), firstPointPressure);
             SecondPointPressure = new EquationContainer(typeof(StringPressureConverter), secondPointPressure);
+            //
+            _hydrostaticPressureCutoff = HydrostaticPressureCutoffEnum.None;
         }
         public HydrostaticPressure(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             // Compatibility for version v1.4.0
             if (_regionType == RegionTypeEnum.PartName) _regionType = RegionTypeEnum.Selection;
+            _hydrostaticPressureCutoff = HydrostaticPressureCutoffEnum.None;
             //
             foreach (SerializationEntry entry in info)
             {
@@ -145,6 +166,8 @@ namespace CaeModel
                         else
                             SetSecondPointPressure((EquationContainer)entry.Value, false);
                         break;
+                    case "_hydrostaticPressureCutoff":
+                        _hydrostaticPressureCutoff = (HydrostaticPressureCutoffEnum)entry.Value; break;
                     default:
                         break;
                 }
@@ -305,7 +328,10 @@ namespace CaeModel
             //
             double p = _firstPointPressure.Value + (_secondPointPressure.Value - _firstPointPressure.Value) / (d2 - d1) * (d - d1);
             //
-            return p;
+            if (_hydrostaticPressureCutoff == HydrostaticPressureCutoffEnum.None) return p;
+            else if (_hydrostaticPressureCutoff == HydrostaticPressureCutoffEnum.Positive) return p > 0 ? 0 : p;
+            else if (_hydrostaticPressureCutoff == HydrostaticPressureCutoffEnum.Negative) return p < 0 ? 0 : p;
+            else throw new NotSupportedException();
         }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -324,6 +350,7 @@ namespace CaeModel
             info.AddValue("_n3", _n3, typeof(EquationContainer));
             info.AddValue("_firstPointPressure", _firstPointPressure, typeof(EquationContainer));
             info.AddValue("_secondPointPressure", _secondPointPressure, typeof(EquationContainer));
+            info.AddValue("_hydrostaticPressureCutoff", _hydrostaticPressureCutoff, typeof(HydrostaticPressureCutoffEnum));
         }
     }
 }

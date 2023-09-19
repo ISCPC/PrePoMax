@@ -1022,7 +1022,7 @@ namespace FileInOut.Output
             //
             AppendBoundaryCondition(model, boundaryCondition, referencePointsNodeIds, complexLoadType, parent);
             // Load case=2 - Imaginary component
-            if (step is SteadyStateDynamicsStep && boundaryCondition.Complex && boundaryCondition.PhaseDeg != 0)
+            if (step is SteadyStateDynamicsStep && boundaryCondition.Complex && boundaryCondition.PhaseDeg.Value != 0)
                 AppendBoundaryCondition(model, boundaryCondition, referencePointsNodeIds, ComplexLoadTypeEnum.Imaginary, parent);
         }
         static private void AppendBoundaryCondition(FeModel model, BoundaryCondition boundaryCondition,
@@ -1146,7 +1146,7 @@ namespace FileInOut.Output
                     {
                         DisplacementRotation dr = new DisplacementRotation(ptl.Name, name, RegionTypeEnum.ReferencePointName,
                                                                            ptl.TwoD, ptl.Complex, ptl.PhaseDeg.Value);
-                        dr.U1 = ptl.GetMagnitudeValue();
+                        dr.U1.SetEquationFromValue(ptl.GetMagnitudeValue());
                         dr.AmplitudeName = ptl.AmplitudeName;
                         calKey = new CalDisplacementRotation(dr, referencePointsNodeIds, null, complexLoadType);
                     }

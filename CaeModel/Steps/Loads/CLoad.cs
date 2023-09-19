@@ -110,7 +110,6 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        
         private void UpdateEquations()
         {
             try

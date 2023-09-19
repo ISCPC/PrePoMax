@@ -389,6 +389,8 @@ namespace CaeModel
                     // Amplitude
                     if (bc.AmplitudeName != BoundaryCondition.DefaultAmplitudeName &&
                         !_amplitudes.ContainsValidKey(bc.AmplitudeName)) valid = false;
+                    // Check equations
+                    valid &= bc.TryCheckEquations();
                     //
                     SetItemValidity(step.Name, bc, valid, items);
                     if (!valid && bc.Active) invalidItems.Add("Boundary condition: " + step.Name + ", " + bc.Name);
@@ -1455,6 +1457,7 @@ namespace CaeModel
                                       load.TwoD, load.Complex,
                                       load.PhaseDeg.Value);
                     cLoad.AmplitudeName = load.AmplitudeName;
+                    //
                     loads.Add(cLoad);
                 }
             }
@@ -1706,9 +1709,9 @@ namespace CaeModel
                     name = staticStep.BoundaryConditions.GetNextNumberedKey("BDM-" + entry.Key);
                     displacementRotation = new DisplacementRotation(name, nodeSet.Name, RegionTypeEnum.NodeSetName, twoD,
                                                                     false, 0);
-                    if (xyz[0] != 0) displacementRotation.U1 = xyz[0];
-                    if (xyz[1] != 0) displacementRotation.U2 = xyz[1];
-                    if (xyz[2] != 0) displacementRotation.U3 = xyz[2];
+                    if (xyz[0] != 0) displacementRotation.U1.SetEquationFromValue(xyz[0]);
+                    if (xyz[1] != 0) displacementRotation.U2.SetEquationFromValue(xyz[1]);
+                    if (xyz[2] != 0) displacementRotation.U3.SetEquationFromValue(xyz[2]);
                     staticStep.AddBoundaryCondition(displacementRotation);
                 }
             }

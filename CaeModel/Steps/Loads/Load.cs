@@ -21,7 +21,7 @@ namespace CaeModel
         protected bool _complex;                                    //ISerializable
         protected EquationContainer _phaseDeg;                      //ISerializable
         protected Color _color;                                     //ISerializable
-        public const string DefaultAmplitudeName = "Default";       //ISerializable
+        public const string DefaultAmplitudeName = "Default";
 
 
         // Properties                                                                                                               
@@ -153,7 +153,6 @@ namespace CaeModel
             info.AddValue("_complex", _complex, typeof(bool));
             info.AddValue("_phaseDeg", _phaseDeg, typeof(EquationContainer));
             info.AddValue("_color", _color, typeof(Color));
-            
         }
     }
 }

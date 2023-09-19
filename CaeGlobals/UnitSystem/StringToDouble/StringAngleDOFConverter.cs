@@ -17,8 +17,8 @@ namespace CaeGlobals
         protected static AngleUnit _angleUnit = AngleUnit.Radian;
         //
         protected ArrayList values;
-        protected string _free = "Unconstrained";
-        //protected string _fixed = "Fixed";
+        protected string _free = "Unconstrained";       // double.NaN
+        //protected string _fixed = "Fixed";              // double.PositiveInfinity
 
 
         // Properties                                                                                                               

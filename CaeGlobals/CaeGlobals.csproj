@@ -136,6 +136,9 @@
     <Compile Include="CommonClasses\Vec3D.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationAngleDegConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationAccelerationConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationAngleDOFConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationIntegerConverter.cs" />
+    <Compile Include="UnitSystem\EquationToString\EquationLengthDOFConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationThermalConductivityConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationSpecificHeatConverter.cs" />
     <Compile Include="UnitSystem\EquationToString\EquationThermalExpansionConverter.cs" />

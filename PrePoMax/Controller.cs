@@ -609,7 +609,7 @@ namespace PrePoMax
             string fileVersion;
             //
             data = TryReadCompressedPmx(fileName, out _model, out _allResults, out fileVersion);
-            if (data != null && data.Length == 1 && (string)data[0] == "UncompatibleVersion")
+            if (data != null && data.Length == 1 && (string)data[0] == "IncompatibleVersion")
             {
                 New();
                 return;
@@ -990,7 +990,7 @@ namespace PrePoMax
                     //
                     if (fileVersion != Globals.ProgramName)
                     {
-                        _form.WriteDataToOutput("Warning: The opened file is from an uncompatible version: " + fileVersion);
+                        _form.WriteDataToOutput("Warning: The opened file is from an incompatible version: " + fileVersion);
                         _form.WriteDataToOutput("Some items might not be loaded correctly. Check the model.");
                     }
                     //
@@ -11837,9 +11837,9 @@ namespace PrePoMax
                 dispRot.GetDofType(3) == DOFType.Prescribed)
             {
                 double[] normal = new double[3];
-                if (dispRot.GetDofType(1) == DOFType.Prescribed) normal[0] = dispRot.U1;
-                if (dispRot.GetDofType(2) == DOFType.Prescribed) normal[1] = dispRot.U2;
-                if (dispRot.GetDofType(3) == DOFType.Prescribed) normal[2] = dispRot.U3;
+                if (dispRot.GetDofType(1) == DOFType.Prescribed) normal[0] = dispRot.U1.Value;
+                if (dispRot.GetDofType(2) == DOFType.Prescribed) normal[1] = dispRot.U2.Value;
+                if (dispRot.GetDofType(3) == DOFType.Prescribed) normal[2] = dispRot.U3.Value;
                 //
                 for (int i = 0; i < symbolCoor.Length; i++)
                 {
@@ -11866,9 +11866,9 @@ namespace PrePoMax
                 dispRot.GetDofType(6) == DOFType.Prescribed)
             {
                 double[] normal = new double[3];
-                if (dispRot.GetDofType(4) == DOFType.Prescribed) normal[0] = dispRot.UR1;
-                if (dispRot.GetDofType(5) == DOFType.Prescribed) normal[1] = dispRot.UR2;
-                if (dispRot.GetDofType(6) == DOFType.Prescribed) normal[2] = dispRot.UR3;
+                if (dispRot.GetDofType(4) == DOFType.Prescribed) normal[0] = dispRot.UR1.Value;
+                if (dispRot.GetDofType(5) == DOFType.Prescribed) normal[1] = dispRot.UR2.Value;
+                if (dispRot.GetDofType(6) == DOFType.Prescribed) normal[2] = dispRot.UR3.Value;
                 //
                 for (int i = 0; i < symbolCoor.Length; i++)
                 {

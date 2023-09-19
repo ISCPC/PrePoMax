@@ -56,7 +56,7 @@ namespace CaeGlobals
         {
             if (_stringDoubleConverterType == null) throw new NotSupportedException();
             TypeConverter stringDoubleConverter = (TypeConverter)Activator.CreateInstance(_stringDoubleConverterType);
-            return (double)stringDoubleConverter.ConvertFrom(equation);
+            return Convert.ToDouble(stringDoubleConverter.ConvertFrom(equation));
         }
         public void SetConverterType(Type stringDoubleConverterType)
         {

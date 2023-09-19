@@ -28,7 +28,7 @@ namespace CaeGlobals
         {
             if (value is string valueString)
             {
-                double result = (double)ConvertFrom(context, culture, valueString);
+                double result = Convert.ToDouble(ConvertFrom(context, culture, valueString));
                 string resultStr = (string)ConvertTo(context, culture, result, typeof(string));
                 if (valueString.Contains("=")) return valueString.Trim().Replace(" ", "") + "; (" + resultStr + ")";
                 else return resultStr;
@@ -60,7 +60,7 @@ namespace CaeGlobals
             {
                 if (destinationType == typeof(string) && value is EquationString equationString)
                 {
-                    double result = (double)ConvertFrom(context, culture, equationString.Equation);
+                    double result = Convert.ToDouble(ConvertFrom(context, culture, equationString.Equation));
                     string resultStr = (string)ConvertTo(context, culture, result, typeof(string));
                     //
                     if (equationString.IsEquation())

@@ -26,8 +26,13 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(9, 10, "Step number")]
         [DescriptionAttribute("Enter the global model step number from which to read the displacements.")]
+        [TypeConverter(typeof(EquationIntegerConverter))]
         [Id(2, 1)]
-        public int StepNumber { get { return _submodel.StepNumber; } set { _submodel.StepNumber = value; } }
+        public EquationString StepNumber
+        {
+            get { return _submodel.StepNumber.Equation; }
+            set { _submodel.StepNumber.Equation = value; }
+        }
         //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(0, 10, "U1")]

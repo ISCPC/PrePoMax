@@ -1801,22 +1801,22 @@ namespace FileInOut.Input
                             switch (j)
                             {
                                 case 1:
-                                    dispRotBC.U1 = dofValue;
+                                    dispRotBC.U1.SetEquationFromValue(dofValue);
                                     break;
                                 case 2:
-                                    dispRotBC.U2 = dofValue;
+                                    dispRotBC.U2.SetEquationFromValue(dofValue);
                                     break;
                                 case 3:
-                                    dispRotBC.U3 = dofValue;
+                                    dispRotBC.U3.SetEquationFromValue(dofValue);
                                     break;
                                 case 4:
-                                    dispRotBC.UR1 = dofValue;
+                                    dispRotBC.UR1.SetEquationFromValue(dofValue);
                                     break;
                                 case 5:
-                                    dispRotBC.UR2 = dofValue;
+                                    dispRotBC.UR2.SetEquationFromValue(dofValue);
                                     break;
                                 case 6:
-                                    dispRotBC.UR3 = dofValue;
+                                    dispRotBC.UR3.SetEquationFromValue(dofValue);
                                     break;
                             }
                         }
@@ -1854,7 +1854,7 @@ namespace FileInOut.Input
                     if (bc is TemperatureBC tempBC)
                     {
                         key[0] = 11;
-                        key[1] = tempBC.Temperature;
+                        key[1] = tempBC.Temperature.Value;
                     }
                     else if (bc is DisplacementRotation dispRotBC)
                     {
