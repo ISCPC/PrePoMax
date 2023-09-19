@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using CaeGlobals;
 using CaeMesh;
 using CaeResults;
 using DynamicTypeDescriptor;
+using FileInOut.Output.Calculix;
+using static System.Collections.Specialized.BitVector32;
 
 namespace CaeModel
 {
@@ -126,26 +132,36 @@ namespace CaeModel
     }
 
     [Serializable]
-    public class ModelProperties
+    public class ModelProperties : ISerializable
     {
         // Variables                                                                                                                
-        public ModelSpaceEnum ModelSpace;
-        public ModelType ModelType;
+        private ModelSpaceEnum _modelSpace;                 //ISerializable
+        private ModelType _modelType;                       //ISerializable
         // Submodel
-        public string GlobalResultsFileName;
+        private string _globalResultsFileName;              //ISerializable
         // Slip wear model
-        public SlipWearResultsEnum SlipWearResults;
-        private int _numberOfCycles;
-        private int _cyclesIncrement;
-        private int _numOfSmoothingSteps;
-        private bool _bdmRemeshing;
+        private SlipWearResultsEnum _slipWearResults;       //ISerializable
+        private int _numberOfCycles;                        //ISerializable
+        private int _cyclesIncrement;                       //ISerializable
+        private int _numOfSmoothingSteps;                   //ISerializable
+        private bool _bdmRemeshing;                         //ISerializable
         //
-        public double AbsoluteZero;
-        public double StefanBoltzmann;
-        public double NewtonGravity;
+        private double _absoluteZero;                       //ISerializable
+        private double _stefanBoltzmann;                    //ISerializable
+        private double _newtonGravity;                      //ISerializable
 
 
         // Properties                                                                                                               
+        public ModelSpaceEnum ModelSpace { get { return _modelSpace; } set { _modelSpace = value; } }
+        public ModelType ModelType { get { return _modelType; } set { _modelType = value; } }
+        //
+        public string GlobalResultsFileName
+        {
+            get { return _modelType == ModelType.Submodel ? _globalResultsFileName : null; }
+            set { _globalResultsFileName = value; }
+        }
+        //
+        public SlipWearResultsEnum SlipWearResults { get { return _slipWearResults; } set { _slipWearResults = value; } }
         public int NumberOfCycles
         {
             get { return _numberOfCycles; }
@@ -173,30 +189,70 @@ namespace CaeModel
                 if (_numOfSmoothingSteps < 0) _numOfSmoothingSteps = 0;
             }
         }
-        public bool BdmRemeshing
-        {
-            get { return _bdmRemeshing; }
-            set { _bdmRemeshing = value; }
-        }
+        public bool BdmRemeshing { get { return _bdmRemeshing; } set { _bdmRemeshing = value; } }
+        //
+        public double AbsoluteZero { get { return _absoluteZero; } set { _absoluteZero = value; } }
+        public double StefanBoltzmann { get { return _stefanBoltzmann; } set { _stefanBoltzmann = value; } }
+        public double NewtonGravity { get { return _newtonGravity; } set { _newtonGravity = value; } }
 
-        
+
         // Constructors                                                                                                             
         public ModelProperties()
         {
-            ModelSpace = ModelSpaceEnum.Undefined;
-            ModelType = ModelType.GeneralModel;
+            _modelSpace = ModelSpaceEnum.Undefined;
+            _modelType = ModelType.GeneralModel;
             // Submodel
-            GlobalResultsFileName = null;
+            _globalResultsFileName = null;
             // Slip wear model
-            SlipWearResults = SlipWearResultsEnum.All;
+            _slipWearResults = SlipWearResultsEnum.All;
             _numberOfCycles = 1;
             _cyclesIncrement = 1;
             _numOfSmoothingSteps = 1;
             _bdmRemeshing = false;
             //
-            AbsoluteZero = double.PositiveInfinity;
-            StefanBoltzmann = double.PositiveInfinity;
-            NewtonGravity = double.PositiveInfinity;
+            _absoluteZero = double.PositiveInfinity;
+            _stefanBoltzmann = double.PositiveInfinity;
+            _newtonGravity = double.PositiveInfinity;
+        }
+        public ModelProperties(SerializationInfo info, StreamingContext context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "ModelSpace":              // Compatibility for version v1.4.0
+                    case "_modelSpace":
+                        _modelSpace = (ModelSpaceEnum)entry.Value; break;
+                    case "ModelType":               // Compatibility for version v1.4.0
+                    case "_modelType":
+                        _modelType = (ModelType)entry.Value; break;
+                    case "GlobalResultsFileName":   // Compatibility for version v1.4.0
+                    case "_globalResultsFileName":
+                        _globalResultsFileName = (string)entry.Value; break;
+                    case "SlipWearResults":         // Compatibility for version v1.4.0
+                    case "_slipWearResults":
+                        _slipWearResults = (SlipWearResultsEnum)entry.Value; break;
+                    case "_numberOfCycles":
+                        _numberOfCycles = (int)entry.Value; break;
+                    case "_cyclesIncrement":
+                        _cyclesIncrement = (int)entry.Value; break;
+                    case "_numOfSmoothingSteps":
+                        _numOfSmoothingSteps = (int)entry.Value; break;
+                    case "_bdmRemeshing":
+                        _bdmRemeshing = (bool)entry.Value; break;
+                    case "AbsoluteZero":            // Compatibility for version v1.4.0
+                    case "_absoluteZero":
+                        _absoluteZero = (double)entry.Value; break;
+                    case "StefanBoltzmann":         // Compatibility for version v1.4.0
+                    case "_stefanBoltzmann":
+                        _stefanBoltzmann = (double)entry.Value; break;
+                    case "NewtonGravity":           // Compatibility for version v1.4.0
+                    case "_newtonGravity":
+                        _newtonGravity = (double)entry.Value; break;
+                    default:
+                        break;
+                }
+            }
         }
 
 
@@ -208,6 +264,22 @@ namespace CaeModel
         public bool IsStefanBoltzmannDefined()
         {
             return StefanBoltzmann != double.PositiveInfinity;
+        }
+        // ISerialization
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // Using typeof() works also for null fields
+            info.AddValue("ModelSpace", _modelSpace, typeof(ModelSpaceEnum));
+            info.AddValue("ModelType", _modelType, typeof(ModelType));
+            info.AddValue("GlobalResultsFileName", _globalResultsFileName, typeof(string));
+            info.AddValue("SlipWearResults", _slipWearResults, typeof(SlipWearResultsEnum));
+            info.AddValue("_numberOfCycles", _numberOfCycles, typeof(int));
+            info.AddValue("_cyclesIncrement", _cyclesIncrement, typeof(int));
+            info.AddValue("_numOfSmoothingSteps", _numOfSmoothingSteps, typeof(int));
+            info.AddValue("_bdmRemeshing", _bdmRemeshing, typeof(bool));
+            info.AddValue("AbsoluteZero", _absoluteZero, typeof(double));
+            info.AddValue("StefanBoltzmann", _stefanBoltzmann, typeof(double));
+            info.AddValue("NewtonGravity", _newtonGravity, typeof(double));
         }
     }
 }

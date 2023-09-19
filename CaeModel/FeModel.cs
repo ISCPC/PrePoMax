@@ -58,7 +58,7 @@ namespace CaeModel
                 _calculixUserKeywords = value;
             } 
         }
-        public ModelProperties Properties  { get { return _properties; } set { _properties = value; } }
+        public ModelProperties Properties { get { return _properties; } set { _properties = value; } }
         public UnitSystem UnitSystem
         {
             get { return _unitSystem; }

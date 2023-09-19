@@ -356,9 +356,9 @@ namespace FileInOut.Output
             sb.Append(keyword.GetKeywordString());
             sb.Append(keyword.GetDataString());
             //
-            foreach (var childkeyword in keyword.Keywords)
+            foreach (var childKeyword in keyword.Keywords)
             {
-                WriteKeywordRecursively(sb, childkeyword);
+                WriteKeywordRecursively(sb, childKeyword);
             }
         }
         //
@@ -369,7 +369,7 @@ namespace FileInOut.Output
             {
                 foreach (var entry in step.BoundaryConditions)
                 {
-                    if (entry.Value is SubmodelBC sm)
+                    if (entry.Value is SubmodelBC sm && sm.Active)
                     {
                         if (sm.RegionType == RegionTypeEnum.SurfaceName) 
                             nodeSetNames.Add(model.Mesh.Surfaces[sm.RegionName].NodeSetName);

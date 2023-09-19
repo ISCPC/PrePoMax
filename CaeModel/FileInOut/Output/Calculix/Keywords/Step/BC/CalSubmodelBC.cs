@@ -32,7 +32,7 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("** Name: " + _submodel.Name);
-            sb.AppendLine("*Boundary, Submodel, Step=" + _submodel.StepNumber);
+            sb.AppendLine("*Boundary, Submodel, Step=" + _submodel.StepNumber.Value);
             return sb.ToString();
         }
         public override string GetDataString()
