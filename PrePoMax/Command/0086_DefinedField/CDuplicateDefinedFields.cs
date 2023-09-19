@@ -7,33 +7,36 @@ using PrePoMax;
 using CaeModel;
 using CaeMesh;
 using CaeGlobals;
-
+using System.Runtime.Serialization;
 
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CCreateMesh : Command
+    class CDuplicateDefinedFields : Command
     {
         // Variables                                                                                                                
-        private string _partName;
+        private string _stepName;
+        private string[] _definedFieldNames;
 
 
         // Constructor                                                                                                              
-        public CCreateMesh(string partName)
-            : base("Create mesh")
+        public CDuplicateDefinedFields(string stepName, string[] definedFieldNames)
+            :base("Duplicate defined fields")
         {
-            _partName = partName;
+            _stepName = stepName;
+            _definedFieldNames = definedFieldNames;
         }
-
+       
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            return receiver.CreateMesh(_partName);
+            receiver.DuplicateDefinedFields(_stepName, _definedFieldNames);
+            return true;
         }
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _partName;
+            return base.GetCommandString() + _stepName + ": " + GetArrayAsString(_definedFieldNames);
         }
     }
 }

@@ -199,6 +199,14 @@ namespace CaeModel
             foreach (Step step in _steps) step.RunAnalysis = false;
         }
         // History
+        public string[] GetStepHistoryOutputNames(string stepName)
+        {
+            foreach (var step in _steps)
+            {
+                if (step.Name == stepName) return step.HistoryOutputs.Keys.ToArray();
+            }
+            return null;
+        }
         public void AddHistoryOutput(HistoryOutput historyOutput, string stepName)
         {
             foreach (var step in _steps)
@@ -230,12 +238,28 @@ namespace CaeModel
                 if (step.Name == stepName) step.AddFieldOutput(fieldOutput);
             }
         }
+        public string[] GetStepFieldOutputNames(string stepName)
+        {
+            foreach (var step in _steps)
+            {
+                if (step.Name == stepName) return step.FieldOutputs.Keys.ToArray();
+            }
+            return null;
+        }
         // Boundary condition
         public string[] GetAllBoundaryConditionNames()
         {
             HashSet<string> allNames = new HashSet<string>();
             foreach (var step in _steps) allNames.UnionWith(step.BoundaryConditions.Keys);
             return allNames.ToArray();
+        }
+        public string[] GetStepBoundaryConditionNames(string stepName)
+        {
+            foreach (var step in _steps)
+            {
+                if (step.Name == stepName) return step.BoundaryConditions.Keys.ToArray();
+            }
+            return null;
         }
         public Dictionary<string, int> GetBoundaryConditionRegionsCount()
         {
@@ -345,6 +369,14 @@ namespace CaeModel
             foreach (var step in _steps) allNames.UnionWith(step.Loads.Keys);
             return allNames.ToArray();
         }
+        public string[] GetStepLoadNames(string stepName)
+        {
+            foreach (var step in _steps)
+            {
+                if (step.Name == stepName) return step.Loads.Keys.ToArray();
+            }
+            return null;
+        }
         public Dictionary<string, int> GetLoadRegionsCount()
         {
             Dictionary<string, int> regionsCount = new Dictionary<string, int>();
@@ -410,6 +442,14 @@ namespace CaeModel
             HashSet<string> allNames = new HashSet<string>();
             foreach (var step in _steps) allNames.UnionWith(step.DefinedFields.Keys);
             return allNames.ToArray();
+        }
+        public string[] GetStepDefinedFieldNames(string stepName)
+        {
+            foreach (var step in _steps)
+            {
+                if (step.Name == stepName) return step.DefinedFields.Keys.ToArray();
+            }
+            return null;
         }
         public void AddDefinedField(DefinedField definedField, string stepName)
         {

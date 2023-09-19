@@ -2857,7 +2857,9 @@ namespace UserControls
         }
         private bool CanDuplicate(TreeNode node)
         {
-            if (node.TreeView == cltvModel && node.Tag is FeNodeSet) return true;
+            if (node.TreeView == cltvGeometry && node.Tag is MeshingParameters) return true;
+            else if (node.TreeView == cltvGeometry && node.Tag is FeMeshRefinement) return true;
+            else if (node.TreeView == cltvModel && node.Tag is FeNodeSet) return true;
             else if (node.TreeView == cltvModel && node.Tag is FeElementSet) return true;
             else if (node.TreeView == cltvModel && node.Tag is FeSurface) return true;
             else if (node.TreeView == cltvModel && node.Tag is FeReferencePoint) return true;
@@ -2869,7 +2871,12 @@ namespace UserControls
             else if (node.Tag is Amplitude) return true;
             else if (node.Tag is InitialCondition) return true;
             else if (node.Tag is Step) return true;
+            else if (node.Tag is HistoryOutput) return true;
+            else if (node.Tag is FieldOutput) return true;
+            else if (node.Tag is BoundaryCondition) return true;
             else if (node.Tag is Load) return true;
+            else if (node.Tag is DefinedField) return true;
+            else if (node.Tag is AnalysisJob) return true;
             else return false;
         }
         private bool CanPropagate(TreeNode node)

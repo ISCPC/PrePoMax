@@ -7,33 +7,36 @@ using PrePoMax;
 using CaeModel;
 using CaeMesh;
 using CaeGlobals;
-
+using System.Runtime.Serialization;
 
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CCreateMesh : Command
+    class CDuplicateBCs : Command
     {
         // Variables                                                                                                                
-        private string _partName;
+        private string _stepName;
+        private string[] _boundaryConditionNames;
 
 
         // Constructor                                                                                                              
-        public CCreateMesh(string partName)
-            : base("Create mesh")
+        public CDuplicateBCs(string stepName, string[] boundaryConditionNames)
+            :base("Duplicate boundary conditions")
         {
-            _partName = partName;
+            _stepName = stepName;
+            _boundaryConditionNames = boundaryConditionNames;
         }
-
+       
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            return receiver.CreateMesh(_partName);
+            receiver.DuplicateBoundaryConditions(_stepName, _boundaryConditionNames);
+            return true;
         }
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _partName;
+            return base.GetCommandString() + _stepName + ": " + GetArrayAsString(_boundaryConditionNames);
         }
     }
 }

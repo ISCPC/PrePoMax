@@ -896,7 +896,10 @@ namespace PrePoMax
         private void ModelTree_DuplicateEvent(NamedClass[] items, string[] stepNames)
         {
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
-            { }
+            {
+                ApplyActionOnItems<MeshingParameters>(items, DuplicateMeshingParameters);
+                ApplyActionOnItems<FeMeshRefinement>(items, DuplicateMeshRefinements);
+            }
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
                 ApplyActionOnItems<FeNodeSet>(items, DuplicateNodeSets);
@@ -919,7 +922,13 @@ namespace PrePoMax
                 //
                 ApplyActionOnItems<Step>(items, DuplicateSteps);
                 //
+                ApplyActionOnItemsInStep<HistoryOutput>(items, stepNames, DuplicateHistoryOutputs);
+                ApplyActionOnItemsInStep<FieldOutput>(items, stepNames, DuplicateFieldOutputs);
+                ApplyActionOnItemsInStep<BoundaryCondition>(items, stepNames, DuplicateBoundaryConditions);
                 ApplyActionOnItemsInStep<Load>(items, stepNames, DuplicateLoads);
+                ApplyActionOnItemsInStep<DefinedField>(items, stepNames, DuplicateDefinedFields);
+                //
+                ApplyActionOnItems<AnalysisJob>(items, DuplicateAnalyses);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             { }
@@ -3038,6 +3047,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateMeshingParameters_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Meshing Parameters", _controller.GetMeshingParameters(), DuplicateMeshingParameters);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeleteMeshingParameters_Click(object sender, EventArgs e)
         {
             try
@@ -3066,6 +3086,17 @@ namespace PrePoMax
             try
             {
                 SelectOneEntity("Mesh Refinements", _controller.GetMeshRefinements(), EditMeshRefinement);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDuplicateMeshRefinement_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Mesh Refinements", _controller.GetMeshRefinements(), DuplicateMeshRefinements);
             }
             catch (Exception ex)
             {
@@ -3178,6 +3209,10 @@ namespace PrePoMax
             //
             return meshingParameters;
         }
+        private void DuplicateMeshingParameters(string[] meshingParametersNames)
+        {
+            _controller.DuplicateMeshingParametersCommand(meshingParametersNames);
+        }
         private void DeleteMeshingParameters(string[] meshingParametersNames)
         {
             if (MessageBoxes.ShowWarningQuestion("OK to delete selected meshing parameters?" + Environment.NewLine
@@ -3203,6 +3238,10 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmMeshRefinement;
             _frmSelectItemSet.SetOnlyGeometrySelection(true);
             ShowForm(_frmMeshRefinement, "Edit Mesh Refinement", meshRefinementName);
+        }
+        private void DuplicateMeshRefinements(string[] meshRefinementNames)
+        {
+            _controller.DuplicateMeshRefinementsCommand(meshRefinementNames);
         }
         private void DeleteMeshRefinements(string[] meshRefinementNames)
         {
@@ -4943,6 +4982,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateHistoryOutput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndDuplicateHistoryOutputs);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiPropagateHistoryOutput_Click(object sender, EventArgs e)
         {
             try
@@ -4969,6 +5019,11 @@ namespace PrePoMax
         private void SelectAndEditHistoryOutput(string stepName)
         {
             SelectOneEntityInStep("History outputs", _controller.GetAllHistoryOutputs(stepName), stepName, EditHistoryOutput);
+        }
+        private void SelectAndDuplicateHistoryOutputs(string stepName)
+        {
+            SelectMultipleEntitiesInStep("History outputs", _controller.GetAllHistoryOutputs(stepName),
+                                         stepName, DuplicateHistoryOutputs);
         }
         private void SelectAndPropagateHistoryOutput(string stepName)
         {
@@ -4997,6 +5052,10 @@ namespace PrePoMax
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmHistoryOutput, "Edit History Output", stepName, historyOutputName);
         }
+        private void DuplicateHistoryOutputs(string stepName, string[] historyOutputNames)
+        {
+            _controller.DuplicateHistoryOutputsCommand(stepName, historyOutputNames);
+        }
         private void PropagateHistoryOutput(string stepName, string historyOutputName)
         {
             bool exists = false;
@@ -5024,7 +5083,7 @@ namespace PrePoMax
             if (MessageBoxes.ShowWarningQuestion("OK to delete selected history outputs from step " + stepName + "?"
                                                  + Environment.NewLine + historyOutputNames.ToRows()) == DialogResult.OK)
             {
-                _controller.RemoveHistoryOutputsForStepCommand(stepName, historyOutputNames);
+                _controller.RemoveHistoryOutputsCommand(stepName, historyOutputNames);
             }
         }
         #endregion  ################################################################################################################
@@ -5046,6 +5105,17 @@ namespace PrePoMax
             try
             {
                 SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndEditFieldOutput);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDuplicateFieldOutput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndDuplicateFieldOutputs);
             }
             catch (Exception ex)
             {
@@ -5079,6 +5149,11 @@ namespace PrePoMax
         {
             SelectOneEntityInStep("Field outputs", _controller.GetAllFieldOutputs(stepName), stepName, EditFieldOutput);
         }
+        private void SelectAndDuplicateFieldOutputs(string stepName)
+        {
+            SelectMultipleEntitiesInStep("Field outputs", _controller.GetAllFieldOutputs(stepName),
+                                         stepName, DuplicateFieldOutputs);
+        }
         private void SelectAndPropagateFieldOutput(string stepName)
         {
             SelectOneEntityInStep("Field outputs", _controller.GetAllFieldOutputs(stepName), stepName, PropagateFieldOutput);
@@ -5097,6 +5172,10 @@ namespace PrePoMax
         private void EditFieldOutput(string stepName, string fieldOutputName)
         {
             ShowForm(_frmFieldOutput, "Edit Field Output", stepName, fieldOutputName);
+        }
+        private void DuplicateFieldOutputs(string stepName, string[] fieldOutputNames)
+        {
+            _controller.DuplicateFieldOutputsCommand(stepName, fieldOutputNames);
         }
         private void PropagateFieldOutput(string stepName, string fieldOutputName)
         {
@@ -5125,7 +5204,7 @@ namespace PrePoMax
             if (MessageBoxes.ShowWarningQuestion("OK to delete selected field outputs from step " + stepName + "?"
                                                  + Environment.NewLine + fieldOutputNames.ToRows()) == DialogResult.OK)
             {
-                _controller.RemoveFieldOutputsForStepCommand(stepName, fieldOutputNames);
+                _controller.RemoveFieldOutputsCommand(stepName, fieldOutputNames);
             }
         }
 
@@ -5152,6 +5231,17 @@ namespace PrePoMax
             try
             {
                 SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndEditBoundaryCondition);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDuplicateBC_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndDuplicateBoundaryCondition);
             }
             catch (Exception ex)
             {
@@ -5208,6 +5298,11 @@ namespace PrePoMax
             SelectOneEntityInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName), stepName,
                                   EditBoundaryCondition);
         }
+        private void SelectAndDuplicateBoundaryCondition(string stepName)
+        {
+            SelectMultipleEntitiesInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName),
+                                         stepName, DuplicateBoundaryConditions);
+        }
         private void SelectAndPropagateBoundaryCondition(string stepName)
         {
             SelectOneEntityInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName), stepName,
@@ -5245,6 +5340,10 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmBoundaryCondition;
             _frmSelectItemSet.SetOnlyGeometrySelection(true);
             ShowForm(_frmBoundaryCondition, "Edit Boundary Condition", stepName, boundaryConditionName);
+        }
+        private void DuplicateBoundaryConditions(string stepName, string[] boundaryConditionNames)
+        {
+            _controller.DuplicateBoundaryConditionsCommand(stepName, boundaryConditionNames);
         }
         private void PropagateBoundaryCondition(string stepName, string boundaryConditionName)
         {
@@ -5326,7 +5425,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndDuplicateLoad);
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndDuplicateLoads);
             }
             catch (Exception ex)
             {
@@ -5381,7 +5480,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndDeleteLoad);
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndDeleteLoads);
             }
             catch (Exception ex)
             {
@@ -5393,7 +5492,7 @@ namespace PrePoMax
         {
             SelectOneEntityInStep("Loads", _controller.GetStepLoads(stepName), stepName, EditLoad);
         }
-        private void SelectAndDuplicateLoad(string stepName)
+        private void SelectAndDuplicateLoads(string stepName)
         {
             SelectMultipleEntitiesInStep("Loads", _controller.GetStepLoads(stepName), stepName, DuplicateLoads);
         }
@@ -5413,7 +5512,7 @@ namespace PrePoMax
         {
             SelectMultipleEntitiesInStep("Loads", _controller.GetStepLoads(stepName), stepName, ShowLoads);
         }
-        private void SelectAndDeleteLoad(string stepName)
+        private void SelectAndDeleteLoads(string stepName)
         {
             SelectMultipleEntitiesInStep("Loads", _controller.GetStepLoads(stepName), stepName, DeleteLoads);
         }
@@ -5537,6 +5636,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateDefinedField_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndDuplicateDefinedFields);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiPropagateDefinedField_Click(object sender, EventArgs e)
         {
             try
@@ -5575,6 +5685,11 @@ namespace PrePoMax
         {
             SelectOneEntityInStep("Defined fields", _controller.GetAllDefinedFields(stepName), stepName, EditDefinedField);
         }
+        private void SelectAndDuplicateDefinedFields(string stepName)
+        {
+            SelectMultipleEntitiesInStep("Defined fields", _controller.GetAllDefinedFields(stepName),
+                                         stepName, DuplicateDefinedFields);
+        }
         private void SelectAndPropagateDefinedField(string stepName)
         {
             SelectOneEntityInStep("Defined fields", _controller.GetAllDefinedFields(stepName), stepName, PropagateDefinedField);
@@ -5605,6 +5720,10 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmDefinedField;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmDefinedField, "Edit Defined Field", stepName, definedFieldName);
+        }
+        private void DuplicateDefinedFields(string stepName, string[] definedFieldNames)
+        {
+            _controller.DuplicateDefinedFieldsForStepCommand(stepName, definedFieldNames);
         }
         private void PropagateDefinedField(string stepName, string definedFieldName)
         {
@@ -6048,6 +6167,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateAnalysis_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Analyses", _controller.GetAllJobs(), DuplicateAnalyses);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         internal void tsmiRunAnalysis_Click(object sender, EventArgs e)
         {
             try
@@ -6118,6 +6248,10 @@ namespace PrePoMax
         private void EditAnalysis(string jobName)
         {
             ShowForm(_frmAnalysis, "Edit Analysis", jobName);
+        }
+        private void DuplicateAnalyses(string[] jobNames)
+        {
+            _controller.DuplicateJobsCommand(jobNames);
         }
         private void RunAnalysis(string jobName)
         {
@@ -8981,6 +9115,6 @@ namespace PrePoMax
             }
         }
 
-       
+      
     }
 }

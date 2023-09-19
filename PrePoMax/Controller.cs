@@ -3241,34 +3241,43 @@ namespace PrePoMax
         // COMMANDS ********************************************************************************
         public void AddMeshingParametersCommand(MeshingParameters meshingParameters)
         {
-            Commands.CAddMeshingParameters comm = new Commands.CAddMeshingParameters(meshingParameters);
+            CAddMeshingParameters comm = new CAddMeshingParameters(meshingParameters);
             _commands.AddAndExecute(comm);
         }
         public void ReplaceMeshingParametersCommand(string oldMeshingParametersName, MeshingParameters newMeshingParameters)
         {
-            Commands.CReplaceMeshingParameters comm = new Commands.CReplaceMeshingParameters(oldMeshingParametersName,
-                                                                                             newMeshingParameters);
+            CReplaceMeshingParameters comm = new CReplaceMeshingParameters(oldMeshingParametersName, newMeshingParameters);
+            _commands.AddAndExecute(comm);
+        }
+        public void DuplicateMeshingParametersCommand(string[] meshingParametersNames)
+        {
+            CDuplicateMeshingParameters comm = new CDuplicateMeshingParameters(meshingParametersNames);
             _commands.AddAndExecute(comm);
         }
         public void RemoveMeshingParametersCommand(string[] meshingParametersNames)
         {
-            Commands.CRemoveMeshingParameters comm = new Commands.CRemoveMeshingParameters(meshingParametersNames);
+            CRemoveMeshingParameters comm = new CRemoveMeshingParameters(meshingParametersNames);
             _commands.AddAndExecute(comm);
         }
         //
         public void AddMeshRefinementCommand(FeMeshRefinement meshRefinement)
         {
-            Commands.CAddMeshRefinement comm = new Commands.CAddMeshRefinement(meshRefinement);
+            CAddMeshRefinement comm = new CAddMeshRefinement(meshRefinement);
             _commands.AddAndExecute(comm);
         }
         public void ReplaceMeshRefinementCommand(string oldMeshRefinementName, FeMeshRefinement newMeshRefinement)
         {
-            Commands.CReplaceMeshRefinement comm = new Commands.CReplaceMeshRefinement(oldMeshRefinementName, newMeshRefinement);
+            CReplaceMeshRefinement comm = new CReplaceMeshRefinement(oldMeshRefinementName, newMeshRefinement);
             _commands.AddAndExecute(comm);
         }
         public void RemoveMeshRefinementsCommand(string[] meshRefinementNames)
         {
-            Commands.CRemoveMeshRefinements comm = new Commands.CRemoveMeshRefinements(meshRefinementNames);
+            CRemoveMeshRefinements comm = new CRemoveMeshRefinements(meshRefinementNames);
+            _commands.AddAndExecute(comm);
+        }
+        public void DuplicateMeshRefinementsCommand(string[] meshRefinementNames)
+        {
+            CDuplicateMeshRefinements comm = new CDuplicateMeshRefinements(meshRefinementNames);
             _commands.AddAndExecute(comm);
         }
         //
@@ -3364,6 +3373,17 @@ namespace PrePoMax
                                  null, updateSelection);
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void DuplicateMeshingParameters(string[] meshingParametersNames)
+        {
+            MeshingParameters newMeshingParameters;
+            foreach (var name in meshingParametersNames)
+            {
+                newMeshingParameters = _model.Geometry.MeshingParameters[name].DeepClone();
+                newMeshingParameters.Name = NamedClass.GetNameWithoutLastValue(newMeshingParameters.Name);
+                newMeshingParameters.Name = _model.Geometry.MeshingParameters.GetNextNumberedKey(newMeshingParameters.Name);
+                AddMeshingParameters(newMeshingParameters);
+            }
         }
         public void RemoveMeshingParameters(string[] meshingParametersNames)
         {
@@ -3522,6 +3542,17 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldMeshRefinementName, meshRefinement, null, updateSelection);
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void DuplicateMeshRefinements(string[] meshRefinementNames)
+        {
+            FeMeshRefinement newMeshRefinement;
+            foreach (var name in meshRefinementNames)
+            {
+                newMeshRefinement = _model.Geometry.MeshRefinements[name].DeepClone();
+                newMeshRefinement.Name = NamedClass.GetNameWithoutLastValue(newMeshRefinement.Name);
+                newMeshRefinement.Name = _model.Geometry.MeshRefinements.GetNextNumberedKey(newMeshRefinement.Name);
+                AddMeshRefinement(newMeshRefinement);
+            }
         }
         public void RemoveMeshRefinements(string[] meshRefinementNames)
         {
@@ -5846,7 +5877,6 @@ namespace PrePoMax
                 if (section is SolidSection || section is ShellSection || section is MembraneSection)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets, section.Name);
-                    // For
                     bool createdByPart = section.CreationData != null && (section.CreationData.SelectItem == vtkSelectItem.Part);
                     FeElementSet elementSet = new FeElementSet(name, section.CreationIds, createdByPart);
                     elementSet.CreationData = section.CreationData.DeepClone();
@@ -7118,22 +7148,27 @@ namespace PrePoMax
         // COMMANDS ********************************************************************************
         public void AddHistoryOutputCommand(string stepName, HistoryOutput historyOutput)
         {
-            Commands.CAddHistoryOutput comm = new Commands.CAddHistoryOutput(stepName, historyOutput);
+            CAddHistoryOutput comm = new CAddHistoryOutput(stepName, historyOutput);
             _commands.AddAndExecute(comm);
         }
         public void ReplaceHistoryOutputCommand(string stepName, string oldHistoryOutputName, HistoryOutput historyOutput)
         {
-            Commands.CReplaceHisotryOutput comm = new Commands.CReplaceHisotryOutput(stepName, oldHistoryOutputName, historyOutput);
+            CReplaceHisotryOutput comm = new CReplaceHisotryOutput(stepName, oldHistoryOutputName, historyOutput);
+            _commands.AddAndExecute(comm);
+        }
+        public void DuplicateHistoryOutputsCommand(string stepName, string[] historyOutputNames)
+        {
+            CDuplicateHistoryOutputs comm = new CDuplicateHistoryOutputs(stepName, historyOutputNames);
             _commands.AddAndExecute(comm);
         }
         public void PropagateHistoryOutputCommand(string stepName, string historyOutputName)
         {
-            Commands.CPropagateHisotryOutput comm = new Commands.CPropagateHisotryOutput(stepName, historyOutputName);
+            CPropagateHisotryOutput comm = new CPropagateHisotryOutput(stepName, historyOutputName);
             _commands.AddAndExecute(comm);
         }
-        public void RemoveHistoryOutputsForStepCommand(string stepName, string[] historyOutputNames)
+        public void RemoveHistoryOutputsCommand(string stepName, string[] historyOutputNames)
         {
-            Commands.CRemoveHistoryOutputs comm = new Commands.CRemoveHistoryOutputs(stepName, historyOutputNames);
+            CRemoveHistoryOutputs comm = new CRemoveHistoryOutputs(stepName, historyOutputNames);
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
@@ -7160,12 +7195,12 @@ namespace PrePoMax
             return _model.StepCollection.GetStep(stepName).HistoryOutputs.Values.ToArray();
         }
         public void ReplaceHistoryOutput(string stepName, string oldHistoryOutputName, HistoryOutput historyOutput,
-                                         bool propageted = false)
+                                         bool propagated = false)
         {
             HistoryOutput oldHistoryOutput = GetHistoryOutput(stepName, oldHistoryOutputName);
             // First check for a valid region since MultiRegionChanged changes the region type and region name
             if ((!_model.RegionValid(oldHistoryOutput) || StepCollection.MultiRegionChanged(oldHistoryOutput, historyOutput)) &&
-                !propageted)
+                !propagated)
             {
                 DeleteSelectionBasedHistoryOutputSets(stepName, oldHistoryOutputName);
                 ConvertSelectionBasedHistoryOutput(historyOutput);
@@ -7177,6 +7212,19 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldHistoryOutputName, historyOutput, stepName);
             //
             CheckAndUpdateModelValidity();
+        }
+        public void DuplicateHistoryOutputs(string stepName, string[] historyOutputNames)
+        {
+            HistoryOutput newHistoryOutput;
+            for (int i = 0; i < historyOutputNames.Length; i++)
+            {
+                newHistoryOutput = GetHistoryOutput(stepName, historyOutputNames[i]).DeepClone();
+                newHistoryOutput.Name = NamedClass.GetNameWithoutLastValue(newHistoryOutput.Name);
+                newHistoryOutput.Name =
+                    _model.StepCollection.GetStepHistoryOutputNames(stepName).GetNextNumberedKey(newHistoryOutput.Name);
+                if (newHistoryOutput.CreationData != null) newHistoryOutput.RegionType = RegionTypeEnum.Selection;
+                AddHistoryOutput(stepName, newHistoryOutput);
+            }
         }
         public void PropagateHistoryOutput(string stepName, string historyOutputName)
         {
@@ -7274,22 +7322,27 @@ namespace PrePoMax
         // COMMANDS ********************************************************************************
         public void AddFieldOutputCommand(string stepName, FieldOutput fieldOutput)
         {
-            Commands.CAddFieldOutput comm = new Commands.CAddFieldOutput(stepName, fieldOutput);
+            CAddFieldOutput comm = new CAddFieldOutput(stepName, fieldOutput);
             _commands.AddAndExecute(comm);
         }
         public void ReplaceFieldOutputCommand(string stepName, string oldFieldOutputName, FieldOutput fieldOutput)
         {
-            Commands.CReplaceFieldOutput comm = new Commands.CReplaceFieldOutput(stepName, oldFieldOutputName, fieldOutput);
+            CReplaceFieldOutput comm = new CReplaceFieldOutput(stepName, oldFieldOutputName, fieldOutput);
+            _commands.AddAndExecute(comm);
+        }
+        public void DuplicateFieldOutputsCommand(string stepName, string[] fieldOutputNames)
+        {
+            CDuplicateFieldOutputs comm = new CDuplicateFieldOutputs(stepName, fieldOutputNames);
             _commands.AddAndExecute(comm);
         }
         public void PropagateFieldOutputCommand(string stepName, string fieldOutputName)
         {
-            Commands.CPropagateFieldOutput comm = new Commands.CPropagateFieldOutput(stepName, fieldOutputName);
+            CPropagateFieldOutput comm = new CPropagateFieldOutput(stepName, fieldOutputName);
             _commands.AddAndExecute(comm);
         }
-        public void RemoveFieldOutputsForStepCommand(string stepName, string[] fieldOutputNames)
+        public void RemoveFieldOutputsCommand(string stepName, string[] fieldOutputNames)
         {
-            Commands.CRemoveFieldOutputs comm = new Commands.CRemoveFieldOutputs(stepName, fieldOutputNames);
+            CRemoveFieldOutputs comm = new CRemoveFieldOutputs(stepName, fieldOutputNames);
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
@@ -7319,6 +7372,18 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldFieldOutputName, fieldOutput, stepName);
             //
             CheckAndUpdateModelValidity();
+        }
+        public void DuplicateFieldOutputs(string stepName, string[] fieldOutputNames)
+        {
+            FieldOutput newFieldOutput;
+            for (int i = 0; i < fieldOutputNames.Length; i++)
+            {
+                newFieldOutput = GetFieldOutput(stepName, fieldOutputNames[i]).DeepClone();
+                newFieldOutput.Name = NamedClass.GetNameWithoutLastValue(newFieldOutput.Name);
+                newFieldOutput.Name =
+                    _model.StepCollection.GetStepFieldOutputNames(stepName).GetNextNumberedKey(newFieldOutput.Name);
+                AddFieldOutput(stepName, newFieldOutput);
+            }
         }
         public void PropagateFieldOutput(string stepName, string fieldOutputName)
         {
@@ -7361,33 +7426,38 @@ namespace PrePoMax
         // COMMANDS ********************************************************************************
         public void AddBoundaryConditionCommand(string stepName, BoundaryCondition boundaryCondition)
         {
-            Commands.CAddBC comm = new Commands.CAddBC(stepName, boundaryCondition);
+            CAddBC comm = new CAddBC(stepName, boundaryCondition);
             _commands.AddAndExecute(comm);
         }
         public void ReplaceBoundaryConditionCommand(string stepName, string oldBoundaryConditionName,
                                                     BoundaryCondition boundaryCondition)
         {
-            Commands.CReplaceBC comm = new Commands.CReplaceBC(stepName, oldBoundaryConditionName, boundaryCondition);
+            CReplaceBC comm = new CReplaceBC(stepName, oldBoundaryConditionName, boundaryCondition);
+            _commands.AddAndExecute(comm);
+        }
+        public void DuplicateBoundaryConditionsCommand(string stepName, string[] boundaryConditionNames)
+        {
+            CDuplicateBCs comm = new CDuplicateBCs(stepName, boundaryConditionNames);
             _commands.AddAndExecute(comm);
         }
         public void PropagateBoundaryConditionCommand(string stepName, string boundaryConditionName)
         {
-            Commands.CPropagateBC comm = new Commands.CPropagateBC(stepName, boundaryConditionName);
+            CPropagateBC comm = new CPropagateBC(stepName, boundaryConditionName);
             _commands.AddAndExecute(comm);
         }
         public void HideBoundaryConditionCommand(string stepName, string[] boundaryConditionNames)
         {
-            Commands.CHideBCs comm = new Commands.CHideBCs(stepName, boundaryConditionNames);
+            CHideBCs comm = new CHideBCs(stepName, boundaryConditionNames);
             _commands.AddAndExecute(comm);
         }
         public void ShowBoundaryConditionCommand(string stepName, string[] boundaryConditionNames)
         {
-            Commands.CShowBCs comm = new Commands.CShowBCs(stepName, boundaryConditionNames);
+            CShowBCs comm = new CShowBCs(stepName, boundaryConditionNames);
             _commands.AddAndExecute(comm);
         }
         public void RemoveBoundaryConditionsCommand(string stepName, string[] boundaryConditionNames)
         {
-            Commands.CRemoveBCs comm = new Commands.CRemoveBCs(stepName, boundaryConditionNames);
+            CRemoveBCs comm = new CRemoveBCs(stepName, boundaryConditionNames);
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
@@ -7432,6 +7502,19 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldBoundaryConditionName, boundaryCondition, stepName);
                 //
                 FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            }
+        }
+        public void DuplicateBoundaryConditions(string stepName, string[] boundaryConditionNames)
+        {
+            BoundaryCondition newBoundaryCondition;
+            for (int i = 0; i < boundaryConditionNames.Length; i++)
+            {
+                newBoundaryCondition = GetBoundaryCondition(stepName, boundaryConditionNames[i]).DeepClone();
+                newBoundaryCondition.Name = NamedClass.GetNameWithoutLastValue(newBoundaryCondition.Name);
+                newBoundaryCondition.Name =
+                    _model.StepCollection.GetStepBoundaryConditionNames(stepName).GetNextNumberedKey(newBoundaryCondition.Name);
+                if (newBoundaryCondition.CreationData != null) newBoundaryCondition.RegionType = RegionTypeEnum.Selection;
+                AddBoundaryCondition(stepName, newBoundaryCondition);
             }
         }
         public void PropagateBoundaryCondition(string stepName, string boundaryConditionName)
@@ -7621,16 +7704,13 @@ namespace PrePoMax
         public void DuplicateLoads(string stepName, string[] loadNames)
         {
             Load newLoad;
-            List<string> allNames = _model.StepCollection.GetAllLoadNames().ToList();
-            //
             for (int i = 0; i < loadNames.Length; i++)
             {
                 newLoad = GetLoad(stepName, loadNames[i]).DeepClone();
                 newLoad.Name = NamedClass.GetNameWithoutLastValue(newLoad.Name);
-                newLoad.Name = allNames.GetNextNumberedKey(newLoad.Name);
+                newLoad.Name = _model.StepCollection.GetStepLoadNames(stepName).GetNextNumberedKey(newLoad.Name);
                 if (newLoad.CreationData != null) newLoad.RegionType = RegionTypeEnum.Selection;
                 AddLoad(stepName, newLoad);
-                allNames.Add(newLoad.Name);
             }
         }
         public void PropagateLoad(string stepName, string loadName)
@@ -7788,22 +7868,27 @@ namespace PrePoMax
         // COMMANDS ********************************************************************************
         public void AddDefinedFieldCommand(string stepName, DefinedField definedField)
         {
-            Commands.CAddDefinedField comm = new Commands.CAddDefinedField(stepName, definedField);
+            CAddDefinedField comm = new CAddDefinedField(stepName, definedField);
             _commands.AddAndExecute(comm);
         }
         public void ReplaceDefinedFieldCommand(string stepName, string oldDefinedFieldName, DefinedField definedField)
         {
-            Commands.CReplaceDefinedField comm = new Commands.CReplaceDefinedField(stepName, oldDefinedFieldName, definedField);
+            CReplaceDefinedField comm = new CReplaceDefinedField(stepName, oldDefinedFieldName, definedField);
+            _commands.AddAndExecute(comm);
+        }
+        public void DuplicateDefinedFieldsForStepCommand(string stepName, string[] definedFieldNames)
+        {
+            CDuplicateDefinedFields comm = new CDuplicateDefinedFields(stepName, definedFieldNames);
             _commands.AddAndExecute(comm);
         }
         public void PropagateDefinedFieldCommand(string stepName, string definedFieldName)
         {
-            Commands.CPropagateDefinedField comm = new Commands.CPropagateDefinedField(stepName, definedFieldName);
+            CPropagateDefinedField comm = new CPropagateDefinedField(stepName, definedFieldName);
             _commands.AddAndExecute(comm);
         }
         public void RemoveDefinedFieldsForStepCommand(string stepName, string[] definedFieldNames)
         {
-            Commands.CRemoveDefinedFields comm = new Commands.CRemoveDefinedFields(stepName, definedFieldNames);
+            CRemoveDefinedFields comm = new CRemoveDefinedFields(stepName, definedFieldNames);
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
@@ -7811,6 +7896,15 @@ namespace PrePoMax
         {
             return _model.StepCollection.GetStep(stepName).DefinedFields.Keys.ToArray();
         }
+        public DefinedField GetDefinedField(string stepName, string definedFieldName)
+        {
+            return _model.StepCollection.GetStep(stepName).DefinedFields[definedFieldName];
+        }
+        public DefinedField[] GetAllDefinedFields(string stepName)
+        {
+            return _model.StepCollection.GetStep(stepName).DefinedFields.Values.ToArray();
+        }
+        //
         public void AddDefinedField(string stepName, DefinedField definedField)
         {
             if (!_model.StepCollection.MultiRegionSelectionExists(stepName, definedField))
@@ -7821,21 +7915,13 @@ namespace PrePoMax
             //
             CheckAndUpdateModelValidity();
         }
-        public DefinedField GetDefinedField(string stepName, string definedFieldName)
-        {
-            return _model.StepCollection.GetStep(stepName).DefinedFields[definedFieldName];
-        }
-        public DefinedField[] GetAllDefinedFields(string stepName)
-        {
-            return _model.StepCollection.GetStep(stepName).DefinedFields.Values.ToArray();
-        }
         public void ReplaceDefinedField(string stepName, string oldDefinedFieldName, DefinedField definedField,
-                                        bool propageted = false)
+                                        bool propagated = false)
         {
             DefinedField oldDefinedField = GetDefinedField(stepName, oldDefinedFieldName);
             // First check for a valid region since MultiRegionChanged changes the region type and region name
             if ((!_model.RegionValid(oldDefinedField) || StepCollection.MultiRegionChanged(oldDefinedField, definedField)) &&
-                !propageted)
+                !propagated)
             {
                 DeleteSelectionBasedDefinedFieldSets(stepName, oldDefinedFieldName);
                 ConvertSelectionBasedDefinedField(definedField);
@@ -7846,6 +7932,19 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldDefinedFieldName, definedField, stepName);
             //
             CheckAndUpdateModelValidity();
+        }
+        public void DuplicateDefinedFields(string stepName, string[] definedFieldNames)
+        {
+            DefinedField newDefinedField;
+            for (int i = 0; i < definedFieldNames.Length; i++)
+            {
+                newDefinedField = GetDefinedField(stepName, definedFieldNames[i]).DeepClone();
+                newDefinedField.Name = NamedClass.GetNameWithoutLastValue(newDefinedField.Name);
+                newDefinedField.Name =
+                    _model.StepCollection.GetStepDefinedFieldNames(stepName).GetNextNumberedKey(newDefinedField.Name);
+                if (newDefinedField.CreationData != null) newDefinedField.RegionType = RegionTypeEnum.Selection;
+                AddDefinedField(stepName, newDefinedField);
+            }
         }
         public void PropagateDefinedField(string stepName, string definedFieldName)
         {
@@ -8102,17 +8201,22 @@ namespace PrePoMax
         // COMMANDS ********************************************************************************
         public void AddJobCommand(AnalysisJob job)
         {
-            Commands.CAddJob comm = new Commands.CAddJob(job);
+            CAddJob comm = new CAddJob(job);
             _commands.AddAndExecute(comm);
         }
         public void ReplaceJobCommand(string oldJobName, AnalysisJob job)
         {
-            Commands.CReplaceJob comm = new Commands.CReplaceJob(oldJobName, job);
+            CReplaceJob comm = new CReplaceJob(oldJobName, job);
+            _commands.AddAndExecute(comm);
+        }
+        public void DuplicateJobsCommand(string[] jobNames)
+        {
+            CDuplicateJobs comm = new CDuplicateJobs(jobNames);
             _commands.AddAndExecute(comm);
         }
         public void RemoveJobsCommand(string[] jobNames)
         {
-            Commands.CRemoveJobs comm = new Commands.CRemoveJobs(jobNames);
+            CRemoveJobs comm = new CRemoveJobs(jobNames);
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
@@ -8144,6 +8248,17 @@ namespace PrePoMax
             _jobs.Add(job.Name, job);
             ApplySettings();
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldJobName, job, null);
+        }
+        public void DuplicateJobs(string[] jobNames)
+        {
+            AnalysisJob newAnalysisJob;
+            foreach (var name in jobNames)
+            {
+                newAnalysisJob = _jobs[name].DeepClone();
+                newAnalysisJob.Name = NamedClass.GetNameWithoutLastValue(newAnalysisJob.Name);
+                newAnalysisJob.Name = _jobs.GetNextNumberedKey(newAnalysisJob.Name);
+                AddJob(newAnalysisJob);
+            }
         }
         public bool PrepareAndRunJob(string inputFileName, AnalysisJob job, bool onlyCheckModel)
         {
@@ -9143,7 +9258,8 @@ namespace PrePoMax
             // Set the selection view
             CurrentView = GetSelectionView(selectionCopy);
             // Execute selection
-            foreach (SelectionNode node in selectionCopy.Nodes) GetIdsFromSelectionNode(node, selectedIds);
+            foreach (SelectionNode node in selectionCopy.Nodes)
+                GetIdsFromSelectionNode(node, selectedIds);
             // Return
             int[] sorted = selectedIds.ToArray();
             if (_selectBy != vtkSelectBy.QueryNode) Array.Sort(sorted);   // sorting of the ids breaks the angle query !!!
@@ -9167,7 +9283,7 @@ namespace PrePoMax
             }
             else throw new NotSupportedException();
             //
-            // Append the new selection ids to the allready selected ids
+            // Append the new selection ids to the already selected ids
             if (ids != null)
             {
                 if (selectionNode.SelectOperation == vtkSelectOperation.None ||
@@ -9421,7 +9537,7 @@ namespace PrePoMax
             {
                 ids = DisplayedMesh.GetGeometryPartIdsForSubPartsFromGeometryIds(ids);
             }
-            // Change geometry ids to node, elemet or cell ids if necessary
+            // Change geometry ids to node, element or cell ids if necessary
             if (!keepGeometryIds) ids = DisplayedMesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
             return ids;
         }

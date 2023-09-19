@@ -26,7 +26,6 @@ namespace PrePoMax.Commands
             // this class is needed for compatibility for version v1.3.5
             //
         }
-        // ISerialization
         public CSetMeshingParameters(SerializationInfo info, StreamingContext context)
             : base("")
         {

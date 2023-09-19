@@ -12,28 +12,29 @@ using CaeGlobals;
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CCreateMesh : Command
+    class CDuplicateJobs : Command
     {
         // Variables                                                                                                                
-        private string _partName;
+        private string[] _jobNames;
 
 
         // Constructor                                                                                                              
-        public CCreateMesh(string partName)
-            : base("Create mesh")
+        public CDuplicateJobs(string[] jobNames)
+            : base("Duplicate jobs")
         {
-            _partName = partName;
+            _jobNames = jobNames;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            return receiver.CreateMesh(_partName);
+            receiver.DuplicateJobs(_jobNames);
+            return true;
         }
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _partName;
+            return base.GetCommandString() + GetArrayAsString(_jobNames);
         }
     }
 }

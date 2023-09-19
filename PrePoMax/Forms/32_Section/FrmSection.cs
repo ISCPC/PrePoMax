@@ -221,7 +221,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewSection is ViewMembraneSection vms)
                 {
-                    selectedId = 1;
+                    selectedId = 2;
                     // Check for deleted entities
                     CheckMissingValueRef(ref materialNames, vms.MaterialName, s => { vms.MaterialName = s; });
                     if (vms.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }

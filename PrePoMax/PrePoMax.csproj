@@ -127,6 +127,8 @@
     <Compile Include="Command\0040_Mesh\CAddMeshingParameters.cs" />
     <Compile Include="Command\0040_Mesh\CAddMeshRefinement.cs" />
     <Compile Include="Command\0040_Mesh\CCreateMesh.cs" />
+    <Compile Include="Command\0040_Mesh\CDuplicateMeshRefinements.cs" />
+    <Compile Include="Command\0040_Mesh\CDuplicateMeshingParameters.cs" />
     <Compile Include="Command\0040_Mesh\CRemoveMeshingParameters.cs" />
     <Compile Include="Command\0040_Mesh\CRemoveMeshRefinements.cs" />
     <Compile Include="Command\0040_Mesh\CReplaceMeshingParameters.cs" />
@@ -206,13 +208,16 @@
     <Compile Include="Command\0081_Step\CRemoveSteps.cs" />
     <Compile Include="Command\0081_Step\CReplaceStep.cs" />
     <Compile Include="Command\0082_HistoryOutput\CAddHistoryOutput.cs" />
+    <Compile Include="Command\0082_HistoryOutput\CDuplicateHistoryOutputs.cs" />
     <Compile Include="Command\0082_HistoryOutput\CRemoveHistoryOutputs.cs" />
     <Compile Include="Command\0082_HistoryOutput\CPropagateHisotryOutput.cs" />
     <Compile Include="Command\0082_HistoryOutput\CReplaceHisotryOutput.cs" />
     <Compile Include="Command\0083_FieldOutput\CAddFieldOutput.cs" />
+    <Compile Include="Command\0083_FieldOutput\CDuplicateFieldOutputs.cs" />
     <Compile Include="Command\0083_FieldOutput\CRemoveFieldOutputs.cs" />
     <Compile Include="Command\0083_FieldOutput\CPropagateFieldOutput.cs" />
     <Compile Include="Command\0083_FieldOutput\CReplaceFieldOutput.cs" />
+    <Compile Include="Command\0084_BoundaryConditions\CDuplicateBCs.cs" />
     <Compile Include="Command\0084_BoundaryConditions\CPropagateBC.cs" />
     <Compile Include="Command\0084_BoundaryConditions\CAddBC.cs" />
     <Compile Include="Command\0084_BoundaryConditions\CHideBCs.cs" />
@@ -227,6 +232,7 @@
     <Compile Include="Command\0085_Load\CReplaceLoad.cs" />
     <Compile Include="Command\0085_Load\CShowLoads.cs" />
     <Compile Include="Command\0086_DefinedField\CAddDefinedField.cs" />
+    <Compile Include="Command\0086_DefinedField\CDuplicateDefinedFields.cs" />
     <Compile Include="Command\0086_DefinedField\CPropagateDefinedField.cs" />
     <Compile Include="Command\0086_DefinedField\CRemoveDefinedFields.cs" />
     <Compile Include="Command\0086_DefinedField\CReplaceDefinedField.cs" />
@@ -234,6 +240,7 @@
     <Compile Include="Command\0090_Tools\CRemoveParameters.cs" />
     <Compile Include="Command\0090_Tools\CReplaceParameter.cs" />
     <Compile Include="Command\0100_Analysis\CAddJob.cs" />
+    <Compile Include="Command\0100_Analysis\CDuplicateJobs.cs" />
     <Compile Include="Command\0100_Analysis\CRemoveJobs.cs" />
     <Compile Include="Command\0100_Analysis\CReplaceJob.cs" />
     <Compile Include="Command\CActivateDeactivateMultilpe.cs" />

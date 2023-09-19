@@ -35,7 +35,10 @@ namespace PrePoMax.Forms
             get { return _viewMeshingParameters.GetBase(); }
             set
             {
+                bool advancedView = _viewMeshingParameters != null ? _viewMeshingParameters.AdvancedView : value.AdvancedView;
                 _viewMeshingParameters = new ViewMeshingParameters(value.DeepClone());
+                _viewMeshingParameters.AdvancedView = advancedView;
+                //
                 propertyGrid.SelectedObject = _viewMeshingParameters;
             }
         }
@@ -154,7 +157,7 @@ namespace PrePoMax.Forms
         private void tsmiResetAll_Click(object sender, EventArgs e)
         {
             MeshingParameters = GetDefaultMeshingParameters(MeshingParameters.CreationIds);
-            _meshingParametersChanged = _meshingParametersToEditName != null;
+            _meshingParametersChanged = false;
         }
         async private void btnPreview_Click(object sender, EventArgs e)
         {
@@ -192,7 +195,7 @@ namespace PrePoMax.Forms
             string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
             //
             if (property != nameof(_viewMeshingParameters.Name) &&
-                property != nameof(_viewMeshingParameters.Relative))
+                property != nameof(_viewMeshingParameters.AdvancedView))
             {
                 _meshingParametersChanged = true;
             }
@@ -358,7 +361,7 @@ namespace PrePoMax.Forms
         {
             if (Enabled)
             {
-                //if (!_meshingParametersChanged)
+                if (!_meshingParametersChanged)
                 {
                     MeshingParameters = GetDefaultMeshingParameters(ids);
                 }
