@@ -1273,7 +1273,7 @@
             this.tsmiExportToStereolitography.Name = "tsmiExportToStereolitography";
             this.tsmiExportToStereolitography.Size = new System.Drawing.Size(222, 22);
             this.tsmiExportToStereolitography.Text = "Stereolitography *.stl";
-            this.tsmiExportToStereolitography.Click += new System.EventHandler(this.tsmiExportToStereolitography_Click);
+            this.tsmiExportToStereolitography.Click += new System.EventHandler(this.tsmiExportToStereolithography_Click);
             // 
             // tsmiDividerExport1
             // 

@@ -45,7 +45,7 @@ namespace PrePoMax
             }
             coor = Controller.GetElement(_elementId).GetCG(Controller.DisplayedMesh.Nodes);
             //
-            if (IsTextOverriden) text = OverridenText;
+            if (IsTextOverridden) text = OverriddenText;
         }
     }
 }

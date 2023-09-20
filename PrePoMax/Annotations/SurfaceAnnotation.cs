@@ -128,7 +128,7 @@ namespace PrePoMax
                 //text += string.Format("Avg: {0} {1}", avg.ToString(numberFormat), fieldUnit);
             }
             //
-            if (IsTextOverriden) text = OverridenText;
+            if (IsTextOverridden) text = OverriddenText;
         }
     }
 }

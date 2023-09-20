@@ -119,7 +119,7 @@ namespace PrePoMax
             _boundaryConditionSymbolColor = Color.Lime;
             _loadSymbolColor = Color.RoyalBlue;
             _symbolSize = 50;
-            _nodeSymbolSize = 3;
+            _nodeSymbolSize = 5;
             _drawSymbolEdges = true;
             //
             _colorBarBackgroundType = AnnotationBackgroundType.None;

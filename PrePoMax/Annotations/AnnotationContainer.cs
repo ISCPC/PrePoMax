@@ -182,7 +182,7 @@ namespace PrePoMax
             AnnotationBase annotation = GetCurrentAnnotation(annotationName);
             if (annotation != null)
             {
-                annotation.OverridenText = null;
+                annotation.OverriddenText = null;
                 AnnotationBase.Controller.ModelChanged = true;
                 //
                 DrawAnnotations();

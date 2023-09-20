@@ -19,8 +19,8 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         public int PartId { get { return _partId; } set { _partId = value; } }
-        public bool IsTextOverriden { get { return _overridenText != null; } }
-        public string OverridenText { get { return _overridenText; } set { _overridenText = value; } }
+        public bool IsTextOverridden { get { return _overridenText != null; } }
+        public string OverriddenText { get { return _overridenText; } set { _overridenText = value; } }
 
 
         // Constructors                                                                                                             
@@ -53,15 +53,15 @@ namespace PrePoMax
         public abstract void GetAnnotationData(out string text, out double[] coor);
         public string GetAnnotationText()
         {
-            GetAnnotationData(out string text, out double[] coor);
+            GetAnnotationData(out string text, out _);
             return text;
         }
-        public string GetNotOverridenAnnotationText()
+        public string GetNotOverriddenAnnotationText()
         {
             string tmp = _overridenText;
             _overridenText = null;
             //
-            GetAnnotationData(out string text, out double[] coor);
+            GetAnnotationData(out string text, out _);
             //
             _overridenText = tmp;
             //

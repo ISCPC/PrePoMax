@@ -68,11 +68,11 @@ namespace CaeGlobals
             }
             try
             {
-                var xmlserializer = new XmlSerializer(typeof(T));
+                var xmlSerializer = new XmlSerializer(typeof(T));
                 var stringWriter = new StringWriter();
                 using (var writer = XmlWriter.Create(stringWriter))
                 {
-                    xmlserializer.Serialize(writer, value);
+                    xmlSerializer.Serialize(writer, value);
                     return stringWriter.ToString();
                 }
             }
@@ -89,7 +89,7 @@ namespace CaeGlobals
             }
             catch
             {
-                return default(T);
+                return default;
             }
         }
         // Dictionary

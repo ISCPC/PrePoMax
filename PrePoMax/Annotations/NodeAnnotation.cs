@@ -106,7 +106,7 @@ namespace PrePoMax
             //
             coor = arrowVec.Coor;
             //
-            if (IsTextOverriden) text = OverridenText;
+            if (IsTextOverridden) text = OverriddenText;
         }
 
     }

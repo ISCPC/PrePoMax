@@ -11,10 +11,12 @@ using System.Linq;
 using CaeGlobals;
 using System.Threading.Tasks;
 using System.Management;
+using System.Reflection.Emit;
+using System.Windows;
 
 namespace vtkControl
 {
-    // Delagates                                                                                                                    
+    // Delegates                                                                                                                    
     public delegate vtkMaxActorData GetSurfaceEdgesActorDataFromElementIdDelegate
         (int nodeIds, int[] elementIds, out string noEdgePartName);
     public delegate vtkMaxActorData GetSurfaceEdgesActorDataFromNodeAndElementIdsDelegate
@@ -106,7 +108,7 @@ namespace vtkControl
                     _renderingOn = value;
                     if (_renderingOn)
                     {
-                        RenderSceene();
+                        RenderScene();
                         AdjustCameraDistanceAndClipping();  // Update the scale widget after render
                     }
                 }
@@ -162,7 +164,7 @@ namespace vtkControl
                         case vtkSelectBy.GeometrySurface:
                         case vtkSelectBy.GeometryEdgeAngle:
                         case vtkSelectBy.GeometrySurfaceAngle:
-                        // Querry
+                        // Query
                         case vtkSelectBy.QueryNode:
                         case vtkSelectBy.QueryElement:
                         case vtkSelectBy.QueryEdge:
@@ -545,9 +547,9 @@ namespace vtkControl
             if (_selectBy == vtkSelectBy.Off) return;
             else if (_selectBy == vtkSelectBy.Widget) return;
             //
-            if (sender != null && sender is vtkMaxTextWithArrowWidget twaw)
+            if (sender != null && sender is vtkMaxTextWithArrowWidget widget)
             {
-                Form_WidgetPicked(e, Keys.None, twaw.GetName(), twaw.GetRectangle());
+                Form_WidgetPicked(e, Keys.None, widget.GetName(), widget.GetRectangle());
             }
             else 
             {
@@ -655,9 +657,9 @@ namespace vtkControl
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
             vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds); // works on undeformed mesh
             //
-            int[] nodeIds = null;
-            double[][] nodeCoor = null;
-            int[] edgeCell = null;
+            int[] nodeIds;
+            double[][] nodeCoor;
+            int[] edgeCell;
             int edgeCellType;
             GetClosestEdgeCell(pickedPoint, cellFaceData, out nodeIds, out nodeCoor, out edgeCell, out edgeCellType);
             //
@@ -704,11 +706,10 @@ namespace vtkControl
             // Works on deformed mesh
             vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds);
             //
-            int[] nodeIds = null;
-            double[][] nodeCoor = null;
-            int[] edgeCell = null;
+            double[][] nodeCoor;
+            int[] edgeCell;
             int edgeCellType;
-            GetClosestEdgeCell(pickedPoint, cellFaceData, out nodeIds, out nodeCoor, out edgeCell, out edgeCellType);
+            GetClosestEdgeCell(pickedPoint, cellFaceData, out _, out nodeCoor, out edgeCell, out edgeCellType);
             //
             vtkPoints p = vtkPoints.New();
             for (int i = 0; i < nodeCoor.Length; i++)
@@ -733,12 +734,12 @@ namespace vtkControl
             _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
         }
         private void GetClosestEdgeCell(double[] pickedPoint, vtkMaxActorData cellFaceData, out int[] nodeIds,
-                                        out double[][] nodeCoor, out int[] edgeCell, out int edgeCelltype)
+                                        out double[][] nodeCoor, out int[] edgeCell, out int edgeCellType)
         {
             nodeIds = null;
             nodeCoor = null;
             edgeCell = null;
-            edgeCelltype = -1;
+            edgeCellType = -1;
             if (cellFaceData == null) return;
             //
             double[][] allNodeCoor = cellFaceData.Geometry.Nodes.Coor;
@@ -782,12 +783,12 @@ namespace vtkControl
             if (numOfNodes == 2)
             {
                 edgeCell = new int[] { 0, 1 };
-                edgeCelltype = (int)vtkCellType.VTK_LINE;
+                edgeCellType = (int)vtkCellType.VTK_LINE;
             }
             else if (numOfNodes == 3)
             {
                 edgeCell = new int[] { 0, 2, 1 };
-                edgeCelltype = (int)vtkCellType.VTK_QUADRATIC_EDGE;
+                edgeCellType = (int)vtkCellType.VTK_QUADRATIC_EDGE;
             }
             else throw new NotSupportedException();
             // Swap edge node ids and coor so that first node is the closest
@@ -1016,7 +1017,7 @@ namespace vtkControl
             int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
             int[] globalCellEdgeNodeIds = GetEdgeNodeIds(pickedPoint, globalCellId, cell, cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-            //double dist = GetSelectionPrecision();
+            //double distance = GetSelectionPrecision();
             //
             string noEdgePartName;
             vtkMaxActorData actorData = Controller_GetGeometryActorData(pickedPoint,
@@ -1062,7 +1063,7 @@ namespace vtkControl
             int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
             int[] globalCellEdgeNodeIds = GetEdgeNodeIds(pickedPoint, globalCellId, cell, cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-            //double dist = GetSelectionPrecision();
+            //double distance = GetSelectionPrecision();
             //
             vtkMaxActorData actorData = Controller_GetGeometryVertexActorData(pickedPoint,
                                                                               globalCellId,
@@ -1093,11 +1094,8 @@ namespace vtkControl
             // Works on deformed mesh
             vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds);
             //
-            int[] nodeIds = null;
-            double[][] nodeCoor = null;
-            int[] edgeCell = null;
-            int edgeCellType;
-            GetClosestEdgeCell(pickedPoint, cellFaceData, out nodeIds, out nodeCoor, out edgeCell, out edgeCellType);
+            int[] nodeIds;
+            GetClosestEdgeCell(pickedPoint, cellFaceData, out nodeIds, out _, out _, out _);
             //
             vtkMaxActorData edgeData = Controller_GetEdgeActorData(globalCellId, nodeIds);
             //
@@ -1297,7 +1295,7 @@ namespace vtkControl
             {
                 node = result.GetNode(i);
                 
-                vtkIdTypeArray selIds = (vtkIdTypeArray)node.GetSelectionList();
+                //vtkIdTypeArray selIds = (vtkIdTypeArray)node.GetSelectionList();
 
                 fd1 = node.GetSelectionData();
 
@@ -1333,7 +1331,7 @@ namespace vtkControl
                     if (entry.Value.GeometryProperty.GetOpacity() != 1) entry.Value.GeometryProperty.SetOpacity(1);
                 }
             }
-            // Pick actor by hardware rendering - render the sceene before Pick
+            // Pick actor by hardware rendering - render the scene before Pick
             //_overlayRenderer.Render();
             //_propPicker.Pick(x, y, 0, _overlayRenderer);
             //pickedActor = _propPicker.GetActor();
@@ -1345,7 +1343,7 @@ namespace vtkControl
             if (pickedActor != null)
             {
                 p = _propPicker.GetPickPosition();      // this function sometimes gives strange values
-                cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);                
+                cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out _, out _);                
             }
             // Try some more picks
             if (cellId == -1)
@@ -1360,7 +1358,7 @@ namespace vtkControl
                     if (pickedActor != null)
                     {
                         p = _propPicker.GetPickPosition();  // this function sometimes gives strange values
-                        cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
+                        cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out _, out _);
                         if (cellId != -1) break;
                     }
                     //
@@ -1369,7 +1367,7 @@ namespace vtkControl
                     if (pickedActor != null)
                     {
                         p = _propPicker.GetPickPosition();  // this function sometimes gives strange values
-                        cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
+                        cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out _, out _);
                         if (cellId != -1) break;
                     }
                     //
@@ -1378,7 +1376,7 @@ namespace vtkControl
                     if (pickedActor != null)
                     {
                         p = _propPicker.GetPickPosition();  // this function sometimes gives strange values
-                        cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
+                        cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out _, out _);
                         if (cellId != -1) break;
                     }
                     //
@@ -1387,7 +1385,7 @@ namespace vtkControl
                     if (pickedActor != null)
                     {
                         p = _propPicker.GetPickPosition();  // this function sometimes gives strange values
-                        cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
+                        cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out _, out _);
                         if (cellId != -1) break;
                     }
                 }
@@ -1425,12 +1423,11 @@ namespace vtkControl
             IntPtr closestPoint = Marshal.AllocHGlobal(3 * 8);            
             //
             int globalCellId = -1;
-            double minDist = double.MaxValue;
+            double minDistance = double.MaxValue;
             long localCellId = -1;
             int subId = -1;
             double distance2 = -1;
             double[] pointOut = new double[3];
-            double[] tmp = new double[3];
             vtkCellLocator locator;
             //
             foreach (var entry in _actors)
@@ -1449,9 +1446,9 @@ namespace vtkControl
                     {
                         locator.FindClosestPoint(x, closestPoint, ref localCellId, ref subId, ref distance2);
                         // Error: distance2 can be -1 if something in locator is not properly defined
-                        if (distance2 >= 0 && distance2 < minDist)
+                        if (distance2 >= 0 && distance2 < minDistance)
                         {
-                            minDist = distance2;
+                            minDistance = distance2;
                             cellLocator = locator;
                             cell = locator.GetDataSet().GetCell(localCellId);
                             globalCellId = (int)locator.GetDataSet().GetCellData().GetGlobalIds().GetTuple1(localCellId);
@@ -1463,7 +1460,7 @@ namespace vtkControl
                 // Reset visibility
                 ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value.Geometry, entry.Value.GeometryProperty,
                                                              vtkRendererLayer.Base);
-                if (minDist == 0) break;
+                if (minDistance == 0) break;
             }
             //
             Marshal.FreeHGlobal(x);
@@ -1477,7 +1474,7 @@ namespace vtkControl
             //
             if (!_userPick) maxErrorDistance2 = double.MaxValue;    // must be in a separate if
             //
-            if (minDist > maxErrorDistance2) return -1;
+            if (minDistance > maxErrorDistance2) return -1;
             else
             {
                 point = pointOut;
@@ -1490,11 +1487,8 @@ namespace vtkControl
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
             vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds); // works on undeformed mesh
             // Closest edge cell
-            int[] nodeIds = null;
-            double[][] nodeCoor = null;
-            int[] edgeCell = null;
-            int edgeCellType;
-            GetClosestEdgeCell(point, cellFaceData, out nodeIds, out nodeCoor, out edgeCell, out edgeCellType);
+            int[] nodeIds;
+            GetClosestEdgeCell(point, cellFaceData, out nodeIds, out _, out _, out _);
             //
             return nodeIds;
         }
@@ -1514,7 +1508,7 @@ namespace vtkControl
         {
             vtkCell cell;
             vtkCellLocator cellLocator;
-            int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref point, out cell, out cellLocator);
+            GetGlobalCellIdClosestTo3DPoint(ref point, out cell, out cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
 
             double[][] coor = GetCellFaceNodeCoor(cell);
@@ -1726,7 +1720,7 @@ namespace vtkControl
             _style.Reset();
             _renderWindowInteractor.ModifiedEvt += _renderWindowInteractor_ModifiedEvt;
             // Background
-            _renderer.SetBackground(0.4, 0.4, 0.4);     // bottm
+            _renderer.SetBackground(0.4, 0.4, 0.4);     // bottom
             _renderer.SetBackground2(0.8, 0.8, 0.8);    // top
             _renderer.SetGradientBackground(true);
             // Camera
@@ -1856,8 +1850,8 @@ namespace vtkControl
             return edges;
         }
        
-        // Formating
-        private void ApplySelectionFormatingToActor(vtkMaxActor actor)
+        // Formatting
+        private void ApplySelectionFormattingToActor(vtkMaxActor actor)
         {
             // Get actor cell type
             vtkCellTypes types = vtkCellTypes.New();
@@ -1901,7 +1895,7 @@ namespace vtkControl
                 actor.GeometryProperty.SetPointSize(actor.GeometryProperty.GetPointSize() + 2);
             //
             Color highlightColor;
-            if (actor.UseSecondaryHighightColor) highlightColor = _secondaryHighlightColor;
+            if (actor.UseSecondaryHighlightColor) highlightColor = _secondaryHighlightColor;
             else highlightColor = _primaryHighlightColor;
             //
             actor.GeometryProperty.SetColor(highlightColor.R / 255d * k,
@@ -1914,7 +1908,7 @@ namespace vtkControl
             //property.BackfaceCullingOn();
             actor.Geometry.PickableOff();
         }
-        private void ApplySymbolFormatingToActor(vtkMaxActor actor)
+        private void ApplySymbolFormattingToActor(vtkMaxActor actor)
         {
             actor.BackfaceCulling = true;
             actor.Ambient = 0.8;
@@ -2179,7 +2173,7 @@ namespace vtkControl
                 ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value, entry.Value.GetProperty(), vtkRendererLayer.Overlay);
             }
             //
-            RenderSceene();
+            RenderScene();
         }
         private void ApplyEdgeVisibilityAndBackfaceCullingToActor(vtkActor actor, vtkProperty actorProperty, vtkRendererLayer layer)
         {
@@ -2225,16 +2219,16 @@ namespace vtkControl
         }
         private void ApplyEdgeVisibilityAndBackfaceCullingToActorEdges(vtkMaxActor actor, string actorName)
         {
-            // visibility functions must use vtkMaxActor.Visible property to determine visibility
-
-            // turn off edges for hidden actors
+            // Visibility functions must use vtkMaxActor.Visible property to determine visibility
+            //
+            // Turn off edges for hidden actors
             if (actorName != null && _actors.ContainsKey(actorName) && !_actors[actorName].VtkMaxActorVisible)
             {
                 actor.ElementEdges.VisibilityOff();
             }
             else
             {
-                // for visible actors
+                // For visible actors
                 if (_edgesVisibility == vtkEdgesVisibility.ElementEdges)
                 {
                     actor.ElementEdges.VisibilityOn();
@@ -2272,6 +2266,26 @@ namespace vtkControl
                 actor.ModelEdgesProperty.BackfaceCullingOn();
             }
         }
+        private void ApplyVisibilityToActorNodes()
+        {
+            // Base layer
+            foreach (var entry in _actors)
+            {
+                if (entry.Value.Nodes == null) continue;
+                // Visibility functions must use vtkMaxActor.Visible property to determine visibility
+                //
+                // Turn off nodes for hidden actors
+                if (entry.Key != null && _actors.ContainsKey(entry.Key) && !_actors[entry.Key].VtkMaxActorVisible)
+                {
+                    entry.Value.Nodes.VisibilityOff();
+                }
+                else
+                {
+                    // For visible actors
+                    entry.Value.Nodes.VisibilityOn();
+                }
+            }
+        }
 
         // Public methods                                                                                                          
         #region Views  #############################################################################################################
@@ -2294,7 +2308,7 @@ namespace vtkControl
             ResetCamera();
          
             if (animate) AnimateCamera(cameraStart, camera, camera);
-            else RenderSceene();
+            else RenderScene();
         }
         public void SetTopBottomView(bool animate, bool top)
         {
@@ -2315,7 +2329,7 @@ namespace vtkControl
             ResetCamera();
 
             if (animate) AnimateCamera(cameraStart, camera, camera);
-            else RenderSceene();
+            else RenderScene();
         }
         public void SetLeftRightView(bool animate, bool left)
         {
@@ -2336,7 +2350,7 @@ namespace vtkControl
             ResetCamera();
 
             if (animate) AnimateCamera(cameraStart, camera, camera);
-            else RenderSceene();
+            else RenderScene();
         }
         public void SetVerticalView(bool animate, bool updateView)
         {
@@ -2390,7 +2404,7 @@ namespace vtkControl
             if (updateView)
             {
                 if (animate) AnimateCamera(cameraStart, camera, camera);
-                else RenderSceene();
+                else RenderScene();
             }
         }
         public void SetNormalView(bool animate)
@@ -2426,7 +2440,7 @@ namespace vtkControl
             SetVerticalView(false, false);
 
             if (animate) AnimateCamera(cameraStart, camera, camera);
-            else RenderSceene();
+            else RenderScene();
         }
         public void SetIsometricView(bool animate, bool positive)
         {
@@ -2475,7 +2489,7 @@ namespace vtkControl
             ResetCamera();
 
             if (animate) AnimateCamera(cameraStart, camera, camera);
-            else RenderSceene();
+            else RenderScene();
         }
         public void SetZoomFactor(double factor)
         {
@@ -2507,7 +2521,7 @@ namespace vtkControl
             ResetCamera();
             //_renderWindowInteractor.Modified(); // this updates the vtkMax annotation objects
             if (animate) AnimateCamera(cameraStart, camera, camera);
-            else RenderSceene();
+            else RenderScene();
         }
         //
         private void ResetCamera()
@@ -2658,7 +2672,7 @@ namespace vtkControl
         public double[] GetViewPlaneNormal()
         {
             vtkCamera camera = _renderer.GetActiveCamera();
-            double[] fPos = camera.GetFocalPoint();
+            //double[] fPos = camera.GetFocalPoint();
             double[] vpn = camera.GetViewPlaneNormal();
             return vpn;
         }
@@ -2670,7 +2684,7 @@ namespace vtkControl
             if (abs1 == 0 || abs2 == 0) return 0;
             else return Math.Acos(Math.Min(1, Math.Abs(angle / (abs1 * abs2))));
         }
-        public double[] Substract(double[] v1, double[] v2)
+        public double[] Subtract(double[] v1, double[] v2)
         {
             double[] v = new double[3];
             v[0] = v1[0] - v2[0];
@@ -2743,12 +2757,12 @@ namespace vtkControl
                 camera.OrthogonalizeViewUp();
                 _style.AdjustCameraDistanceAndClipping();
                 System.Threading.Thread.Sleep(1);
-                RenderSceene();
+                RenderScene();
                 Application.DoEvents();
             }
 
             interpolator.InterpolateCamera(1, camera);
-            RenderSceene();
+            RenderScene();
         }
         public void AnimateCameraQuat(vtkCamera cameraStart, vtkCamera cameraEnd, vtkCamera camera)
         {
@@ -2802,7 +2816,7 @@ namespace vtkControl
 
             DateTime start = DateTime.Now;
             int delta = 500; //ms
-            double currentDelta = 0;
+            double currentDelta;
 
             do
             {
@@ -2813,8 +2827,8 @@ namespace vtkControl
                 //     |         |     
                 //     | 0 0 0 1 |     
                 //                     
-                // camera positon C:   
-                // C = -R(transponse)*T
+                // camera position C:  
+                // C = -R(transpose)*T 
                 //                     
 
                 currentDelta = (DateTime.Now - start).TotalMilliseconds;
@@ -2843,7 +2857,7 @@ namespace vtkControl
                 camera.OrthogonalizeViewUp();
                 _style.AdjustCameraDistanceAndClipping();
                 System.Threading.Thread.Sleep(5);
-                RenderSceene();
+                RenderScene();
                 Application.DoEvents();
             } while (currentDelta < delta);
 
@@ -2929,8 +2943,8 @@ namespace vtkControl
                     //     |         |     
                     //     | 0 0 0 1 |     
                     //                     
-                    // camera positon C:   
-                    // C = -R(transponse)*T
+                    // camera position C:  
+                    // C = -R(transpose)*T 
                     //                     
                     currentDelta = (DateTime.Now - start).TotalMilliseconds;
                     t = currentDelta / delta ;
@@ -2966,7 +2980,7 @@ namespace vtkControl
                     _style.AdjustCameraDistanceAndClipping();
                     //System.Threading.Thread.Sleep(5);
                     _renderWindowInteractor.Modified(); // this updates the vtkMax annotation objects
-                    RenderSceene();
+                    RenderScene();
                     //
                     Application.DoEvents();
                 }
@@ -2991,14 +3005,14 @@ namespace vtkControl
         public void AdjustCameraDistanceAndClippingRedraw()
         {
             _style.AdjustCameraDistanceAndClipping();
-            RenderSceene();
+            RenderScene();
         }
         public void UpdateScalarsAndRedraw()
         {
             // Update scalar field
             UpdateScalarFormatting();
             //
-            RenderSceene();
+            RenderScene();
         }
         public void UpdateScalarsAndCameraAndRedraw()
         {
@@ -3007,7 +3021,7 @@ namespace vtkControl
             //
             _style.AdjustCameraDistanceAndClipping();
             //
-            RenderSceene();
+            RenderScene();
         }
 
         #endregion  ################################################################################################################
@@ -3041,12 +3055,12 @@ namespace vtkControl
                                           data.Geometry.Nodes.Coor[i][1],
                                           data.Geometry.Nodes.Coor[i][2]);
             }
-            // Polydata
-            vtkPolyData polydata = vtkPolyData.New();
-            polydata.SetPoints(pointData);
+            // Poly data
+            vtkPolyData polyData = vtkPolyData.New();
+            polyData.SetPoints(pointData);
             // Calculate the distance to the camera of each point.
             vtkDistanceToCamera distanceToCamera = vtkDistanceToCamera.New();
-            distanceToCamera.SetInput(polydata);
+            distanceToCamera.SetInput(polyData);
             distanceToCamera.SetScreenSize(symbolSize);
             distanceToCamera.SetRenderer(_renderer);
             // Source object
@@ -3081,7 +3095,7 @@ namespace vtkControl
             data.Name += Globals.NameSeparator + "sphere";
             vtkMaxActor actor = new vtkMaxActor(data, mapper);
             // Add
-            ApplySymbolFormatingToActor(actor);
+            ApplySymbolFormattingToActor(actor);
             AddActorGeometry(actor, data.Layer);
             //
             if (_drawSymbolEdges || data.BackfaceColor != null) AddSymbolEdges(data, glyph.GetOutputPort());
@@ -3105,13 +3119,13 @@ namespace vtkControl
             {
                 pointNormalsArray.InsertNextTuple3(normals[i][0], normals[i][1], normals[i][2]);
             }
-            // Polydata
-            vtkPolyData polydata = vtkPolyData.New();
-            polydata.SetPoints(pointData);
-            polydata.GetPointData().SetNormals(pointNormalsArray);
+            // Poly data
+            vtkPolyData polyData = vtkPolyData.New();
+            polyData.SetPoints(pointData);
+            polyData.GetPointData().SetNormals(pointNormalsArray);
             // Calculate the distance to the camera of each point.
             vtkDistanceToCamera distanceToCamera = vtkDistanceToCamera.New();
-            distanceToCamera.SetInput(polydata);
+            distanceToCamera.SetInput(polyData);
             distanceToCamera.SetScreenSize(symbolSize);
             distanceToCamera.SetRenderer(_renderer);
             // Cone
@@ -3146,7 +3160,7 @@ namespace vtkControl
             vtkMaxActor actor = new vtkMaxActor(data, mapper);
             actor.GeometryProperty.SetRepresentationToSurface();
             // Add
-            ApplySymbolFormatingToActor(actor);
+            ApplySymbolFormattingToActor(actor);
             AddActorGeometry(actor, data.Layer);
             //
             if (_drawSymbolEdges) AddSymbolEdges(data, glyph.GetOutputPort());
@@ -3170,13 +3184,13 @@ namespace vtkControl
             {
                 pointNormalsArray.InsertNextTuple3(normals[i][0], normals[i][1], normals[i][2]);
             }
-            // Polydata
-            vtkPolyData polydata = vtkPolyData.New();
-            polydata.SetPoints(pointData);
-            polydata.GetPointData().SetNormals(pointNormalsArray);
+            // Poly data
+            vtkPolyData polyData = vtkPolyData.New();
+            polyData.SetPoints(pointData);
+            polyData.GetPointData().SetNormals(pointNormalsArray);
             // Calculate the distance to the camera of each point.
             vtkDistanceToCamera distanceToCamera = vtkDistanceToCamera.New();
-            distanceToCamera.SetInput(polydata);
+            distanceToCamera.SetInput(polyData);
             distanceToCamera.SetScreenSize(symbolSize);
             distanceToCamera.SetRenderer(_renderer);
             // Cube
@@ -3214,7 +3228,7 @@ namespace vtkControl
             vtkMaxActor actor = new vtkMaxActor(data, mapper);
             actor.GeometryProperty.SetInterpolationToFlat();
             // Add
-            ApplySymbolFormatingToActor(actor);
+            ApplySymbolFormattingToActor(actor);
             AddActorGeometry(actor, data.Layer);
             //
             if (_drawSymbolEdges) AddSymbolEdges(data, glyph.GetOutputPort());
@@ -3237,13 +3251,13 @@ namespace vtkControl
                 pointNormalsArray.InsertNextTuple3(data.Geometry.Nodes.Normals[i][0], data.Geometry.Nodes.Normals[i][1],
                                                    data.Geometry.Nodes.Normals[i][2]);
             }
-            // Polydata
-            vtkPolyData polydata = vtkPolyData.New();
-            polydata.SetPoints(pointData);
-            polydata.GetPointData().SetNormals(pointNormalsArray);
+            // Poly data
+            vtkPolyData polyData = vtkPolyData.New();
+            polyData.SetPoints(pointData);
+            polyData.GetPointData().SetNormals(pointNormalsArray);
             // Calculate the distance to the camera of each point.
             vtkDistanceToCamera distanceToCamera = vtkDistanceToCamera.New();
-            distanceToCamera.SetInput(polydata);
+            distanceToCamera.SetInput(polyData);
             distanceToCamera.SetScreenSize(symbolSize * relativeSize);
             distanceToCamera.SetRenderer(_renderer);
             // Arrow
@@ -3290,7 +3304,7 @@ namespace vtkControl
             actor.Color = data.Color;// Color.Blue;
             actor.GeometryProperty.SetRepresentationToSurface();
             // Add
-            ApplySymbolFormatingToActor(actor);
+            ApplySymbolFormattingToActor(actor);
             AddActorGeometry(actor, data.Layer);
             //
             if (_drawSymbolEdges) AddSymbolEdges(data, glyph.GetOutputPort());
@@ -3298,27 +3312,29 @@ namespace vtkControl
         public void AddOrientedDoubleArrowsActor(vtkMaxActorData data, double symbolSize)
         {
             if (symbolSize > _maxSymbolSize) _maxSymbolSize = symbolSize;
-            // Double arrow for moent loads
+            // Double arrow for moment loads
             // Points
             vtkPoints pointData = vtkPoints.New();
             for (int i = 0; i < data.Geometry.Nodes.Coor.GetLength(0); i++)
             {
-                pointData.InsertNextPoint(data.Geometry.Nodes.Coor[i][0], data.Geometry.Nodes.Coor[i][1], data.Geometry.Nodes.Coor[i][2]);
+                pointData.InsertNextPoint(data.Geometry.Nodes.Coor[i][0], data.Geometry.Nodes.Coor[i][1],
+                                          data.Geometry.Nodes.Coor[i][2]);
             }
             // Normals
             vtkDoubleArray pointNormalsArray = vtkDoubleArray.New();
             pointNormalsArray.SetNumberOfComponents(3); //3d normals (ie x,y,z)
             for (int i = 0; i < data.Geometry.Nodes.Normals.GetLength(0); i++)
             {
-                pointNormalsArray.InsertNextTuple3(data.Geometry.Nodes.Normals[i][0], data.Geometry.Nodes.Normals[i][1], data.Geometry.Nodes.Normals[i][2]);
+                pointNormalsArray.InsertNextTuple3(data.Geometry.Nodes.Normals[i][0], data.Geometry.Nodes.Normals[i][1],
+                                                   data.Geometry.Nodes.Normals[i][2]);
             }
-            // Polydata
-            vtkPolyData polydata = vtkPolyData.New();
-            polydata.SetPoints(pointData);
-            polydata.GetPointData().SetNormals(pointNormalsArray);
+            // Poly data
+            vtkPolyData polyData = vtkPolyData.New();
+            polyData.SetPoints(pointData);
+            polyData.GetPointData().SetNormals(pointNormalsArray);
             // Calculate the distance to the camera of each point.
             vtkDistanceToCamera distanceToCamera = vtkDistanceToCamera.New();
-            distanceToCamera.SetInput(polydata);
+            distanceToCamera.SetInput(polyData);
             distanceToCamera.SetScreenSize(symbolSize);
             distanceToCamera.SetRenderer(_renderer);
             // Arrow
@@ -3372,7 +3388,7 @@ namespace vtkControl
             data.Name += Globals.NameSeparator + "doubleArrow";
             vtkMaxActor actor = new vtkMaxActor(data, mapper);
             // Add
-            ApplySymbolFormatingToActor(actor);
+            ApplySymbolFormattingToActor(actor);
             AddActorGeometry(actor, data.Layer);
             //
             if (_drawSymbolEdges) AddSymbolEdges(data, glyph.GetOutputPort());
@@ -3395,17 +3411,17 @@ namespace vtkControl
                 pointNormalsArray.InsertNextTuple3(data.Geometry.Nodes.Normals[i][0], data.Geometry.Nodes.Normals[i][1],
                                                    data.Geometry.Nodes.Normals[i][2]);
             }
-            // Polydata
-            vtkPolyData polydata = vtkPolyData.New();
-            polydata.SetPoints(pointData);
-            polydata.GetPointData().SetNormals(pointNormalsArray);
+            // Poly data
+            vtkPolyData polyData = vtkPolyData.New();
+            polyData.SetPoints(pointData);
+            polyData.GetPointData().SetNormals(pointNormalsArray);
             // Calculate the distance to the camera of each point.
             vtkDistanceToCamera distanceToCamera = vtkDistanceToCamera.New();
-            distanceToCamera.SetInput(polydata);
+            distanceToCamera.SetInput(polyData);
             distanceToCamera.SetScreenSize(symbolSize);
             distanceToCamera.SetRenderer(_renderer);
             // Source for the glyph filter
-            vtkAlgorithmOutput spring = CreateSpringsource(0.2, 1, 8, 10);
+            vtkAlgorithmOutput spring = CreateSpringSource(0.2, 1, 8, 10);
             // Transform
             vtkTransform transform = vtkTransform.New();
             transform.Identity();
@@ -3438,12 +3454,12 @@ namespace vtkControl
             vtkMaxActor actor = new vtkMaxActor(data, mapper);
             actor.GeometryProperty.SetRepresentationToSurface();
             // Add
-            ApplySymbolFormatingToActor(actor);
+            ApplySymbolFormattingToActor(actor);
             AddActorGeometry(actor, data.Layer);
             //
             if (_drawSymbolEdges) AddSymbolEdges(data, glyph.GetOutputPort());
         }
-        private vtkAlgorithmOutput CreateSpringsource(double diameter, double height, int numOfTurns, int radialResolution)
+        private vtkAlgorithmOutput CreateSpringSource(double diameter, double height, int numOfTurns, int radialResolution)
         {
             // Points
             double r = diameter / 2;
@@ -3474,7 +3490,7 @@ namespace vtkControl
             delta = linPart / linResolution;
             for (int i = 0; i < linResolution; i++) points[count++] = new double[] { height - linPart + delta * (i + 1), 0, 0 };
             //
-            points = SmoothLinePoitns(points, 3);
+            points = SmoothLinePoints(points, 3);
             //
             vtkPoints vtkPoints = vtkPoints.New();
             foreach (var point in points) vtkPoints.InsertNextPoint(point[0], point[1], point[2]);
@@ -3485,13 +3501,13 @@ namespace vtkControl
             // Create a cell array to store the lines in and add the lines to it
             vtkCellArray cells = vtkCellArray.New();
             cells.InsertNextCell(polyLine);
-            // Polydata
-            vtkPolyData polydata = vtkPolyData.New();
-            polydata.SetPoints(vtkPoints);
-            polydata.SetLines(cells);
+            // Poly data
+            vtkPolyData polyData = vtkPolyData.New();
+            polyData.SetPoints(vtkPoints);
+            polyData.SetLines(cells);
             // Create tube filter
             vtkTubeFilter tubeFilter = vtkTubeFilter.New();
-            tubeFilter.SetInput(polydata);
+            tubeFilter.SetInput(polyData);
             tubeFilter.SetRadius(0.03);
             tubeFilter.SetNumberOfSides(10);
             tubeFilter.CappingOn();
@@ -3499,10 +3515,10 @@ namespace vtkControl
             //
             return tubeFilter.GetOutputPort();
         }
-        private double[][] SmoothLinePoitns(double[][] points, int numOfPoints)
+        private double[][] SmoothLinePoints(double[][] points, int numOfPoints)
         {
             int half = numOfPoints / 2;
-            int evenNumOfPoitns = half * 2 + 1;
+            int evenNumOfPoints = half * 2 + 1;
             double[][] smooth = new double[points.Length][];
             double[] newPoint;
             //
@@ -3521,9 +3537,9 @@ namespace vtkControl
                         newPoint[1] += points[i + j][1];
                         newPoint[2] += points[i + j][2];
                     }
-                    newPoint[0] /= evenNumOfPoitns;
-                    newPoint[1] /= evenNumOfPoitns;
-                    newPoint[2] /= evenNumOfPoitns;
+                    newPoint[0] /= evenNumOfPoints;
+                    newPoint[1] /= evenNumOfPoints;
+                    newPoint[2] /= evenNumOfPoints;
                     //
                     smooth[i] = newPoint;
                 }
@@ -3547,18 +3563,18 @@ namespace vtkControl
             // Create a cell array to store the lines in and add the lines to it
             vtkCellArray cells = vtkCellArray.New();
             cells.InsertNextCell(polyLine);
-            // Daimeter
+            // Diameter
             vtkFloatArray scalars = vtkFloatArray.New();
             scalars.InsertNextTuple1(0.5);
             scalars.InsertNextTuple1(0.01);
-            // Polydata
-            vtkPolyData polydata = vtkPolyData.New();
-            polydata.SetPoints(points);
-            polydata.SetLines(cells);
-            polydata.GetPointData().SetScalars(scalars);
+            // Poly data
+            vtkPolyData polyData = vtkPolyData.New();
+            polyData.SetPoints(points);
+            polyData.SetLines(cells);
+            polyData.GetPointData().SetScalars(scalars);
             // Create tube filter
             vtkTubeFilter tubeFilter = vtkTubeFilter.New();
-            tubeFilter.SetInput(polydata);
+            tubeFilter.SetInput(polyData);
             tubeFilter.SetNumberOfSides(resolution);
             tubeFilter.SetVaryRadiusToVaryRadiusByAbsoluteScalar();
             tubeFilter.CappingOn();
@@ -3591,13 +3607,13 @@ namespace vtkControl
                 pointNormalsArray.InsertNextTuple3(data.Geometry.Nodes.Normals[i][0], data.Geometry.Nodes.Normals[i][1],
                                                    data.Geometry.Nodes.Normals[i][2]);
             }
-            // Polydata
-            vtkPolyData polydata = vtkPolyData.New();
-            polydata.SetPoints(pointData);
-            polydata.GetPointData().SetNormals(pointNormalsArray);
+            // Poly data
+            vtkPolyData polyData = vtkPolyData.New();
+            polyData.SetPoints(pointData);
+            polyData.GetPointData().SetNormals(pointNormalsArray);
             // Calculate the distance to the camera of each point.
             vtkDistanceToCamera distanceToCamera = vtkDistanceToCamera.New();
-            distanceToCamera.SetInput(polydata);
+            distanceToCamera.SetInput(polyData);
             distanceToCamera.SetScreenSize(symbolSize);
             distanceToCamera.SetRenderer(_renderer);
             // Sphere
@@ -3661,7 +3677,7 @@ namespace vtkControl
             data.Name += Globals.NameSeparator + "thermo";
             vtkMaxActor actor = new vtkMaxActor(data, mapper);            
             // Add
-            ApplySymbolFormatingToActor(actor);
+            ApplySymbolFormattingToActor(actor);
             AddActorGeometry(actor, data.Layer);
             //
             if (_drawSymbolEdges) AddSymbolEdges(data, glyph.GetOutputPort());
@@ -3684,13 +3700,13 @@ namespace vtkControl
                 pointNormalsArray.InsertNextTuple3(data.Geometry.Nodes.Normals[i][0], data.Geometry.Nodes.Normals[i][1],
                                                    data.Geometry.Nodes.Normals[i][2]);
             }
-            // Polydata
-            vtkPolyData polydata = vtkPolyData.New();
-            polydata.SetPoints(pointData);
-            polydata.GetPointData().SetNormals(pointNormalsArray);
+            // Poly data
+            vtkPolyData polyData = vtkPolyData.New();
+            polyData.SetPoints(pointData);
+            polyData.GetPointData().SetNormals(pointNormalsArray);
             // Calculate the distance to the camera of each point.
             vtkDistanceToCamera distanceToCamera = vtkDistanceToCamera.New();
-            distanceToCamera.SetInput(polydata);
+            distanceToCamera.SetInput(polyData);
             distanceToCamera.SetScreenSize(symbolSize);
             distanceToCamera.SetRenderer(_renderer);
             // Sphere
@@ -3736,7 +3752,7 @@ namespace vtkControl
             data.Name += Globals.NameSeparator + "radiate";
             vtkMaxActor actor = new vtkMaxActor(data, mapper);
             // Add
-            ApplySymbolFormatingToActor(actor);
+            ApplySymbolFormattingToActor(actor);
             AddActorGeometry(actor, data.Layer);
             //
             if (_drawSymbolEdges) AddSymbolEdges(data, glyph.GetOutputPort());
@@ -3780,6 +3796,8 @@ namespace vtkControl
             if (actor.ElementEdges != null) AddActorEdges(actor, false, layer);
             // Add modelEdges
             if (actor.ModelEdges != null) AddActorEdges(actor, true, layer);
+            // Add nodes
+            if (actor.Nodes != null) AddActorNodes(actor, layer);
         }
         private void AddActorGeometry(vtkMaxActor actor, vtkRendererLayer layer)
         {
@@ -3817,7 +3835,7 @@ namespace vtkControl
                 else _selectionRenderer.AddActor(actor.Geometry);
                 //
                 actor.Geometry.PickableOff();
-                ApplySelectionFormatingToActor(actor);
+                ApplySelectionFormattingToActor(actor);
             }
             //
             ApplyEdgeVisibilityAndBackfaceCullingToActor(actor.Geometry, actor.GeometryProperty, layer);            
@@ -3830,8 +3848,10 @@ namespace vtkControl
                 //
                 if (_actors.ContainsKey(actor.Name))
                 {
-                    if (isModelEdge && _actors[actor.Name].ModelEdges != actor.ModelEdges) throw new Exception("Animation changes exception.");
-                    if (!isModelEdge && _actors[actor.Name].ElementEdges != actor.ElementEdges) throw new Exception("Animation changes exception.");
+                    if (isModelEdge && _actors[actor.Name].ModelEdges != actor.ModelEdges)
+                        throw new Exception("Animation changes exception.");
+                    if (!isModelEdge && _actors[actor.Name].ElementEdges != actor.ElementEdges)
+                        throw new Exception("Animation changes exception.");
                 }
                 else
                 {
@@ -3850,7 +3870,7 @@ namespace vtkControl
             }
             else if (layer == vtkRendererLayer.Selection)
             {                
-                // wireframe selection
+                // Wireframe selection
                 if (!_selectedActors.Contains(actor)) _selectedActors.Add(actor);
                 //
                 vtkActor edgeActor;
@@ -3860,10 +3880,51 @@ namespace vtkControl
                 if (actor.DrawOnGeometry) _renderer.AddActor(edgeActor);
                 else _selectionRenderer.AddActor(edgeActor);
             }
-            //if (isModelEdge) ApplyEdgesFormatingToActor(actor.ModelEdges);
-            //else ApplyEdgesFormatingToActor(actor.ElementEdges);
+            //if (isModelEdge) ApplyEdgesFormattingToActor(actor.ModelEdges);
+            //else ApplyEdgesFormattingToActor(actor.ElementEdges);
             if (isModelEdge) ApplyEdgeVisibilityAndBackfaceCullingToModelEdges(actor, actor.Name);
             else ApplyEdgeVisibilityAndBackfaceCullingToActorEdges(actor, actor.Name);
+        }
+        private void AddActorNodes(vtkMaxActor actor, vtkRendererLayer layer)
+        {
+            if (layer == vtkRendererLayer.Base)
+            {
+                if (actor.Name == null) actor.Name = (_actors.Count + 1).ToString();
+                //
+                if (_actors.ContainsKey(actor.Name))
+                {
+                    if (_actors[actor.Name].Nodes != actor.Nodes) throw new Exception("Animation changes exception.");
+                }
+                else
+                {
+                    _actors.Add(actor.Name, actor);
+                }
+                //
+                _renderer.AddActor(actor.Nodes);
+            }
+            //else if (layer == vtkRendererLayer.Overlay)
+            //{
+            //    _overlayActors.Add(actor.Name, actor.Geometry);
+            //    //
+            //    if (isModelEdge) _overlayRenderer.AddActor(actor.ModelEdges);
+            //    else _overlayRenderer.AddActor(actor.ElementEdges);
+            //}
+            //else if (layer == vtkRendererLayer.Selection)
+            //{
+            //    // Wireframe selection
+            //    if (!_selectedActors.Contains(actor)) _selectedActors.Add(actor);
+            //    //
+            //    vtkActor edgeActor;
+            //    if (isModelEdge) edgeActor = actor.ModelEdges;
+            //    else edgeActor = actor.ElementEdges;
+            //    //
+            //    if (actor.DrawOnGeometry) _renderer.AddActor(edgeActor);
+            //    else _selectionRenderer.AddActor(edgeActor);
+            //}
+            ////if (isModelEdge) ApplyEdgesFormattingToActor(actor.ModelEdges);
+            ////else ApplyEdgesFormattingToActor(actor.ElementEdges);
+            //if (isModelEdge) ApplyEdgeVisibilityAndBackfaceCullingToModelEdges(actor, actor.Name);
+            //else ApplyEdgeVisibilityAndBackfaceCullingToActorEdges(actor, actor.Name);
         }
 
         #endregion  ################################################################################################################
@@ -3883,7 +3944,7 @@ namespace vtkControl
             {
                 highlightActor.GeometryProperty.SetOpacity(1);
                 AddActorGeometry(highlightActor, vtkRendererLayer.Selection);
-                RenderSceene();
+                RenderScene();
             }
         }
         private vtkMaxActor GetHighlightActorFromActorName(string actorName)
@@ -4045,6 +4106,7 @@ namespace vtkControl
             if (updateColorContours) UpdateScalarFormatting();
             //
             ApplyEdgesVisibilityAndBackfaceCulling();
+            ApplyVisibilityToActorNodes();
             _style.AdjustCameraDistanceAndClipping();
         }
         private void HideShowActor(vtkMaxActor actor, bool visible)
@@ -4093,7 +4155,7 @@ namespace vtkControl
                     //
                     UpdateScalarFormatting();
                     //
-                    RenderSceene();
+                    RenderScene();
                 }
             }
         }
@@ -4125,7 +4187,7 @@ namespace vtkControl
                     //
                     UpdateScalarFormatting();
                     //
-                    RenderSceene();
+                    RenderScene();
                 }
             }
         }
@@ -4144,7 +4206,7 @@ namespace vtkControl
                     //
                     UpdateScalarFormatting();
                     //
-                    RenderSceene();
+                    RenderScene();
                 }
             }
         }
@@ -4202,12 +4264,11 @@ namespace vtkControl
             cutter.GenerateCutScalarsOff();
             cutter.Update();
             // GEOMETRY  ##########################################################################
-            // Create polydata for the geometry actor
+            // Create poly data for the geometry actor
             vtkGeometryFilter geometryFilter = vtkGeometryFilter.New();
             geometryFilter.SetInput(cutter.GetOutput());
             geometryFilter.Update();
-            vtkPolyData polyData = vtkPolyData.New();
-            polyData = geometryFilter.GetOutput();
+            vtkPolyData polyData = geometryFilter.GetOutput();
             // Create the mapper for the geometry actor
             vtkPolyDataMapper polyMapper = vtkPolyDataMapper.New();
             polyMapper.SetInput(polyData);
@@ -4233,7 +4294,6 @@ namespace vtkControl
             //
             vtkCell cell;
             vtkCell cellFace;
-            vtkCellArray cellArray = vtkCellArray.New();
             vtkUnstructuredGrid cellGrid = vtkUnstructuredGrid.New();
             cellGrid.SetPoints(extract.GetOutput().GetPoints());
             //
@@ -4360,7 +4420,6 @@ namespace vtkControl
             sectionViewActor.Geometry = vtkActor.New();
             sectionViewActor.GeometryMapper = polyMapper;
 
-            polyData = vtkPolyData.New();
             polyData = cutStrips.GetOutput();
             polyMapper = vtkPolyDataMapper.New();
             polyMapper.SetInput(polyData);
@@ -4390,7 +4449,7 @@ namespace vtkControl
             //System.Diagnostics.Debug.WriteLine("CutStrips num. of cells: " + cutStrips.GetOutput().GetNumberOfCells());
 
            
-            // Noraml
+            // Normal
             double[] n = _sectionViewPlane.GetNormal();
             // Axis = n X z(0,0,1)
             double[] axis = new double[] { n[1], -n[0], 0 };
@@ -4455,7 +4514,7 @@ namespace vtkControl
                 vtkPolyData allPoints = vtkPolyData.New();
                 allPoints.SetPoints(cutStrips.GetOutput().GetPoints());
 
-                // Create a polydata to store the boundary. The points must be the
+                // Create a poly data to store the boundary. The points must be the
                 // same as the points we will triangulate.
                 vtkPolyData boundary = vtkPolyData.New();       // this is the boundary
                 boundary.SetPoints(allPoints.GetPoints());
@@ -4470,9 +4529,9 @@ namespace vtkControl
 
                 polyData = delaunay.GetOutput();
 
-                //polydata = boundary;
+                //polyData = boundary;
 
-                //if (polydata.GetNumberOfPoints() == 0)
+                //if (polyData.GetNumberOfPoints() == 0)
                 //    return null;
 
                 polyMapper = vtkPolyDataMapper.New();
@@ -4570,16 +4629,16 @@ namespace vtkControl
             double[] offsetFinal;
             double[] offsetStart;
             //
-            Dictionary<string, double[]> partOffsetsAnim = new Dictionary<string, double[]>();
+            Dictionary<string, double[]> partOffsetsAnimation = new Dictionary<string, double[]>();
             foreach (var partOffset in partOffsets)
             {
                 offsetFinal = partOffset.Value;
                 if (_actors.TryGetValue(partOffset.Key, out actor))
                 {
                     offsetStart = actor.Geometry.GetPosition();
-                    partOffsetsAnim.Add(partOffset.Key, new double[] { offsetFinal[0] - offsetStart[0],
-                                                                       offsetFinal[1] - offsetStart[1],
-                                                                       offsetFinal[2] - offsetStart[2]});
+                    partOffsetsAnimation.Add(partOffset.Key, new double[] { offsetFinal[0] - offsetStart[0],
+                                                                            offsetFinal[1] - offsetStart[1],
+                                                                            offsetFinal[2] - offsetStart[2]});
                 }
             }
             //
@@ -4597,7 +4656,7 @@ namespace vtkControl
                 //t = 0.5 - 0.5 * Math.Cos(t * Math.PI);
                 t = 0.5 + 0.5 * Math.Atan(t * 6 - 3) / Math.Atan(3);
                 //
-                foreach (var partOffset in partOffsetsAnim)
+                foreach (var partOffset in partOffsetsAnimation)
                 {
                     position.Coor = partOffset.Value;
                     position *= (t - tPrev);
@@ -4612,7 +4671,7 @@ namespace vtkControl
                 //
                 AdjustCameraDistanceAndClipping();
                 //
-                RenderSceene();
+                RenderScene();
                 //
                 Application.DoEvents();
             }
@@ -4633,7 +4692,7 @@ namespace vtkControl
                 }
             }
             //
-            RenderSceene();
+            RenderScene();
         }
 
         #endregion  ################################################################################################################
@@ -4672,7 +4731,7 @@ namespace vtkControl
             //
             UpdateScalarFormatting();
             //
-            RenderSceene();
+            RenderScene();
         }
         public void RemoveTransformedActors()
         {
@@ -4734,7 +4793,7 @@ namespace vtkControl
             TransformActor(vtkMaxActor.Geometry, transform);
             if (vtkMaxActor.ElementEdges != null) TransformActor(vtkMaxActor.ElementEdges, transform);
             if (vtkMaxActor.ModelEdges != null) TransformActor(vtkMaxActor.ModelEdges, transform);
-            // Transofrm locator to enable section view
+            // Transform locator to enable section view
             if (vtkMaxActor.FrustumCellLocator != null)
             {
                 vtkTransformFilter transformFilter = vtkTransformFilter.New();
@@ -4810,7 +4869,7 @@ namespace vtkControl
         {
             _scaleWidget.SetUnit(unit);
             //
-            RenderSceene();
+            RenderScene();
         }
         // Scalar bar
         public void InitializeResultWidgetPositions()
@@ -4894,7 +4953,7 @@ namespace vtkControl
             _colorBarWidget.VisibilityOff();
             _colorBarWidget.ClearColorsAndLabels();
             //
-            RenderSceene();
+            RenderScene();
         }
         // Status bar
         public void SetStatusBlockVisibility(bool visibility)
@@ -4938,7 +4997,7 @@ namespace vtkControl
                 _renderer.SetGradientBackground(gradient);
                 _renderer.SetBackground2(topColor.R / 255.0, topColor.G / 255.0, topColor.B / 255.0);
                 _renderer.SetBackground(bottomColor.R / 255.0, bottomColor.G / 255.0, bottomColor.B / 255.0);
-                if (redraw) RenderSceene();
+                if (redraw) RenderScene();
             }
         }
         public void SetLighting(double ambient, double diffuse, bool redraw)
@@ -4948,7 +5007,7 @@ namespace vtkControl
                 entry.Value.Ambient = ambient; // calls update color
                 entry.Value.Diffuse = diffuse; // calls update color
             }
-            if (redraw) RenderSceene();
+            if (redraw) RenderScene();
         }
         public void SetSmoothing(bool pointSmoothing, bool lineSmoothing, bool redraw)
         {
@@ -4995,7 +5054,7 @@ namespace vtkControl
                 }
             }
             
-            if (redraw) RenderSceene();
+            if (redraw) RenderScene();
         }
         // Highlight
         public void SetHighlightColor(Color primaryHighlightColor, Color secondaryHighlightColor)
@@ -5006,16 +5065,16 @@ namespace vtkControl
             Color highlightColor;
             foreach (var actor in _selectedActors)
             {
-                if (actor.UseSecondaryHighightColor) highlightColor = secondaryHighlightColor;
+                if (actor.UseSecondaryHighlightColor) highlightColor = secondaryHighlightColor;
                 else highlightColor = primaryHighlightColor;
                 //
-                ApplySelectionFormatingToActor(actor);
+                ApplySelectionFormattingToActor(actor);
             }
-            RenderSceene();
+            RenderScene();
         }
-        public void SetMouseHighlightColor(Color mousehighlightColor)
+        public void SetMouseHighlightColor(Color mouseHighlightColor)
         {
-            Globals.CurrentMouseHighlightColor = mousehighlightColor;
+            Globals.CurrentMouseHighlightColor = mouseHighlightColor;
             Globals.Initialize();
         }
         // Symbols
@@ -5126,7 +5185,7 @@ namespace vtkControl
                                                          "This might cause the application to close down unexpectedly. Continue?")
                                                          == DialogResult.OK)
                     {
-                        _animationFrameData.MemMb = -1000000;   // prevet the messagebox from reappearing
+                        _animationFrameData.MemMb = -1000000;   // prevet the message box from reappearing
                     }
                     else return false;
                 }
@@ -5208,9 +5267,9 @@ namespace vtkControl
             {
                 if (_animationFrameData != null && _animationFrameData.UseAllFrameData)   // animation from all frames
                 {
-                    double[] animRange = _animationFrameData.AllFramesScalarRange;
-                    _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), animRange[0], animRange[1]);
-                    PrepareActorLookupTable(animRange[0], animRange[1]);
+                    double[] animationRange = _animationFrameData.AllFramesScalarRange;
+                    _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), animationRange[0], animationRange[1]);
+                    PrepareActorLookupTable(animationRange[0], animationRange[1]);
                 }
                 else // min max from current frame
                 {
@@ -5440,9 +5499,9 @@ namespace vtkControl
                     //{
                     //    if (_animationFrameData != null && _animationFrameData.UseAllFrameData)   // animation from all frames
                     //    {
-                    //        double[] animRange = _animationFrameData.AllFramesScalarRange;
-                    //        _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), animRange[0], animRange[1]);
-                    //        PrepareActorLookupTable(animRange[0], animRange[1]);
+                    //        double[] animationRange = _animationFrameData.AllFramesScalarRange;
+                    //        _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), animationRange[0], animationRange[1]);
+                    //        PrepareActorLookupTable(animationRange[0], animationRange[1]);
                     //    }
                     //    else // min max from current frame
                     //    {
@@ -5457,7 +5516,7 @@ namespace vtkControl
                     //}
                 }
 
-                RenderSceene();
+                RenderScene();
 
                 countError++;
                 if (countError % 1000 == 0) System.Diagnostics.Debug.WriteLine("Count: " + countError);
@@ -5469,7 +5528,7 @@ namespace vtkControl
             //
             UpdateScalarFormatting();
             //
-            RenderSceene();
+            RenderScene();
         }
         private void UpdateActorColorContoursVisibility(string actorName, bool colorContours)
         {
@@ -5730,6 +5789,7 @@ namespace vtkControl
                 _renderer.RemoveActor(entry.Value.Geometry);
                 _renderer.RemoveActor(entry.Value.ElementEdges);
                 _renderer.RemoveActor(entry.Value.ModelEdges);
+                _renderer.RemoveActor(entry.Value.Nodes);
             }
             //_renderer.RemoveAllViewProps();  this removes all other actors for min/max values ...
             _actors.Clear();            
@@ -5771,6 +5831,7 @@ namespace vtkControl
                     _renderer.RemoveActor(actor.Geometry);
                     _renderer.RemoveActor(actor.ElementEdges);
                     _renderer.RemoveActor(actor.ModelEdges);
+                    _renderer.RemoveActor(entry.Value.Nodes);
                     // Remove cell locator and picker
                     if (actor.Geometry.GetPickable() == 1)
                     {
@@ -5810,7 +5871,7 @@ namespace vtkControl
             }
             _selectedActors.Clear();
             //
-            RenderSceene();
+            RenderScene();
         }
         public void ClearCurrentMouseSelection()
         {
@@ -5825,7 +5886,7 @@ namespace vtkControl
             _mouseSelectionCurrentIds = null;
             //
             if (_probeWidget != null && _probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
-            RenderSceene();
+            RenderScene();
         }
         public void ClearOverlay()
         {
@@ -5835,7 +5896,7 @@ namespace vtkControl
                 _overlayRenderer.RemoveActor(entry.Value);
             }
             _overlayActors.Clear();
-            RenderSceene();
+            RenderScene();
         }
         #endregion #################################################################################################################
 
@@ -5853,16 +5914,16 @@ namespace vtkControl
                 arrowWidget.SetTextProperty(CreateNewTextProperty());
                 arrowWidget.SetPadding(5);
                 arrowWidget.GetBackgroundProperty().SetColor(1, 1, 1);
-                // Set text, number format and anchor befofre arrange
+                // Set text, number format and anchor before arrange
                 arrowWidget.SetNumberFormat(numberFormat);
                 // Event
                 arrowWidget.MouseDoubleClick += arrowWidget_DoubleClicked;
                 // Add
                 _arrowWidgets.Add(name, arrowWidget);
-                // Arange
+                // Arrange
                 ArrangeVisibleArrowWidgets();
             }
-            // Edit annptation
+            // Edit annotation
             else
             {
                 arrowWidget.SetNumberFormat(numberFormat);
@@ -5883,7 +5944,7 @@ namespace vtkControl
                 arrowWidget.SetAnchorPoint(anchorPoint[0], anchorPoint[1], anchorPoint[2]);
             }
             //
-            RenderSceene();
+            RenderScene();
         }
         private void ArrangeVisibleArrowWidgets()
         {
@@ -5939,7 +6000,7 @@ namespace vtkControl
                 }
             }
             //
-            RenderSceene();
+            RenderScene();
         }
         public void HideAllArrowWidgets()
         {
@@ -5948,7 +6009,7 @@ namespace vtkControl
         
         #endregion #################################################################################################################
 
-        public void SwithchLights()
+        public void SwitchLights()
         {
             _renderer.RemoveAllLights();
             //
@@ -5967,7 +6028,7 @@ namespace vtkControl
             light3.SetLightTypeToCameraLight();
             _renderer.AddLight(light3);
             //
-            RenderSceene();
+            RenderScene();
         }
 
         public void InterpolateMeshData(PartExchangeData source, ref PartExchangeData input)
@@ -6047,7 +6108,7 @@ namespace vtkControl
             //
             ApplyEdgesVisibilityAndBackfaceCulling();
             //
-            RenderSceene();
+            RenderScene();
         }
         public void UpdateActorColor(vtkMaxActor actor, Color newColor)
         {
@@ -6059,12 +6120,12 @@ namespace vtkControl
         }
         public double[] GetBoundingBox()
         {
-            // xmin, xmax, ymin, ymax, zmin, zmax
+            // xMin, xMax, yMin, yMax, zMin, zMax
             return _renderer.ComputeVisiblePropBounds();
         }
         public double[] GetBoundingBoxSize()
         {
-            // xmin, xmax, ymin, ymax, zmin, zmax
+            // xMin, xMax, yMin, yMax, zMin, zMax
             double[] b = _renderer.ComputeVisiblePropBounds();
             return new double[] { b[1] - b[0], b[3] - b[2], b[5] - b[4] };
         }
@@ -6075,7 +6136,7 @@ namespace vtkControl
         }
 
         // Render
-        private void RenderSceene()
+        private void RenderScene()
         {
             if (_renderingOn) this.Invalidate();
         }
@@ -6116,7 +6177,7 @@ namespace vtkControl
             }
 
             // Node Ids from face ids
-            int[] nodeIds = new int[3];
+            int[] nodeIds;
             switch (faceId)
             {
                 case 1:
@@ -6167,7 +6228,7 @@ namespace vtkControl
 
             AddActorGeometry(actorGrid, layer);
 
-            RenderSceene();
+            RenderScene();
         }
         
         public void AddTest()
@@ -6260,7 +6321,7 @@ namespace vtkControl
 
             AddActorGeometry(actorGrid, vtkRendererLayer.Base);
 
-            RenderSceene();
+            RenderScene();
         }
         private void Hexahedron()
         {
@@ -6288,8 +6349,8 @@ namespace vtkControl
                 hex.GetPointIds().SetId(i, i);
 
             // Add the hexahedron to a cell array
-            vtkCellArray hexs = vtkCellArray.New();
-            hexs.InsertNextCell(hex);
+            vtkCellArray hexes = vtkCellArray.New();
+            hexes.InsertNextCell(hex);
 
             // Add the points and hexahedron to an unstructured grid
             vtkUnstructuredGrid uGrid = vtkUnstructuredGrid.New();
@@ -6328,7 +6389,7 @@ namespace vtkControl
             _renderer.ComputeVisiblePropBounds(test);
             _renderer.ResetCamera(test);
 
-            RenderSceene();
+            RenderScene();
         }
         public void AddSphere()
         {
@@ -6364,11 +6425,11 @@ namespace vtkControl
             _renderer.AddActor(sphereActor);
             //_selectedActors.Add(sphereActor);
 
-            // ensure all actors are visible (in this example not necessarely needed,
+            // ensure all actors are visible (in this example not necessarily needed,
             // but in case more than one actor needs to be shown it might be a good idea)
             _renderer.ResetCamera();
 
-            RenderSceene();
+            RenderScene();
         }
         private void Actor2D()
         {
@@ -6406,15 +6467,15 @@ namespace vtkControl
             points.InsertNextPoint(78.5, 65, 0);
             points.InsertNextPoint(79.5, 65, 0);
 
-            vtkPolyData polydata = vtkPolyData.New();
-            polydata.SetPoints(points);
+            vtkPolyData polyData = vtkPolyData.New();
+            polyData.SetPoints(points);
 
             // Create anything you want here, we will use a polygon for the demo.
             vtkRegularPolygonSource polygonSource = vtkRegularPolygonSource.New(); //default is 6 sides
 
             vtkGlyph2D glyph2D = vtkGlyph2D.New();
             glyph2D.SetSourceConnection(polygonSource.GetOutputPort());
-            glyph2D.SetInput(polydata);
+            glyph2D.SetInput(polyData);
             glyph2D.Update();
 
             vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
@@ -6434,7 +6495,7 @@ namespace vtkControl
 
             follower.SetCamera(_renderer.GetActiveCamera());
 
-            RenderSceene();
+            RenderScene();
         }
         private void AddCaptionWidget()
         {
@@ -6449,7 +6510,7 @@ namespace vtkControl
             captionRepresentation.SetAnchorPosition(posPtr);
             Marshal.FreeHGlobal(posPtr);
 
-            vtkPointHandleRepresentation3D anchorRepresentation = captionRepresentation.GetAnchorRepresentation();
+            //vtkPointHandleRepresentation3D anchorRepresentation = captionRepresentation.GetAnchorRepresentation();
             vtkPropCollection coll = null;
             captionRepresentation.GetVolumes(coll);
 
@@ -6522,7 +6583,7 @@ namespace vtkControl
             //        polyData.SetPoints(vtkPointsList[i]);
             //        _renderWindow.Render();
             //        //Application.DoEvents();
-            //        //RenderSceene();
+            //        //RenderScene();
             //    }
             //}
 

@@ -89,7 +89,7 @@ namespace PrePoMax
                 text += string.Format("{0} {1}", nodesName, part.NodeLabels.Length);
             }
             //
-            if (IsTextOverriden) text = OverridenText;
+            if (IsTextOverridden) text = OverriddenText;
         }
     }
 }

@@ -501,7 +501,7 @@ namespace PrePoMax
                 //
                 try
                 {
-                    // Try to recover unsaved progess due to crushed PrePoMax
+                    // Try to recover unsaved progress due to crushed PrePoMax
                     if (File.Exists(_controller.GetHistoryFileNameBin()))
                     {
                         if (MessageBoxes.ShowWarningQuestion("A recovery file from a previous PrePoMax session exists. " +
@@ -545,7 +545,7 @@ namespace PrePoMax
                             {
                                 // Import
                                 await _controller.ImportFileAsync(fileName, false);
-                                // Set to null, otherwise the previous OpenedFileName gets overwriten on Save
+                                // Set to null, otherwise the previous OpenedFileName gets overwritten on Save
                                 _controller.OpenedFileName = null; 
                             }
                         }
@@ -563,7 +563,7 @@ namespace PrePoMax
                 catch (Exception ex)
                 {
                     ExceptionTools.Show(this, ex);
-                    _controller.ModelChanged = false;   // hide messagebox
+                    _controller.ModelChanged = false;   // hide messageBox
                     tsmiNew_Click(null, null);
                 }
                 finally
@@ -704,7 +704,7 @@ namespace PrePoMax
             if (form.Visible == false)
             {
                 UpdateHighlightFromTree();
-                SaveFormLoaction(form);
+                SaveFormLocation(form);
                 //
                 _controller.SetSelectByToDefault();
                 //
@@ -719,7 +719,7 @@ namespace PrePoMax
             //else if (form.Left + form.Width > screenSize.Width) form.Left = screenSize.Width - form.Width;
             //if (form.Top < 0) form.Top = 0;
             //else if (form.Top + form.Height > screenSize.Height) form.Top = screenSize.Height - form.Height;
-            SaveFormLoaction(form);
+            SaveFormLocation(form);
         }
         // Keyboard
         private void KeyboardHook_KeyDown(KeyboardHook.VKeys vKey)
@@ -856,7 +856,7 @@ namespace PrePoMax
             // Model
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
-                if (namedClass is EmptyNamedClass) // empty named class is used to trasfer the name only
+                if (namedClass is EmptyNamedClass) // empty named class is used to transfer the name only
                 {
                     if (namedClass.Name == typeof(FeModel).ToString()) tsmiEditModel_Click(null, null);
                 }
@@ -886,7 +886,7 @@ namespace PrePoMax
                 if (namedClass is ResultPart || namedClass is GeometryPart) EditResultPart(namedClass.Name);
                 else if (namedClass is ResultFieldOutput rfo) EditResultFieldOutput(rfo.Name);
                 else if (namedClass is HistoryResultData hd) ViewResultHistoryOutputData(hd);
-                else if (namedClass is FieldData fd) ShowLegendSettings();
+                else if (namedClass is FieldData) ShowLegendSettings();
             }
         }
         private void ModelTree_Query()
@@ -1077,7 +1077,7 @@ namespace PrePoMax
                 ApplyActionOnItems<Field>(items, DeleteResultFieldOutputs);
                 ApplyActionOnItems<ResultFieldOutput>(items, DeleteResultFieldOutputs);
                 //
-                DeleteResultHistoryResultCompoments(items);
+                DeleteResultHistoryResultComponents(items);
                 ApplyActionOnItemsInStep<HistoryResultField>(items, parentNames, DeleteResultHistoryResultFields);
                 ApplyActionOnItems<HistoryResultSet>(items, RemoveResultHistoryResultSets);
                 
@@ -1368,7 +1368,7 @@ namespace PrePoMax
                                                 "|OpenFoam files|*.foam";
 
                     }
-                    // No dedugger
+                    // No debugger
                     else
                     {
                         openFileDialog.Filter = "All files|*.pmx;*.pmh;*.frd;*.foam" +
@@ -1389,7 +1389,7 @@ namespace PrePoMax
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
-                _controller.ModelChanged = false;   // hide messagebox
+                _controller.ModelChanged = false;   // hide message box
                 tsmiNew_Click(null, null);
             }
         }
@@ -1543,7 +1543,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiExportToStereolitography_Click(object sender, EventArgs e)
+        private void tsmiExportToStereolithography_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1791,7 +1791,7 @@ namespace PrePoMax
             {
                 using (SaveFileDialog saveFileDialog = new SaveFileDialog())
                 {
-                    saveFileDialog.Filter = "Stereolitography files | *.stl";
+                    saveFileDialog.Filter = "Stereolithography files | *.stl";
                     if (_controller.OpenedFileName != null)
                         saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".stl";
                     //
@@ -2585,7 +2585,7 @@ namespace PrePoMax
         {
             try
             {
-                // Must be outside the await part otherwise couses screen flickering
+                // Must be outside the await part otherwise causes screen flickering
                 AnnotateWithColorEnum _prevShowWithColor = _controller.AnnotateWithColor;
                 _controller.AnnotateWithColor = AnnotateWithColorEnum.FaceOrientation;
                 //
@@ -2851,7 +2851,7 @@ namespace PrePoMax
                 frmGetValue.NumOfDigits = 0;
                 frmGetValue.MinValue = 25;
                 frmGetValue.MaxValue = 255;
-                SetFormLoaction(frmGetValue);
+                SetFormLocation(frmGetValue);
                 OrderedDictionary<string, double> presetValues =
                     new OrderedDictionary<string, double>("Preset Transparency values", StringComparer.OrdinalIgnoreCase);
                 presetValues.Add("Semi-transparent", 128);
@@ -2862,18 +2862,18 @@ namespace PrePoMax
                 {
                     _controller.SetTransparencyForGeometryPartsCommand(partNames, (byte)frmGetValue.Value);
                 }
-                SaveFormLoaction(frmGetValue);
+                SaveFormLocation(frmGetValue);
             }
         }
         private void DeleteGeometryParts(string[] partNames)
         {
             GeometryPart[] parts = _controller.GetGeometryPartsWithoutSubParts();
-            HashSet<string> deletablePartNames = new HashSet<string>();
-            foreach (GeometryPart part in parts) deletablePartNames.Add(part.Name);
-            deletablePartNames.IntersectWith(partNames);
-            if (deletablePartNames.Count > 0)
+            HashSet<string> deleteAblePartNames = new HashSet<string>();
+            foreach (GeometryPart part in parts) deleteAblePartNames.Add(part.Name);
+            deleteAblePartNames.IntersectWith(partNames);
+            if (deleteAblePartNames.Count > 0)
             {
-                partNames = deletablePartNames.ToArray();
+                partNames = deleteAblePartNames.ToArray();
                 if (MessageBoxes.ShowWarningQuestion("OK to delete selected parts?") == DialogResult.OK)
                 {
                     _controller.RemoveGeometryPartsCommand(partNames.ToArray());
@@ -2906,7 +2906,7 @@ namespace PrePoMax
                 {
                     _controller.FindEdgesByAngleForGeometryPartsCommand(partNames, frmGetValue.Value);
                 }
-                SaveFormLoaction(frmGetValue);
+                SaveFormLocation(frmGetValue);
             }
         }
         private void SetUpFrmGetValueForEdgeAngle(FrmGetValue frmGetValue, string[] partNames)
@@ -2914,7 +2914,7 @@ namespace PrePoMax
             frmGetValue.NumOfDigits = 2;
             frmGetValue.MinValue = 0;
             frmGetValue.MaxValue = 90;
-            SetFormLoaction(frmGetValue);
+            SetFormLocation(frmGetValue);
             OrderedDictionary<string, double> presetValues =
                 new OrderedDictionary<string, double>("Preset Transparency Values", StringComparer.OrdinalIgnoreCase);
             presetValues.Add("Default", CaeMesh.Globals.EdgeAngle);
@@ -3004,11 +3004,11 @@ namespace PrePoMax
             if (parts.Contains(part1) && parts.Contains(part2))
             {
                 if (part1 is CompoundGeometryPart || part2 is CompoundGeometryPart)
-                    MessageBoxes.ShowError("Compound parts cannot be swaped.");
+                    MessageBoxes.ShowError("Compound parts cannot be swapped.");
                 else
                     _controller.SwapPartGeometriesCommand(partNames[0], partNames[1]);
             }
-            else MessageBoxes.ShowError("Compound subparts cannot be swaped.");
+            else MessageBoxes.ShowError("Compound subparts cannot be swapped.");
         }
         // Analyze geometry
         private void AnalyzeGeometry(string[] partNames)
@@ -3016,7 +3016,7 @@ namespace PrePoMax
             if (!_frmAnalyzeGeometry.Visible)
             {
                 CloseAllForms();
-                SetFormLoaction((Form)_frmAnalyzeGeometry);
+                SetFormLocation((Form)_frmAnalyzeGeometry);
                 _frmAnalyzeGeometry.PartNamesToAnalyze = partNames;
                 _frmAnalyzeGeometry.Show();
             }
@@ -3196,7 +3196,7 @@ namespace PrePoMax
                 ItemSetDataEditor.SelectionForm = _frmSelectItemSet; // must be set in order to use its Hide property
                 //
                 CloseAllForms();
-                SetFormLoaction(_frmMeshingParameters);
+                SetFormLocation(_frmMeshingParameters);
                 _frmMeshingParameters.Text = "Redefine " + meshingParameters.Name;
                 //
                 _frmMeshingParameters.PrepareForm(null, null);
@@ -3509,7 +3509,7 @@ namespace PrePoMax
                 {
                     _controller.FindEdgesByAngleForModelPartsCommand(partNames, frmGetValue.Value);
                 }
-                SaveFormLoaction(frmGetValue);
+                SaveFormLocation(frmGetValue);
             }
         }
         private void RemeshElements()
@@ -3539,14 +3539,14 @@ namespace PrePoMax
                 {
                     frmGetValue.NumOfDigits = 0;
                     frmGetValue.MinValue = 1;
-                    SetFormLoaction(frmGetValue);
+                    SetFormLocation(frmGetValue);
                     string desc = "Enter the starting node id for the node renumbering.";
                     frmGetValue.PrepareForm("Renumber Nodes", "Start node id", desc, 1, null);
                     if (frmGetValue.ShowDialog() == DialogResult.OK)
                     {
                         _controller.RenumberNodesCommand((int)frmGetValue.Value);
                     }
-                    SaveFormLoaction(frmGetValue);
+                    SaveFormLocation(frmGetValue);
                 }
             }
             catch (Exception ex)
@@ -3568,14 +3568,14 @@ namespace PrePoMax
                 {
                     frmGetValue.NumOfDigits = 0;
                     frmGetValue.MinValue = 1;
-                    SetFormLoaction(frmGetValue);
+                    SetFormLocation(frmGetValue);
                     string desc = "Enter the starting element id for the element renumbering.";
                     frmGetValue.PrepareForm("Renumber Elements", "Start element id", desc, 1, null);
                     if (frmGetValue.ShowDialog() == DialogResult.OK)
                     {
                         _controller.RenumberElementsCommand((int)frmGetValue.Value);
                     }
-                    SaveFormLoaction(frmGetValue);
+                    SaveFormLocation(frmGetValue);
                 }
             }
             catch (Exception ex)
@@ -3771,7 +3771,7 @@ namespace PrePoMax
                 frmGetValue.NumOfDigits = 0;
                 frmGetValue.MinValue = 25;
                 frmGetValue.MaxValue = 255;
-                SetFormLoaction(frmGetValue);
+                SetFormLocation(frmGetValue);
                 OrderedDictionary<string, double> presetValues
                     = new OrderedDictionary<string, double>("Preset Transparency Values", StringComparer.OrdinalIgnoreCase);
                 presetValues.Add("Semi-transparent", 128);
@@ -3782,7 +3782,7 @@ namespace PrePoMax
                 {
                     _controller.SetTransparencyForModelPartsCommand(partNames, (byte)frmGetValue.Value);
                 }
-                SaveFormLoaction(frmGetValue);
+                SaveFormLocation(frmGetValue);
             }
         }
         private void DeleteModelParts(string[] partNames)
@@ -4242,7 +4242,7 @@ namespace PrePoMax
             {
                 FrmMaterialLibrary fml = new FrmMaterialLibrary(_controller);
                 CloseAllForms();
-                SetFormLoaction(fml);
+                SetFormLocation(fml);
                 fml.ShowDialog();                
             }
         }
@@ -4372,7 +4372,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Constaints", _controller.GetAllConstraints(), SwapMasterSlaveConstraints);
+                SelectMultipleEntities("Constraints", _controller.GetAllConstraints(), SwapMasterSlaveConstraints);
             }
             catch (Exception ex)
             {
@@ -4383,7 +4383,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Constaints", _controller.GetAllConstraints(), MergeByMasterSlaveConstraints);
+                SelectMultipleEntities("Constraints", _controller.GetAllConstraints(), MergeByMasterSlaveConstraints);
             }
             catch (Exception ex)
             {
@@ -4394,7 +4394,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Constaints", _controller.GetAllConstraints(), HideConstraints);
+                SelectMultipleEntities("Constraints", _controller.GetAllConstraints(), HideConstraints);
             }
             catch (Exception ex)
             {
@@ -4405,7 +4405,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Constaints", _controller.GetAllConstraints(), ShowConstraints);
+                SelectMultipleEntities("Constraints", _controller.GetAllConstraints(), ShowConstraints);
             }
             catch (Exception ex)
             {
@@ -4698,7 +4698,7 @@ namespace PrePoMax
             if (!_frmSearchContactPairs.Visible)
             {
                 CloseAllForms();
-                SetFormLoaction(_frmSearchContactPairs);
+                SetFormLocation(_frmSearchContactPairs);
                 _frmSearchContactPairs.PrepareForm();
                 _frmSearchContactPairs.Show(this);
             }
@@ -5785,7 +5785,7 @@ namespace PrePoMax
                 if (!_frmSettings.Visible)
                 {
                     CloseAllForms();
-                    SetFormLoaction(_frmSettings);
+                    SetFormLocation(_frmSettings);
                     _frmSettings.PrepareForm(_controller);
                     _frmSettings.Show();
                 }
@@ -5806,7 +5806,7 @@ namespace PrePoMax
                     fpe.Icon = Icon;
                     fpe.Owner = this;
                     CloseAllForms();
-                    SetFormLoaction(fpe);
+                    SetFormLocation(fpe);
                     fpe.ShowDialog();
                 }
             }
@@ -5824,7 +5824,7 @@ namespace PrePoMax
                     ClearSelection();
                     //
                     CloseAllForms();
-                    SetFormLoaction(_frmQuery);
+                    SetFormLocation(_frmQuery);
                     _frmQuery.PrepareForm(_controller);
                     _frmQuery.Show();
                 }
@@ -5843,7 +5843,7 @@ namespace PrePoMax
                     ClearSelection();
                     //
                     CloseAllForms();
-                    SetFormLoaction(_frmFind);
+                    SetFormLocation(_frmFind);
                     _frmFind.PrepareForm(_controller);
                     _frmFind.Show();
                 }
@@ -5905,15 +5905,15 @@ namespace PrePoMax
             if (aeAnnotationTextEditor.Visible)
             {
                 AnnotationBase annotation = (AnnotationBase)aeAnnotationTextEditor.Tag;
-                string nonOverridenText = annotation.GetNotOverridenAnnotationText();
+                string nonOverriddenText = annotation.GetNotOverriddenAnnotationText();
                 //
-                nonOverridenText = nonOverridenText.Replace("\r\n", "\n");
+                nonOverriddenText = nonOverriddenText.Replace("\r\n", "\n");
                 string newText = aeAnnotationTextEditor.Text.Replace("\r\n", "\n");
                 //
-                if (newText.Length > 0 && newText != nonOverridenText)
-                    annotation.OverridenText = aeAnnotationTextEditor.Text;
+                if (newText.Length > 0 && newText != nonOverriddenText)
+                    annotation.OverriddenText = aeAnnotationTextEditor.Text;
                 else
-                    annotation.OverridenText = null;
+                    annotation.OverriddenText = null;
                 //
                 aeAnnotationTextEditor.Visible = false;
                 //
@@ -6064,7 +6064,7 @@ namespace PrePoMax
                     if (tsslState.Text != Globals.RegeneratingText)
                     {
                         CloseAllForms();
-                        SetFormLoaction(_frmNewModel);
+                        SetFormLocation(_frmNewModel);
                         //
                         if (_frmNewModel.PrepareForm("", "New Model"))
                         {
@@ -6116,7 +6116,7 @@ namespace PrePoMax
                         if (unitSystemType == UnitSystemType.Undefined)
                         {
                             CloseAllForms();
-                            SetFormLoaction(_frmNewModel);
+                            SetFormLocation(_frmNewModel);
                             //
                             if (_frmNewModel.PrepareForm("", "Results"))
                             {
@@ -6290,7 +6290,7 @@ namespace PrePoMax
             try
             {
                 CloseAllForms();
-                SetFormLoaction(_frmMonitor);
+                SetFormLocation(_frmMonitor);
                 _frmMonitor.PrepareForm(jobName);
                 _frmMonitor.ShowDialog(this);
             }
@@ -6381,7 +6381,7 @@ namespace PrePoMax
                 if (!_frmViewResultHistoryOutput.Visible)
                 {
                     CloseAllForms();
-                    SetFormLoaction(_frmViewResultHistoryOutput);
+                    SetFormLocation(_frmViewResultHistoryOutput);
                     //
                     string[] columnNames;
                     object[][] rowBasedData;
@@ -6433,7 +6433,7 @@ namespace PrePoMax
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
-                _controller.ModelChanged = false;   // hide messagebox
+                _controller.ModelChanged = false;   // hide message box
                 tsmiNew_Click(null, null);
             }
         }
@@ -6574,7 +6574,7 @@ namespace PrePoMax
                 frmGetValue.NumOfDigits = 0;
                 frmGetValue.MinValue = 25;
                 frmGetValue.MaxValue = 255;
-                SetFormLoaction(frmGetValue);
+                SetFormLocation(frmGetValue);
                 OrderedDictionary<string, double> presetValues =
                     new OrderedDictionary<string, double>("Preset Transparency Values", StringComparer.OrdinalIgnoreCase);
                 presetValues.Add("Semi-transparent", 128);
@@ -6585,7 +6585,7 @@ namespace PrePoMax
                 {
                     _controller.SetTransparencyForResultParts(partNames, (byte)frmGetValue.Value);
                 }
-                SaveFormLoaction(frmGetValue);
+                SaveFormLocation(frmGetValue);
             }
         }
         private void ColorContoursOffResultPart(string[] partNames)
@@ -6724,7 +6724,7 @@ namespace PrePoMax
                 _controller.RemoveResultHistoryResultFields(historyResultSetName, historyResultFieldNames);
             }
         }
-        public void DeleteResultHistoryResultCompoments(NamedClass[] items)
+        public void DeleteResultHistoryResultComponents(NamedClass[] items)
         {
             Dictionary<string, List<string>> parentItemNames;
             Dictionary<string, Dictionary<string, List<string>>> parentParentItemNames =
@@ -6793,7 +6793,7 @@ namespace PrePoMax
             {
                 string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
                 //
-                SetFormLoaction(_frmSelectEntity);
+                SetFormLocation(_frmSelectEntity);
                 _frmSelectEntity.PrepareForm(title, false, entities, preSelectedEntityNames, null);
                 _frmSelectEntity.OneEntitySelected = OperateOnEntity;
                 _frmSelectEntity.Show();
@@ -6813,42 +6813,42 @@ namespace PrePoMax
             {
                 string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
                 //
-                SetFormLoaction(_frmSelectEntity);
+                SetFormLocation(_frmSelectEntity);
                 _frmSelectEntity.PrepareForm(title, false, entities, preSelectedEntityNames, stepName);
                 _frmSelectEntity.OneEntitySelectedInStep = OperateOnEntityInStep;
                 _frmSelectEntity.Show();
             }
         }
-        private void SelectMultipleEntities(string title, NamedClass[] entities, Action<string[]> OperateOnMultpleEntities,
+        private void SelectMultipleEntities(string title, NamedClass[] entities, Action<string[]> OperateOnMultipleEntities,
                                             int minNumberOfEntities = 1, int maxNumberOfEntities = int.MaxValue)
         {
             if (entities == null || entities.Length == 0 || entities.Length < minNumberOfEntities) return;
             // Only one entity exists
             if (entities.Length == 1)
             {
-                if (minNumberOfEntities == 1) OperateOnMultpleEntities(entities.GetNames());
+                if (minNumberOfEntities == 1) OperateOnMultipleEntities(entities.GetNames());
             }
             // Multiple entities exists
             else
             {
                 string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
                 //
-                SetFormLoaction(_frmSelectEntity);
+                SetFormLocation(_frmSelectEntity);
                 _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, null);
-                _frmSelectEntity.MultipleEntitiesSelected = OperateOnMultpleEntities;
+                _frmSelectEntity.MultipleEntitiesSelected = OperateOnMultipleEntities;
                 _frmSelectEntity.MinNumberOfEntities = minNumberOfEntities;
                 _frmSelectEntity.MaxNumberOfEntities = maxNumberOfEntities;
                 _frmSelectEntity.Show();
             }
         }
         private void SelectMultipleEntitiesInStep(string title, NamedClass[] entities, string stepName,
-                                                  Action<string, string[]> OperateOnMultpleEntitiesInStep)
+                                                  Action<string, string[]> OperateOnMultipleEntitiesInStep)
         {
             if (entities == null || entities.Length == 0) return;
             // Only one entity exists
             if (entities.Length == 1)
             {
-                OperateOnMultpleEntitiesInStep(stepName, entities.GetNames());
+                OperateOnMultipleEntitiesInStep(stepName, entities.GetNames());
             }
             // Multiple entities exists
             else
@@ -6857,7 +6857,7 @@ namespace PrePoMax
                 //
                 _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
                 _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, stepName);
-                _frmSelectEntity.MultipleEntitiesSelectedInStep = OperateOnMultpleEntitiesInStep;
+                _frmSelectEntity.MultipleEntitiesSelectedInStep = OperateOnMultipleEntitiesInStep;
                 _frmSelectEntity.Show();
             }
         }
@@ -6976,7 +6976,7 @@ namespace PrePoMax
             if (!form.Visible)
             {
                 CloseAllForms();
-                SetFormLoaction((Form)form);
+                SetFormLocation((Form)form);
                 form.Text = text;
                 if (itemToEditName != null) form.Text += ": " + itemToEditName;
                 if (form.PrepareForm(stepName, itemToEditName)) form.Show();
@@ -6991,7 +6991,7 @@ namespace PrePoMax
                 }
             }
         }
-        private void SetFormLoaction(Form form)
+        private void SetFormLocation(Form form)
         {
             Rectangle screenBounds;
             bool intersects = false;
@@ -7023,7 +7023,7 @@ namespace PrePoMax
             //
             form.Location = location;
         }
-        private void SaveFormLoaction(Form form)
+        private void SaveFormLocation(Form form)
         {
             _formLocation.X = form.Location.X - Left;
             _formLocation.Y = form.Location.Y - Top;
@@ -7177,12 +7177,12 @@ namespace PrePoMax
         private void tscbSymbolsForStep_SelectedIndexChanged(object sender, System.EventArgs e)
         {
             // If BC or load from one step-1 is selected its selection requires the step-1 to be selected.
-            // Changing og the step symols is not possible -> Clear selection
+            // Changing og the step symbols is not possible -> Clear selection
             _controller.ClearAllSelection();
             //
             _controller.DrawSymbolsForStep(tscbSymbolsForStep.SelectedItem.ToString(), false);
         }
-        public void UpadteSymbolsForStepList()
+        public void UpdateSymbolsForStepList()
         {
             InvokeIfRequired(() =>
             {
@@ -7191,7 +7191,7 @@ namespace PrePoMax
                 tscbSymbolsForStep.SelectedIndex = tscbSymbolsForStep.Items.Count - 1;
             });
         }
-        public void UpadteOneStepInSymbolsForStepList(string oldStepName, string newStepName)
+        public void UpdateOneStepInSymbolsForStepList(string oldStepName, string newStepName)
         {
             InvokeIfRequired(() =>
             {
@@ -7656,7 +7656,7 @@ namespace PrePoMax
                 {
                     CloseAllForms();
                     DisableEnableControlsForAnimation(false);
-                    SetFormLoaction(_frmAnimation);
+                    SetFormLocation(_frmAnimation);
                     _frmAnimation.PrepareForm(this, _controller);
                     if (_frmAnimation.DialogResult == DialogResult.Abort)
                         DisableEnableControlsForAnimation(true);
@@ -7792,7 +7792,7 @@ namespace PrePoMax
 
         public double[] GetBoundingBox()
         {
-            // xmin, xmax, ymin, ymax, zmin, zmax
+            // xMin, xMax, yMin, yMax, zMin, zMax
             return _vtk.GetBoundingBox();
         }
         public double[] GetBondingBoxSize()
@@ -7861,7 +7861,7 @@ namespace PrePoMax
                             + "|Step files|*.stp;*.step"
                             + "|Iges files|*.igs;*.iges"
                             + "|Brep files|*.brep"
-                            + "|Stereolitography files|*.stl"
+                            + "|Stereolithography files|*.stl"
                             + "|Universal files|*.unv"
                             + "|Netgen files|*.vol"
                             + "|Abaqus/Calculix inp files|*.inp"
@@ -8220,9 +8220,9 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetHighlightColor, primaryHighlightColor, secondaryHighlightColor);
         }
-        public void SetMouseHighlightColor(Color mousehighlightColor)
+        public void SetMouseHighlightColor(Color mouseHighlightColor)
         {
-            InvokeIfRequired(_vtk.SetMouseHighlightColor, mousehighlightColor);
+            InvokeIfRequired(_vtk.SetMouseHighlightColor, mouseHighlightColor);
         }
         // Symbols
         public void SetDrawSymbolEdges(bool drawSilhouettes)
@@ -8272,7 +8272,7 @@ namespace PrePoMax
                 {
                     // Step id or increment id changed                                              
 
-                    // Find the choosen data; also contains info about type of step ...
+                    // Find the chosen data; also contains info about type of step ...
                     fieldData = _controller.CurrentResult.GetFieldData(fieldData.Name,
                                                                        fieldData.Component,
                                                                        fieldData.StepId,
@@ -8289,7 +8289,7 @@ namespace PrePoMax
 
                     // Update controller field data; this is used for the SetStepAndIncrementIds to detect missing ids
                     _controller.CurrentFieldData = fieldData;
-                    // Find the existing choosen data; also contains info about type of step ...
+                    // Find the existing chosen data; also contains info about type of step ...
                     fieldData = _controller.CurrentResult.GetFieldData(fieldData.Name,
                                                                        fieldData.Component,
                                                                        fieldData.StepId,
@@ -8348,13 +8348,13 @@ namespace PrePoMax
             InvokeIfRequired(() =>
             {
                 string stepIncrement = stepId + ", " + incrementId;
-                // Set the combobox
+                // Set the combo box
                 if (tscbStepAndIncrement.Items.Contains(stepIncrement))
                 {
                     tscbStepAndIncrement.SelectedIndexChanged -= FieldOutput_SelectionChanged;
                     tscbStepAndIncrement.SelectedItem = stepIncrement;
-                    // Set the step and increment if the combobox set was successful
-                    CaeResults.FieldData data = _controller.CurrentFieldData;
+                    // Set the step and increment if the combo box set was successful
+                    FieldData data = _controller.CurrentFieldData;
                     data.StepId = stepId;
                     data.StepIncrementId = incrementId;
                     _controller.CurrentFieldData = data;   // to correctly update the increment time
@@ -8446,14 +8446,14 @@ namespace PrePoMax
         public void RegenerateTree(bool remeshing = false)
         {
             InvokeIfRequired(_modelTree.RegenerateTree, _controller.Model, _controller.Jobs, _controller.CurrentResult, remeshing);
-            InvokeIfRequired(UpadteSymbolsForStepList);
+            InvokeIfRequired(UpdateSymbolsForStepList);
         }
         public void AddTreeNode(ViewGeometryModelResults view, NamedClass item, string parentName)
         {
             ViewType viewType = GetViewType(view);
             //
             InvokeIfRequired(_modelTree.AddTreeNode, viewType, item, parentName);
-            if (item is Step) UpadteSymbolsForStepList();
+            if (item is Step) UpdateSymbolsForStepList();
         }
         public void UpdateTreeNode(ViewGeometryModelResults view, string oldItemName, NamedClass item, string parentName,
                                    bool updateSelection = true)
@@ -8461,7 +8461,7 @@ namespace PrePoMax
             ViewType viewType = GetViewType(view);
             //
             InvokeIfRequired(_modelTree.UpdateTreeNode, viewType, oldItemName, item, parentName, updateSelection);
-            if (item is Step) UpadteOneStepInSymbolsForStepList(oldItemName, item.Name);
+            if (item is Step) UpdateOneStepInSymbolsForStepList(oldItemName, item.Name);
         }
         public void SwapTreeNode(ViewGeometryModelResults view, string firstItemName, NamedClass firstItem,
                                 string secondItemName, NamedClass secondItem, string parentName)
@@ -8470,7 +8470,7 @@ namespace PrePoMax
             //
             InvokeIfRequired(_modelTree.SwapTreeNodes, viewType, firstItemName, firstItem, secondItemName,
                              secondItem, parentName);
-            //if (item is Step) UpadteOneStepInSymbolsForStepList(oldItemName, item.Name);
+            //if (item is Step) UpdateOneStepInSymbolsForStepList(oldItemName, item.Name);
         }
         public void RemoveTreeNode<T>(ViewGeometryModelResults view, string nodeName, string parentName) where T : NamedClass
         {
@@ -8801,7 +8801,7 @@ namespace PrePoMax
         {
             try
             {
-                //_vtk.SwithchLights();
+                //_vtk.SwitchLights();
                 //_controller.TestCreateSurface();
                 AnimateModel58();
             }
@@ -9060,7 +9060,7 @@ namespace PrePoMax
         internal void tsmiAdvisor_Click(object sender, EventArgs e)
         {
             if (!_controller.ModelInitialized) return;
-            // Change the wizzard check state
+            // Change the wizard check state
             tsmiAdvisor.Checked = !tsmiAdvisor.Checked;
             // Add wizard panel
             if (tsmiAdvisor.Checked == true)
@@ -9068,7 +9068,7 @@ namespace PrePoMax
                 Control parent = panelControl.Parent;
                 if (parent == splitContainer2.Panel1)
                 {
-                    // First remove the vtk comtrol and panel border
+                    // First remove the vtk control and panel border
                     parent.Controls.Remove(_vtk);
                     parent.Controls.Remove(panelControl);
                     // Split container
@@ -9099,7 +9099,7 @@ namespace PrePoMax
                 Control parent = panelControl.Parent;
                 if (parent is SplitterPanel && parent != splitContainer2.Panel1)
                 {
-                    // First remove the vtk comtrol and panel border
+                    // First remove the vtk control and panel border
                     parent.Controls.Remove(_vtk);
                     parent.Controls.Remove(panelControl);
                     // Remove added split container
