@@ -187,13 +187,13 @@ namespace PrePoMax
             //
             AdvisorItemLinkLabel advisorLinkLabel2 = new AdvisorItemLinkLabel();
             advisorLinkLabel2.Text = "2 Frequency analysis";
-            advisorLinkLabel2.AddAction(frmMain.tsmiCreateStep_Click, null, new EventArgs<int>(1));
+            advisorLinkLabel2.AddAction(frmMain.tsmiCreateStep_Click, null, new EventArgs<int>(2));
             advisorLinkLabel2.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel2);
             //
             AdvisorItemLinkLabel advisorLinkLabel3 = new AdvisorItemLinkLabel();
             advisorLinkLabel3.Text = "3 Buckling analysis";
-            advisorLinkLabel3.AddAction(frmMain.tsmiCreateStep_Click, null, new EventArgs<int>(2));
+            advisorLinkLabel3.AddAction(frmMain.tsmiCreateStep_Click, null, new EventArgs<int>(3));
             advisorLinkLabel3.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel3);
             //
@@ -253,7 +253,7 @@ namespace PrePoMax
             //
             AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
             advisorLinkLabel1.Text = "1 Surface traction";
-            advisorLinkLabel1.AddAction(frmMain.tsmiCreateLoad_Click, null, new EventArgs<int>(3));
+            advisorLinkLabel1.AddAction(frmMain.tsmiCreateLoad_Click, null, new EventArgs<int>(5));
             advisorLinkLabel1.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel1);
             //
@@ -265,7 +265,7 @@ namespace PrePoMax
             //
             AdvisorItemLinkLabel advisorLinkLabel3 = new AdvisorItemLinkLabel();
             advisorLinkLabel3.Text = "3 Gravity load";
-            advisorLinkLabel3.AddAction(frmMain.tsmiCreateLoad_Click, null, new EventArgs<int>(4));
+            advisorLinkLabel3.AddAction(frmMain.tsmiCreateLoad_Click, null, new EventArgs<int>(7));
             advisorLinkLabel3.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel3);
             //

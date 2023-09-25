@@ -12,31 +12,42 @@ using CaeGlobals;
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CReplaceMeshingParameters : Command
+    class CReplaceMeshSetupItem : Command, ICommandWithDialog
     {
         // Variables                                                                                                                
-        private string _oldMeshingParametersName;
-        private MeshingParameters _meshingParameters;
+        private string _oldMeshSetupItemName;
+        private MeshSetupItem _meshSetupItem;
 
 
         // Constructor                                                                                                              
-        public CReplaceMeshingParameters(string oldMeshingParametersName, MeshingParameters newMeshingParameters)
-            : base("Edit meshing parameters")
+        public CReplaceMeshSetupItem(string oldMeshSetupItemName, MeshSetupItem newMeshSetupItem)
+            : base("Edit mesh setup item")
         {
-            _oldMeshingParametersName = oldMeshingParametersName;
-            _meshingParameters = newMeshingParameters.DeepClone();
+            _oldMeshSetupItemName = oldMeshSetupItemName;
+            _meshSetupItem = newMeshSetupItem.DeepClone();
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.ReplaceMeshingParameters(_oldMeshingParametersName, _meshingParameters.DeepClone());
+            receiver.ReplaceMeshSetupItem(_oldMeshSetupItemName, _meshSetupItem.DeepClone());
             return true;
+        }
+        // ICommandWithDialog
+        public bool ExecuteWithDialog(Controller receiver)
+        {
+            if (_meshSetupItem is MeshingParameters mp)
+                _meshSetupItem = (MeshingParameters)receiver.EditMeshSetupItemByForm(mp.DeepClone());
+            else if (_meshSetupItem is FeMeshRefinement mr)
+                _meshSetupItem = (FeMeshRefinement)receiver.EditMeshSetupItemByForm(mr.DeepClone());
+            else throw new NotSupportedException("MeshSetupItemTypeException");
+            //
+            return Execute(receiver);
         }
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _oldMeshingParametersName + ", " + _meshingParameters.ToString();
+            return base.GetCommandString() + _oldMeshSetupItemName + ", " + _meshSetupItem.ToString();
         }
     }
 }

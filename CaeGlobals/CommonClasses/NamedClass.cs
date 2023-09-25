@@ -61,12 +61,7 @@ namespace CaeGlobals
         }
         public NamedClass(NamedClass namedClass)
         {
-            _name = namedClass._name;
-            _active = namedClass._active;
-            _visible = namedClass._visible;
-            _valid = namedClass._valid;
-            _internal = namedClass._internal;
-            _checkName = namedClass._checkName;
+            CopyFrom(namedClass);
         }
         public NamedClass(SerializationInfo info, StreamingContext context)
         {
@@ -134,6 +129,15 @@ namespace CaeGlobals
 
 
         // Methods                                                                                                                  
+        public void CopyFrom(NamedClass namedClass)
+        {
+            _name = namedClass._name;
+            _active = namedClass._active;
+            _visible = namedClass._visible;
+            _valid = namedClass._valid;
+            _internal = namedClass._internal;
+            _checkName = namedClass._checkName;
+        }
         public static bool CheckName(string name)
         {
             try

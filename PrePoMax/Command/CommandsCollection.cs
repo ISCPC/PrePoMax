@@ -136,6 +136,7 @@ namespace PrePoMax.Commands
         public void ExecuteAllCommands(bool showImportDialog, bool showMeshDialog, CSaveToPmx lastSave)
         {
             int count = 0;
+            bool executeWithDialog;
             _history.Clear();
             List<string> errors = new List<string>();
             //
@@ -158,17 +159,23 @@ namespace PrePoMax.Commands
                         // Execute
                         else
                         {
-                            // Execute with dialog
-                            if (showImportDialog && command is CImportFile cif)
+                            executeWithDialog = false;
+                            if (command is ICommandWithDialog cwd)
                             {
-                                cif.ExecuteWithDialogs(_controller);
-                            }
-                            else if (showMeshDialog && command is CAddMeshingParameters camp)
-                            {
-                                camp.ExecuteWithDialogs(_controller);
+                                if (showImportDialog && cwd is CImportFile) executeWithDialog = true;
+                                //
+                                else if (showMeshDialog && cwd is CAddMeshingParameters) executeWithDialog = true;
+                                else if (showMeshDialog && cwd is CAddMeshRefinement) executeWithDialog = true;
+                                else if (showMeshDialog && cwd is CAddMeshSetupItem) executeWithDialog = true;
+                                //
+                                else if (showMeshDialog && cwd is CReplaceMeshingParameters) executeWithDialog = true;
+                                else if (showMeshDialog && cwd is CReplaceMeshRefinement) executeWithDialog = true;
+                                else if (showMeshDialog && cwd is CReplaceMeshSetupItem) executeWithDialog = true;
+                                //
+                                if (executeWithDialog) cwd.ExecuteWithDialog(_controller);
                             }
                             // Execute without dialog
-                            else command.Execute(_controller);
+                            if (!executeWithDialog) command.Execute(_controller);
                         }
                     }
                     catch (Exception ex)

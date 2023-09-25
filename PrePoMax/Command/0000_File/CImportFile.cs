@@ -39,12 +39,12 @@ namespace PrePoMax.Commands
             receiver.ImportFile(Tools.GetGlobalPath(_fileName), _onlyMaterials);
             return true;
         }
-
-        public void ExecuteWithDialogs(Controller receiver)
+        // ICommandWithDialog
+        public bool ExecuteWithDialog(Controller receiver)
         {
             string fileName = receiver.GetFileNameToImport(_onlyMaterials);
             if (fileName != null) _fileName = Tools.GetLocalPath(fileName);
-            Execute(receiver);
+            return Execute(receiver);
         }
 
         public override string GetCommandString()

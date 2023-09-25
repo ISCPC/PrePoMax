@@ -47,8 +47,7 @@ namespace PrePoMax
         private FrmSelectItemSet _frmSelectItemSet;
         private FrmNewModel _frmNewModel;
         private FrmAnalyzeGeometry _frmAnalyzeGeometry;
-        private FrmMeshingParameters _frmMeshingParameters;
-        private FrmMeshRefinement _frmMeshRefinement;
+        private FrmMeshSetupItem _frmMeshSetupItem;
         private FrmModelProperties _frmModelProperties;
         private FrmCalculixKeywordEditor _frmCalculixKeywordEditor;
         private FrmPartProperties _frmPartProperties;
@@ -235,7 +234,7 @@ namespace PrePoMax
                 _modelTree.PreviewEvent += ModelTree_PreviewEvent;
                 _modelTree.CreateCompoundPart += CreateAndImportCompoundPart;
                 _modelTree.SwapPartGeometries += SwapPartGeometries;
-                _modelTree.PreviewEdgeMesh += PreviewEdgeMeshesAsync;
+                _modelTree.PreviewEdgeMesh += PreviewEdgeMeshAsync;
                 _modelTree.CreateMeshEvent += CreatePartMeshes;
                 _modelTree.CopyGeometryToResultsEvent += CopyGeometryPartsToResults;
                 _modelTree.EditCalculixKeywords += EditCalculiXKeywords;
@@ -313,13 +312,10 @@ namespace PrePoMax
                 _frmAnalyzeGeometry = new FrmAnalyzeGeometry(_controller);
                 AddFormToAllForms(_frmAnalyzeGeometry);
                 //
-                _frmMeshingParameters = new FrmMeshingParameters(_controller);
-                _frmMeshingParameters.PreviewEdgeMeshesAsync = PreviewEdgeMeshesAsync;
-                AddFormToAllForms(_frmMeshingParameters);
-                //
-                _frmMeshRefinement = new FrmMeshRefinement(_controller);
-                _frmMeshRefinement.PreviewEdgeMeshesAsync = PreviewEdgeMeshesAsync;
-                AddFormToAllForms(_frmMeshRefinement);
+
+                _frmMeshSetupItem = new FrmMeshSetupItem(_controller);
+                _frmMeshSetupItem.PreviewEdgeMeshAsync = PreviewEdgeMeshAsync;
+                AddFormToAllForms(_frmMeshSetupItem);
                 //
                 _frmModelProperties = new FrmModelProperties(_controller);
                 AddFormToAllForms(_frmModelProperties);
@@ -812,8 +808,7 @@ namespace PrePoMax
         {
             if (_controller.Model.Geometry != null && _controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
-                if (nodeName == _modelTree.MeshingParametersName) tsmiCreateMeshingParameters_Click(null, null);
-                else if (nodeName == _modelTree.MeshRefinementsName) tsmiCreateMeshRefinement_Click(null, null);
+                if (nodeName == _modelTree.MeshSetupItemsName) tsmiCreateMeshSetupItem_Click(null, null);
             }
             else if (_controller.Model.Mesh != null && _controller.CurrentView == ViewGeometryModelResults.Model)
             {
@@ -850,8 +845,7 @@ namespace PrePoMax
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
                 if (namedClass is GeometryPart) EditGeometryPart(namedClass.Name);
-                else if (namedClass is MeshingParameters) EditMeshingParameters(namedClass.Name);
-                else if (namedClass is FeMeshRefinement) EditMeshRefinement(namedClass.Name);
+                else if (namedClass is MeshSetupItem) EditMeshSetupItem(namedClass.Name);
             }
             // Model
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
@@ -897,8 +891,7 @@ namespace PrePoMax
         {
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
-                ApplyActionOnItems<MeshingParameters>(items, DuplicateMeshingParameters);
-                ApplyActionOnItems<FeMeshRefinement>(items, DuplicateMeshRefinements);
+                ApplyActionOnItems<MeshSetupItem>(items, DuplicateMeshSetupItems);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
@@ -1038,8 +1031,7 @@ namespace PrePoMax
         {
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
-                ApplyActionOnItems<MeshingParameters>(items, DeleteMeshingParameters);
-                ApplyActionOnItems<FeMeshRefinement>(items, DeleteMeshRefinements);
+                ApplyActionOnItems<MeshSetupItem>(items, DeleteMeshSetupItems);
                 // At last delete the parts
                 ApplyActionOnItems<GeometryPart>(items, DeleteGeometryParts);
             }
@@ -2933,7 +2925,7 @@ namespace PrePoMax
                 HashSet<PartType> stlPartTypes = new HashSet<PartType>();
                 HashSet<PartType> cadPartTypes = new HashSet<PartType>();
                 //
-                string[] allPartNames = _controller.GetMeshablePartNames(partNames);
+                string[] allPartNames = _controller.GetMeshAblePartNames(partNames);
                 foreach (var partName in allPartNames)
                 {
                     part = (GeometryPart)_controller.Model.Geometry.Parts[partName];
@@ -3025,107 +3017,64 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Mesh ###############################################################################################################
-        private void tsmiCreateMeshingParameters_Click(object sender, EventArgs e)
+        // Mesh setup item
+        private void tsmiCreateMeshSetupItem_Click(object sender, EventArgs e)
         {
             try
             {
-                CreateMeshingParameters();
+                CreateMeshSetupItem();
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiEditMeshingParameters_Click(object sender, EventArgs e)
+        private void tsmiEditMeshSetupItem_Click(object sender, EventArgs e)
         {
             try
             {
-                SelectOneEntity("Meshing Parameters", _controller.GetMeshingParameters(), EditMeshingParameters);
+                SelectOneEntity("Mesh Setup Items", _controller.GetMeshSetupItems(), EditMeshSetupItem);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiDuplicateMeshingParameters_Click(object sender, EventArgs e)
+        private void tsmiDuplicateMeshSetupItem_Click(object sender, EventArgs e)
         {
             try
             {
-                SelectMultipleEntities("Meshing Parameters", _controller.GetMeshingParameters(), DuplicateMeshingParameters);
+                SelectMultipleEntities("Mesh Setup Items", _controller.GetMeshSetupItems(), DuplicateMeshSetupItems);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiDeleteMeshingParameters_Click(object sender, EventArgs e)
+        private void tsmiDeleteMeshSetupItem_Click(object sender, EventArgs e)
         {
             try
             {
-                SelectMultipleEntities("Meshing Parameters", _controller.GetMeshingParameters(), DeleteMeshingParameters);
+                SelectMultipleEntities("Mesh Setup Items", _controller.GetMeshSetupItems(), DeleteMeshSetupItems);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
-        //
-        private void tsmiCreateMeshRefinement_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                CreateMeshRefinement();
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
-        private void tsmiEditMeshRefinement_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                SelectOneEntity("Mesh Refinements", _controller.GetMeshRefinements(), EditMeshRefinement);
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
-        private void tsmiDuplicateMeshRefinement_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                SelectMultipleEntities("Mesh Refinements", _controller.GetMeshRefinements(), DuplicateMeshRefinements);
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
-        private void tsmiDeleteMeshRefinement_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                SelectMultipleEntities("Mesh Refinements", _controller.GetMeshRefinements(), DeleteMeshRefinements);
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
-        //
+        // Preview
         private void tsmiPreviewEdgeMesh_Click(object sender, EventArgs e)
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetGeometryPartsWithoutSubParts(), PreviewEdgeMeshes);
+                SelectMultipleEntities("Parts", _controller.GetGeometryPartsWithoutSubParts(), PreviewEdgeMesh);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
+        // Create mesh
         internal void tsmiCreateMesh_Click(object sender, EventArgs e)
         {
             try
@@ -3137,12 +3086,61 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }            
         }
-        //
-        private async void PreviewEdgeMeshes(string[] partNames)
+        // Mesh setup item
+        private void CreateMeshSetupItem()
         {
-            await PreviewEdgeMeshesAsync(partNames, null, null);
+            if (_controller.Model.Geometry == null) return;
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmMeshSetupItem;
+            _frmSelectItemSet.SetOnlyGeometrySelection(true);
+            ShowForm(_frmMeshSetupItem, "Create Mesh Setup Item", null);
         }
-        private async Task PreviewEdgeMeshesAsync(string[] partNames, MeshingParameters meshingParameters,
+        private void EditMeshSetupItem(string meshSetupItemName)
+        {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmMeshSetupItem;
+            _frmSelectItemSet.SetOnlyGeometrySelection(true);
+            ShowForm(_frmMeshSetupItem, "Edit Mesh Setup Item", meshSetupItemName);
+        }
+        private void DuplicateMeshSetupItems(string[] meshSetupItemNames)
+        {
+            _controller.DuplicateMeshSetupItemsCommand(meshSetupItemNames);
+        }
+        private void DeleteMeshSetupItems(string[] meshSetupItemNames)
+        {
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected mesh setup items?" + Environment.NewLine
+                                                 + meshSetupItemNames.ToRows()) == DialogResult.OK)
+            {
+                _controller.RemoveMeshSetupItemsCommand(meshSetupItemNames);
+            }
+        }
+        public MeshSetupItem EditMeshingParametersFromHistory(MeshSetupItem meshSetupItem)
+        {
+            InvokeIfRequired(() =>
+            {
+                ItemSetDataEditor.SelectionForm = _frmSelectItemSet; // must be set in order to use its Hide property
+                //
+                CloseAllForms();
+                SetFormLocation(_frmMeshSetupItem);
+                _frmMeshSetupItem.Text = "Redefine " + meshSetupItem.Name;
+                //
+                _frmMeshSetupItem.PrepareForm(null, null);
+                _frmMeshSetupItem.SetMeshSetupItem(meshSetupItem.DeepClone());
+                _frmMeshSetupItem.ShowDialog();
+                //
+                if (_frmMeshSetupItem.DialogResult == DialogResult.OK) meshSetupItem = _frmMeshSetupItem.MeshSetupItem;
+            });
+            //
+            return meshSetupItem;
+        }
+        // Preview
+        private async void PreviewEdgeMesh(string[] partNames)
+        {
+            await PreviewEdgeMeshAsync(partNames, null, null);
+        }
+        private async Task PreviewEdgeMeshAsync(string[] partNames, MeshingParameters meshingParameters,
                                                   FeMeshRefinement meshRefinement)
         {
             bool stateSet = false;
@@ -3150,7 +3148,7 @@ namespace PrePoMax
             {
                 if (SetStateWorking(Globals.PreviewText))
                 {
-                    stateSet = true;                    
+                    stateSet = true;
                     //
                     await Task.Run(() =>
                     {
@@ -3169,86 +3167,6 @@ namespace PrePoMax
             finally
             {
                 if (stateSet) SetStateReady(Globals.PreviewText);
-            }
-        }
-        // Meshing parameters
-        private void CreateMeshingParameters()
-        {
-            if (_controller.Model.Geometry == null) return;
-            // Data editor
-            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
-            ItemSetDataEditor.ParentForm = _frmMeshingParameters;
-            _frmSelectItemSet.SetOnlyGeometrySelection(true);
-            ShowForm(_frmMeshingParameters, "Create Meshing Parameters", null);
-        }
-        private void EditMeshingParameters(string meshingParametersName)
-        {
-            // Data editor
-            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
-            ItemSetDataEditor.ParentForm = _frmMeshingParameters;
-            _frmSelectItemSet.SetOnlyGeometrySelection(true);
-            ShowForm(_frmMeshingParameters, "Edit Meshing Parameters", meshingParametersName);
-        }
-        public MeshingParameters EditMeshingParametersFromHistory(MeshingParameters meshingParameters)
-        {
-            InvokeIfRequired(() =>
-            {
-                ItemSetDataEditor.SelectionForm = _frmSelectItemSet; // must be set in order to use its Hide property
-                //
-                CloseAllForms();
-                SetFormLocation(_frmMeshingParameters);
-                _frmMeshingParameters.Text = "Redefine " + meshingParameters.Name;
-                //
-                _frmMeshingParameters.PrepareForm(null, null);
-                _frmMeshingParameters.MeshingParameters = meshingParameters.DeepClone();
-                _frmMeshingParameters.ShowDialog();
-                //
-                if (_frmMeshingParameters.DialogResult == DialogResult.OK) 
-                    meshingParameters = _frmMeshingParameters.MeshingParameters;
-            });
-            //
-            return meshingParameters;
-        }
-        private void DuplicateMeshingParameters(string[] meshingParametersNames)
-        {
-            _controller.DuplicateMeshingParametersCommand(meshingParametersNames);
-        }
-        private void DeleteMeshingParameters(string[] meshingParametersNames)
-        {
-            if (MessageBoxes.ShowWarningQuestion("OK to delete selected meshing parameters?" + Environment.NewLine
-                                                 + meshingParametersNames.ToRows()) == DialogResult.OK)
-            {
-                _controller.RemoveMeshingParametersCommand(meshingParametersNames);
-            }
-        }
-        // Mesh refinement
-        private void CreateMeshRefinement()
-        {
-            if (_controller.Model.Geometry == null) return;
-            // Data editor
-            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
-            ItemSetDataEditor.ParentForm = _frmMeshRefinement;
-            _frmSelectItemSet.SetOnlyGeometrySelection(true);
-            ShowForm(_frmMeshRefinement, "Create Mesh Refinement", null);
-        }
-        private void EditMeshRefinement(string meshRefinementName)
-        {
-            // Data editor
-            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
-            ItemSetDataEditor.ParentForm = _frmMeshRefinement;
-            _frmSelectItemSet.SetOnlyGeometrySelection(true);
-            ShowForm(_frmMeshRefinement, "Edit Mesh Refinement", meshRefinementName);
-        }
-        private void DuplicateMeshRefinements(string[] meshRefinementNames)
-        {
-            _controller.DuplicateMeshRefinementsCommand(meshRefinementNames);
-        }
-        private void DeleteMeshRefinements(string[] meshRefinementNames)
-        {
-            if (MessageBoxes.ShowWarningQuestion("OK to delete selected mesh refinements?" + Environment.NewLine
-                                                 + meshRefinementNames.ToRows()) == DialogResult.OK)
-            {
-                _controller.RemoveMeshRefinementsCommand(meshRefinementNames);
             }
         }
         // Create mesh
@@ -3348,12 +3266,12 @@ namespace PrePoMax
         {
             await Task.Run(() =>
             {
-                InvokeIfRequired(() => { CreateMeshingParameters(); });
+                InvokeIfRequired(() => { CreateMeshSetupItem(); });
                 //
                 bool firstTime = true;
                 do
                 {
-                    System.Threading.Thread.Sleep(250);
+                    Thread.Sleep(250);
                     if (firstTime)
                     {
                         Selection selection = new Selection();
@@ -3372,10 +3290,10 @@ namespace PrePoMax
                         firstTime = false;
                     }
                 }
-                while (_frmMeshingParameters.Visible);
+                while (_frmMeshSetupItem.Visible);
 
             });
-            if (_frmMeshingParameters.DialogResult == DialogResult.OK) CreatePartMeshes(partNames);
+            if (_frmMeshSetupItem.DialogResult == DialogResult.OK) CreatePartMeshes(partNames);
         }
 
         #endregion  ################################################################################################################
@@ -4897,7 +4815,7 @@ namespace PrePoMax
                 //
                 int selectedIndex = -1;
                 if (e is EventArgs<int> ea) selectedIndex = ea.Value;
-                _frmStep.PreselectListViewItem(selectedIndex);
+                _frmStep.SetPreselectListViewItem(selectedIndex);
                 //
                 ShowForm(_frmStep, "Create Step", null);
             }
@@ -5217,7 +5135,7 @@ namespace PrePoMax
             {
                 int selectedIndex = -1;
                 if (e is EventArgs<int> ea) selectedIndex = ea.Value;
-                _frmBoundaryCondition.PreselectListViewItem(selectedIndex);
+                _frmBoundaryCondition.SetPreselectListViewItem(selectedIndex);
                 //
                 SelectOneEntity("Steps", _controller.GetAllSteps(), CreateBoundaryCondition);
             }
@@ -5401,7 +5319,7 @@ namespace PrePoMax
             {
                 int selectedIndex = -1;
                 if (e is EventArgs<int> ea) selectedIndex = ea.Value;
-                _frmLoad.PreselectListViewItem(selectedIndex);
+                _frmLoad.SetPreselectListViewItem(selectedIndex);
                 //
                 SelectOneEntity("Steps", _controller.GetAllSteps(), CreateLoad);
             }
@@ -6541,7 +6459,7 @@ namespace PrePoMax
         }
         private void MergeResultParts(string[] partNames)
         {
-            if (_controller.AreResultPartsMergable(partNames))
+            if (_controller.AreResultPartsMergeable(partNames))
             {
                 if (MessageBoxes.ShowWarningQuestion("OK to merge selected parts?") == DialogResult.OK)
                 {
@@ -6756,7 +6674,7 @@ namespace PrePoMax
                                                          parentEntry.Key + "?" + Environment.NewLine +
                                                          itemNames.ToRows()) == DialogResult.OK)
                     {
-                        _controller.RemoveResultHistoryResultCompoments(parentParentEntry.Key,
+                        _controller.RemoveResultHistoryResultComponents(parentParentEntry.Key,
                                                                         parentEntry.Key,
                                                                         itemNames);
                     }
@@ -6889,8 +6807,7 @@ namespace PrePoMax
         {
             if (ids == null) ids = _controller.GetSelectionIds();
             //
-            if (_frmMeshingParameters != null && _frmMeshingParameters.Visible) _frmMeshingParameters.SelectionChanged(ids);
-            if (_frmMeshRefinement != null && _frmMeshRefinement.Visible) _frmMeshRefinement.SelectionChanged(ids);
+            if (_frmMeshSetupItem != null && _frmMeshSetupItem.Visible) _frmMeshSetupItem.SelectionChanged(ids);
             if (_frmSelectGeometry != null && _frmSelectGeometry.Visible) _frmSelectGeometry.SelectionChanged(ids);
             //
             if (_frmBoundaryLayer != null && _frmBoundaryLayer.Visible) _frmBoundaryLayer.SelectionChanged(ids);
@@ -9115,6 +9032,6 @@ namespace PrePoMax
             }
         }
 
-      
+       
     }
 }

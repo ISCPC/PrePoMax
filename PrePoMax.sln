@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrePoMax", "PrePoMax\PrePoMax.csproj", "{1BA289A1-1DEE-4EE3-80C6-0150A1BEAFD4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10} = {2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaeJob", "CaeJob\CaeJob.csproj", "{A449B1D6-DA0D-4A08-9B64-2CD929830399}"
 EndProject
@@ -30,6 +33,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Notes\Solver.txt = Notes\Solver.txt
 		Notes\Versions.txt = Notes\Versions.txt
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GmshCommon", "Gmsh\GmshCommon\GmshCommon.vcxproj", "{2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,6 +116,14 @@ Global
 		{F32F3151-1595-4211-A01E-2F7BEB34F88D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F32F3151-1595-4211-A01E-2F7BEB34F88D}.Release|x64.ActiveCfg = Release|x64
 		{F32F3151-1595-4211-A01E-2F7BEB34F88D}.Release|x64.Build.0 = Release|x64
+		{2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10}.Debug|Any CPU.Build.0 = Debug|x64
+		{2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10}.Debug|x64.ActiveCfg = Debug|x64
+		{2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10}.Debug|x64.Build.0 = Debug|x64
+		{2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10}.Release|Any CPU.ActiveCfg = Release|x64
+		{2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10}.Release|Any CPU.Build.0 = Release|x64
+		{2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10}.Release|x64.ActiveCfg = Release|x64
+		{2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

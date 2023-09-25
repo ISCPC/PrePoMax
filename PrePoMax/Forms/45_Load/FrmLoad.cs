@@ -479,7 +479,6 @@ namespace PrePoMax.Forms
                     }
                     FELoad.RegionType = RegionTypeEnum.Selection;
                 }
-                
                 bool twoD = FELoad.TwoD;
                 // Convert the load to internal to hide it
                 LoadInternal(true);

@@ -660,7 +660,7 @@ namespace PrePoMax
             if (lastSave != null)
             {
                 Commands.CommandsCollection prevCommands = new Commands.CommandsCollection(this, _commands);
-                _form.Open(lastSave.FileName, Open, true);    // form open redraws the sceene
+                _form.Open(lastSave.FileName, Open, true);    // form open redraws the scene
                 _commands = new Commands.CommandsCollection(this, prevCommands);
                 //
                 _commands.ExecuteAllCommandsFromLastSave(lastSave);
@@ -843,7 +843,7 @@ namespace PrePoMax
                     {
                         if (MessageBox.Show("Some node coordinates in the result .frd file are different from " +
                                             "the coordinates in the model mesh." + Environment.NewLine + Environment.NewLine +
-                                            "Apply model mesh properties (part names, geomery...) to the result mesh?",
+                                            "Apply model mesh properties (part names, geometry...) to the result mesh?",
                                             "Warning",
                                             MessageBoxButtons.YesNo,
                                             MessageBoxIcon.Warning) == DialogResult.Yes) similarity = 1;
@@ -1009,7 +1009,7 @@ namespace PrePoMax
                                 gp.MeshingParameters.FactorMin = MeshingParameters.DefaultFactorMin;
                                 gp.MeshingParameters.FactorHausdorff = MeshingParameters.DefaultFactorHausdorff;
                                 gp.MeshingParameters.SetCheckName(true);
-                                string name = model.Geometry.MeshingParameters.GetNextNumberedKey("Meshing_Parameters");
+                                string name = model.Geometry.MeshSetupItems.GetNextNumberedKey("Meshing_Parameters");
                                 gp.MeshingParameters.Name = name;
                                 gp.MeshingParameters.Active = true;
                                 gp.MeshingParameters.Visible = true;
@@ -1024,7 +1024,7 @@ namespace PrePoMax
                                                                    gp.MeshingParameters.CreationIds));
                                 gp.MeshingParameters.CreationData = selection;
                                 //
-                                model.Geometry.MeshingParameters.Add(gp.MeshingParameters.Name, gp.MeshingParameters.DeepClone());
+                                model.Geometry.MeshSetupItems.Add(gp.MeshingParameters.Name, gp.MeshingParameters.DeepClone());
                                 gp.MeshingParameters = null;
                             }
                         }
@@ -1270,7 +1270,7 @@ namespace PrePoMax
             HashSet<PartType> stlPartTypes = new HashSet<PartType>();
             HashSet<PartType> cadPartTypes = new HashSet<PartType>();
             //
-            string[] allPartNames = GetMeshablePartNames(partNames);
+            string[] allPartNames = GetMeshAblePartNames(partNames);
             foreach (var partName in allPartNames)
             {
                 part = (GeometryPart)_model.Geometry.Parts[partName];
@@ -1521,9 +1521,9 @@ namespace PrePoMax
                 List<double[][]> lines = new List<double[][]>();
                 double[][] line;
                 //
-                FeMesh mmgMmesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh);
+                FeMesh mmgMesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh);
                 //
-                foreach (var entry in mmgMmesh.Elements)
+                foreach (var entry in mmgMesh.Elements)
                 {
                     element = entry.Value;
                     if (entry.Value is LinearTriangleElement lte)
@@ -1535,8 +1535,8 @@ namespace PrePoMax
                             if (!edgeKeys.Contains(key))
                             {
                                 line = new double[2][];
-                                line[0] = mmgMmesh.Nodes[element.NodeIds[i]].Coor;
-                                line[1] = mmgMmesh.Nodes[element.NodeIds[id2]].Coor;
+                                line[0] = mmgMesh.Nodes[element.NodeIds[i]].Coor;
+                                line[1] = mmgMesh.Nodes[element.NodeIds[id2]].Coor;
                                 lines.Add(line);
                                 edgeKeys.Add(key);
                             }
@@ -2004,15 +2004,15 @@ namespace PrePoMax
         }
         public void SuppressExplodedView(string[] partNames = null)
         {
-            partNames = GetMeshablePartNames(partNames);
+            partNames = GetMeshAblePartNames(partNames);
             //
             if (_model.Geometry != null && _explodedViews.IsGeometryExplodedViewActive())
             {
-                _model.Geometry.SuppressExploededView(partNames);
+                _model.Geometry.SuppressExplodedView(partNames);
             }
             if (_model.Mesh != null && _explodedViews.IsModelExplodedViewActive())
             {
-                _model.Mesh.SuppressExploededView(partNames);
+                _model.Mesh.SuppressExplodedView(partNames);
             }
             FeResults result;
             string[] resultNames = _allResults.GetResultNames();
@@ -2021,7 +2021,7 @@ namespace PrePoMax
                 result = _allResults.GetResult(resultNames[i]);
                 if (result != null && result.Mesh != null && _explodedViews.IsResultExplodedViewActive(resultNames[i]))
                 {
-                    result.Mesh.SuppressExploededView(partNames);
+                    result.Mesh.SuppressExplodedView(partNames);
                 }
             }
         }
@@ -2032,15 +2032,15 @@ namespace PrePoMax
             bool updateR = false;
             bool updateCR = false;
             //
-            if (_model.Geometry != null) updateG = _model.Geometry.ResumeExploededView();
-            if (_model.Mesh != null) updateM = _model.Mesh.ResumeExploededView();
+            if (_model.Geometry != null) updateG = _model.Geometry.ResumeExplodedView();
+            if (_model.Mesh != null) updateM = _model.Mesh.ResumeExplodedView();
             //
             FeResults result;
             string[] resultNames = _allResults.GetResultNames();
             for (int i = 0; i < resultNames.Length; i++)
             {
                 result = _allResults.GetResult(resultNames[i]);
-                if (result != null && result.Mesh != null) updateR = result.Mesh.ResumeExploededView();
+                if (result != null && result.Mesh != null) updateR = result.Mesh.ResumeExplodedView();
                 if (result == _allResults.CurrentResult && updateR) updateCR = true;
             }
             //
@@ -2270,7 +2270,7 @@ namespace PrePoMax
         }
         public GeometryPart GetGeometryPart(string partName)
         {
-            BasePart part = null;
+            BasePart part;
             _model.Geometry.Parts.TryGetValue(partName, out part);
             return (GeometryPart)part;
         }
@@ -2288,7 +2288,7 @@ namespace PrePoMax
         public GeometryPart[] GetGeometryPartsForSelection(string[] partNames)
         {
             BasePart part;
-            HashSet<GeometryPart> parts = new HashSet<GeometryPart>();  // must be hashset to remove the same compound parts
+            HashSet<GeometryPart> parts = new HashSet<GeometryPart>();  // must be hash set to remove the same compound parts
             //
             if (partNames.Length > 0)
             {
@@ -2388,7 +2388,7 @@ namespace PrePoMax
             }
             return allParts.Except(subParts).ToArray();
         }
-        public string[] GetMeshablePartNames(string[] partNames)
+        public string[] GetMeshAblePartNames(string[] partNames)
         {
             if (partNames == null) return null;
             if (_model.Geometry == null) return null;
@@ -2551,9 +2551,9 @@ namespace PrePoMax
             FeResults result = _allResults.CurrentResult;
             if (result != null && result.Mesh != null)
             {
-                _model.Geometry.SuppressExploededView();
+                _model.Geometry.SuppressExplodedView();
                 string[] addedPartNames = result.AddPartsFromMesh(_model.Geometry, partNamesToCopy.ToArray());
-                _model.Geometry.ResumeExploededView();
+                _model.Geometry.ResumeExplodedView();
                 // Update results exploded view
                 UpdateCurrentResultExplodedView();
                 //
@@ -2576,7 +2576,7 @@ namespace PrePoMax
                 part = _model.Geometry.Parts[name];
                 if (part is CompoundGeometryPart cgp) partNamesToHide.UnionWith(cgp.SubPartNames);
             }
-            // Hide still visible compound parts with all hidden componnent parts
+            // Hide still visible compound parts with all hidden component parts
             foreach (var entry in _model.Geometry.Parts)
             {
                 if (entry.Value is CompoundGeometryPart cgp && cgp.Visible == true)
@@ -2618,7 +2618,7 @@ namespace PrePoMax
                 part = _model.Geometry.Parts[name];
                 if (part is CompoundGeometryPart cgp) partNamesToShow.UnionWith(cgp.SubPartNames);
             }
-            // Show still hidden compound parts with at leas one shown componnent part
+            // Show still hidden compound parts with at leas one shown component part
             foreach (var entry in _model.Geometry.Parts)
             {
                 if (entry.Value is CompoundGeometryPart cgp && cgp.Visible == false)
@@ -2781,11 +2781,12 @@ namespace PrePoMax
                     }
                 }
                 //
-                string warning = "Face orientations on solid parts or non-CAD parts cannot be fliped.";
+                string warning = "Face orientations on solid parts or non-CAD parts cannot be flipped.";
                 if (numOfShellParts <= 0)
                     MessageBoxes.ShowWarning(warning);
                 else if (countSolidFaces > 0)
-                    MessageBoxes.ShowWarning(warning + Environment.NewLine + "Only face orientations on CAD shell parts were fliped.");
+                    MessageBoxes.ShowWarning(warning + Environment.NewLine +
+                                             "Only face orientations on CAD shell parts were flipped.");
             }
             //
             CheckAndUpdateModelValidity();
@@ -2856,9 +2857,7 @@ namespace PrePoMax
                 RemoveGeometryParts(new string[] { part.Name }, keepGeometrySelections);
                 _model.Geometry.ChangePartId(newPart.Name, part.PartId);
                 //
-                UpdateMeshingParameters();
-                //
-                UpdateMeshRefinements();
+                UpdateMeshSetupItems();
                 //
                 UpdateAfterImport(extension);
                 //
@@ -3076,13 +3075,9 @@ namespace PrePoMax
             _model.Geometry.ChangePartId(partName1, part2.PartId);
             _model.Geometry.ChangePartId(partName2, partId);
             // Swap colors
-            Color color = part1.Color;
-            part1.Color = part2.Color;
-            part2.Color = color;
+            (part2.Color, part1.Color) = (part1.Color, part2.Color);
             // Swap visibilities
-            bool visible = part1.Visible;
-            part1.Visible = part2.Visible;
-            part2.Visible = visible;
+            (part2.Visible, part1.Visible) = (part1.Visible, part2.Visible);
             // Swap names
             part1.Name = partName2;
             part2.Name = partName1;
@@ -3104,9 +3099,7 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, partName2, part2, null, false);
             _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, tmpName, part1, null, false);
             //
-            UpdateMeshingParameters(false);
-            //
-            UpdateMeshRefinements(false);
+            UpdateMeshSetupItems(false);
             //
             CheckAndUpdateModelValidity();
             //
@@ -3191,9 +3184,7 @@ namespace PrePoMax
                 }
             }
             //
-            UpdateMeshingParameters(false);
-            //
-            UpdateMeshRefinements(false);
+            UpdateMeshSetupItems(false);
             //
             CheckAndUpdateModelValidity();
             //
@@ -3239,104 +3230,29 @@ namespace PrePoMax
 
         #region Mesh   #############################################################################################################
         // COMMANDS ********************************************************************************
-        public void AddMeshingParametersCommand(MeshingParameters meshingParameters)
-        {
-            CAddMeshingParameters comm = new CAddMeshingParameters(meshingParameters);
-            _commands.AddAndExecute(comm);
-        }
-        public void ReplaceMeshingParametersCommand(string oldMeshingParametersName, MeshingParameters newMeshingParameters)
-        {
-            CReplaceMeshingParameters comm = new CReplaceMeshingParameters(oldMeshingParametersName, newMeshingParameters);
-            _commands.AddAndExecute(comm);
-        }
-        public void DuplicateMeshingParametersCommand(string[] meshingParametersNames)
-        {
-            CDuplicateMeshingParameters comm = new CDuplicateMeshingParameters(meshingParametersNames);
-            _commands.AddAndExecute(comm);
-        }
-        public void RemoveMeshingParametersCommand(string[] meshingParametersNames)
-        {
-            CRemoveMeshingParameters comm = new CRemoveMeshingParameters(meshingParametersNames);
-            _commands.AddAndExecute(comm);
-        }
-        //
-        public void AddMeshRefinementCommand(FeMeshRefinement meshRefinement)
-        {
-            CAddMeshRefinement comm = new CAddMeshRefinement(meshRefinement);
-            _commands.AddAndExecute(comm);
-        }
-        public void ReplaceMeshRefinementCommand(string oldMeshRefinementName, FeMeshRefinement newMeshRefinement)
-        {
-            CReplaceMeshRefinement comm = new CReplaceMeshRefinement(oldMeshRefinementName, newMeshRefinement);
-            _commands.AddAndExecute(comm);
-        }
-        public void RemoveMeshRefinementsCommand(string[] meshRefinementNames)
-        {
-            CRemoveMeshRefinements comm = new CRemoveMeshRefinements(meshRefinementNames);
-            _commands.AddAndExecute(comm);
-        }
-        public void DuplicateMeshRefinementsCommand(string[] meshRefinementNames)
-        {
-            CDuplicateMeshRefinements comm = new CDuplicateMeshRefinements(meshRefinementNames);
-            _commands.AddAndExecute(comm);
-        }
-        //
         public void CreateMeshCommand(string partName)
         {
             Commands.CCreateMesh comm = new Commands.CCreateMesh(partName);
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
-        public string[] GetMeshingParametersNames()
-        {
-            return _model.Geometry.MeshingParameters.Keys.ToArray();
-        }
-        public void AddMeshingParameters(MeshingParameters meshingParameters)
-        {
-            if (meshingParameters.CreationData != null)
-            {
-                // In order for the Regenerate history to work perform the selection
-                _selection = meshingParameters.CreationData.DeepClone();
-                meshingParameters.CreationIds = GetSelectionIds();
-                _selection.Clear();
-            }
-            else throw new NotSupportedException("The meshing parameters do not contain any selection data.");
-            //
-            _model.Geometry.MeshingParameters.Add(meshingParameters.Name, meshingParameters);
-            //
-            _form.AddTreeNode(ViewGeometryModelResults.Geometry, meshingParameters, null);
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
-        }
-        public MeshingParameters GetMeshingParameters(string meshingParametersName)
-        {
-            return _model.Geometry.MeshingParameters[meshingParametersName];
-        }
-        public MeshingParameters[] GetMeshingParameters()
-        {
-            if (_model.Geometry != null)
-            {
-                return _model.Geometry.MeshingParameters.Values.ToArray();
-            }
-            else return null;
-        }
         public MeshingParameters GetPartMeshingParameters(string partName)
         {
             HashSet<int> selectedPartIds;
-            string[] meshablePartNames = GetMeshablePartNames(new string[] { partName });
-            int[] meshablePartIds = _model.Geometry.GetPartIdsByNames(meshablePartNames);
+            string[] meshAblePartNames = GetMeshAblePartNames(new string[] { partName });
+            int[] meshAblePartIds = _model.Geometry.GetPartIdsByNames(meshAblePartNames);
             MeshingParameters meshingParameters = GetPartDefaultMeshingParameters(partName);
             //
-            foreach (var entry in _model.Geometry.MeshingParameters)
+            foreach (var entry in _model.Geometry.MeshSetupItems)
             {
-                if (entry.Value.Active && entry.Value.Valid)
+                if (entry.Value is MeshingParameters mp && mp.Active && mp.Valid)
                 {
-                    if (entry.Value.CreationIds != null && entry.Value.CreationIds.Length > 0)
+                    if (mp.CreationIds != null && mp.CreationIds.Length > 0)
                     {
-                        selectedPartIds = new HashSet<int>(FeMesh.GetPartIdsFromGeometryIds(entry.Value.CreationIds));
+                        selectedPartIds = new HashSet<int>(FeMesh.GetPartIdsFromGeometryIds(mp.CreationIds));
                         //
-                        if (selectedPartIds.Intersect(meshablePartIds).Count() == meshablePartIds.Length)
-                            meshingParameters = entry.Value.DeepCopy();
+                        if (selectedPartIds.Intersect(meshAblePartIds).Count() == meshAblePartIds.Length)
+                            meshingParameters = mp.DeepCopy();
                     }
                 }
             }
@@ -3345,61 +3261,7 @@ namespace PrePoMax
             //
             return meshingParameters;
         }
-        public void ActivateDeactivateMeshingParameters(string meshingParametersName, bool active)
-        {
-            MeshingParameters meshingParameters = _model.Geometry.MeshingParameters[meshingParametersName];
-            meshingParameters.Active = active;
-            //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, meshingParametersName, meshingParameters, null);
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
-        }
-        public void ReplaceMeshingParameters(string oldMeshingParametersName, MeshingParameters meshingParameters,
-                                             bool updateSelection = true)
-        {
-            if (meshingParameters.CreationData != null)
-            {
-                Selection selection = _selection.DeepClone();
-                // In order for the Regenerate history to work perform the selection
-                _selection = meshingParameters.CreationData.DeepClone();
-                meshingParameters.CreationIds = GetSelectionIds();
-                _selection = selection;
-            }
-            else throw new NotSupportedException("The meshing parameters do not contain any selection data.");
-            //
-            _model.Geometry.MeshingParameters.Replace(oldMeshingParametersName, meshingParameters.Name, meshingParameters);
-            //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldMeshingParametersName, meshingParameters,
-                                 null, updateSelection);
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
-        }
-        public void DuplicateMeshingParameters(string[] meshingParametersNames)
-        {
-            MeshingParameters newMeshingParameters;
-            foreach (var name in meshingParametersNames)
-            {
-                newMeshingParameters = _model.Geometry.MeshingParameters[name].DeepClone();
-                newMeshingParameters.Name = NamedClass.GetNameWithoutLastValue(newMeshingParameters.Name);
-                newMeshingParameters.Name = _model.Geometry.MeshingParameters.GetNextNumberedKey(newMeshingParameters.Name);
-                AddMeshingParameters(newMeshingParameters);
-            }
-        }
-        public void RemoveMeshingParameters(string[] meshingParametersNames)
-        {
-            foreach (var name in meshingParametersNames)
-            {
-                _model.Geometry.MeshingParameters.Remove(name);
-                _form.RemoveTreeNode<MeshingParameters>(ViewGeometryModelResults.Geometry, name, null);
-            }
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
-        }
         //
-        public MeshingParameters EditMeshingParametersByForm(MeshingParameters meshingParameters)
-        {
-            return _form.EditMeshingParametersFromHistory(meshingParameters);
-        }
         public MeshingParameters GetDefaultMeshingParameters(string meshingParametersName)
         {
             MeshingParameters meshingParameters = _settings.Meshing.MeshingParameters.DeepClone();
@@ -3435,7 +3297,7 @@ namespace PrePoMax
         {
             double sumMax = 0;
             double sumMin = 0;
-            double sumHausDorff = 0;
+            double sumHausdorff = 0;
             MeshingParameters defaultMeshingParameters = null;
             HashSet<bool> useMmg = new HashSet<bool>();
             foreach (var partName in partNames)
@@ -3450,7 +3312,7 @@ namespace PrePoMax
                     //
                     sumMax += defaultMeshingParameters.MaxH;
                     sumMin += defaultMeshingParameters.MinH;
-                    sumHausDorff += defaultMeshingParameters.Hausdorff;
+                    sumHausdorff += defaultMeshingParameters.Hausdorff;
                 }
                 // Part was not found
                 else return null;
@@ -3458,7 +3320,7 @@ namespace PrePoMax
             //
             defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(sumMax / partNames.Length, 2);
             defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(sumMin / partNames.Length, 2);
-            defaultMeshingParameters.Hausdorff = CaeGlobals.Tools.RoundToSignificantDigits(sumHausDorff / partNames.Length, 2);
+            defaultMeshingParameters.Hausdorff = CaeGlobals.Tools.RoundToSignificantDigits(sumHausdorff / partNames.Length, 2);
             // All parts must be of either netgen type or mmg type
             if (onlyOneMeshType)
             {
@@ -3466,118 +3328,6 @@ namespace PrePoMax
                 else return null;
             }
             else return defaultMeshingParameters;
-        }
-        private void UpdateMeshingParameters(bool updateSelection = true)
-        {
-            if (_model != null && _model.Geometry != null)
-            {
-                // Use array not to throw collection moddified exception
-                foreach (MeshingParameters meshingParameters in _model.Geometry.MeshingParameters.Values.ToArray())
-                {
-                    if (meshingParameters.CreationData.IsGeometryBased())
-                    {
-                        meshingParameters.Valid = true;
-                        ReplaceMeshingParameters(meshingParameters.Name, meshingParameters, updateSelection);
-                    }
-                }
-            }
-        }
-        //
-        public string[] GetMeshRefinementNames()
-        {
-            return _model.Geometry.MeshRefinements.Keys.ToArray();
-        }
-        public void AddMeshRefinement(FeMeshRefinement meshRefinement)
-        {
-            if (meshRefinement.CreationData != null)
-            {
-                // In order for the Regenerate history to work perform the selection
-                _selection = meshRefinement.CreationData.DeepClone();
-                meshRefinement.GeometryIds = GetSelectionIds();
-                _selection.Clear();
-            }
-            else throw new NotSupportedException("The mesh refinement does not contain any selection data.");
-            //
-            _model.Geometry.MeshRefinements.Add(meshRefinement.Name, meshRefinement);
-            //
-            _form.AddTreeNode(ViewGeometryModelResults.Geometry, meshRefinement, null);
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
-        }
-        public FeMeshRefinement GetMeshRefinement(string meshRefinementName)
-        {
-            return _model.Geometry.MeshRefinements[meshRefinementName];
-        }
-        public FeMeshRefinement[] GetMeshRefinements()
-        {
-            if (_model.Geometry != null)
-            {
-                return _model.Geometry.MeshRefinements.Values.ToArray();
-            }
-            else return null;
-        }
-        public void ActivateDeactivateMeshRefinement(string meshRefinementName, bool active)
-        {
-            FeMeshRefinement meshRefinement = _model.Geometry.MeshRefinements[meshRefinementName];
-            meshRefinement.Active = active;
-            //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, meshRefinementName, meshRefinement, null);
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
-        }
-        public void ReplaceMeshRefinement(string oldMeshRefinementName, FeMeshRefinement meshRefinement,
-                                          bool updateSelection = true)
-        {
-            if (meshRefinement.CreationData != null)
-            {
-                // In order for the Regenerate history to work perform the selection
-                _selection = meshRefinement.CreationData.DeepClone();
-                meshRefinement.GeometryIds = GetSelectionIds();
-                _selection.Clear();
-            }
-            else throw new NotSupportedException("The mesh refinement does not contain any selection data.");
-            //
-            _model.Geometry.MeshRefinements.Replace(oldMeshRefinementName, meshRefinement.Name, meshRefinement);
-            //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldMeshRefinementName, meshRefinement, null, updateSelection);
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
-        }
-        public void DuplicateMeshRefinements(string[] meshRefinementNames)
-        {
-            FeMeshRefinement newMeshRefinement;
-            foreach (var name in meshRefinementNames)
-            {
-                newMeshRefinement = _model.Geometry.MeshRefinements[name].DeepClone();
-                newMeshRefinement.Name = NamedClass.GetNameWithoutLastValue(newMeshRefinement.Name);
-                newMeshRefinement.Name = _model.Geometry.MeshRefinements.GetNextNumberedKey(newMeshRefinement.Name);
-                AddMeshRefinement(newMeshRefinement);
-            }
-        }
-        public void RemoveMeshRefinements(string[] meshRefinementNames)
-        {
-            foreach (var name in meshRefinementNames)
-            {
-                _model.Geometry.MeshRefinements.Remove(name);
-                _form.RemoveTreeNode<FeMeshRefinement>(ViewGeometryModelResults.Geometry, name, null);
-            }
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
-        }
-        private void UpdateMeshRefinements(bool updateSelection = true)
-        {
-            if (_model != null && _model.Geometry != null)
-            {
-                // Use array not to throw collection moddified exception
-                foreach (FeMeshRefinement meshRefinement in _model.Geometry.MeshRefinements.Values.ToArray())
-                {
-                    if (meshRefinement.CreationData.IsGeometryBased())
-                    {
-                        meshRefinement.Valid = true;
-                        ReplaceMeshRefinement(meshRefinement.Name, meshRefinement, updateSelection);
-                    }
-                }
-            }
         }
         //
         public bool PreviewEdgeMesh(string partName, MeshingParameters parameters, FeMeshRefinement newMeshRefinement)
@@ -3901,8 +3651,12 @@ namespace PrePoMax
             Dictionary<double, List<double[]>> allPoints = new Dictionary<double, List<double[]>>();
             Dictionary<double, List<double[][]>> allLines = new Dictionary<double, List<double[][]>>();
             //
-            Dictionary<string, FeMeshRefinement> meshRefinements;
-            meshRefinements = new Dictionary<string, FeMeshRefinement>(_model.Geometry.MeshRefinements);
+            Dictionary<string, FeMeshRefinement> meshRefinements = new Dictionary<string, FeMeshRefinement>();
+            foreach (var entry in _model.Geometry.MeshSetupItems)
+            {
+                if (entry.Value is FeMeshRefinement mr) meshRefinements.Add(mr.Name, mr);
+            }
+            //
             if (newMeshRefinement != null)
             {
                 // Check for new mesh refinement
@@ -3928,7 +3682,7 @@ namespace PrePoMax
                 if (meshRefinement.Active && meshRefinement.Valid)
                 {
                     // Get part ids of the mesh refinement
-                    geometryIds = meshRefinement.GeometryIds;
+                    geometryIds = meshRefinement.CreationIds;
                     if (geometryIds == null || geometryIds.Length == 0) break;
                     // Filter geometry ids to the part being meshed
                     foreach (var geometryId in geometryIds)
@@ -4005,6 +3759,134 @@ namespace PrePoMax
 
         #endregion #################################################################################################################
 
+        #region Mesh Setup Items Menu  #############################################################################################
+        public void AddMeshSetupItemCommand(MeshSetupItem meshSetupItem)
+        {
+            CAddMeshSetupItem comm = new CAddMeshSetupItem(meshSetupItem);
+            _commands.AddAndExecute(comm);
+        }
+        public void ReplaceMeshSetupItemCommand(string oldMeshSetupItemName, MeshSetupItem newMeshSetupItem)
+        {
+            CReplaceMeshSetupItem comm = new CReplaceMeshSetupItem(oldMeshSetupItemName, newMeshSetupItem);
+            _commands.AddAndExecute(comm);
+        }
+        public void DuplicateMeshSetupItemsCommand(string[] meshSetupItemNames)
+        {
+            CDuplicateMeshSetupItems comm = new CDuplicateMeshSetupItems(meshSetupItemNames);
+            _commands.AddAndExecute(comm);
+        }
+        public void RemoveMeshSetupItemsCommand(string[] meshSetupItemNames)
+        {
+            CRemoveMeshSetupItems comm = new CRemoveMeshSetupItems(meshSetupItemNames);
+            _commands.AddAndExecute(comm);
+        }
+        //******************************************************************************************
+        public string[] GetMeshSetupItemNames()
+        {
+            return _model.Geometry.MeshSetupItems.Keys.ToArray();
+        }
+        public void AddMeshSetupItem(MeshSetupItem meshSetupItem)
+        {
+            if (meshSetupItem.CreationData != null)
+            {
+                // In order for the Regenerate history to work perform the selection
+                _selection = meshSetupItem.CreationData.DeepClone();
+                meshSetupItem.CreationIds = GetSelectionIds();
+                _selection.Clear();
+            }
+            else throw new NotSupportedException("The mesh setup item does not contain any selection data.");
+            //
+            _model.Geometry.MeshSetupItems.Add(meshSetupItem.Name, meshSetupItem);
+            //
+            _form.AddTreeNode(ViewGeometryModelResults.Geometry, meshSetupItem, null);
+            //
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public MeshSetupItem GetMeshSetupItem(string meshSetupItemName)
+        {
+            return _model.Geometry.MeshSetupItems[meshSetupItemName];
+        }
+        public MeshSetupItem EditMeshSetupItemByForm(MeshSetupItem meshSetupItem)
+        {
+            return _form.EditMeshingParametersFromHistory(meshSetupItem);
+        }
+        public MeshSetupItem[] GetMeshSetupItems()
+        {
+            if (_model.Geometry != null)
+            {
+                return _model.Geometry.MeshSetupItems.Values.ToArray();
+            }
+            else return null;
+        }
+        public void ActivateDeactivateMeshSetupItem(string meshSetupItemName, bool active)
+        {
+            MeshSetupItem meshSetupItem = _model.Geometry.MeshSetupItems[meshSetupItemName];
+            meshSetupItem.Active = active;
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, meshSetupItemName, meshSetupItem, null);
+            //
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void ReplaceMeshSetupItem(string oldMeshSetupItemName, MeshSetupItem meshSetupItem,
+                                         bool updateSelection = true)
+        {
+            if (meshSetupItem.CreationData != null)
+            {
+                Selection selection = _selection.DeepClone();
+                // In order for the Regenerate history to work perform the selection
+                _selection = meshSetupItem.CreationData.DeepClone();
+                meshSetupItem.CreationIds = GetSelectionIds();
+                _selection = selection;
+            }
+            else throw new NotSupportedException("The mesh setup item does not contain any selection data.");
+            //
+            _model.Geometry.MeshSetupItems.Replace(oldMeshSetupItemName, meshSetupItem.Name, meshSetupItem);
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldMeshSetupItemName, meshSetupItem,
+                                 null, updateSelection);
+            //
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void DuplicateMeshSetupItems(string[] meshSetupItemNames)
+        {
+            MeshSetupItem newMeshSetupItem;
+            foreach (var name in meshSetupItemNames)
+            {
+                newMeshSetupItem = _model.Geometry.MeshSetupItems[name].DeepClone();
+                newMeshSetupItem.Name = NamedClass.GetNameWithoutLastValue(newMeshSetupItem.Name);
+                newMeshSetupItem.Name = _model.Geometry.MeshSetupItems.GetNextNumberedKey(newMeshSetupItem.Name);
+                AddMeshSetupItem(newMeshSetupItem);
+            }
+        }
+        public void RemoveMeshSetupItems(string[] meshSetupItemNames)
+        {
+            foreach (var name in meshSetupItemNames)
+            {
+                _model.Geometry.MeshSetupItems.Remove(name);
+                _form.RemoveTreeNode<MeshSetupItem>(ViewGeometryModelResults.Geometry, name, null);
+            }
+            //
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        //
+        private void UpdateMeshSetupItems(bool updateSelection = true)
+        {
+            if (_model != null && _model.Geometry != null)
+            {
+                // Use array not to throw collection modified exception
+                foreach (var meshSetupItem in _model.Geometry.MeshSetupItems.Values.ToArray())
+                {
+                    if (meshSetupItem.CreationData.IsGeometryBased())
+                    {
+                        meshSetupItem.Valid = true;
+                        ReplaceMeshSetupItem(meshSetupItem.Name, meshSetupItem, updateSelection);
+                    }
+                }
+            }
+        }
+
+        #endregion #################################################################################################################
+
         #region Node menu   ########################################################################################################
         // COMMANDS ********************************************************************************
         public void RenumberNodesCommand(int startNodeId)
@@ -4031,19 +3913,19 @@ namespace PrePoMax
             else if (_currentView == ViewGeometryModelResults.Results) return _allResults.CurrentResult.Mesh.GetVisibleNodeIds();
             else throw new NotSupportedException();
         }
-        public int[] GetAllOutterNodeIds()
+        public int[] GetAllOuterNodeIds()
         {
-            HashSet<int> outterNodes = new HashSet<int>();
+            HashSet<int> outerNodes = new HashSet<int>();
 
             foreach (var entry in DisplayedMesh.Parts)
             {
                 foreach (int[] cell in entry.Value.Visualization.Cells)
                 {
-                    foreach (int nodeId in cell) outterNodes.Add(nodeId);
+                    foreach (int nodeId in cell) outerNodes.Add(nodeId);
                 }
             }
 
-            return outterNodes.ToArray();
+            return outerNodes.ToArray();
         }
         public FeNode[] GetNodes(int[] nodeIds)
         {
@@ -4189,7 +4071,7 @@ namespace PrePoMax
                 //
                 string[] errors = null;
                 if (_model != null)
-                    errors = _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness, false, out FeNode[] inpressedNodes);
+                    errors = _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness, false, out FeNode[] inPressedNodes);
                 // Redraw the geometry for update of the selection based sets
                 FeModelUpdate(UpdateType.DrawModel);
                 // Update sets - must be called with rendering off - SetStateWorking
@@ -4213,18 +4095,18 @@ namespace PrePoMax
         public void PreviewBoundaryLayer(int[] geometryIds, double thickness)
         {
             string[] errors = null;
-            FeNode[] inpressedNodes = null;
+            FeNode[] inPressedNodes = null;
             if (_model != null)
-                errors = _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness, true, out inpressedNodes);
+                errors = _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness, true, out inPressedNodes);
             //
             if (errors.Length > 0) throw new CaeException(errors[0]);
             //
-            if (inpressedNodes != null && inpressedNodes.Length > 0)
+            if (inPressedNodes != null && inPressedNodes.Length > 0)
             {
-                double[][] nodeCoor = new double[inpressedNodes.Length][];
+                double[][] nodeCoor = new double[inPressedNodes.Length][];
                 for (int i = 0; i < nodeCoor.Length; i++)
                 {
-                    nodeCoor[i] = inpressedNodes[i].Coor;
+                    nodeCoor[i] = inPressedNodes[i].Coor;
                 }
                 HighlightNodes(nodeCoor);
             }
@@ -4595,10 +4477,10 @@ namespace PrePoMax
             //
             if (_model.Geometry != null && _model.Geometry.Parts.ContainsKey(oldPartName))
             {
-                // Save element type enums
+                // Save element type enum
                 GeometryPart geomPart = GetGeometryPart(oldPartName);
                 geomPart.AddElementTypeEnums(meshPart.GetElementTypeEnums());
-                // Rename the geomet part in pair
+                // Rename the geometry part in pair
                 if (oldPartName != newPartProperties.Name)
                 {
                     string newPartName = meshPart.Name;
@@ -4915,7 +4797,7 @@ namespace PrePoMax
         }
         private void UpdateNodeSetsBasedOnGeometry(bool feModelUpdate)
         {
-            // Use list not to throw collection moddified exception
+            // Use list not to throw collection modified exception
             List<FeNodeSet> geomNodeSets = new List<FeNodeSet>();
             if (_model != null && _model.Mesh != null)
             {
@@ -5169,7 +5051,7 @@ namespace PrePoMax
         }
         private void UpdateElementSetsBasedOnGeometry(bool feModelUpdate)
         {
-            // Use list not to throw collection moddified exception
+            // Use list not to throw collection modified exception
             List<FeElementSet> geomElementSets = new List<FeElementSet>();
             if (_model != null && _model.Mesh != null)
             {
@@ -5413,9 +5295,7 @@ namespace PrePoMax
         }
         private FeSurface[] RemoveSurfaceAndElementFacesFromModel(string[] surfaceNames)
         {
-            string[] removedNodeSets;
-            string[] removedElementSets;
-            return _model.Mesh.RemoveSurfaces(surfaceNames, out removedNodeSets, out removedElementSets);
+            return _model.Mesh.RemoveSurfaces(surfaceNames, out _, out _);
         }
         private int[] GetVisibleFaceIds()
         {
@@ -5428,7 +5308,7 @@ namespace PrePoMax
         }
         private void UpdateSurfacesBasedOnNodeSet(string nodeSetName)
         {
-            // use list not to throw collection moddified
+            // use list not to throw collection modified
             List<FeSurface> changedSurfaces = new List<FeSurface>();
             if (_model != null && _model.Mesh != null)
             {
@@ -5448,7 +5328,7 @@ namespace PrePoMax
         }
         private void UpdateSurfacesBasedOnGeometry(bool feModelUpdate)
         {
-            // Use list not to throw collection moddified exception
+            // Use list not to throw collection modified exception
             List<FeSurface> geomSurfaces = new List<FeSurface>();
             if (_model != null && _model.Mesh != null)
             {
@@ -5777,22 +5657,22 @@ namespace PrePoMax
         // COMMANDS ********************************************************************************
         public void AddSectionCommand(Section section)
         {
-            Commands.CAddSection comm = new Commands.CAddSection(section);
+            CAddSection comm = new CAddSection(section);
             _commands.AddAndExecute(comm);
         }
         public void ReplaceSectionCommand(string oldSectionName, Section newSection)
         {
-            Commands.CReplaceSection comm = new Commands.CReplaceSection(oldSectionName, newSection);
+            CReplaceSection comm = new CReplaceSection(oldSectionName, newSection);
             _commands.AddAndExecute(comm);
         }
         public void DuplicateSectionsCommand(string[] sectionNames)
         {
-            Commands.CDuplicateSections comm = new Commands.CDuplicateSections(sectionNames);
+            CDuplicateSections comm = new CDuplicateSections(sectionNames);
             _commands.AddAndExecute(comm);
         }
         public void RemoveSectionsCommand(string[] sectionNames)
         {
-            Commands.CRemoveSections comm = new Commands.CRemoveSections(sectionNames);
+            CRemoveSections comm = new CRemoveSections(sectionNames);
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
@@ -6041,7 +5921,7 @@ namespace PrePoMax
                     masterNames.Add(tmp[0]);
                     slaveNames.Add(tmp[1]);
                 }
-                // Collect mergable constraints
+                // Collect mergeable constraints
                 if (_model.Constraints[name] is Tie tie)
                 {
                     if (tie.MasterRegionType == RegionTypeEnum.SurfaceName && tie.MasterCreationData != null &&
@@ -6570,7 +6450,7 @@ namespace PrePoMax
                     masterNames.Add(tmp[0]);
                     slaveNames.Add(tmp[1]);
                 }
-                // Collect mergable contact paits
+                // Collect mergeable contact parts
                 contactPair = _model.ContactPairs[name];
                 if (contactPair.MasterRegionType == RegionTypeEnum.SurfaceName && contactPair.MasterCreationData != null &&
                     contactPair.SlaveRegionType == RegionTypeEnum.SurfaceName && contactPair.SlaveCreationData != null)
@@ -7078,7 +6958,7 @@ namespace PrePoMax
         }
         public void AddStep(Step step, bool copyBCsAndLoads)
         {
-            // Create the default anaysis the first time a step is added
+            // Create the default analysis the first time a step is added
             if (_model.StepCollection.StepsList.Count == 0 && _jobs.Count == 0)
             {
                 AnalysisJob job = _form.GetDefaultJob();
@@ -8264,7 +8144,7 @@ namespace PrePoMax
         {
             if (File.Exists(job.Executable))
             {
-                if (CheckModelBeforeJobRun() && DeleteFilesBeforeJobRun(inputFileName)) // must be separete due to exception
+                if (CheckModelBeforeJobRun() && DeleteFilesBeforeJobRun(inputFileName)) // must be separate due to exception
                 {
                     if (onlyCheckModel) _model.StepCollection.SetCheckModel();
                     else _model.StepCollection.SetRunAnalysis();
@@ -8290,7 +8170,7 @@ namespace PrePoMax
         {
             // Check for missing section
             string msg;
-            int[] unAssignedElementIds = _model.GetSectionAssignments(out Dictionary<int, int> elementIdSectionId);
+            int[] unAssignedElementIds = _model.GetSectionAssignments(out _);
             if (unAssignedElementIds.Length != 0)
             {
                 string elementSetName = _model.Mesh.ElementSets.GetNextNumberedKey(Globals.MissingSectionName);
@@ -8300,7 +8180,7 @@ namespace PrePoMax
                 if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
                                     MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
             }
-            // Chack for contacts of different type
+            // Check for contacts of different type
             if (_model.ContactPairs.Count > 0)
             {
                 HashSet<ContactPairMethod> contactPairMethods = new HashSet<ContactPairMethod>();
@@ -8315,7 +8195,7 @@ namespace PrePoMax
                                         MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
                 }
             }
-            // Check for existance of slip wear steps
+            // Check for existence of slip wear steps
             int[] slipWearStepIds = _model.StepCollection.GetSlipWearStepIds();
             if (slipWearStepIds.Length > 0 && _model.Properties.ModelType != ModelType.SlipWearModel)
             {
@@ -8323,7 +8203,7 @@ namespace PrePoMax
                 if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
                                     MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
             }
-            // Check for existance of boundary displacement step
+            // Check for existence of boundary displacement step
             if (_model.Properties.BdmRemeshing && _model.StepCollection.GetBoundaryDisplacementStep() == null)
             {
                 msg = "Mesh smoothing after the slip wear step is turned on but the boundary displacement step " +
@@ -8332,10 +8212,9 @@ namespace PrePoMax
                                     MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
             }
             // Check for wear coefficients in a wear analysis
-            Dictionary<int, double> materialIdCoefficient;
             if (_model.Properties.ModelType == ModelType.SlipWearModel)                
             {
-                if (!_model.AreSlipWearCoefficientsDefined(out materialIdCoefficient))
+                if (!_model.AreSlipWearCoefficientsDefined(out _))
                 {
                     msg = "No slip wear material coefficients are defined. Continue?";
                     if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
@@ -8378,7 +8257,7 @@ namespace PrePoMax
                                             Path.Combine(directory, inputFileNameWithoutExtension + ".sta"),
                                             Path.Combine(directory, inputFileNameWithoutExtension + ".cvg"),
                                             Path.Combine(directory, inputFileNameWithoutExtension + ".12d"),
-                                            Path.Combine(directory, inputFileNameWithoutExtension + ".cel"), // contact elments
+                                            Path.Combine(directory, inputFileNameWithoutExtension + ".cel"), // contact elements
                                             Path.Combine(directory, inputFileNameWithoutExtension +
                                                          "_WarnNodeMissTiedContact.nam"), // missing contact nodes
                                             Path.Combine(directory, "ResultsForLastIterations.frd"),
@@ -8481,7 +8360,7 @@ namespace PrePoMax
                 //
                 if (results == null || results.Mesh == null) job.Kill("Intermediate wear results do not exist.");
                 //
-                _model.GetMaterialAssignments(out Dictionary<int, int> elementIdMaterialId);
+                _model.GetMaterialAssignments(out _);
                 //
                 results.SetHistory(DatFileReader.Read(resultsFileDat));
                 //
@@ -8729,12 +8608,12 @@ namespace PrePoMax
             ViewGeometryModelResults view = ViewGeometryModelResults.Results;
             // Remove annotations
             _annotations.RemoveCurrentArrowAnnotationsByParts(partNames, view);
-            // Supress exploded view
-            result.Mesh.SuppressExploededView();
+            // Suppress exploded view
+            result.Mesh.SuppressExplodedView();
             // Remove
             string[] removedPartNames = result.RemoveParts(partNames);
             // Resume exploded view
-            result.Mesh.ResumeExploededView();  // resume is enough
+            result.Mesh.ResumeExplodedView();  // resume is enough
             //
             foreach (var name in removedPartNames) _form.RemoveTreeNode<BasePart>(view, name, null);
             //
@@ -8743,7 +8622,7 @@ namespace PrePoMax
             FeResultsUpdate(UpdateType.Check | UpdateType.DrawResults);
         }
         //
-        public bool AreResultPartsMergable(string[] partNames)
+        public bool AreResultPartsMergeable(string[] partNames)
         {
             return _allResults.CurrentResult.Mesh.ArePartsMergeable(partNames);
         }
@@ -8863,9 +8742,9 @@ namespace PrePoMax
         {
             return _allResults.CurrentResult.GetVisibleFieldsAsNamedItems();
         }
-        public ResultFieldOutput GetResultFieldOutput(string resultFieldOutputname)
+        public ResultFieldOutput GetResultFieldOutput(string resultFieldOutputName)
         {
-            return _allResults.CurrentResult.GetResultFieldOutput(resultFieldOutputname);
+            return _allResults.CurrentResult.GetResultFieldOutput(resultFieldOutputName);
         }
         public void ReplaceResultFieldOutput(string oldResultFieldOutputName, ResultFieldOutput resultFieldOutput)
         {
@@ -8960,7 +8839,7 @@ namespace PrePoMax
             foreach (var name in historyResultFieldNames)
                 _form.RemoveTreeNode<HistoryResultField>(view, name, historyResultSetName);
         }
-        public void RemoveResultHistoryResultCompoments(string historyResultSetName,
+        public void RemoveResultHistoryResultComponents(string historyResultSetName,
                                                         string historyResultFieldName,
                                                         string[] historyResultComponentNames)
         {
@@ -8992,8 +8871,7 @@ namespace PrePoMax
         {
             // Do not call the replace command here
             item.Active = activate;
-            if (item is MeshingParameters mp) ActivateDeactivateMeshingParameters(mp.Name, activate);
-            else if (item is FeMeshRefinement mr) ActivateDeactivateMeshRefinement(mr.Name, activate);
+            if (item is MeshSetupItem msi) ActivateDeactivateMeshSetupItem(msi.Name, activate);
             else if (item is Constraint co) ActivateDeactivateConstraint(co.Name, activate);
             else if (item is ContactPair cp) ActivateDeactivateContactPair(cp.Name, activate);
             else if (item is InitialCondition ic) ActivateDeactivateInitialCondition(ic.Name, activate);
@@ -9057,7 +8935,7 @@ namespace PrePoMax
                 else
                 {
                     vtkSelectBy selectBy = _selectBy;
-                    // Querry nodes - more than one selection node is needed - change None to Add
+                    // Query nodes - more than one selection node is needed - change None to Add
                     if (_selectBy == vtkSelectBy.QueryNode)
                     {
                         selectOperation = vtkSelectOperation.Add;
@@ -9088,7 +8966,7 @@ namespace PrePoMax
             catch { }
             finally
             {
-                // Dectivate user pick
+                // Deactivate user pick
                 _form.DeactivateUserPick();
             }
         }
@@ -9134,7 +9012,7 @@ namespace PrePoMax
                         for (int i = 0; i < ids.Length; i++)
                         {
                             // Check: The selected face id does not exist."
-                            mesh.GetCellFromFaceId(ids[i], out ElementFaceType elementFaceType, out element);
+                            mesh.GetCellFromFaceId(ids[i], out _, out _);
                         }
                     }
                     else if (_selection.SelectItem == vtkSelectItem.Geometry)
@@ -9155,7 +9033,7 @@ namespace PrePoMax
                 // Limit surface selection to first shell face type
                 if (afterIds == null) { _selection.Add(node, ids); afterIds = GetSelectionIds(); _selection.RemoveLast(); }
                 HashSet<FeSurfaceFaceTypes> surfaceFaceTypes = mesh.GetSurfaceFaceTypesFromFaceIds(afterIds);
-                if (surfaceFaceTypes.Count() > 1) add = false;      // 0 : when substracting the last item
+                if (surfaceFaceTypes.Count() > 1) add = false;      // 0 : when subtracting the last item
                 // Limit surface selection to shell edge surfaces
                 else if (_selection.LimitSelectionToShellEdges)
                 {
@@ -9195,7 +9073,7 @@ namespace PrePoMax
                     HashSet<BasePart> parts = mesh.GetPartsFromSelectionIds(afterIds, _selection.SelectItem);
                     HashSet<PartType> partTypes = new HashSet<PartType>();
                     foreach (var part in parts) partTypes.Add(part.PartType);
-                    if (partTypes.Count <= 1) add = true;   // 0 : when substracting the last item
+                    if (partTypes.Count <= 1) add = true;   // 0 : when subtracting the last item
                 }
                 else if (_selection.LimitSelectionToFirstMesherType)
                 {
@@ -9211,7 +9089,7 @@ namespace PrePoMax
                         mmgHash.Add(mmg);
                         if (mmgHash.Count > 1) break;
                     }
-                    if (mmgHash.Count <= 1) add = true;   // 0 : when substracting the last item
+                    if (mmgHash.Count <= 1) add = true;   // 0 : when subtracting the last item
                 }
                 else add = true;
             }
@@ -9310,7 +9188,7 @@ namespace PrePoMax
         }
         private int[] GetIdsFromSelectionNodeInvert(SelectionNodeInvert selectionNodeInvert, HashSet<int> selectedIds)
         {
-            HashSet<int> allIds = null;
+            HashSet<int> allIds;
             //
             if (_selection.SelectItem == vtkSelectItem.Node)
             {
@@ -9382,7 +9260,7 @@ namespace PrePoMax
             {
                 // Apply offset
                 if (offsets != null && offsets.Length == 1 && !allZero) selectionNodeMouse.AddOffset(offsets[0]);
-                // Are node ids allready recorded in this session - speed optimization
+                // Are node ids already recorded in this session - speed optimization
                 if (_selection.TryGetNodeIds(selectionNodeMouse, out ids))
                 { }
                 else if (selectionNodeMouse.IsGeometryBased)
@@ -9393,7 +9271,7 @@ namespace PrePoMax
                 { }
                 else if (_selection.SelectItem == vtkSelectItem.Node)
                 {
-                    ids = GetNodeIdsAtPoint(selectionNodeMouse, out int elementId);
+                    ids = GetNodeIdsAtPoint(selectionNodeMouse, out _);
                 }
                 else if (_selection.SelectItem == vtkSelectItem.Element)
                 {
@@ -9439,10 +9317,10 @@ namespace PrePoMax
         {
             int[] ids;
             //
-            // Are node ids allready recorded in this session - speed optimization
+            // Are node ids already recorded in this session - speed optimization
             if (_selection.TryGetNodeIds(selectionNodeMouse, out ids))
             { }
-            else if (selectionNodeMouse.IsGeometryBased) // vtkSelctBy = Geometry, ...
+            else if (selectionNodeMouse.IsGeometryBased) // vtkSelectBy = Geometry, ...
             {
                 ids = GetIdsFromFrustumFromGeometrySelection(selectionNodeMouse.PlaneParameters,
                                                              selectionNodeMouse.CompletelyInside,
@@ -9667,12 +9545,9 @@ namespace PrePoMax
         private int[] GetPartIdAtPoint(SelectionNodeMouse selectionNodeMouse)
         {
             int elementId;
-            int[] edgeNodeIds;
-            int[] cellFaceNodeIds;
             double[] pickedPoint = selectionNodeMouse.PickedPoint;
-            vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
             //
-            _form.GetGeometryPickProperties(pickedPoint, out elementId, out edgeNodeIds, out cellFaceNodeIds);
+            _form.GetGeometryPickProperties(pickedPoint, out elementId, out _, out _);
             //
             FeElement element;
             if (DisplayedMesh.Elements.TryGetValue(elementId, out element)) return new int[] { element.PartId };
@@ -9860,7 +9735,7 @@ namespace PrePoMax
             else if (selectBy == vtkSelectBy.Part)
             {
                 FeMesh mesh = DisplayedMesh;
-                _form.GetPointAndCellIdsInsideFrustum(planeParameters, selectionPartNames, out nodeIds, out elementIds);
+                _form.GetPointAndCellIdsInsideFrustum(planeParameters, selectionPartNames, out _, out elementIds);
                 string[] partNamesByElementId = mesh.GetPartNamesByElementIds(elementIds);
                 HashSet<int> partVisualizationFaceIds = new HashSet<int>();
                 foreach (var partName in partNamesByElementId)
@@ -9941,7 +9816,6 @@ namespace PrePoMax
         private int GetGeometryId(double[] point, double[] selectionDirection, int selectionOnPartId, double precision)
         {
             int elementId;
-            int[] edgeNodeIds;
             int[] cellFaceNodeIds;
             //
             string[] partNames;
@@ -9950,14 +9824,13 @@ namespace PrePoMax
             if (part != null) partNames = new string[] { part.Name };
             else partNames = null;
             //
-            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
+            _form.GetGeometryPickProperties(point, out elementId, out _, out cellFaceNodeIds, partNames);
             bool shellFrontFace = mesh.IsShellElementFrontFaceSelected(elementId, selectionDirection);
             return mesh.GetGeometryIdByPrecision(point, elementId, cellFaceNodeIds, shellFrontFace, precision);
         }
         private int GetGeometryVertexId(double[] point, int selectionOnPartId, double precision)
         {
             int elementId;
-            int[] edgeNodeIds;
             int[] cellFaceNodeIds;
             //
             string[] partNames;
@@ -9965,7 +9838,7 @@ namespace PrePoMax
             if (part != null) partNames = new string[] { part.Name };
             else partNames = null;
             //
-            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
+            _form.GetGeometryPickProperties(point, out elementId, out _, out cellFaceNodeIds, partNames);
             return DisplayedMesh.GetGeometryVertexIdByPrecision(point, elementId, cellFaceNodeIds, precision);
         }
         private int[] GetGeometryEdgeIdsByAngle(double[] point, double angle, int selectionOnPartId, bool shellEdgeFace)
@@ -9987,7 +9860,6 @@ namespace PrePoMax
                                                    int selectionOnPartId)
         {
             int elementId;
-            int[] edgeNodeIds;
             int[] cellFaceNodeIds;
             //
             string[] partNames;
@@ -9996,7 +9868,7 @@ namespace PrePoMax
             if (part != null) partNames = new string[] { part.Name };
             else partNames = null;
             //
-            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
+            _form.GetGeometryPickProperties(point, out elementId, out _, out cellFaceNodeIds, partNames);
             bool shellFrontFace = mesh.IsShellElementFrontFaceSelected(elementId, selectionDirection);
             return mesh.GetGeometrySurfaceIdsByAngle(elementId, cellFaceNodeIds, shellFrontFace, angle);
         }
@@ -10005,14 +9877,12 @@ namespace PrePoMax
         {
             if (selectionIn.SelectItem == vtkSelectItem.Surface)
             {
-                int nodeId;
                 int elementId;
                 int itemId;
                 int partId;
                 int[] cellIds;
                 int[] nodeIds;
                 int[] itemTypePartIds;
-                int[] ids;
                 bool shellElement;
                 double[] coor;
                 double[] direction;
@@ -10424,7 +10294,6 @@ namespace PrePoMax
             HashSet<string> noEdgePartNamesHash = new HashSet<string>();
             int edgeId;
             int edgeCellId;
-            CompareIntArray comparer = new CompareIntArray();
             HashSet<int[]> edgeCells = new HashSet<int[]>();
             HashSet<int> vertexNodeIds = new HashSet<int>();
             //
@@ -10638,7 +10507,7 @@ namespace PrePoMax
         }
         public double[] GetBoundingBox()
         {
-            // xmin, xmax, ymin, ymax, zmin, zmax
+            // xMin, xMax, yMin, yMax, zMin, zMax
             return _form.GetBoundingBox();
         }
         public double[] GetBoundingBoxSize()
@@ -12675,14 +12544,13 @@ namespace PrePoMax
             //
             int id;
             double[] faceNormal;
-            bool shellElement = false;
             List<double[]> distributedCoor = new List<double[]>();
             List<double[]> distributedLoadNormals = new List<double[]>();
             for (int i = 0; i < distributedElementIds.Length; i++)
             {
                 id = distributedElementIds[i];
                 _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
-                                                          out faceNormal, out shellElement);
+                                                          out faceNormal, out _);
                 if (magnitude < 0)
                 {
                     faceNormal[0] *= -1;
@@ -13034,33 +12902,33 @@ namespace PrePoMax
             double maxDelta = max / maxN;
             //
             double n;
-            int[] nxyz = new int[3];
+            int[] xyz = new int[3];
             //
             if (maxDelta < 1) maxDelta = 1;
             //
             n = (box.MaxX - box.MinX) / maxDelta;
-            if (n < 1E-2) nxyz[0] = 1;      // tiny
-            else if (n < 2) nxyz[0] = 2;    // small
-            else nxyz[0] = (int)n;          // normal
-                                            //
+            if (n < 1E-2) xyz[0] = 1;      // tiny
+            else if (n < 2) xyz[0] = 2;    // small
+            else xyz[0] = (int)n;          // normal
+            //
             n = (box.MaxY - box.MinY) / maxDelta;
-            if (n < 1E-2) nxyz[1] = 1;      // tiny
-            else if (n < 2) nxyz[1] = 2;    // small
-            else nxyz[1] = (int)n;          // normal
-                                            //
+            if (n < 1E-2) xyz[1] = 1;      // tiny
+            else if (n < 2) xyz[1] = 2;    // small
+            else xyz[1] = (int)n;          // normal
+            //
             n = (box.MaxZ - box.MinZ) / maxDelta;
-            if (n < 1E-2) nxyz[2] = 1;      // tiny
-            else if (n < 2) nxyz[2] = 2;    // small
-            else nxyz[2] = (int)n;          // normal
+            if (n < 1E-2) xyz[2] = 1;      // tiny
+            else if (n < 2) xyz[2] = 2;    // small
+            else xyz[2] = (int)n;          // normal
             //
             if (maxN == 1)
             {
-                nxyz[0] = 1;
-                nxyz[1] = 1;
-                nxyz[2] = 1;
+                xyz[0] = 1;
+                xyz[1] = 1;
+                xyz[2] = 1;
             }
             //
-            return GetSpatiallyEquallyDistributedCoor(coor, box, nxyz);
+            return GetSpatiallyEquallyDistributedCoor(coor, box, xyz);
         }
         private int[] GetSpatiallyEquallyDistributedCoor(double[][] coor, BoundingBox box, int[] n)
         {
@@ -13129,17 +12997,19 @@ namespace PrePoMax
         private int FindClosestIdFromIds(int[] ids, double[] center, double[][] coor)
         {
             int minId = -1;
-            double minDist = double.MaxValue;
+            double minDistance = double.MaxValue;
             int id;
             double d;
             for (int i = 0; i < ids.Length; i++)
             {
                 id = ids[i];
-                d = Math.Pow(center[0] - coor[id][0], 2) + Math.Pow(center[1] - coor[id][1], 2) + Math.Pow(center[2] - coor[id][2], 2);
+                d = Math.Pow(center[0] - coor[id][0], 2) +
+                             Math.Pow(center[1] - coor[id][1], 2) +
+                             Math.Pow(center[2] - coor[id][2], 2);
                 //
-                if (d < minDist)
+                if (d < minDistance)
                 {
-                    minDist = d;
+                    minDistance = d;
                     minId = id;
                 }
             }
@@ -13285,7 +13155,6 @@ namespace PrePoMax
                                bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
             FeSurface s;
-            FeNodeSet ns;
             FeMesh mesh = DisplayedMesh;
             if (mesh.Surfaces.TryGetValue(surfaceName, out s) && s.Active && s.Visible && s.Valid)
             {
@@ -13316,7 +13185,7 @@ namespace PrePoMax
                         return data.Geometry.Cells.CellNodeIds.Length;
                     }
                 }
-                else if (s.Type == FeSurfaceType.Node && Model.Mesh.NodeSets.TryGetValue(s.NodeSetName, out ns))
+                else if (s.Type == FeSurfaceType.Node && Model.Mesh.NodeSets.TryGetValue(s.NodeSetName, out _))
                 {
                     return DrawNodeSet(prefixName + Globals.NameSeparator + surfaceName, s.NodeSetName, color, layer,
                                        true, -1, useSecondaryHighlightColor, onlyVisible);
@@ -13371,7 +13240,6 @@ namespace PrePoMax
                                     bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
             FeSurface s;
-            FeNodeSet ns;
             if (_model.Mesh.Surfaces.TryGetValue(surfaceName, out s) && s.Active && s.Visible && s.Valid)
             {
                 if (s.Type == FeSurfaceType.Element && s.ElementFaces != null)
@@ -13393,7 +13261,7 @@ namespace PrePoMax
                     //
                     return data.Geometry.Cells.CellNodeIds.Length;
                 }
-                else if (s.Type == FeSurfaceType.Node && Model.Mesh.NodeSets.TryGetValue(s.NodeSetName, out ns))
+                else if (s.Type == FeSurfaceType.Node && Model.Mesh.NodeSets.TryGetValue(s.NodeSetName, out _))
                 {
                     //DrawNodeSet(prefixName + Globals.NameSeparator + surfaceName, s.NodeSetName, color, layer);
                 }
@@ -13423,11 +13291,10 @@ namespace PrePoMax
                                           bool useSecondaryHighlightColor = false, bool drawSurfaceEdges = false)
         {
             int[][] cells;
-            ElementFaceType[] elementFaceTypes;
             // Highlight surface: QuerySurface from frmQuery
             if (ids.Length == 1 && DisplayedMesh.IsThisIdGeometryId(ids[0]))
-                cells = GetSurfaceCellsByGeometryId(ids, out elementFaceTypes);
-            else cells = GetSurfaceCellsByFaceIds(ids, out elementFaceTypes);
+                cells = GetSurfaceCellsByGeometryId(ids, out _);
+            else cells = GetSurfaceCellsByFaceIds(ids, out _);
             //
             DrawSurface(prefixName, cells, color, layer, backfaceCulling, useSecondaryHighlightColor, drawSurfaceEdges);
         }
@@ -13543,13 +13410,9 @@ namespace PrePoMax
                     {
                         HighlightGeometryParts(new string[] { gp.Name });
                     }
-                    else if (obj is MeshingParameters mp)
+                    else if (obj is MeshSetupItem msi)
                     {
-                        HighlightMeshingParameters(new string[] { mp.Name });
-                    }
-                    else if (obj is FeMeshRefinement mr)
-                    {
-                        HighlightMeshRefinements(new string[] { mr.Name });
+                        HighlightMeshSetupItems(new string[] { msi.Name });
                     }
                 }
                 else if (view == ViewGeometryModelResults.Model)
@@ -13797,23 +13660,11 @@ namespace PrePoMax
                 }
             }
         }
-        public void HighlightMeshingParameters(string[] meshingParametersToSelect)
+        public void HighlightMeshSetupItems(string[] meshSetupItemNamesToSelect)
         {
+            MeshSetupItem meshSetupItem;
             HashSet<int> selectedPartIds = new HashSet<int>();
-            MeshingParameters meshingParameters;
-            foreach (var name in meshingParametersToSelect)
-            {
-                meshingParameters = GetMeshingParameters(name);
-                if (meshingParameters.CreationIds != null) selectedPartIds.UnionWith(meshingParameters.CreationIds);
-            }
-            if (selectedPartIds.Count == 0) return;
             //
-            string[] partNames = DisplayedMesh.GetPartNamesByIds(selectedPartIds.ToArray());
-            //
-            HighlightGeometryParts(partNames);
-        }
-        public void HighlightMeshRefinements(string[] meshRefinementsToSelect)
-        {
             int[] ids;
             int[] itemTypePartIds;
             double[][] coor;
@@ -13821,31 +13672,43 @@ namespace PrePoMax
             bool backfaceCulling;
             GeometryPart part;
             FeMesh mesh = DisplayedMesh;
-            FeMeshRefinement meshRefinement;
             MeshingParameters meshingParameters;
             //
-            foreach (var meshRefinementName in meshRefinementsToSelect)
+            foreach (var name in meshSetupItemNamesToSelect)
             {
-                meshRefinement = _model.Geometry.MeshRefinements[meshRefinementName];
-                ids = meshRefinement.GeometryIds;
-                if (ids.Length == 0) return;
-                // The selection is limited to one part
-                itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(ids[0]);
-                part = (GeometryPart)mesh.GetPartById(itemTypePartIds[2]);
-                if (part == null) return;
-                //
-                meshingParameters = GetPartMeshingParameters(part.Name);
-                //
-                if (meshRefinement.MeshSize > meshingParameters.MaxH) meshSize = meshingParameters.MaxH;
-                else if (meshRefinement.MeshSize < meshingParameters.MinH) meshSize = meshingParameters.MinH;
-                else meshSize = meshRefinement.MeshSize;
-                //
-                mesh.GetVertexAndEdgeCoorFromGeometryIds(ids, meshSize, true, out coor);
-                DrawNodes(meshRefinement.Name, coor, Color.Red, vtkRendererLayer.Selection);
-                //
-                backfaceCulling = part.PartType != PartType.Shell;
-                //
-                HighlightItemsByGeometryIds(ids, backfaceCulling, false);
+                meshSetupItem = _model.Geometry.MeshSetupItems[name];
+                if (meshSetupItem is MeshingParameters mp)
+                {
+                    selectedPartIds.UnionWith(mp.CreationIds);
+                }
+                else if (meshSetupItem is FeMeshRefinement mr)
+                {
+                    ids = mr.CreationIds;
+                    if (ids.Length == 0) return;
+                    // The selection is limited to one part
+                    itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(ids[0]);
+                    part = (GeometryPart)mesh.GetPartById(itemTypePartIds[2]);
+                    if (part == null) return;
+                    //
+                    meshingParameters = GetPartMeshingParameters(part.Name);
+                    //
+                    if (mr.MeshSize > meshingParameters.MaxH) meshSize = meshingParameters.MaxH;
+                    else if (mr.MeshSize < meshingParameters.MinH) meshSize = meshingParameters.MinH;
+                    else meshSize = mr.MeshSize;
+                    //
+                    mesh.GetVertexAndEdgeCoorFromGeometryIds(ids, meshSize, true, out coor);
+                    DrawNodes(mr.Name, coor, Color.Red, vtkRendererLayer.Selection);
+                    //
+                    backfaceCulling = part.PartType != PartType.Shell;
+                    //
+                    HighlightItemsByGeometryIds(ids, backfaceCulling, false);
+                }
+            }
+            //
+            if (selectedPartIds.Count > 0)
+            {
+                string[] partNames = DisplayedMesh.GetPartNamesByIds(selectedPartIds.ToArray());
+                HighlightGeometryParts(partNames);
             }
         }
         public int HighlightModelParts(string[] partsToSelect)
@@ -13869,7 +13732,6 @@ namespace PrePoMax
         public void HighlightResultParts(string[] partsToSelect)
         {
             BasePart[] parts = GetResultParts();
-            Color color = Color.Red;
             //
             foreach (var part in parts)
             {
@@ -13991,7 +13853,6 @@ namespace PrePoMax
         {
             Color color = Color.Red;
             vtkRendererLayer layer = vtkRendererLayer.Selection;
-            vtkMaxActorData data = new vtkMaxActorData();
             //
             FeReferencePoint rp;
             foreach (var name in referencePointsToSelect)
@@ -14187,7 +14048,7 @@ namespace PrePoMax
         public void HighlightItemsBySurfaceIds(int[] ids, bool useSecondaryHighlightColor)
         {
             int[][] cells;
-            ElementFaceType[] elementFaceTypes = null;
+            ElementFaceType[] elementFaceTypes;
             // QuerySurface from frmQuery
             if (ids.Length == 1 && DisplayedMesh.IsThisIdGeometryId(ids[0]))
                 cells = GetSurfaceCellsByGeometryId(ids, out elementFaceTypes);
@@ -14277,7 +14138,7 @@ namespace PrePoMax
                 {
                     if (_viewResultsType == ViewResultsTypeEnum.Undeformed)
                     {
-                        // Udeformed view
+                        // Undeformed view
                         DrawModelPart(_allResults.CurrentResult.Mesh, resultPart, layer);
                     }
                     else
@@ -14363,7 +14224,7 @@ namespace PrePoMax
             {
                 if (entry.Value is ResultPart resultPart)
                 {
-                    // Udeformed
+                    // Undeformed
                     if (postSettings.UndeformedModelType != UndeformedModelTypeEnum.None)
                         DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelType,
                                                postSettings.UndeformedModelColor, layer);
@@ -14445,7 +14306,7 @@ namespace PrePoMax
             {
                 if (entry.Value is ResultPart resultPart)
                 {
-                    // Udeformed shape
+                    // Undeformed shape
                     if (postSettings.UndeformedModelType != UndeformedModelTypeEnum.None)
                         DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelType,
                                                postSettings.UndeformedModelColor, layer);
@@ -14511,7 +14372,7 @@ namespace PrePoMax
             //
             float scale = GetScale();
             // Prepare data - first prepare data, than clear the vtk data
-            float delta = 360f / numFrames; // skip the final anlge which is the same as the first angle
+            float delta = 360f / numFrames; // skip the final angle which is the same as the first angle
             float[] angles = new float[numFrames];
             for (int i = 0; i < numFrames; i++) angles[i] = i * delta;
             //
@@ -14578,7 +14439,7 @@ namespace PrePoMax
             {
                 if (entry.Value is ResultPart resultPart)
                 {
-                    // Udeformed
+                    // Undeformed
                     if (postSettings.UndeformedModelType != UndeformedModelTypeEnum.None)
                         DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelType,
                                                postSettings.UndeformedModelColor, layer);
@@ -14621,7 +14482,6 @@ namespace PrePoMax
             int[] stepId = new int[numFrames];
             int[] stepIncrementId = new int[numFrames];
             float[] animationScale = angles;
-            float ratio = 1f / (numFrames - 1);
             for (int i = 0; i < numFrames; i++)
             {
                 time[i] = _currentFieldData.Time;

@@ -231,6 +231,9 @@ Save as: Krilo 	... if a file Krilo with no extension exist it will ask for over
 
 
 DONE
+Version 1.5.0
+Added GmshCommon project
+
 Version 1.4.1
 Added support for hydrostatic pressure cutoff
 Added support for duplicate command on all editable tree items

@@ -204,18 +204,12 @@
             this.tsmiDividerGeometry2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiGeometryAnalyze = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMesh = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiCreateMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiEditMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDuplicateMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDividerMeshingParameters1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiDeleteMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiMeshRefinement = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiCreateMeshRefinement = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiEditMeshRefinement = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDuplicateMeshRefinement = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDividerMeshRefinement1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiDeleteMeshRefinement = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiMeshSetupItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCreateMeshSetupItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiEditMeshSetupItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDuplicateMeshSetupItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiDeleteMeshSetupItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiPreviewEdgeMesh = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateMesh = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiModel = new System.Windows.Forms.ToolStripMenuItem();
@@ -388,6 +382,7 @@
             this.tsmiAnalysis = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateAnalysis = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditAnalysis = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDuplicateAnalysis = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerAnalysis1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiRunAnalysis = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCheckModel = new System.Windows.Forms.ToolStripMenuItem();
@@ -459,7 +454,6 @@
             this.tbOutput = new System.Windows.Forms.TextBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsmiDuplicateAnalysis = new System.Windows.Forms.ToolStripMenuItem();
             this.tsFile.SuspendLayout();
             this.tsViews.SuspendLayout();
             this.tsModel.SuspendLayout();
@@ -1364,48 +1358,48 @@
             // tsmiUndo
             // 
             this.tsmiUndo.Name = "tsmiUndo";
-            this.tsmiUndo.Size = new System.Drawing.Size(328, 22);
+            this.tsmiUndo.Size = new System.Drawing.Size(225, 22);
             this.tsmiUndo.Text = "Undo";
             this.tsmiUndo.Click += new System.EventHandler(this.tsmiUndo_Click);
             // 
             // tsmiRedo
             // 
             this.tsmiRedo.Name = "tsmiRedo";
-            this.tsmiRedo.Size = new System.Drawing.Size(328, 22);
+            this.tsmiRedo.Size = new System.Drawing.Size(225, 22);
             this.tsmiRedo.Text = "Redo";
             this.tsmiRedo.Click += new System.EventHandler(this.tsmiRedo_Click);
             // 
             // tsmiDividerEdit1
             // 
             this.tsmiDividerEdit1.Name = "tsmiDividerEdit1";
-            this.tsmiDividerEdit1.Size = new System.Drawing.Size(325, 6);
+            this.tsmiDividerEdit1.Size = new System.Drawing.Size(222, 6);
             // 
             // tsmiViewHistory
             // 
             this.tsmiViewHistory.Name = "tsmiViewHistory";
-            this.tsmiViewHistory.Size = new System.Drawing.Size(328, 22);
+            this.tsmiViewHistory.Size = new System.Drawing.Size(225, 22);
             this.tsmiViewHistory.Text = "View History";
             this.tsmiViewHistory.Click += new System.EventHandler(this.tsmiViewHistory_Click);
             // 
             // tsmiRegenerate
             // 
             this.tsmiRegenerate.Name = "tsmiRegenerate";
-            this.tsmiRegenerate.Size = new System.Drawing.Size(328, 22);
+            this.tsmiRegenerate.Size = new System.Drawing.Size(225, 22);
             this.tsmiRegenerate.Text = "Regenerate";
             this.tsmiRegenerate.Click += new System.EventHandler(this.tsmiRegenerate_Click);
             // 
             // tsmiRegenerateUsingOtherFiles
             // 
             this.tsmiRegenerateUsingOtherFiles.Name = "tsmiRegenerateUsingOtherFiles";
-            this.tsmiRegenerateUsingOtherFiles.Size = new System.Drawing.Size(328, 22);
+            this.tsmiRegenerateUsingOtherFiles.Size = new System.Drawing.Size(225, 22);
             this.tsmiRegenerateUsingOtherFiles.Text = "Regenerate Using Other Files";
             this.tsmiRegenerateUsingOtherFiles.Click += new System.EventHandler(this.tsmiRegenerateUsingOtherFiles_Click);
             // 
             // tsmiRegenerateForRemeshing
             // 
             this.tsmiRegenerateForRemeshing.Name = "tsmiRegenerateForRemeshing";
-            this.tsmiRegenerateForRemeshing.Size = new System.Drawing.Size(328, 22);
-            this.tsmiRegenerateForRemeshing.Text = "Regenerate Using Modified Meshing Parameters";
+            this.tsmiRegenerateForRemeshing.Size = new System.Drawing.Size(225, 22);
+            this.tsmiRegenerateForRemeshing.Text = "Regenerate For Remeshing";
             this.tsmiRegenerateForRemeshing.Click += new System.EventHandler(this.tsmiRegenerateForRemeshing_Click);
             // 
             // tsmiView
@@ -2004,110 +1998,63 @@
             // tsmiMesh
             // 
             this.tsmiMesh.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiMeshingParameters,
-            this.tsmiMeshRefinement,
+            this.tsmiMeshSetupItem,
             this.tsmiPreviewEdgeMesh,
             this.tsmiCreateMesh});
             this.tsmiMesh.Name = "tsmiMesh";
             this.tsmiMesh.Size = new System.Drawing.Size(48, 20);
             this.tsmiMesh.Text = "Mesh";
             // 
-            // tsmiMeshingParameters
+            // tsmiMeshSetupItem
             // 
-            this.tsmiMeshingParameters.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiCreateMeshingParameters,
-            this.tsmiEditMeshingParameters,
-            this.tsmiDuplicateMeshingParameters,
-            this.tsmiDividerMeshingParameters1,
-            this.tsmiDeleteMeshingParameters});
-            this.tsmiMeshingParameters.Image = global::PrePoMax.Properties.Resources.Meshing_parameters;
-            this.tsmiMeshingParameters.Name = "tsmiMeshingParameters";
-            this.tsmiMeshingParameters.Size = new System.Drawing.Size(182, 22);
-            this.tsmiMeshingParameters.Text = "Meshing Parameters";
+            this.tsmiMeshSetupItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiCreateMeshSetupItem,
+            this.tsmiEditMeshSetupItem,
+            this.tsmiDuplicateMeshSetupItem,
+            this.toolStripMenuItem1,
+            this.tsmiDeleteMeshSetupItem});
+            this.tsmiMeshSetupItem.Image = global::PrePoMax.Properties.Resources.Mesh_refinement;
+            this.tsmiMeshSetupItem.Name = "tsmiMeshSetupItem";
+            this.tsmiMeshSetupItem.Size = new System.Drawing.Size(180, 22);
+            this.tsmiMeshSetupItem.Text = "Mesh Setup Item";
             // 
-            // tsmiCreateMeshingParameters
+            // tsmiCreateMeshSetupItem
             // 
-            this.tsmiCreateMeshingParameters.Name = "tsmiCreateMeshingParameters";
-            this.tsmiCreateMeshingParameters.Size = new System.Drawing.Size(124, 22);
-            this.tsmiCreateMeshingParameters.Text = "Create";
-            this.tsmiCreateMeshingParameters.Click += new System.EventHandler(this.tsmiCreateMeshingParameters_Click);
+            this.tsmiCreateMeshSetupItem.Name = "tsmiCreateMeshSetupItem";
+            this.tsmiCreateMeshSetupItem.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateMeshSetupItem.Text = "Create";
+            this.tsmiCreateMeshSetupItem.Click += new System.EventHandler(this.tsmiCreateMeshSetupItem_Click);
             // 
-            // tsmiEditMeshingParameters
+            // tsmiEditMeshSetupItem
             // 
-            this.tsmiEditMeshingParameters.Name = "tsmiEditMeshingParameters";
-            this.tsmiEditMeshingParameters.Size = new System.Drawing.Size(124, 22);
-            this.tsmiEditMeshingParameters.Text = "Edit";
-            this.tsmiEditMeshingParameters.Click += new System.EventHandler(this.tsmiEditMeshingParameters_Click);
+            this.tsmiEditMeshSetupItem.Name = "tsmiEditMeshSetupItem";
+            this.tsmiEditMeshSetupItem.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditMeshSetupItem.Text = "Edit";
+            this.tsmiEditMeshSetupItem.Click += new System.EventHandler(this.tsmiEditMeshSetupItem_Click);
             // 
-            // tsmiDuplicateMeshingParameters
+            // tsmiDuplicateMeshSetupItem
             // 
-            this.tsmiDuplicateMeshingParameters.Name = "tsmiDuplicateMeshingParameters";
-            this.tsmiDuplicateMeshingParameters.Size = new System.Drawing.Size(124, 22);
-            this.tsmiDuplicateMeshingParameters.Text = "Duplicate";
-            this.tsmiDuplicateMeshingParameters.Click += new System.EventHandler(this.tsmiDuplicateMeshingParameters_Click);
+            this.tsmiDuplicateMeshSetupItem.Name = "tsmiDuplicateMeshSetupItem";
+            this.tsmiDuplicateMeshSetupItem.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDuplicateMeshSetupItem.Text = "Duplicate";
+            this.tsmiDuplicateMeshSetupItem.Click += new System.EventHandler(this.tsmiDuplicateMeshSetupItem_Click);
             // 
-            // tsmiDividerMeshingParameters1
+            // toolStripMenuItem1
             // 
-            this.tsmiDividerMeshingParameters1.Name = "tsmiDividerMeshingParameters1";
-            this.tsmiDividerMeshingParameters1.Size = new System.Drawing.Size(121, 6);
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
             // 
-            // tsmiDeleteMeshingParameters
+            // tsmiDeleteMeshSetupItem
             // 
-            this.tsmiDeleteMeshingParameters.Name = "tsmiDeleteMeshingParameters";
-            this.tsmiDeleteMeshingParameters.Size = new System.Drawing.Size(124, 22);
-            this.tsmiDeleteMeshingParameters.Text = "Delete";
-            this.tsmiDeleteMeshingParameters.Click += new System.EventHandler(this.tsmiDeleteMeshingParameters_Click);
-            // 
-            // tsmiMeshRefinement
-            // 
-            this.tsmiMeshRefinement.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiCreateMeshRefinement,
-            this.tsmiEditMeshRefinement,
-            this.tsmiDuplicateMeshRefinement,
-            this.tsmiDividerMeshRefinement1,
-            this.tsmiDeleteMeshRefinement});
-            this.tsmiMeshRefinement.Image = global::PrePoMax.Properties.Resources.Mesh_refinement;
-            this.tsmiMeshRefinement.Name = "tsmiMeshRefinement";
-            this.tsmiMeshRefinement.Size = new System.Drawing.Size(182, 22);
-            this.tsmiMeshRefinement.Text = "Mesh Refinement";
-            // 
-            // tsmiCreateMeshRefinement
-            // 
-            this.tsmiCreateMeshRefinement.Name = "tsmiCreateMeshRefinement";
-            this.tsmiCreateMeshRefinement.Size = new System.Drawing.Size(124, 22);
-            this.tsmiCreateMeshRefinement.Text = "Create";
-            this.tsmiCreateMeshRefinement.Click += new System.EventHandler(this.tsmiCreateMeshRefinement_Click);
-            // 
-            // tsmiEditMeshRefinement
-            // 
-            this.tsmiEditMeshRefinement.Name = "tsmiEditMeshRefinement";
-            this.tsmiEditMeshRefinement.Size = new System.Drawing.Size(124, 22);
-            this.tsmiEditMeshRefinement.Text = "Edit";
-            this.tsmiEditMeshRefinement.Click += new System.EventHandler(this.tsmiEditMeshRefinement_Click);
-            // 
-            // tsmiDuplicateMeshRefinement
-            // 
-            this.tsmiDuplicateMeshRefinement.Name = "tsmiDuplicateMeshRefinement";
-            this.tsmiDuplicateMeshRefinement.Size = new System.Drawing.Size(124, 22);
-            this.tsmiDuplicateMeshRefinement.Text = "Duplicate";
-            this.tsmiDuplicateMeshRefinement.Click += new System.EventHandler(this.tsmiDuplicateMeshRefinement_Click);
-            // 
-            // tsmiDividerMeshRefinement1
-            // 
-            this.tsmiDividerMeshRefinement1.Name = "tsmiDividerMeshRefinement1";
-            this.tsmiDividerMeshRefinement1.Size = new System.Drawing.Size(121, 6);
-            // 
-            // tsmiDeleteMeshRefinement
-            // 
-            this.tsmiDeleteMeshRefinement.Name = "tsmiDeleteMeshRefinement";
-            this.tsmiDeleteMeshRefinement.Size = new System.Drawing.Size(124, 22);
-            this.tsmiDeleteMeshRefinement.Text = "Delete";
-            this.tsmiDeleteMeshRefinement.Click += new System.EventHandler(this.tsmiDeleteMeshRefinement_Click);
+            this.tsmiDeleteMeshSetupItem.Name = "tsmiDeleteMeshSetupItem";
+            this.tsmiDeleteMeshSetupItem.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteMeshSetupItem.Text = "Delete";
+            this.tsmiDeleteMeshSetupItem.Click += new System.EventHandler(this.tsmiDeleteMeshSetupItem_Click);
             // 
             // tsmiPreviewEdgeMesh
             // 
             this.tsmiPreviewEdgeMesh.Name = "tsmiPreviewEdgeMesh";
-            this.tsmiPreviewEdgeMesh.Size = new System.Drawing.Size(182, 22);
+            this.tsmiPreviewEdgeMesh.Size = new System.Drawing.Size(180, 22);
             this.tsmiPreviewEdgeMesh.Text = "Preview Edge Mesh";
             this.tsmiPreviewEdgeMesh.Click += new System.EventHandler(this.tsmiPreviewEdgeMesh_Click);
             // 
@@ -2115,7 +2062,7 @@
             // 
             this.tsmiCreateMesh.Image = global::PrePoMax.Properties.Resources.Part;
             this.tsmiCreateMesh.Name = "tsmiCreateMesh";
-            this.tsmiCreateMesh.Size = new System.Drawing.Size(182, 22);
+            this.tsmiCreateMesh.Size = new System.Drawing.Size(180, 22);
             this.tsmiCreateMesh.Text = "Create Mesh";
             this.tsmiCreateMesh.Click += new System.EventHandler(this.tsmiCreateMesh_Click);
             // 
@@ -3046,7 +2993,7 @@
             this.tsmiDeleteStep});
             this.tsmiStep.Image = global::PrePoMax.Properties.Resources.Step;
             this.tsmiStep.Name = "tsmiStep";
-            this.tsmiStep.Size = new System.Drawing.Size(180, 22);
+            this.tsmiStep.Size = new System.Drawing.Size(153, 22);
             this.tsmiStep.Text = "Step";
             // 
             // tsmiCreateStep
@@ -3085,7 +3032,7 @@
             // tsmiDividerStep1
             // 
             this.tsmiDividerStep1.Name = "tsmiDividerStep1";
-            this.tsmiDividerStep1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerStep1.Size = new System.Drawing.Size(150, 6);
             // 
             // tsmiHistoryOutput
             // 
@@ -3098,7 +3045,7 @@
             this.tsmiDeleteHistoryOutput});
             this.tsmiHistoryOutput.Image = global::PrePoMax.Properties.Resources.History_output;
             this.tsmiHistoryOutput.Name = "tsmiHistoryOutput";
-            this.tsmiHistoryOutput.Size = new System.Drawing.Size(180, 22);
+            this.tsmiHistoryOutput.Size = new System.Drawing.Size(153, 22);
             this.tsmiHistoryOutput.Text = "History Output";
             // 
             // tsmiCreateHistoryOutput
@@ -3152,7 +3099,7 @@
             this.tsmiDeleteFieldOutput});
             this.tsmiFieldOutput.Image = global::PrePoMax.Properties.Resources.Field_output;
             this.tsmiFieldOutput.Name = "tsmiFieldOutput";
-            this.tsmiFieldOutput.Size = new System.Drawing.Size(180, 22);
+            this.tsmiFieldOutput.Size = new System.Drawing.Size(153, 22);
             this.tsmiFieldOutput.Text = "Field Output";
             // 
             // tsmiCreateFieldOutput
@@ -3209,7 +3156,7 @@
             this.tsmiDeleteBC});
             this.tsmiBC.Image = global::PrePoMax.Properties.Resources.Bc;
             this.tsmiBC.Name = "tsmiBC";
-            this.tsmiBC.Size = new System.Drawing.Size(180, 22);
+            this.tsmiBC.Size = new System.Drawing.Size(153, 22);
             this.tsmiBC.Text = "BC";
             // 
             // tsmiCreateBC
@@ -3288,7 +3235,7 @@
             this.tsmiDeleteLoad});
             this.tsmiLoad.Image = global::PrePoMax.Properties.Resources.Load;
             this.tsmiLoad.Name = "tsmiLoad";
-            this.tsmiLoad.Size = new System.Drawing.Size(180, 22);
+            this.tsmiLoad.Size = new System.Drawing.Size(153, 22);
             this.tsmiLoad.Text = "Load";
             // 
             // tsmiCreateLoad
@@ -3373,34 +3320,34 @@
             this.tsmiDeleteDefinedField});
             this.tsmiDefinedField.Image = global::PrePoMax.Properties.Resources.Defined_field;
             this.tsmiDefinedField.Name = "tsmiDefinedField";
-            this.tsmiDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDefinedField.Size = new System.Drawing.Size(153, 22);
             this.tsmiDefinedField.Text = "Defined Field";
             // 
             // tsmiCreateDefinedField
             // 
             this.tsmiCreateDefinedField.Name = "tsmiCreateDefinedField";
-            this.tsmiCreateDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateDefinedField.Size = new System.Drawing.Size(128, 22);
             this.tsmiCreateDefinedField.Text = "Create";
             this.tsmiCreateDefinedField.Click += new System.EventHandler(this.tsmiCreateDefinedField_Click);
             // 
             // tsmiEditDefinedField
             // 
             this.tsmiEditDefinedField.Name = "tsmiEditDefinedField";
-            this.tsmiEditDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditDefinedField.Size = new System.Drawing.Size(128, 22);
             this.tsmiEditDefinedField.Text = "Edit";
             this.tsmiEditDefinedField.Click += new System.EventHandler(this.tsmiEditDefinedField_Click);
             // 
             // tsmiDuplicateDefinedField
             // 
             this.tsmiDuplicateDefinedField.Name = "tsmiDuplicateDefinedField";
-            this.tsmiDuplicateDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDuplicateDefinedField.Size = new System.Drawing.Size(128, 22);
             this.tsmiDuplicateDefinedField.Text = "Duplicate";
             this.tsmiDuplicateDefinedField.Click += new System.EventHandler(this.tsmiDuplicateDefinedField_Click);
             // 
             // tsmiPropagateDefinedField
             // 
             this.tsmiPropagateDefinedField.Name = "tsmiPropagateDefinedField";
-            this.tsmiPropagateDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiPropagateDefinedField.Size = new System.Drawing.Size(128, 22);
             this.tsmiPropagateDefinedField.Text = "Propagate";
             this.tsmiPropagateDefinedField.Click += new System.EventHandler(this.tsmiPropagateDefinedField_Click);
             // 
@@ -3408,19 +3355,19 @@
             // 
             this.tsmiPreviewDefinedField.Image = global::PrePoMax.Properties.Resources.Preview_defined_field;
             this.tsmiPreviewDefinedField.Name = "tsmiPreviewDefinedField";
-            this.tsmiPreviewDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiPreviewDefinedField.Size = new System.Drawing.Size(128, 22);
             this.tsmiPreviewDefinedField.Text = "Preview";
             this.tsmiPreviewDefinedField.Click += new System.EventHandler(this.tsmiPreviewDefinedField_Click);
             // 
             // tsmiDividerDefinedField1
             // 
             this.tsmiDividerDefinedField1.Name = "tsmiDividerDefinedField1";
-            this.tsmiDividerDefinedField1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerDefinedField1.Size = new System.Drawing.Size(125, 6);
             // 
             // tsmiDeleteDefinedField
             // 
             this.tsmiDeleteDefinedField.Name = "tsmiDeleteDefinedField";
-            this.tsmiDeleteDefinedField.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteDefinedField.Size = new System.Drawing.Size(128, 22);
             this.tsmiDeleteDefinedField.Text = "Delete";
             this.tsmiDeleteDefinedField.Click += new System.EventHandler(this.tsmiDeleteDefinedField_Click);
             // 
@@ -3445,66 +3392,73 @@
             // tsmiCreateAnalysis
             // 
             this.tsmiCreateAnalysis.Name = "tsmiCreateAnalysis";
-            this.tsmiCreateAnalysis.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateAnalysis.Size = new System.Drawing.Size(144, 22);
             this.tsmiCreateAnalysis.Text = "Create";
             this.tsmiCreateAnalysis.Click += new System.EventHandler(this.tsmiCreateAnalysis_Click);
             // 
             // tsmiEditAnalysis
             // 
             this.tsmiEditAnalysis.Name = "tsmiEditAnalysis";
-            this.tsmiEditAnalysis.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditAnalysis.Size = new System.Drawing.Size(144, 22);
             this.tsmiEditAnalysis.Text = "Edit";
             this.tsmiEditAnalysis.Click += new System.EventHandler(this.tsmiEditAnalysis_Click);
+            // 
+            // tsmiDuplicateAnalysis
+            // 
+            this.tsmiDuplicateAnalysis.Name = "tsmiDuplicateAnalysis";
+            this.tsmiDuplicateAnalysis.Size = new System.Drawing.Size(144, 22);
+            this.tsmiDuplicateAnalysis.Text = "Duplicate";
+            this.tsmiDuplicateAnalysis.Click += new System.EventHandler(this.tsmiDuplicateAnalysis_Click);
             // 
             // tsmiDividerAnalysis1
             // 
             this.tsmiDividerAnalysis1.Name = "tsmiDividerAnalysis1";
-            this.tsmiDividerAnalysis1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerAnalysis1.Size = new System.Drawing.Size(141, 6);
             // 
             // tsmiRunAnalysis
             // 
             this.tsmiRunAnalysis.Name = "tsmiRunAnalysis";
-            this.tsmiRunAnalysis.Size = new System.Drawing.Size(180, 22);
+            this.tsmiRunAnalysis.Size = new System.Drawing.Size(144, 22);
             this.tsmiRunAnalysis.Text = "Run";
             this.tsmiRunAnalysis.Click += new System.EventHandler(this.tsmiRunAnalysis_Click);
             // 
             // tsmiCheckModel
             // 
             this.tsmiCheckModel.Name = "tsmiCheckModel";
-            this.tsmiCheckModel.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCheckModel.Size = new System.Drawing.Size(144, 22);
             this.tsmiCheckModel.Text = "Check Model";
             this.tsmiCheckModel.Click += new System.EventHandler(this.tsmiCheckModel_Click);
             // 
             // tsmiMonitorAnalysis
             // 
             this.tsmiMonitorAnalysis.Name = "tsmiMonitorAnalysis";
-            this.tsmiMonitorAnalysis.Size = new System.Drawing.Size(180, 22);
+            this.tsmiMonitorAnalysis.Size = new System.Drawing.Size(144, 22);
             this.tsmiMonitorAnalysis.Text = "Monitor";
             this.tsmiMonitorAnalysis.Click += new System.EventHandler(this.tsmiMonitorAnalysis_Click);
             // 
             // tsmiResultsAnalysis
             // 
             this.tsmiResultsAnalysis.Name = "tsmiResultsAnalysis";
-            this.tsmiResultsAnalysis.Size = new System.Drawing.Size(180, 22);
+            this.tsmiResultsAnalysis.Size = new System.Drawing.Size(144, 22);
             this.tsmiResultsAnalysis.Text = "Results";
             this.tsmiResultsAnalysis.Click += new System.EventHandler(this.tsmiResultsAnalysis_Click);
             // 
             // tsmiKillAnalysis
             // 
             this.tsmiKillAnalysis.Name = "tsmiKillAnalysis";
-            this.tsmiKillAnalysis.Size = new System.Drawing.Size(180, 22);
+            this.tsmiKillAnalysis.Size = new System.Drawing.Size(144, 22);
             this.tsmiKillAnalysis.Text = "Kill";
             this.tsmiKillAnalysis.Click += new System.EventHandler(this.tsmiKillAnalysis_Click);
             // 
             // tsmiDividerAnalysis2
             // 
             this.tsmiDividerAnalysis2.Name = "tsmiDividerAnalysis2";
-            this.tsmiDividerAnalysis2.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerAnalysis2.Size = new System.Drawing.Size(141, 6);
             // 
             // tsmiDeleteAnalysis
             // 
             this.tsmiDeleteAnalysis.Name = "tsmiDeleteAnalysis";
-            this.tsmiDeleteAnalysis.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteAnalysis.Size = new System.Drawing.Size(144, 22);
             this.tsmiDeleteAnalysis.Text = "Delete";
             this.tsmiDeleteAnalysis.Click += new System.EventHandler(this.tsmiDeleteAnalysis_Click);
             // 
@@ -4037,13 +3991,6 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
-            // tsmiDuplicateAnalysis
-            // 
-            this.tsmiDuplicateAnalysis.Name = "tsmiDuplicateAnalysis";
-            this.tsmiDuplicateAnalysis.Size = new System.Drawing.Size(180, 22);
-            this.tsmiDuplicateAnalysis.Text = "Duplicate";
-            this.tsmiDuplicateAnalysis.Click += new System.EventHandler(this.tsmiDuplicateAnalysis_Click);
-            // 
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -4286,7 +4233,6 @@
         private System.Windows.Forms.ToolStripSeparator tsmiDividerLoad2;
         private System.Windows.Forms.ToolStripButton tsbAnimate;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerGeometry1;
-        private System.Windows.Forms.ToolStripMenuItem tsmiMeshingParameters;
         private System.Windows.Forms.ToolStripMenuItem tsmiResults;
         private System.Windows.Forms.ToolStripMenuItem tsmiResultPart;
         private System.Windows.Forms.ToolStripMenuItem tsmiEditResultPart;
@@ -4350,11 +4296,6 @@
         private System.Windows.Forms.ToolStripSeparator tsmiDividerModel1;
         private System.Windows.Forms.ToolStripMenuItem tsmiPreviewEdgeMesh;
         private System.Windows.Forms.ToolStripMenuItem tsmiMesh;
-        private System.Windows.Forms.ToolStripMenuItem tsmiMeshRefinement;
-        private System.Windows.Forms.ToolStripMenuItem tsmiCreateMeshRefinement;
-        private System.Windows.Forms.ToolStripMenuItem tsmiEditMeshRefinement;
-        private System.Windows.Forms.ToolStripSeparator tsmiDividerMeshRefinement1;
-        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteMeshRefinement;
         private System.Windows.Forms.ToolStripMenuItem tsmiCreateAndImportCompoundPart;
         private System.Windows.Forms.ToolStripMenuItem tsmiExportToStep;
         private System.Windows.Forms.ToolStripMenuItem tsmiExportToBrep;
@@ -4498,10 +4439,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiPreviewDefinedField;
         private System.Windows.Forms.ToolStripMenuItem tsmiCheckModel;
         private System.Windows.Forms.ToolStripMenuItem tsmiFind;
-        private System.Windows.Forms.ToolStripMenuItem tsmiCreateMeshingParameters;
-        private System.Windows.Forms.ToolStripMenuItem tsmiEditMeshingParameters;
-        private System.Windows.Forms.ToolStripSeparator tsmiDividerMeshingParameters1;
-        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteMeshingParameters;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripLabel tslComplex;
         private System.Windows.Forms.ToolStripComboBox tscbComplex;
@@ -4526,13 +4463,17 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateAmplitude;
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateInitialCondition;
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateLoad;
-        private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateMeshingParameters;
-        private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateMeshRefinement;
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateHistoryOutput;
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateFieldOutput;
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateBC;
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateDefinedField;
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateAnalysis;
+        private System.Windows.Forms.ToolStripMenuItem tsmiMeshSetupItem;
+        private System.Windows.Forms.ToolStripMenuItem tsmiCreateMeshSetupItem;
+        private System.Windows.Forms.ToolStripMenuItem tsmiEditMeshSetupItem;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateMeshSetupItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteMeshSetupItem;
     }
 }
 

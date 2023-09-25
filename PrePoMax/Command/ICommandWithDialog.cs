@@ -14,6 +14,6 @@ namespace PrePoMax.Commands
     interface ICommandWithDialog
     {
         // Methods                                                                                                                  
-        void ExecuteWithDialogs(Controller receiver);
+        bool ExecuteWithDialog(Controller receiver);
     }
 }

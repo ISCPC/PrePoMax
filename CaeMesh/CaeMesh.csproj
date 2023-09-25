@@ -102,8 +102,9 @@
     <Compile Include="Geometry\GeomVertex.cs" />
     <Compile Include="Geometry\GeomSurface.cs" />
     <Compile Include="Geometry\GeometryItem.cs" />
+    <Compile Include="Meshing\MeshSetupItem.cs" />
     <Compile Include="Parts\NodalDataStructures.cs" />
-    <Compile Include="Refinement\FeMeshRefinement.cs" />
+    <Compile Include="Meshing\FeMeshRefinement.cs" />
     <Compile Include="Parts\CellNeighbour.cs" />
     <Compile Include="InpElementSet.cs" />
     <Compile Include="Nodes\CompareFeNodeByX.cs" />
@@ -122,12 +123,12 @@
     <Compile Include="Elements\2D\LinearTriangleElement.cs" />
     <Compile Include="GeometryTools.cs" />
     <Compile Include="Globals.cs" />
-    <Compile Include="Parts\MeshingParameters.cs" />
+    <Compile Include="Meshing\MeshingParameters.cs" />
     <Compile Include="Parts\PartType.cs" />
     <Compile Include="Parts\PartProperties.cs" />
     <Compile Include="Parts\VisualizationData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Remeshing\RemeshingParameters.cs" />
+    <Compile Include="Meshing\RemeshingParameters.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CaeGlobals\CaeGlobals.csproj">

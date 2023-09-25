@@ -25,9 +25,9 @@ namespace PrePoMax.Forms
             get { return _viewSection != null ? _viewSection.GetBase() : null; }
             set
             {
-                if (value is SolidSection) _viewSection = new ViewSolidSection((SolidSection)value.DeepClone());
-                else if (value is ShellSection) _viewSection = new ViewShellSection((ShellSection)value.DeepClone());
-                else if (value is MembraneSection) _viewSection = new ViewMembraneSection((MembraneSection)value.DeepClone());
+                if (value is SolidSection sose) _viewSection = new ViewSolidSection(sose.DeepClone());
+                else if (value is ShellSection shse) _viewSection = new ViewShellSection(shse.DeepClone());
+                else if (value is MembraneSection mese) _viewSection = new ViewMembraneSection(mese.DeepClone());
                 else throw new NotImplementedException();
             }
         }

@@ -17,7 +17,7 @@ namespace CaeGlobals
         private int _maxNumberOfIds;                        //ISerializable
         private bool _limitSelectionToFirstPart;            //ISerializable
         private bool _limitSelectionToFirstGeometryType;    //ISerializable
-        private bool _limitSelectionToFirstMesherType;      //ISerializable
+        private bool _limitSelectionToFirstMesherType;      //ISerializable     // netgen or mmg
         private bool _limitSelectionToShellEdges;           //ISerializable
         private bool _enableShellEdgeFaceSelection;         //ISerializable
         

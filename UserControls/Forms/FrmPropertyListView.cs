@@ -63,12 +63,7 @@ namespace UserControls
             //
             bool result = OnPrepareForm(stepName, itemToEditName);
             //
-            if (_preselectIndex >= 0 && _preselectIndex < lvTypes.Items.Count)
-            {
-                lvTypes.Items[_preselectIndex].Selected = true;
-                lvTypes.Enabled = false;
-                _preselectIndex = -1;
-            }
+            PreselectListViewItem(_preselectIndex);
             //
             return result;
         }
@@ -80,9 +75,21 @@ namespace UserControls
         {
             propertyGrid.Select();
         }
+        public void SetPreselectListViewItem(int index)
+        {
+            // Used by Advisor
+            _preselectIndex = index;
+        }
         public void PreselectListViewItem(int index)
         {
             _preselectIndex = index;
+            //
+            if (_preselectIndex >= 0 && _preselectIndex < lvTypes.Items.Count)
+            {
+                lvTypes.Items[_preselectIndex].Selected = true;
+                lvTypes.Enabled = false;
+                _preselectIndex = -1;
+            }
         }
 
 
