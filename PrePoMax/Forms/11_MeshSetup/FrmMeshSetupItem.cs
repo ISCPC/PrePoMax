@@ -389,12 +389,12 @@ namespace PrePoMax.Forms
         public void SetMeshSetupItem(MeshSetupItem meshSetupItem)
         {
             int selectedId;
+            _meshSetupItemToEditName = meshSetupItem.Name;  // the OnApply checks this name
+            //
             if (meshSetupItem is MeshingParameters mp)
             {
                 selectedId = 0;
-                ViewMeshingParameters vmp = new ViewMeshingParameters(mp.DeepClone());
-                vmp.HideName();
-                _viewMeshSetupItem = vmp;
+                _viewMeshSetupItem = new ViewMeshingParameters(mp.DeepClone());
             }
             else if (meshSetupItem is FeMeshRefinement mr)
             {
@@ -403,6 +403,7 @@ namespace PrePoMax.Forms
             }
             else throw new NotSupportedException("MeshSetupItemTypeException");
             //
+            _viewMeshSetupItem.HideName();
             btnOkAddNew.Visible = false;
             btnPreview.Visible = false;
             //
@@ -477,7 +478,7 @@ namespace PrePoMax.Forms
         private void ShowHideSelectionForm()
         {
             // When opened from regenerate
-            if (this.Modal) ItemSetDataEditor.SelectionForm.Hide();
+            if (!Visible || this.Modal) ItemSetDataEditor.SelectionForm.Hide();
             // When opened normally
             else
             {

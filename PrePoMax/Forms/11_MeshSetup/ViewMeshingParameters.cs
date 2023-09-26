@@ -22,7 +22,7 @@ namespace PrePoMax.Forms
         [OrderedDisplayName(0, 10, "Name")]
         [Description("Name of the meshing parameters.")]
         [Id(1, 1)]
-        public string Name { get { return _parameters.Name; } set { _parameters.Name = value; } }
+        public override string Name { get { return _parameters.Name; } set { _parameters.Name = value; } }
         //
         [Category("Data")]
         [OrderedDisplayName(1, 10, "Mesh settings")]
@@ -199,10 +199,7 @@ namespace PrePoMax.Forms
         {
             return _parameters;
         }
-        public void HideName()
-        {
-            _dctd.GetProperty(nameof(Name)).SetIsBrowsable(false);
-        }
+        
         protected void UpdateVisibility()
         {
             bool visible = _parameters.RelativeSize || _settingsView;

@@ -21,7 +21,7 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Data")]
         [OrderedDisplayName(0, 10, "Name")]
         [DescriptionAttribute("Name of the mesh refinement.")]
-        public string Name { get { return _meshRefinement.Name; } set { _meshRefinement.Name = value; } }
+        public override string Name { get { return _meshRefinement.Name; } set { _meshRefinement.Name = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Element size")]
