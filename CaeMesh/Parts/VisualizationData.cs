@@ -19,7 +19,7 @@ namespace CaeMesh
         // Variables                                                                                                                
         protected int[][] _cells;
         protected int[] _cellIds;
-        protected int[][] _cellIdsByFace;        // coud be hashset<> but serialization coud be bad
+        protected int[][] _cellIdsByFace;        // could be hashSet<> but serialization could be bad
         protected double[] _faceAreas;
         protected GeomFaceType[] _faceTypes;
         protected int[][] _faceEdgeIds;
@@ -28,6 +28,7 @@ namespace CaeMesh
         protected int[][] _edgeCells;
         protected int[][] _edgeCellIdsByEdge;
         protected double[] _edgeLengths;
+        protected GeomCurveType[] _edgeTypes;
         protected int[] _vertexNodeIds;
         //
         [NonSerialized]
@@ -146,6 +147,16 @@ namespace CaeMesh
         }
 
         /// <summary>
+        /// EdgeTypes
+        /// [0...num. of edges]
+        /// </summary>
+        public GeomCurveType[] EdgeTypes
+        {
+            get { return _edgeTypes; }
+            set { _edgeTypes = value; }
+        }
+
+        /// <summary>
         /// VertexNodeIds
         /// [0...num. of vertices] -> global node id (a vertice is a node where more than two edge cells meet)
         /// </summary>
@@ -165,6 +176,7 @@ namespace CaeMesh
             _edgeCells = null;
             _edgeCellIdsByEdge = null;
             _edgeLengths = null;
+            _edgeTypes = null;
             _vertexNodeIds = null;
             ResetCellNeighboursOverCell();
         }
@@ -239,6 +251,8 @@ namespace CaeMesh
             //
             _edgeLengths = visualization.EdgeLengths != null ? visualization.EdgeLengths.ToArray() : null;
             //
+            _edgeTypes = visualization.EdgeTypes != null ? visualization.EdgeTypes.ToArray() : null;
+            //
             _vertexNodeIds = visualization.VertexNodeIds != null ? visualization.VertexNodeIds.ToArray() : null;
             // Reference exchange - for speed and memory - might be a problem
             _cellNeighboursOverCell = visualization._cellNeighboursOverCell != null ? visualization._cellNeighboursOverCell : null;
@@ -260,36 +274,44 @@ namespace CaeMesh
                 ReadWrite.WriteToBinaryStream(visualizationData._cellIds, bw);
                 ReadWrite.WriteToBinaryStream(visualizationData._cellIdsByFace, bw);
                 ReadWrite.WriteToBinaryStream(visualizationData._faceAreas, bw);
-                WriteToBinaryStream(visualizationData._faceTypes, bw);
+                WriteToBinaryStream((int[])(object)visualizationData._faceTypes, bw);
                 ReadWrite.WriteToBinaryStream(visualizationData._faceEdgeIds, bw);
                 ReadWrite.WriteToBinaryStream(visualizationData._cellNeighboursOverCellEdge, bw);
                 ReadWrite.WriteToBinaryStream(visualizationData._edgeCells, bw);
                 ReadWrite.WriteToBinaryStream(visualizationData._edgeCellIdsByEdge, bw);
                 ReadWrite.WriteToBinaryStream(visualizationData._edgeLengths, bw);
+                WriteToBinaryStream((int[])(object)visualizationData._edgeTypes, bw);
                 ReadWrite.WriteToBinaryStream(visualizationData._vertexNodeIds, bw);
             }
         }
-        public static void ReadFromBinaryStream(out VisualizationData visualizationData, System.IO.BinaryReader br)
+        public static void ReadFromBinaryStream(out VisualizationData visualizationData, System.IO.BinaryReader br, int version)
         {
             int exists = br.ReadInt32();
             if (exists <= -1) visualizationData = null;
             else
             {
+                int[] types;
                 visualizationData = new VisualizationData();
                 ReadWrite.ReadFromBinaryStream(out visualizationData._cells, br);
                 ReadWrite.ReadFromBinaryStream(out visualizationData._cellIds, br);
                 ReadWrite.ReadFromBinaryStream(out visualizationData._cellIdsByFace, br);
                 ReadWrite.ReadFromBinaryStream(out visualizationData._faceAreas, br);
-                ReadFromBinaryStream(out visualizationData._faceTypes, br);
+                ReadFromBinaryStream(out types, br);
+                visualizationData._faceTypes = (GeomFaceType[])(object)types;
                 ReadWrite.ReadFromBinaryStream(out visualizationData._faceEdgeIds, br);
                 ReadWrite.ReadFromBinaryStream(out visualizationData._cellNeighboursOverCellEdge, br);
                 ReadWrite.ReadFromBinaryStream(out visualizationData._edgeCells, br);
                 ReadWrite.ReadFromBinaryStream(out visualizationData._edgeCellIdsByEdge, br);
                 ReadWrite.ReadFromBinaryStream(out visualizationData._edgeLengths, br);
+                if (version > 1_004_001)
+                {
+                    ReadFromBinaryStream(out types, br);
+                    visualizationData._edgeTypes = (GeomCurveType[])(object)types;
+                }
                 ReadWrite.ReadFromBinaryStream(out visualizationData._vertexNodeIds, br);
             }
         }
-        private static void WriteToBinaryStream(GeomFaceType[] data, System.IO.BinaryWriter bw)
+        private static void WriteToBinaryStream(int[] data, System.IO.BinaryWriter bw)
         {
             if (data == null)
             {
@@ -298,17 +320,17 @@ namespace CaeMesh
             else
             {
                 bw.Write(data.Length);
-                for (int i = 0; i < data.Length; i++) bw.Write((int)data[i]);
+                for (int i = 0; i < data.Length; i++) bw.Write(data[i]);
             }
         }
-        private static void ReadFromBinaryStream(out GeomFaceType[] data, System.IO.BinaryReader br)
+        private static void ReadFromBinaryStream(out int[] data, System.IO.BinaryReader br)
         {
             int numOfEntries = br.ReadInt32();
             if (numOfEntries <= -1) data = null;
             else
             {
-                data = new GeomFaceType[numOfEntries];
-                for (int i = 0; i < data.Length; i++) data[i] = (GeomFaceType)br.ReadInt32();
+                data = new int[numOfEntries];
+                for (int i = 0; i < data.Length; i++) data[i] = br.ReadInt32();
             }
         }
 
@@ -524,6 +546,16 @@ namespace CaeMesh
                 newEdgeLengths[i] = _edgeLengths[orderedEdgeIds[i]];
             }
             _edgeLengths = newEdgeLengths;
+            // Types
+            if (_edgeTypes != null)
+            {
+                GeomCurveType[] newEdgeTypes = new GeomCurveType[_edgeTypes.Length];
+                for (int i = 0; i < orderedEdgeIds.Length; i++)
+                {
+                    newEdgeTypes[i] = _edgeTypes[orderedEdgeIds[i]];
+                }
+                _edgeTypes = newEdgeTypes;
+            }
         }
         public HashSet<int> GetNodeIdsByEdge(int edgeId)
         {
@@ -1079,7 +1111,8 @@ namespace CaeMesh
                 foreach (var entry in face_i_VertexEdgeIds)
                 {
                     // Cylinder and toruses have a single edge along their axis which creates 3 edge vertices
-                    if (entry.Value.Count % 2 == 1 && (faceType == GeomFaceType.Cylinder || faceType == GeomFaceType.Torus)) continue;
+                    if (entry.Value.Count % 2 == 1 && (faceType == GeomFaceType.Cylinder || faceType == GeomFaceType.Torus))
+                        continue;
                     else
                     {
                         foreach (var remainingEdgeId in entry.Value)

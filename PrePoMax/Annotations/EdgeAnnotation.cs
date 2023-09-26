@@ -50,6 +50,9 @@ namespace PrePoMax
             int[] nodeIds;
             double[] nodeWeights;
             //
+            GeomCurveType edgeType = GeomCurveType.Unknown;
+            if (part.Visualization.EdgeTypes != null) edgeType = part.Visualization.EdgeTypes[edgeId];
+            //
             mesh.GetEdgeNodeCoor(_geometryId, out nodeIds, out double[][] nodeCoor);
             nodeWeights = new double[nodeIds.Length];
             //
@@ -105,9 +108,9 @@ namespace PrePoMax
                         if (value < min) min = value;
                         if (value > max) max = value;
                         sum += value;
-                        avg += (float)(value * nodeWeights[i]);
+                        //avg += (float)(value * nodeWeights[i]);
                     }
-                    avg /= (float)length;
+                    avg = sum / nodes.Length;
                     // Units
                     fieldUnit = Controller.GetCurrentResultsUnitAbbreviation();
                     if (fieldUnit == "/") fieldUnit = "";
@@ -115,38 +118,49 @@ namespace PrePoMax
             }
             else throw new NotSupportedException();
             //
-            bool addEdgeIdData = Controller.Settings.Annotations.ShowEdgeSurId;
-            bool addEdgeLengthData = Controller.Settings.Annotations.ShowEdgeSurSize;
-            bool addEdgeMaxData = Controller.Settings.Annotations.ShowEdgeSurMax && results;
-            bool addEdgeMinData = Controller.Settings.Annotations.ShowEdgeSurMin && results;
-            bool addEdgeSumData = Controller.Settings.Annotations.ShowEdgeSurSum && results;
-            if (!addEdgeLengthData && !addEdgeMaxData && !addEdgeMinData && !addEdgeSumData) addEdgeIdData = true;
+            bool addEdgeId = Controller.Settings.Annotations.ShowEdgeSurId;
+            bool addEdgeType = Controller.Settings.Annotations.ShowEdgeSurType;
+            bool addEdgeLength = Controller.Settings.Annotations.ShowEdgeSurSize;
+            bool addEdgeMax = Controller.Settings.Annotations.ShowEdgeSurMax && results;
+            bool addEdgeMin = Controller.Settings.Annotations.ShowEdgeSurMin && results;
+            bool addEdgeSum = Controller.Settings.Annotations.ShowEdgeSurSum && results;
+            bool addEdgeAvg = Controller.Settings.Annotations.ShowEdgeSurAvg && results;
+            if (!addEdgeType && !addEdgeLength && !addEdgeMax &&
+                !addEdgeMin && !addEdgeSum && !addEdgeAvg) addEdgeId = true;
             text = "";
-            if (addEdgeIdData)
+            if (addEdgeId)
             {
                 text += string.Format("Edge id: {0} on {1}", edgeId + 1, part.Name);
             }
-            if (addEdgeLengthData)
+            if (addEdgeType)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Edge type: {0}", edgeType);
+            }
+            if (addEdgeLength)
             {
                 if (text.Length > 0) text += Environment.NewLine;
                 text += string.Format("Edge length: {0} {1}", length.ToString(numberFormat), lenUnit);
             }
-            if (addEdgeMaxData)
+            if (addEdgeMax)
             {
                 if (text.Length > 0) text += Environment.NewLine;
                 text += string.Format("Max: {0} {1}", max.ToString(numberFormat), fieldUnit);
             }
-            if (addEdgeMinData)
+            if (addEdgeMin)
             {
                 if (text.Length > 0) text += Environment.NewLine;
                 text += string.Format("Min: {0} {1}", min.ToString(numberFormat), fieldUnit);
             }
-            if (addEdgeSumData)
+            if (addEdgeSum)
             {
                 if (text.Length > 0) text += Environment.NewLine;
                 text += string.Format("Nodal sum: {0} {1}", sum.ToString(numberFormat), fieldUnit);
-                //if (text.Length > 0) text += Environment.NewLine;
-                //text += string.Format("Avg: {0} {1}", avg.ToString(numberFormat), fieldUnit);
+            }
+            if (addEdgeAvg)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Avg: {0} {1}", avg.ToString(numberFormat), fieldUnit);
             }
             //
             if (IsTextOverridden) text = OverriddenText;

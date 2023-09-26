@@ -72,6 +72,7 @@
     <Compile Include="Elements\0D\FeElement0D.cs" />
     <Compile Include="Elements\1D\LinearSpringElement.cs" />
     <Compile Include="Elements\VtkCellType.cs" />
+    <Compile Include="Enums\GeomCurveType.cs" />
     <Compile Include="Enums\GeomFaceType.cs" />
     <Compile Include="Enums\ImportOptions.cs" />
     <Compile Include="CellEdgeData.cs" />
@@ -102,6 +103,9 @@
     <Compile Include="Geometry\GeomVertex.cs" />
     <Compile Include="Geometry\GeomSurface.cs" />
     <Compile Include="Geometry\GeometryItem.cs" />
+    <Compile Include="Meshing\Gmsh\ExtrudeMesh.cs" />
+    <Compile Include="Meshing\Gmsh\GmshAlgorithmRecombinationEnum.cs" />
+    <Compile Include="Meshing\Gmsh\GmshAlgorithmMesh2DEnum.cs" />
     <Compile Include="Meshing\MeshSetupItem.cs" />
     <Compile Include="Parts\NodalDataStructures.cs" />
     <Compile Include="Meshing\FeMeshRefinement.cs" />

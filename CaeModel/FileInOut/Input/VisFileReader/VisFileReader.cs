@@ -26,7 +26,8 @@ namespace FileInOut.Input
                 HashSet<int> vertexNodeIds = new HashSet<int>();
                 Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
                 Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
-                SortedDictionary<int, GeomFaceType> faceTypes = new SortedDictionary<int, GeomFaceType>();
+                Dictionary<int, GeomFaceType> faceTypes = new Dictionary<int, GeomFaceType>();
+                Dictionary<int, GeomCurveType> edgeTypes = new Dictionary<int, GeomCurveType>();
                 //
                 BoundingBox bBox = new BoundingBox();
                 double epsilon = 1E-9;
@@ -66,21 +67,21 @@ namespace FileInOut.Input
                         for (int i = 1; i < faceData.Length; i++)   // start with 1 to skip first line: ********
                         {
                             ReadFace(faceData[i], ref offsetNodeId, nodes, ref offsetElementId, elements,
-                                     surfaceIdNodeIds, faceTypes, edgeIdNodeIds, vertexNodeIds, ref bBox);
+                                     surfaceIdNodeIds, faceTypes, edgeIdNodeIds, edgeTypes, vertexNodeIds, ref bBox);
                         }
                     }
                     //
                     double max = bBox.GetDiagonal();
                     int[] mergedNodes;
                     MergeNodes(nodes, elements, surfaceIdNodeIds, edgeIdNodeIds, epsilon * max, out mergedNodes);
-                    foreach (int mergedNode in mergedNodes) vertexNodeIds.Remove(mergedNode);
+                    vertexNodeIds.ExceptWith(mergedNodes);
                     //
                     FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry, importOptions);
                     //
                     mesh.ConvertLineFeElementsToEdges(vertexNodeIds, true);
                     //
                     mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds, faceTypes);
-                    mesh.RenumberVisualizationEdges(edgeIdNodeIds);
+                    mesh.RenumberVisualizationEdges(edgeIdNodeIds, edgeTypes);
                     //
                     mesh.RemoveElementsByType<FeElement1D>();
                     mesh.RemoveElementsByType<FeElement3D>();
@@ -96,8 +97,9 @@ namespace FileInOut.Input
                                      ref int offsetNodeId, Dictionary<int, FeNode> nodes,
                                      ref int offsetElementId, Dictionary<int, FeElement> elements,
                                      Dictionary<int, HashSet<int>> surfaceIdNodeIds,
-                                     SortedDictionary<int, GeomFaceType> faceTypes,
+                                     Dictionary<int, GeomFaceType> faceTypes,
                                      Dictionary<int, HashSet<int>> edgeIdNodeIds,
+                                     Dictionary<int, GeomCurveType> edgeTypes,
                                      HashSet<int> vertexNodeIds,
                                      ref BoundingBox bBox)
         {
@@ -128,7 +130,8 @@ namespace FileInOut.Input
                 }
                 else if (data[i].StartsWith("edges"))
                 {
-                    numOfElements = ReadEdges(data[i], offsetNodeId, offsetElementId, elements, edgeIdNodeIds, vertexNodeIds);
+                    numOfElements = ReadEdges(data[i], offsetNodeId, offsetElementId, elements,
+                                              edgeIdNodeIds, edgeTypes, vertexNodeIds);
                     offsetElementId += numOfElements;
                 }
             }
@@ -198,10 +201,13 @@ namespace FileInOut.Input
         }
         private static int ReadEdges(string elementData, int offsetNodeId, int offsetElementId,
                                      Dictionary<int, FeElement> elements, Dictionary<int, HashSet<int>> edgeIdNodeIds,
+                                     Dictionary<int, GeomCurveType> edgeTypes,
                                      HashSet<int> vertexNodeIds)
         {
             string[] data = elementData.Split(lineSplitter, StringSplitOptions.RemoveEmptyEntries);
-            string[] allIds;
+            GeomCurveType edgeType;
+            GeomCurveType prevEdgeType;
+            string[] splitData;
             int id;
             int internalId = 1;
             int[] nodeIds;
@@ -213,16 +219,17 @@ namespace FileInOut.Input
             //
             for (int i = 1; i < data.Length; i++)   // skip first row: Number of edges: 4
             {
-                allIds = data[i].Split(spaceSplitter, StringSplitOptions.RemoveEmptyEntries);
-                edgeId = int.Parse(allIds[0]);
+                splitData = data[i].Split(spaceSplitter, StringSplitOptions.RemoveEmptyEntries);
+                edgeType = (GeomCurveType)Enum.Parse(typeof(GeomCurveType), splitData[0]);
+                edgeId = int.Parse(splitData[1]);
                 //
                 edgeNodeIds.Clear();
-                for (int j = 1; j < allIds.Length - 1; j++)
+                for (int j = 2; j < splitData.Length - 1; j++)
                 {
                     id = internalId + offsetElementId;
                     nodeIds = new int[2];
-                    nodeIds[0] = int.Parse(allIds[j]) + offsetNodeId;
-                    nodeIds[1] = int.Parse(allIds[j + 1]) + offsetNodeId;
+                    nodeIds[0] = int.Parse(splitData[j]) + offsetNodeId;
+                    nodeIds[1] = int.Parse(splitData[j + 1]) + offsetNodeId;
                     //
                     edgeNodeIds.Add(nodeIds[0]);
                     edgeNodeIds.Add(nodeIds[1]);
@@ -230,13 +237,19 @@ namespace FileInOut.Input
                     element = new LinearBeamElement(id, nodeIds);
                     elements.Add(element.Id, element);
                     // Add the first and the last node id to the vertex list
-                    if (j == 1) vertexNodeIds.Add(nodeIds[0]);
-                    if (j == allIds.Length - 2) vertexNodeIds.Add(nodeIds[1]);
+                    if (j == 2) vertexNodeIds.Add(nodeIds[0]);
+                    if (j == splitData.Length - 2) vertexNodeIds.Add(nodeIds[1]);
                     internalId++;
                 }
                 //
                 if (edgeIdNodeIds.TryGetValue(edgeId, out edgeNodeIdsOut)) edgeNodeIdsOut.UnionWith(edgeNodeIds);
                 else edgeIdNodeIds.Add(edgeId, new HashSet<int>(edgeNodeIds));      // create a copy!!!
+                //
+                if (edgeTypes.TryGetValue(edgeId, out prevEdgeType))
+                {
+                    if (prevEdgeType != edgeType) throw new NotSupportedException();
+                }
+                else edgeTypes.Add(edgeId, edgeType);
             }
             //
             return internalId - 1; // return number of read edges

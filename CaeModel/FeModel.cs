@@ -1055,7 +1055,7 @@ namespace CaeModel
                     edgeIdNodeIds[newEdgeIdOldEdgeId.Value].IntersectWith(part.NodeLabels);
                 }
             }
-            _mesh.RenumberVisualizationEdges(part, edgeIdNodeIds);
+            _mesh.RenumberPartVisualizationEdges(part, edgeIdNodeIds);
             //
             _mesh.RemoveElementsByType<FeElement1D>();
         }

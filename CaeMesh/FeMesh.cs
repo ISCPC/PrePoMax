@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using System.Diagnostics;
 using System.Reflection;
 using System.IO.Ports;
+using System.Security.AccessControl;
 
 namespace CaeMesh
 {
@@ -454,7 +455,7 @@ namespace CaeMesh
                 VisualizationData visualization;
                 foreach (var entry in mesh._parts)
                 {
-                    VisualizationData.ReadFromBinaryStream(out visualization, br);
+                    VisualizationData.ReadFromBinaryStream(out visualization, br, version);
                     entry.Value.Visualization = visualization;
                 }
             }
@@ -507,6 +508,21 @@ namespace CaeMesh
                     //
                     SetItemValidity(mr, valid, items);
                     if (!valid && mr.Active) invalidItems.Add("Mesh refinement: " + mr.Name);
+                }
+                else if (entry.Value is ExtrudeMesh em)
+                {
+                    valid = em.Valid;              // this is set to invalid after deleting a part
+                    if (!valid) em.Valid = true;   // set this to true to detect a change in validity
+                    if (em.CreationIds.Length == 0) valid &= false;
+                    else
+                    {
+                        // The selection is limited to one part
+                        partId = GetPartIdFromGeometryId(em.CreationIds[0]);
+                        if (GetPartById(partId) == null) valid &= false;
+                    }
+                    //
+                    SetItemValidity(em, valid, items);
+                    if (!valid && em.Active) invalidItems.Add("Extrude mesh: " + em.Name);
                 }
                 else throw new NotSupportedException("MeshSetupItemTypeException");
             }
@@ -2054,7 +2070,7 @@ namespace CaeMesh
         }
         //
         public void RenumberVisualizationSurfaces(Dictionary<string, Dictionary<int, HashSet<int>>> partSurfaceIdNodeIds,
-                                                  SortedDictionary<int, GeomFaceType> faceTypes = null, // Plane, Cylinder, Cone...
+                                                  Dictionary<int, GeomFaceType> faceTypes = null, // Plane, Cylinder, ...
                                                   Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = null)
         {
             Dictionary<int, int> newSurfIdOldSurfId;
@@ -2068,7 +2084,7 @@ namespace CaeMesh
             }
         }
         public void RenumberVisualizationSurfaces(Dictionary<int, HashSet<int>> surfaceIdNodeIds,
-                                                  SortedDictionary<int, GeomFaceType> faceTypes = null, // Plane, Cylinder, Cone...
+                                                  Dictionary<int, GeomFaceType> faceTypes = null, // Plane, Cylinder, ...
                                                   Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = null)
         {
             Dictionary<int, int> newSurfIdOldSurfId;
@@ -2082,7 +2098,7 @@ namespace CaeMesh
             }
         }
         public Dictionary<int, int> RenumberVisualizationSurfaces(BasePart part, Dictionary<int, HashSet<int>> surfaceIdNodeIds,
-                                                                  SortedDictionary<int, GeomFaceType> faceTypes = null)
+                                                                  Dictionary<int, GeomFaceType> faceTypes = null)
         {
             VisualizationData vis;
             HashSet<int> surfaceNodeIds;        // node ids of the part surface
@@ -2182,30 +2198,33 @@ namespace CaeMesh
             // For each part
             foreach (var entry in _parts)
             {
-                newEdgeIdOldEdgeId = RenumberVisualizationEdges(entry.Value, partEdgeIdNodeIds[entry.Key]);
+                newEdgeIdOldEdgeId = RenumberPartVisualizationEdges(entry.Value, partEdgeIdNodeIds[entry.Key], null);
                 if (partIdNewEdgeIdOldEdgeId != null && newEdgeIdOldEdgeId != null)
                     partIdNewEdgeIdOldEdgeId.Add(entry.Key, newEdgeIdOldEdgeId);
             }
         }
         public void RenumberVisualizationEdges(Dictionary<int, HashSet<int>> edgeIdNodeIds,
+                                               Dictionary<int, GeomCurveType> edgeTypes = null,
                                                Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = null)
         {
             Dictionary<int, int> newEdgeIdOldEdgeId;
             // For each part
             foreach (var entry in _parts)
             {
-                newEdgeIdOldEdgeId = RenumberVisualizationEdges(entry.Value, edgeIdNodeIds);
+                newEdgeIdOldEdgeId = RenumberPartVisualizationEdges(entry.Value, edgeIdNodeIds, edgeTypes);
                 if (partIdNewEdgeIdOldEdgeId != null && newEdgeIdOldEdgeId != null)
                     partIdNewEdgeIdOldEdgeId.Add(entry.Key, newEdgeIdOldEdgeId);
             }
         }
-        public Dictionary<int, int> RenumberVisualizationEdges(BasePart part, Dictionary<int, HashSet<int>> edgeIdNodeIds)
+        public Dictionary<int, int> RenumberPartVisualizationEdges(BasePart part, Dictionary<int, HashSet<int>> edgeIdNodeIds,
+                                                                   Dictionary<int, GeomCurveType> edgeTypes = null)
         {
             VisualizationData vis;
             HashSet<int> edgeNodeIds;       // node ids of the part surface
             Dictionary<int, int> oldIdNewId = new Dictionary<int, int>();
             int[] newEdgeIds;
             int[] oldEdgeIds;
+            GeomCurveType[] partEdgeTypes;
             int edgeCount;
             bool edgeFound;
             //
@@ -2218,6 +2237,7 @@ namespace CaeMesh
             edgeCount = 0;
             newEdgeIds = new int[vis.EdgeCellIdsByEdge.Length];
             oldEdgeIds = new int[vis.EdgeCellIdsByEdge.Length];
+            partEdgeTypes = new GeomCurveType[vis.EdgeCellIdsByEdge.Length];
             Dictionary<int, HashSet<int>> nodeIdsByEdges = vis.GetNodeIdsByEdges();
             // For each part edge
             for (int i = 0; i < vis.EdgeCellIdsByEdge.Length; i++)
@@ -2277,6 +2297,18 @@ namespace CaeMesh
             Dictionary<int, int> tmp = new Dictionary<int, int>();
             foreach (var entry in oldIdNewId) tmp.Add(invertMap[entry.Key], entry.Value);
             oldIdNewId = tmp;
+            //
+            int edgeId;
+            if (edgeTypes != null)
+            {
+                for (int i = 0; i < newEdgeIds.Length; i++)
+                {
+                    edgeId = newEdgeIds[i];
+                    if (edgeTypes.ContainsKey(edgeId)) partEdgeTypes[i] = edgeTypes[edgeId];
+                    else partEdgeTypes[i] = GeomCurveType.Unknown;
+                }
+                part.Visualization.EdgeTypes = partEdgeTypes;
+            }
             //
             return oldIdNewId;
         }
@@ -8959,7 +8991,7 @@ namespace CaeMesh
                     // This calls SplitVisualizationEdgesAndFaces(part);
                     ConvertEdgeNodesToEdges(part, edgeIdNodeIds);
                     RenumberVisualizationSurfaces(part, surfaceIdNodeIds);
-                    RenumberVisualizationEdges(part, edgeIdNodeIds);
+                    RenumberPartVisualizationEdges(part, edgeIdNodeIds);
                 }
                 else
                 {

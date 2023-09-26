@@ -283,6 +283,7 @@
     <Compile Include="Forms\11_MeshSetup\FrmMeshSetupItem.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Forms\11_MeshSetup\ViewExtrudeMesh.cs" />
     <Compile Include="Forms\11_MeshSetup\ViewMeshSetupItem.cs" />
     <Compile Include="Forms\31_Material\ViewSlipWear.cs" />
     <Compile Include="Forms\32_Section\ViewMembraneSection.cs" />

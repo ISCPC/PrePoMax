@@ -276,14 +276,19 @@ namespace PrePoMax.Forms
         {
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
             BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePartIds[2]);
+            int edgeId = itemTypePartIds[0];
             double length1 = _controller.DisplayedMesh.GetEdgeLength(geometryId);
             string lenUnit = _controller.GetLengthUnit();
             string lenUnitInBrackets = string.Format("[{0}]", lenUnit);
             //
             Form_WriteDataToOutput("");
-            string data = string.Format("Edge on part: {0}", part.Name);            
+            string data = string.Format("Edge on part: {0}", part.Name);
+            if (part.Visualization.EdgeTypes != null)
+            {
+                data += string.Format("   Edge type: {0}", part.Visualization.EdgeTypes[edgeId]);
+            }
             Form_WriteDataToOutput(data);
-            data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Edge".PadRight(16), "[/]", "id:", itemTypePartIds[0] + 1);
+            data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Edge".PadRight(16), "[/]", "id:", edgeId + 1);
             Form_WriteDataToOutput(data);
             data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Base".PadRight(16), lenUnitInBrackets, "L:", length1);
             Form_WriteDataToOutput(data);

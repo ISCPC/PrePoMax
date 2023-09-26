@@ -32,7 +32,7 @@ namespace PrePoMax
         {
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(_geometryId);
             FeMesh mesh = Controller.DisplayedMesh;
-            int surfaceId = itemTypePartIds[0];
+            int surfaceId = itemTypePartIds[0];            
             BasePart part = mesh.GetPartById(itemTypePartIds[2]);
             double area;
             string areaUnit = Controller.GetAreaUnit();
@@ -46,6 +46,9 @@ namespace PrePoMax
             float avg = 0;
             int[] nodeIds;
             double[][] nodeCoor;
+            //
+            GeomFaceType faceType = GeomFaceType.Unknown;
+            if (part.Visualization.FaceTypes != null) faceType = part.Visualization.FaceTypes[surfaceId];
             //
             mesh.GetFaceNodes(_geometryId, out nodeIds);
             nodeCoor = new double[nodeIds.Length][];
@@ -81,9 +84,9 @@ namespace PrePoMax
                         if (value < min) min = value;
                         if (value > max) max = value;
                         sum += value;
-                        avg += (float)(value * weights[nodeIds[i]]);
+                        //avg += (float)(value * weights[nodeIds[i]]);
                     }
-                    avg /= (float)area;
+                    avg = sum / nodes.Length;
                     // Units
                     fieldUnit = Controller.GetCurrentResultsUnitAbbreviation();
                     if (fieldUnit == "/") fieldUnit = "";
@@ -95,15 +98,24 @@ namespace PrePoMax
             coor = nodeCoor[distributedNodeIds[0]];
             //
             bool showSurfaceId = Controller.Settings.Annotations.ShowEdgeSurId;
+            bool showSurfaceType = Controller.Settings.Annotations.ShowEdgeSurType;
             bool showSurfaceLength = Controller.Settings.Annotations.ShowEdgeSurSize;
             bool showSurfaceMax = Controller.Settings.Annotations.ShowEdgeSurMax && results;
             bool showSurfaceMin = Controller.Settings.Annotations.ShowEdgeSurMin && results;
             bool showSurfaceSum = Controller.Settings.Annotations.ShowEdgeSurSum && results;
-            if (!showSurfaceLength && !showSurfaceMax && !showSurfaceMin && !showSurfaceSum) showSurfaceId = true;
+            bool showSurfaceAvg = Controller.Settings.Annotations.ShowEdgeSurAvg && results;
+            if (!showSurfaceType && !showSurfaceLength && !showSurfaceMax &&
+                !showSurfaceMin && !showSurfaceSum && !showSurfaceAvg) showSurfaceId = true;
+            //
             text = "";
             if (showSurfaceId)
             {
                 text += string.Format("Surface id: {0} on {1}", surfaceId + 1, part.Name);
+            }
+            if (showSurfaceType)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Surface type: {0}", faceType.ToString());
             }
             if (showSurfaceLength)
             {
@@ -124,8 +136,11 @@ namespace PrePoMax
             {
                 if (text.Length > 0) text += Environment.NewLine;
                 text += string.Format("Nodal sum: {0} {1}", sum.ToString(numberFormat), fieldUnit);
-                //if (text.Length > 0) text += Environment.NewLine;
-                //text += string.Format("Avg: {0} {1}", avg.ToString(numberFormat), fieldUnit);
+            }
+            if (showSurfaceAvg)
+            {
+                if (text.Length > 0) text += Environment.NewLine;
+                text += string.Format("Avg: {0} {1}", avg.ToString(numberFormat), fieldUnit);
             }
             //
             if (IsTextOverridden) text = OverriddenText;
