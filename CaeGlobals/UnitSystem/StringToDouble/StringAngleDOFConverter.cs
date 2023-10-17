@@ -77,9 +77,10 @@ namespace CaeGlobals
                     if (value is double valueDouble)
                     {
                         if (double.IsNaN(valueDouble)) return _free;
-                        //else if (double.IsPositiveInfinity(valueDouble)) return _fixed;
                         else
                         {
+                            if (double.IsPositiveInfinity(valueDouble)) valueDouble = 0;    // Compatibility for v1.4.0 - fixed
+                            //
                             string valueString = valueDouble.ToString();
                             if ((int)_angleUnit != MyUnit.NoUnit) valueString += " " + Angle.GetAbbreviation(_angleUnit);
                             return valueString;
