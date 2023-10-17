@@ -331,7 +331,7 @@ namespace PrePoMax.Forms
                                 foreach (int geometryId in geometryIds)
                                 {
                                     partId = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId)[2];
-                                    part = _controller.Model.Mesh.GetPartById(partId);
+                                    part = _controller.Model.Mesh.GetPartFromId(partId);
                                     if (part == null) { }
                                     else if (Section is SolidSection && part.PartType != PartType.Solid) return false;
                                     else if (Section is ShellSection && part.PartType != PartType.Shell) return false;
@@ -368,7 +368,7 @@ namespace PrePoMax.Forms
                                 foreach (int geometryId in geometryIds)
                                 {
                                     partId = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId)[2];
-                                    part = _controller.Model.Mesh.GetPartById(partId);
+                                    part = _controller.Model.Mesh.GetPartFromId(partId);
                                     if (part == null) { }
                                     else if (Section is SolidSection && part.PartType != PartType.Shell) return false;
                                 }

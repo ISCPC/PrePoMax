@@ -170,20 +170,18 @@ namespace PrePoMax.Forms
                 {
                     itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(id);
                     itemName = null;
-                    partName = mesh.GetPartById(itemTypePartIds[2]).Name;
+                    partName = mesh.GetPartFromId(itemTypePartIds[2]).Name;
                     geomType = (GeometryType)itemTypePartIds[1];
                     //
                     if (geomType == GeometryType.Vertex)
                     {
                         itemName = "Vertex " + itemTypePartIds[0];
                     }
-                    else if (geomType == GeometryType.Edge || geomType == GeometryType.ShellEdgeSurface)
+                    else if (geomType.IsEdge())
                     {
                         itemName = "Edge " + itemTypePartIds[0];
                     }
-                    else if (geomType == GeometryType.SolidSurface ||
-                             geomType == GeometryType.ShellFrontSurface ||
-                             geomType == GeometryType.ShellBackSurface)
+                    else if (geomType.IsSurface())
                     {
                         itemName = "Surface " + itemTypePartIds[0];
                     }

@@ -557,7 +557,7 @@ namespace CaeMesh
                 _edgeTypes = newEdgeTypes;
             }
         }
-        public HashSet<int> GetNodeIdsByEdge(int edgeId)
+        public HashSet<int> GetNodeIdsForEdgeId(int edgeId)
         {
             HashSet<int> edgeNodeIds = new HashSet<int>();
             //
@@ -570,7 +570,7 @@ namespace CaeMesh
             }
             return edgeNodeIds;
         }
-        public Dictionary<int, HashSet<int>> GetNodeIdsByEdges()
+        public Dictionary<int, HashSet<int>> GetEdgeIdNodeIds()
         {
             HashSet<int> edgeNodeIds;
             Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
@@ -605,7 +605,7 @@ namespace CaeMesh
             }
             return edgeNodeIds;
         }
-        public int[] GetOrderedNodeIdsForEdge(int edgeId)
+        public int[] GetOrderedNodeIdsForEdgeId(int edgeId)
         {
             int[] edgeNodeIds;
             List<int> allEdgeNodeIds = new List<int>();
@@ -627,11 +627,11 @@ namespace CaeMesh
             for (int i = 0; i < _cells.Length; i++) nodeIds.UnionWith(_cells[i]);
             return nodeIds;
         }
-        public Dictionary<int, List<int[]>> GetVertexEdgeCells()
+        public Dictionary<int, List<int[]>> GetVertexIdEdgeCells()
         {
             HashSet<int> vertexNodeIds = new HashSet<int>(_vertexNodeIds);
             List<int[]> edgeCells;
-            Dictionary<int, List<int[]>> nodeIdEdgeCells = new Dictionary<int, List<int[]>>();
+            Dictionary<int, List<int[]>> vertexIdEdgeCells = new Dictionary<int, List<int[]>>();
             //
             List<int> ids = new List<int>();
             int[] edgeCellNodeIds;
@@ -644,14 +644,34 @@ namespace CaeMesh
                 foreach (var id in ids)
                 {
                     edgeCellNodeIds = new int[] { edgeCell[id], edgeCell[(id + 1) % 2] };
-                    if (nodeIdEdgeCells.TryGetValue(edgeCell[id], out edgeCells)) edgeCells.Add(edgeCellNodeIds);
-                    else nodeIdEdgeCells.Add(edgeCell[id], new List<int[]> { edgeCellNodeIds });
+                    if (vertexIdEdgeCells.TryGetValue(edgeCell[id], out edgeCells)) edgeCells.Add(edgeCellNodeIds);
+                    else vertexIdEdgeCells.Add(edgeCell[id], new List<int[]> { edgeCellNodeIds });
                 }
             }
             //
-            return nodeIdEdgeCells;
+            return vertexIdEdgeCells;
         }
-        public HashSet<int> GetNodeIdsBySurface(int surfaceId)
+        public Dictionary<int, HashSet<int>> GetVertexIdEdgeIds()
+        {
+            HashSet<int> edgeIds;
+            Dictionary<int, HashSet<int>> edgeIdNodeIds = GetEdgeIdNodeIds();
+            Dictionary<int, HashSet<int>> vertexIdEdgeIds = new Dictionary<int, HashSet<int>>();
+            //
+            foreach (int vertexId in _vertexNodeIds)
+            {
+                foreach (var entry in edgeIdNodeIds)
+                {
+                    if (entry.Value.Contains(vertexId))
+                    {
+                        if (vertexIdEdgeIds.TryGetValue(vertexId, out edgeIds)) edgeIds.Add(entry.Key);
+                        else vertexIdEdgeIds.Add(vertexId, new HashSet<int> { entry.Key });
+                    }
+                }
+            }
+            //
+            return vertexIdEdgeIds;
+        }
+        public HashSet<int> GetNodeIdsForSurfaceId(int surfaceId)
         {
             HashSet<int> surfaceNodeIds = new HashSet<int>();
             for (int i = 0; i < _cellIdsByFace[surfaceId].Length; i++)
@@ -660,7 +680,7 @@ namespace CaeMesh
             }
             return surfaceNodeIds;
         }
-        public Dictionary<int, HashSet<int>> GetNodeIdsBySurfaces()
+        public Dictionary<int, HashSet<int>> GetSurfaceIdNodeIds()
         {
             HashSet<int> surfaceNodeIds;
             Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
@@ -675,7 +695,7 @@ namespace CaeMesh
             }
             return surfaceIdNodeIds;
         }
-        public Dictionary<int, HashSet<int>> GetElementIdsBySurfaces()
+        public Dictionary<int, HashSet<int>> GetSurfaceIdElementIds()
         {
             HashSet<int> surfaceElementIds;
             Dictionary<int, HashSet<int>> surfaceIdElementIds = new Dictionary<int, HashSet<int>>();
@@ -690,7 +710,7 @@ namespace CaeMesh
             }
             return surfaceIdElementIds;
         }
-        public Dictionary<int, HashSet<int>> GetSurfaceNeighboursData()
+        public Dictionary<int, HashSet<int>> GetSurfaceIdSurfaceNeighbourIds()
         {
             Dictionary<int, HashSet<int>> surfaceIdSurfaceNeighbourIds = new Dictionary<int, HashSet<int>>();
             HashSet<int> surfaceNeighbourIds;
@@ -709,7 +729,7 @@ namespace CaeMesh
             }
             return surfaceIdSurfaceNeighbourIds;
         }
-        public Dictionary<int, HashSet<int>> GetSurfaceIdsForEachElement()
+        public Dictionary<int, HashSet<int>> GetElementIdSurfaceIds()
         {
             int elementId;
             HashSet<int> elementSurfaceIds;
@@ -725,6 +745,55 @@ namespace CaeMesh
                 }
             }
             return elementIdSurfaceIds;
+        }
+        public HashSet<int> GetVertexIdsForNodeIds(int[] nodeIds)
+        {
+            HashSet<int> nodeIdsHash = new HashSet<int>(nodeIds);
+            HashSet<int> vertexNodeIds = new HashSet<int>();
+            for (int i = 0; i < _vertexNodeIds.Length; i++)
+            {
+                if (nodeIdsHash.Contains(_vertexNodeIds[i])) vertexNodeIds.Add(i + 1);
+            }
+            return vertexNodeIds;
+        }
+        public HashSet<int> GetVerticesForEdgeIds(int[] edgeIds)
+        {
+            HashSet<int> edgeNodeIds = new HashSet<int>();
+            foreach (int edgeId in edgeIds) edgeNodeIds.UnionWith(GetNodeIdsForEdgeId(edgeId));
+            return edgeNodeIds.Intersect(_vertexNodeIds).ToHashSet();
+        }
+        public HashSet<int> GetVerticesForSurfaceIds(int[] surfaceIds)
+        {
+            HashSet<int> surfaceNodeIds = new HashSet<int>();
+            foreach (int surfaceId in surfaceIds) surfaceNodeIds.UnionWith(GetNodeIdsForSurfaceId(surfaceId));
+            return surfaceNodeIds.Intersect(_vertexNodeIds).ToHashSet();
+        }
+        public HashSet<int> GetEdgeIdsForSurfaceIds(int[] surfaceIds)
+        {
+            HashSet<int> surfaceEdgeIds = new HashSet<int>();
+            foreach (int surfaceId in surfaceIds) surfaceEdgeIds.UnionWith(_faceEdgeIds[surfaceId]);
+            return surfaceEdgeIds;
+        }
+        public bool AreSurfacesConnected(int[] surfaceIds)
+        {
+            if (surfaceIds.Length == 1) return true;
+            //
+            HashSet<int> selectedSurfaceAndNeighboursIds = new HashSet<int>();
+            Dictionary<int, HashSet<int>> surfaceIdSurfaceNeighbourIds = GetSurfaceIdSurfaceNeighbourIds();
+            //
+            foreach (var surfaceId in surfaceIds)
+                selectedSurfaceAndNeighboursIds.UnionWith(surfaceIdSurfaceNeighbourIds[surfaceId]);
+            // If surfaces are connected all of them are also their neighbours
+            bool connected = true;
+            foreach (var surfaceId in surfaceIds)
+            {
+                if (!selectedSurfaceAndNeighboursIds.Contains(surfaceId))
+                {
+                    connected = false;
+                    break;
+                }
+            }
+            return connected;
         }
         // Free edges and nodes
         public HashSet<int> GetFreeEdgeIds()
@@ -1311,7 +1380,187 @@ namespace CaeMesh
             //
             return avgData;
         }
-
+        //
+        public double GetEqualEdgeLengthOrNegative(HashSet<int> edgeIds)
+        {
+            if (edgeIds.Count < 1) return -1;
+            else
+            {
+                double l;
+                double min = double.MaxValue;
+                double max = -double.MaxValue;
+                //
+                foreach (var edgeId in edgeIds)
+                {
+                    l = _edgeLengths[edgeId];
+                    if (l < min) min = l;
+                    if (l > max) max = l;
+                    //
+                    if (min <= 0 || max <= 0) return -1;    // edge lengths must be positive
+                    if (max - min > 1E-3 * max) return -1;
+                }
+                return (min + max) / 2;
+            }
+        }
+        public double GetMaxEdgeCurvature(int edgeId, Dictionary<int, FeNode> nodes)
+        {
+            double curvature = 0;
+            int[] nodeIds = GetOrderedNodeIdsForEdgeId(edgeId);
+            //
+            if (nodeIds.Length <= 2) return 0;
+            else
+            {
+                Vec3D[] v = new Vec3D[nodeIds.Length];
+                v[0] = new Vec3D(nodes[nodeIds[0]].Coor);
+                v[1] = new Vec3D(nodes[nodeIds[1]].Coor);
+                //
+                double r;
+                double tmpCurvature;
+                for (int i = 0; i < nodeIds.Length - 2; i++)
+                {
+                    v[i + 2] = new Vec3D(nodes[nodeIds[i + 2]].Coor);
+                    //
+                    Vec3D.GetCircleR(v[i], v[i + 1], v[i + 2], out r);
+                    if (r > 0) tmpCurvature = 1 / r;
+                    else tmpCurvature = 0;
+                    //
+                    if (tmpCurvature > curvature) curvature = tmpCurvature;
+                }
+                return curvature;
+            }
+        }
+        public bool IsEdgeRadiusConstant(HashSet<int> edgeIds, Dictionary<int, FeNode> nodes)
+        {
+            if (edgeIds.Count < 1) return false;
+            else
+            {
+                double r;
+                foreach (var edgeId in edgeIds)
+                {
+                    r = GetConstantEdgeRadiusOrNegative(edgeId, nodes);
+                    if (r < 0) return false;
+                }
+                return true;
+            }
+        }
+        public double GetConstantEdgeRadiusOrNegative(int edgeId, Dictionary<int, FeNode> nodes)
+        {
+            int[] nodeIds = GetOrderedNodeIdsForEdgeId(edgeId);
+            //
+            if (nodeIds.Length <= 2) return -1;
+            else
+            {
+                Vec3D[] v = new Vec3D[nodeIds.Length];
+                v[0] = new Vec3D(nodes[nodeIds[0]].Coor);
+                v[1] = new Vec3D(nodes[nodeIds[1]].Coor);
+                //
+                double r;
+                double min = double.MaxValue;
+                double max = -double.MaxValue;
+                //
+                for (int i = 0; i < nodeIds.Length - 2; i++)
+                {
+                    v[i + 2] = new Vec3D(nodes[nodeIds[i + 2]].Coor);
+                    //
+                    Vec3D.GetCircleR(v[i], v[i + 1], v[i + 2], out r);
+                    if (r < min) min = r;
+                    if (r > max) max = r;
+                    //
+                    if (min <= 0 || max <= 0) return -1;    // edge radius must be positive
+                    if (max - min > 1E-3 * max) return -1;
+                }
+                //
+                return (min + max) / 2;
+            }
+        }
+        public void GetArcEdgeDataForEdgeId(HashSet<int> edgeIds, HashSet<int> startNodeIds, Dictionary<int, FeNode> nodes,
+                                            out double r, out double arcAngleDeg,
+                                            out double[] axisCenter, out double[] axisDirection)
+        {
+            r = -1;
+            arcAngleDeg = -1;
+            axisCenter = null;
+            axisDirection = null;
+            //
+            HashSet<double> arcAnglesDeg = new HashSet<double>();
+            HashSet<double> radii = new HashSet<double>();
+            BoundingBox bbDirection = new BoundingBox();
+            BoundingBox bbCenter = new BoundingBox();
+            //
+            if (edgeIds.Count < 1) return;
+            else
+            {
+                foreach (var edgeId in edgeIds)
+                {
+                    GetArcEdgeDataForEdgeId(edgeId, startNodeIds, nodes, out r, out arcAngleDeg, out axisCenter, out axisDirection);
+                    radii.Add(r);
+                    arcAnglesDeg.Add(arcAngleDeg);
+                    bbCenter.IncludeCoor(axisCenter);
+                    bbDirection.IncludeCoor(axisDirection);
+                }
+                //
+                bool equal = true;
+                double min = double.MaxValue;
+                double max = -double.MaxValue;
+                //
+                foreach (var angle in arcAnglesDeg)
+                {
+                    if (angle < min) min = angle;
+                    if (angle > max) max = angle;
+                    //
+                    if (min <= 0 || max <= 0) equal = false;    // angles must be positive
+                    if (max - min > 1E-3 * max) equal = false;
+                    //
+                    if (!equal) break;
+                }
+                //
+                if (equal && bbDirection.GetDiagonal() < 0.0017) // approximately 0.1° difference
+                {
+                    double[] sortedR = radii.ToArray();
+                    Array.Sort(sortedR);
+                    r = (sortedR[0] + sortedR[sortedR.Length - 1]) / 2;
+                    arcAngleDeg = (min + max) / 2;
+                    axisCenter = bbCenter.GetCenter();
+                    axisDirection = bbDirection.GetCenter();
+                }
+                else
+                {
+                    r = -1;
+                    arcAngleDeg = -1;
+                    axisCenter = null;
+                    axisDirection = null;
+                }
+            }
+        }
+        public void GetArcEdgeDataForEdgeId(int edgeId, HashSet<int> startNodeIds, Dictionary<int, FeNode> nodes,
+                                            out double r, out double arcAngleDeg,
+                                            out double[] axisCenter, out double[] axisDirection)
+        {
+            r = -1;
+            arcAngleDeg = -1;
+            axisCenter = null;
+            axisDirection = null;
+            int[] nodeIds = GetOrderedNodeIdsForEdgeId(edgeId);
+            //
+            if (nodeIds.Length < 3) return;
+            else
+            {
+                if (!startNodeIds.Contains(nodeIds[0])) Array.Reverse(nodeIds);
+                //
+                if (!startNodeIds.Contains(nodeIds[0])) return;
+                else
+                {
+                    Vec3D v1 = new Vec3D(nodes[nodeIds[0]].Coor);
+                    Vec3D v2 = new Vec3D(nodes[nodeIds[(nodeIds.Length + 1) / 2]].Coor);
+                    Vec3D v3 = new Vec3D(nodes[nodeIds[nodeIds.Length - 1]].Coor);
+                    Vec3D center, direction;
+                    Vec3D.GetCircle(v1, v2, v3, out r, out arcAngleDeg, out center, out direction);
+                    axisCenter = center.Coor;
+                    axisDirection = direction.Coor;
+                }
+            }
+        }
+        
 
         // Section cut
         public void ApplySectionView(Dictionary<int, FeElement> elements, int[] elementIds, HashSet<int> frontNodes,

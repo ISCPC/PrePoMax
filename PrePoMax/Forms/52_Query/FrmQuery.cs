@@ -43,70 +43,74 @@ namespace PrePoMax.Forms
         {
         }
         private void lvQueries_SelectedIndexChanged(object sender, EventArgs e)
-        {            
-            if (lvQueries.SelectedItems.Count > 0)
+        {
+            try
             {
-                switch (lvQueries.SelectedItems[0].Text)
+                if (lvQueries.SelectedItems.Count > 0)
                 {
-                    case ("Vertex/Node"):
-                        _controller.SelectBy = vtkSelectBy.QueryNode;
-                        _controller.Selection.SelectItem = vtkSelectItem.Node;
-                        _numOfNodesToSelect = 1;
-                        break;
-                    case ("Facet/Element"):
-                        _controller.SelectBy = vtkSelectBy.QueryElement;
-                        _controller.Selection.SelectItem = vtkSelectItem.Element;
-                        _numOfNodesToSelect = -1;
-                        break;
-                    case ("Edge"):
-                        _controller.SelectBy = vtkSelectBy.QueryEdge;
-                        _controller.Selection.SelectItem = vtkSelectItem.Edge;
-                        _numOfNodesToSelect = -1;
-                        break;
-                    case ("Surface"):
-                        _controller.SelectBy = vtkSelectBy.QuerySurface;
-                        _controller.Selection.SelectItem = vtkSelectItem.Surface;
-                        _numOfNodesToSelect = -1;
-                        break;
-                    case ("Part"):
-                        _controller.SelectBy = vtkSelectBy.QueryPart;
-                        _controller.Selection.SelectItem = vtkSelectItem.Part;
-                        _numOfNodesToSelect = -1;
-                        break;
-                    case ("Assembly"):
-                        _controller.SelectBy = vtkSelectBy.Default;
-                        _controller.Selection.SelectItem = vtkSelectItem.None;
-                        OutputAssemblyData();
-                        _numOfNodesToSelect = -1;
-                        break;
-                    case ("Bounding box size"):
-                        _controller.SelectBy = vtkSelectBy.Default;
-                        _controller.Selection.SelectItem = vtkSelectItem.None;
-                        OutputBoundingBox();
-                        _numOfNodesToSelect = -1;
-                        break;
-                    case ("Distance"):
-                        _controller.SelectBy = vtkSelectBy.QueryNode;
-                        _controller.Selection.SelectItem = vtkSelectItem.Node;
-                        _numOfNodesToSelect = 2;
-                        break;
-                    case ("Angle"):
-                        _controller.SelectBy = vtkSelectBy.QueryNode;
-                        _controller.Selection.SelectItem = vtkSelectItem.Node;
-                        _numOfNodesToSelect = 3;
-                        break;
-                    case ("Circle"):
-                        _controller.SelectBy = vtkSelectBy.QueryNode;
-                        _controller.Selection.SelectItem = vtkSelectItem.Node;
-                        _numOfNodesToSelect = 3;
-                        break;
-                    default:
-                        break;
+                    switch (lvQueries.SelectedItems[0].Text)
+                    {
+                        case ("Vertex/Node"):
+                            _controller.SelectBy = vtkSelectBy.QueryNode;
+                            _controller.Selection.SelectItem = vtkSelectItem.Node;
+                            _numOfNodesToSelect = 1;
+                            break;
+                        case ("Facet/Element"):
+                            _controller.SelectBy = vtkSelectBy.QueryElement;
+                            _controller.Selection.SelectItem = vtkSelectItem.Element;
+                            _numOfNodesToSelect = -1;
+                            break;
+                        case ("Edge"):
+                            _controller.SelectBy = vtkSelectBy.QueryEdge;
+                            _controller.Selection.SelectItem = vtkSelectItem.GeometryEdge;
+                            _numOfNodesToSelect = -1;
+                            break;
+                        case ("Surface"):
+                            _controller.SelectBy = vtkSelectBy.QuerySurface;
+                            _controller.Selection.SelectItem = vtkSelectItem.Surface;
+                            _numOfNodesToSelect = -1;
+                            break;
+                        case ("Part"):
+                            _controller.SelectBy = vtkSelectBy.QueryPart;
+                            _controller.Selection.SelectItem = vtkSelectItem.Part;
+                            _numOfNodesToSelect = -1;
+                            break;
+                        case ("Assembly"):
+                            _controller.SelectBy = vtkSelectBy.Default;
+                            _controller.Selection.SelectItem = vtkSelectItem.None;
+                            OutputAssemblyData();
+                            _numOfNodesToSelect = -1;
+                            break;
+                        case ("Bounding box size"):
+                            _controller.SelectBy = vtkSelectBy.Default;
+                            _controller.Selection.SelectItem = vtkSelectItem.None;
+                            OutputBoundingBox();
+                            _numOfNodesToSelect = -1;
+                            break;
+                        case ("Distance"):
+                            _controller.SelectBy = vtkSelectBy.QueryNode;
+                            _controller.Selection.SelectItem = vtkSelectItem.Node;
+                            _numOfNodesToSelect = 2;
+                            break;
+                        case ("Angle"):
+                            _controller.SelectBy = vtkSelectBy.QueryNode;
+                            _controller.Selection.SelectItem = vtkSelectItem.Node;
+                            _numOfNodesToSelect = 3;
+                            break;
+                        case ("Circle"):
+                            _controller.SelectBy = vtkSelectBy.QueryNode;
+                            _controller.Selection.SelectItem = vtkSelectItem.Node;
+                            _numOfNodesToSelect = 3;
+                            break;
+                        default:
+                            break;
+                    }
+                    // Clear
+                    RemoveMeasureAnnotation();
+                    _controller.ClearSelectionHistoryAndCallSelectionChanged();
                 }
-                // Clear
-                RemoveMeasureAnnotation();
-                _controller.ClearSelectionHistoryAndCallSelectionChanged();
             }
+            catch { }
         }
         private void btnClear_Click(object sender, EventArgs e)
         {
@@ -275,7 +279,7 @@ namespace PrePoMax.Forms
         public void OneEdgePicked(int geometryId)
         {
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
-            BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePartIds[2]);
+            BasePart part = _controller.DisplayedMesh.GetPartFromId(itemTypePartIds[2]);
             int edgeId = itemTypePartIds[0];
             double length1 = _controller.DisplayedMesh.GetEdgeLength(geometryId);
             string lenUnit = _controller.GetLengthUnit();
@@ -323,7 +327,7 @@ namespace PrePoMax.Forms
         public void OneSurfacePicked(int geometryId)
         {
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
-            BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePartIds[2]);
+            BasePart part = _controller.DisplayedMesh.GetPartFromId(itemTypePartIds[2]);
             int surfaceId = itemTypePartIds[0];
             double area1 = _controller.DisplayedMesh.GetSurfaceArea(geometryId);
             string areaUnit = "[" + _controller.GetAreaUnit() + "]";
@@ -366,7 +370,7 @@ namespace PrePoMax.Forms
         {
             FeMesh mesh = _controller.DisplayedMesh;
             //
-            BasePart part = mesh.GetPartById(partId);
+            BasePart part = mesh.GetPartFromId(partId);
             if (part == null) throw new NotSupportedException();
             //
             Form_WriteDataToOutput("");
@@ -597,7 +601,8 @@ namespace PrePoMax.Forms
             Vec3D baseV2 = new Vec3D(_controller.GetNode(nodeId2).Coor);
             Vec3D baseV3 = new Vec3D(_controller.GetNode(nodeId3).Coor);
             //
-            Vec3D.GetCircle(baseV1, baseV2, baseV3, out r, out center, out axis);
+            double arcAngleDeg;
+            Vec3D.GetCircle(baseV1, baseV2, baseV3, out r, out arcAngleDeg, out center, out axis);
             rDraw = r;
             centerDraw = center;
             axisDraw = axis;

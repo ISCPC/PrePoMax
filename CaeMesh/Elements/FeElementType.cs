@@ -19,6 +19,28 @@ namespace CaeMesh
     }
     //
     [Serializable]
+    public enum FeElementTypeLinearBeam
+    {
+        [StandardValue("None", Visible = false)]
+        None = 0,
+        T3D2 = 10,
+        B31 = 11,
+        B31R = 12,
+        T2D2 = 20,
+        B21 = 21,
+    }
+    //
+    [Serializable]
+    public enum FeElementTypeParabolicBeam
+    {
+        [StandardValue("None", Visible = false)]
+        None = 0,
+        T2D3 = 10,
+        B32 = 11,
+        B32R = 12,
+    }
+    //
+    [Serializable]
     public enum FeElementTypeLinearTria
     {
         [StandardValue("None", Visible = false)]

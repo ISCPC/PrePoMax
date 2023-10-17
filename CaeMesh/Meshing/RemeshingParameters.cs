@@ -22,25 +22,13 @@ namespace CaeMesh
 
 
         // Constructors                                                                                                             
-        public RemeshingParameters(string regionName, RegionTypeEnum regionType)
-            : base("RemeshingParameters")
-        {
-            UseMmg = true;
-            //
-            _regionName = regionName;
-            _regionType = regionType;
-            _creationData = null;
-            _creationIds = null;
-        }
         public RemeshingParameters(string regionName, RegionTypeEnum regionType, MeshingParameters meshingParameters)
             : base(meshingParameters)
         {
-            UseMmg = true;
+            Reset();
             //
             _regionName = regionName;
             _regionType = regionType;
-            _creationData = null;
-            _creationIds = null;
         }
         public RemeshingParameters(SerializationInfo info, StreamingContext context)
             : base(info, context)
@@ -61,7 +49,15 @@ namespace CaeMesh
 
 
         // Methods                                                                                                                  
-
+        public override void Reset()
+        {
+            base.Reset();
+            //
+            UseMmg = true;
+            //
+            _regionName = null;
+            _regionType = RegionTypeEnum.None; 
+        }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {

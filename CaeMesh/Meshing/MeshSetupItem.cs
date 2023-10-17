@@ -1,4 +1,5 @@
 ﻿using CaeGlobals;
+using CaeMesh.Meshing;
 using Octree;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,8 @@ namespace CaeMesh
         public MeshSetupItem(string name)
             : base(name)
         {
+            _creationIds = null;
+            _creationData = null;
         }
         public MeshSetupItem(MeshSetupItem meshSetupItem)
             : base("tmpName")
@@ -52,6 +55,12 @@ namespace CaeMesh
 
 
         // Methods                                                                                                                  
+        public virtual void Reset()
+        {
+            // Do not clear the selection
+            //_creationIds = null;
+            //_creationData = null;
+        }
         public void CopyFrom(MeshSetupItem meshSetupItem)
         {
             base.CopyFrom(meshSetupItem);

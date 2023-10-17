@@ -444,7 +444,7 @@ namespace FileInOut.Output
                         else if (part.ParabolicHexaType != FeElementTypeParabolicHexa.None && element is ParabolicHexaElement)
                             type = part.ParabolicHexaType.ToString();
                         else throw new NotImplementedException();
-                        // Add element to the coresponding type
+                        // Add element to the corresponding type
                         if (elementTypes.TryGetValue(type, out elements)) elements.Add(element);
                         else elementTypes.Add(type, new List<FeElement>() { element });
                     }

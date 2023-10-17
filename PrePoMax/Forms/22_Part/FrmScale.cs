@@ -195,6 +195,7 @@ namespace PrePoMax.Forms
             _coorNodesToDraw[0][1] = _scaleParameters.CenterY;
             _coorNodesToDraw[0][2] = _scaleParameters.CenterZ;
             //
+            _controller.ClearAllSelection();
             _controller.HighlightNodes(_coorNodesToDraw);
         }
 

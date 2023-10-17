@@ -28,7 +28,7 @@ namespace PrePoMax
         public override void GetAnnotationData(out string text, out double[] coor)
         {
             FeMesh mesh = Controller.DisplayedMesh;
-            BasePart part = mesh.GetPartById(_partId);
+            BasePart part = mesh.GetPartFromId(_partId);
             if (part == null) throw new NotSupportedException();
             //
             double[][] nodeCoor = new double[part.NodeLabels.Length][];

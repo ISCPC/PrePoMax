@@ -16,7 +16,7 @@ namespace CaeModel
     public class Tie : Constraint, ISerializable
     {
         // Variables                                                                                                                
-        private static string _positive = "The value must be larger than 0.";
+        private static string _nonNegative = "The value must be larger or equal to 0.";
         private EquationContainer _positionTolerance;       //ISerializable
         private bool _adjust;                               //ISerializable
 
@@ -45,6 +45,9 @@ namespace CaeModel
         public Tie(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+            bool foundPosTol = false;   // Compatibility for version v1.4.0 ?
+            bool foundAdjust = false;   // Compatibility for version v1.4.0 ?
+            //
             foreach (SerializationEntry entry in info)
             {
                 switch (entry.Name)
@@ -52,12 +55,16 @@ namespace CaeModel
                     case "_positionTolerance":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueDouble)
+                        {
+                            if (valueDouble < 0) valueDouble = double.NaN; // Compatibility for version v1.4.0 ?
                             PositionTolerance = new EquationContainer(typeof(StringLengthDefaultConverter), valueDouble);
+                        }
                         else
                             SetPositionTolerance((EquationContainer)entry.Value, false);
+                        foundPosTol = true;
                         break;
                     case "_adjust":
-                        _adjust = (bool)entry.Value; break;
+                        _adjust = (bool)entry.Value; foundAdjust = true; break;
                     // Compatibility for version v1.1.1
                     case "_masterSurfaceName":
                         MasterRegionName = (string)entry.Value; break;
@@ -68,6 +75,9 @@ namespace CaeModel
                         break;
                 }
             }
+            // Compatibility for version v1.4.0 ?
+            if (!foundPosTol) PositionTolerance = new EquationContainer(typeof(StringLengthDefaultConverter), double.NaN);
+            if (!foundAdjust) _adjust = true;
         }
 
 
@@ -79,8 +89,8 @@ namespace CaeModel
         //
         private double CheckPositionTolerance(double value)
         {
-            if (double.IsNaN(value) || value > 0) return value;
-            else throw new CaeException(_positive);
+            if (double.IsNaN(value) || value >= 0) return value;
+            else throw new CaeException(_nonNegative);
         }
         public override void CheckEquations()
         {

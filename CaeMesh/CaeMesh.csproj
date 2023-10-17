@@ -49,6 +49,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="GmshCommon, Version=1.0.8680.31786, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Gmsh\bin\x64\Debug\GmshCommon.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -103,9 +107,17 @@
     <Compile Include="Geometry\GeomVertex.cs" />
     <Compile Include="Geometry\GeomSurface.cs" />
     <Compile Include="Geometry\GeometryItem.cs" />
+    <Compile Include="Meshing\Gmsh\Enums\GmshAlgorithmMesh3DEnum.cs" />
+    <Compile Include="Meshing\Gmsh\ShellGmsh.cs" />
+    <Compile Include="Meshing\Gmsh\TransfiniteMesh.cs" />
+    <Compile Include="Meshing\Gmsh\TetrahedralGmsh.cs" />
+    <Compile Include="Meshing\Gmsh\RevolveMesh.cs" />
+    <Compile Include="Meshing\Gmsh\GmshSetupItem.cs" />
     <Compile Include="Meshing\Gmsh\ExtrudeMesh.cs" />
-    <Compile Include="Meshing\Gmsh\GmshAlgorithmRecombinationEnum.cs" />
-    <Compile Include="Meshing\Gmsh\GmshAlgorithmMesh2DEnum.cs" />
+    <Compile Include="Meshing\Gmsh\Enums\ElementSizeTypeEnum.cs" />
+    <Compile Include="Meshing\Gmsh\Enums\GmshAlgorithmRecombinationEnum.cs" />
+    <Compile Include="Meshing\Gmsh\Enums\GmshAlgorithmMesh2DEnum.cs" />
+    <Compile Include="Meshing\Gmsh\GmshMesher.cs" />
     <Compile Include="Meshing\MeshSetupItem.cs" />
     <Compile Include="Parts\NodalDataStructures.cs" />
     <Compile Include="Meshing\FeMeshRefinement.cs" />
@@ -140,7 +152,11 @@
       <Name>CaeGlobals</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

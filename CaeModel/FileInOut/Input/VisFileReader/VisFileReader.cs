@@ -33,6 +33,17 @@ namespace FileInOut.Input
                 double epsilon = 1E-9;
                 int offsetNodeId = 0;
                 int offsetElementId = 0;
+                // Read the vertices first - later the merging of nodes is done
+                string[] vertexSplitData = data.Split(new string[] { "Number of vertices: " }, StringSplitOptions.RemoveEmptyEntries);
+                if (vertexSplitData.Length == 2)
+                {
+                    string vertexData = vertexSplitData[1];
+                    int endVertexData = vertexData.IndexOf("****");
+                    vertexData = vertexData.Substring(0, endVertexData);
+                    offsetNodeId = ReadNodes(vertexData, offsetNodeId, nodes, ref bBox);
+                    //
+                    vertexNodeIds.UnionWith(nodes.Keys);
+                }
                 //
                 string textToFind = null;
                 ImportOptions importOptions = ImportOptions.DetectEdges;
@@ -67,14 +78,13 @@ namespace FileInOut.Input
                         for (int i = 1; i < faceData.Length; i++)   // start with 1 to skip first line: ********
                         {
                             ReadFace(faceData[i], ref offsetNodeId, nodes, ref offsetElementId, elements,
-                                     surfaceIdNodeIds, faceTypes, edgeIdNodeIds, edgeTypes, vertexNodeIds, ref bBox);
+                                     surfaceIdNodeIds, faceTypes, edgeIdNodeIds, edgeTypes, ref bBox);
                         }
                     }
                     //
                     double max = bBox.GetDiagonal();
                     int[] mergedNodes;
                     MergeNodes(nodes, elements, surfaceIdNodeIds, edgeIdNodeIds, epsilon * max, out mergedNodes);
-                    vertexNodeIds.ExceptWith(mergedNodes);
                     //
                     FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry, importOptions);
                     //
@@ -92,7 +102,6 @@ namespace FileInOut.Input
             //
             return null;
         }
-
         private static void ReadFace(string faceData,
                                      ref int offsetNodeId, Dictionary<int, FeNode> nodes,
                                      ref int offsetElementId, Dictionary<int, FeElement> elements,
@@ -100,7 +109,6 @@ namespace FileInOut.Input
                                      Dictionary<int, GeomFaceType> faceTypes,
                                      Dictionary<int, HashSet<int>> edgeIdNodeIds,
                                      Dictionary<int, GeomCurveType> edgeTypes,
-                                     HashSet<int> vertexNodeIds,
                                      ref BoundingBox bBox)
         {
             int numOfNodes = 0;
@@ -130,8 +138,7 @@ namespace FileInOut.Input
                 }
                 else if (data[i].StartsWith("edges"))
                 {
-                    numOfElements = ReadEdges(data[i], offsetNodeId, offsetElementId, elements,
-                                              edgeIdNodeIds, edgeTypes, vertexNodeIds);
+                    numOfElements = ReadEdges(data[i], offsetNodeId, offsetElementId, elements, edgeIdNodeIds, edgeTypes);
                     offsetElementId += numOfElements;
                 }
             }
@@ -201,8 +208,7 @@ namespace FileInOut.Input
         }
         private static int ReadEdges(string elementData, int offsetNodeId, int offsetElementId,
                                      Dictionary<int, FeElement> elements, Dictionary<int, HashSet<int>> edgeIdNodeIds,
-                                     Dictionary<int, GeomCurveType> edgeTypes,
-                                     HashSet<int> vertexNodeIds)
+                                     Dictionary<int, GeomCurveType> edgeTypes)
         {
             string[] data = elementData.Split(lineSplitter, StringSplitOptions.RemoveEmptyEntries);
             GeomCurveType edgeType;
@@ -236,9 +242,7 @@ namespace FileInOut.Input
                     //
                     element = new LinearBeamElement(id, nodeIds);
                     elements.Add(element.Id, element);
-                    // Add the first and the last node id to the vertex list
-                    if (j == 2) vertexNodeIds.Add(nodeIds[0]);
-                    if (j == splitData.Length - 2) vertexNodeIds.Add(nodeIds[1]);
+                    //
                     internalId++;
                 }
                 //
@@ -270,14 +274,14 @@ namespace FileInOut.Input
             IComparer<FeNode> comparerByX = new CompareFeNodeByX();
             Array.Sort(sortedNodes, comparerByX);
             // Create a map of node ids to be merged to another node id
-            Dictionary<int, int> mergeMap = new Dictionary<int, int>();
+            Dictionary<int, int> oldIdNewIdMap = new Dictionary<int, int>();
             for (int i = 0; i < sortedNodes.Length - 1; i++)
             {
-                if (mergeMap.ContainsKey(sortedNodes[i].Id)) continue;       // this node was merged and does not exist anymore
-
+                if (oldIdNewIdMap.ContainsKey(sortedNodes[i].Id)) continue;       // this node was merged and does not exist anymore
+                //
                 for (int j = i + 1; j < sortedNodes.Length; j++)
                 {
-                    if (mergeMap.ContainsKey(sortedNodes[j].Id)) continue;   // this node was merged and does not exist anymore
+                    if (oldIdNewIdMap.ContainsKey(sortedNodes[j].Id)) continue;   // this node was merged and does not exist anymore
 
                     if (Math.Abs(sortedNodes[i].X - sortedNodes[j].X) < epsilon)
                     {
@@ -285,7 +289,7 @@ namespace FileInOut.Input
                         {
                             if (Math.Abs(sortedNodes[i].Z - sortedNodes[j].Z) < epsilon)
                             {
-                                mergeMap.Add(sortedNodes[j].Id, sortedNodes[i].Id);
+                                oldIdNewIdMap.Add(sortedNodes[j].Id, sortedNodes[i].Id);
                             }
                         }
                     }
@@ -295,8 +299,26 @@ namespace FileInOut.Input
                     }
                 }
             }
-            // Remove unused nodes
-            mergedNodes = mergeMap.Keys.ToArray();
+            // Collect close nodes into bins
+            HashSet<int> allNodeIds;
+            Dictionary<int, HashSet<int>> newNodeIdAllNodeIds = new Dictionary<int, HashSet<int>>();
+            foreach (var entry in oldIdNewIdMap)
+            {
+                if (newNodeIdAllNodeIds.TryGetValue(entry.Value, out allNodeIds)) allNodeIds.Add(entry.Key);
+                else newNodeIdAllNodeIds.Add(entry.Value, new HashSet<int>() { entry.Value, entry.Key });
+            }
+            // Find the smallest node id
+            oldIdNewIdMap.Clear();
+            int[] sortedNodeIds;
+            foreach (var entry in newNodeIdAllNodeIds)
+            {
+                sortedNodeIds = entry.Value.ToArray();
+                Array.Sort(sortedNodeIds);
+                //
+                for (int i = 1; i < sortedNodeIds.Length; i++) oldIdNewIdMap.Add(sortedNodeIds[i], sortedNodeIds[0]);
+            }
+             // Remove unused nodes
+            mergedNodes = oldIdNewIdMap.Keys.ToArray();
             foreach (int mergedNode in mergedNodes) nodes.Remove(mergedNode);
             // Apply the map to the elements
             int newId;
@@ -307,7 +329,7 @@ namespace FileInOut.Input
                 nodeIds.Clear();
                 for (int i = 0; i < entry.Value.NodeIds.Length; i++)
                 {
-                    if (mergeMap.TryGetValue(entry.Value.NodeIds[i], out newId)) entry.Value.NodeIds[i] = newId;
+                    if (oldIdNewIdMap.TryGetValue(entry.Value.NodeIds[i], out newId)) entry.Value.NodeIds[i] = newId;
                     //
                     nodeIds.Add(entry.Value.NodeIds[i]);
                 }
@@ -326,7 +348,7 @@ namespace FileInOut.Input
                 newIds.Clear();
                 foreach (var nodeId in entry.Value)
                 {
-                    if (mergeMap.TryGetValue(nodeId, out newId)) newIds.Add(newId);
+                    if (oldIdNewIdMap.TryGetValue(nodeId, out newId)) newIds.Add(newId);
                     else newIds.Add(nodeId);
                 }
                 entry.Value.Clear();
@@ -338,7 +360,7 @@ namespace FileInOut.Input
                 newIds.Clear();
                 foreach (var nodeId in entry.Value)
                 {
-                    if (mergeMap.TryGetValue(nodeId, out newId)) newIds.Add(newId);
+                    if (oldIdNewIdMap.TryGetValue(nodeId, out newId)) newIds.Add(newId);
                     else newIds.Add(nodeId);
                 }
                 entry.Value.Clear();

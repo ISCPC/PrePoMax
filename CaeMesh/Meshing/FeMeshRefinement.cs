@@ -56,10 +56,10 @@ namespace CaeMesh
 
 
         // Methods                                                                                                                  
-        public void Reset()
+        public override void Reset()
         {
-            _creationIds = null;
-            _creationData = null;
+            base.Reset();
+            //
             _meshSize = 1;
         }
         public void CopyFrom(FeMeshRefinement meshRefinement)
@@ -67,6 +67,10 @@ namespace CaeMesh
             base.CopyFrom(meshRefinement);
             //
             _meshSize = meshRefinement.MeshSize;
+        }
+        public FeMeshRefinement DeepCopy()
+        {
+            return new FeMeshRefinement(this);
         }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)

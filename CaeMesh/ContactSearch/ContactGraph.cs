@@ -129,7 +129,7 @@ namespace CaeMesh
             {
                 partIds.Add(FeMesh.GetPartIdFromGeometryId(itemId));
             }
-            if (partIds.Count == 1) name = mesh.GetPartNamesByIds(partIds.ToArray())[0];
+            if (partIds.Count == 1) name = mesh.GetPartNamesFromPartIds(partIds.ToArray())[0];
             else name = allNames.GetNextNumberedKey("Merged");
             //
             return name;
@@ -144,18 +144,15 @@ namespace CaeMesh
         {
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
             GeometryType geomType = (GeometryType)itemTypePartIds[1];
-            VisualizationData vis = mesh.GetPartById(itemTypePartIds[2]).Visualization;
+            VisualizationData vis = mesh.GetPartFromId(itemTypePartIds[2]).Visualization;
             // Face
-            if (geomType == GeometryType.SolidSurface ||
-                geomType == GeometryType.ShellFrontSurface ||
-                geomType == GeometryType.ShellBackSurface)
+            if (geomType.IsSurface())
             {
                 int faceId = itemTypePartIds[0];
                 return vis.FaceAreas[faceId] * 1E6;
             }
             // Edge
-            else if (geomType == GeometryType.Edge ||
-                     geomType == GeometryType.ShellEdgeSurface)
+            else if (geomType.IsEdge())
             {
                 int edgeId = itemTypePartIds[0];
                 return vis.EdgeLengths[edgeId];

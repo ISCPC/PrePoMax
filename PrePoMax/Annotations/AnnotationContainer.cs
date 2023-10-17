@@ -127,17 +127,24 @@ namespace PrePoMax
         }
         public Dictionary<string, AnnotationBase> GetCurrentAnnotations()
         {
-            return GetAnnotations(AnnotationBase.Controller.CurrentView, CurrentResultName);
+            Dictionary<string, AnnotationBase> annotations =
+                GetAnnotations(AnnotationBase.Controller.CurrentView, CurrentResultName);
+            if (annotations != null) return annotations;
+            else return new Dictionary<string, AnnotationBase> { };
         }
         public Dictionary<string, AnnotationBase> GetAnnotations(ViewGeometryModelResults view, string resultName)
         {
             if (view == ViewGeometryModelResults.Geometry) return _geometryAnnotations;
             else if (view == ViewGeometryModelResults.Model) return _modelAnnotations;
-            else if (view == ViewGeometryModelResults.Results && resultName != null)
+            else if (view == ViewGeometryModelResults.Results)
             {
-                if (!_allResultsAnnotations.ContainsKey(resultName))
-                    _allResultsAnnotations.Add(resultName, new Dictionary<string, AnnotationBase>());
-                return _allResultsAnnotations[resultName];
+                if (resultName != null)
+                {
+                    if (!_allResultsAnnotations.ContainsKey(resultName))
+                        _allResultsAnnotations.Add(resultName, new Dictionary<string, AnnotationBase>());
+                    return _allResultsAnnotations[resultName];
+                }
+                else return null;
             }
             else throw new NotSupportedException();
         }
@@ -268,8 +275,11 @@ namespace PrePoMax
         public void RemoveCurrentArrowAnnotations(string[] annotationNames)
         {
             var annotations = GetCurrentAnnotations();
-            foreach (var annotationName in annotationNames) annotations.Remove(annotationName);
-            AnnotationBase.Controller.ModelChanged = true;
+            if (annotations != null)
+            {
+                foreach (var annotationName in annotationNames) annotations.Remove(annotationName);
+                AnnotationBase.Controller.ModelChanged = true;
+            }
         }
         public void RemoveCurrentArrowAnnotationsByParts(BasePart[] parts, ViewGeometryModelResults view)
         {

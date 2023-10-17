@@ -176,6 +176,7 @@ namespace PrePoMax.Forms
             }
             else RemeshingParameters = _prevRemeshingParameters;
             //
+            RemeshingParameters.CreationData.SelectItem = vtkSelectItem.Element;
             _controller.Selection.Clear();                
             //
             _viewRemeshingParameters.PopulateDropDownLists(elementSetNames);

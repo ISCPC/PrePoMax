@@ -2275,10 +2275,13 @@ namespace PrePoMax
                 else if (_controller.CurrentView == ViewGeometryModelResults.Results)
                 {
                     parts = _controller.GetResultParts();
-                    foreach (var part in parts)
+                    if (parts !=null)
                     {
-                        if (part.Visible) partNamesToHide.Add(part.Name);
-                        else partNamesToShow.Add(part.Name);
+                        foreach (var part in parts)
+                        {
+                            if (part.Visible) partNamesToHide.Add(part.Name);
+                            else partNamesToShow.Add(part.Name);
+                        }
                     }
                     if (partNamesToHide.Count > 0) _controller.HideResultParts(partNamesToHide.ToArray());
                     if (partNamesToShow.Count > 0) _controller.ShowResultParts(partNamesToShow.ToArray());
@@ -2925,12 +2928,12 @@ namespace PrePoMax
                 HashSet<PartType> stlPartTypes = new HashSet<PartType>();
                 HashSet<PartType> cadPartTypes = new HashSet<PartType>();
                 //
-                string[] allPartNames = _controller.GetMeshAblePartNames(partNames);
+                string[] allPartNames = _controller.GetMeshablePartNames(partNames);
                 foreach (var partName in allPartNames)
                 {
                     part = (GeometryPart)_controller.Model.Geometry.Parts[partName];
-                    if (part.CADFileData == null) stlPartTypes.Add(part.PartType);
-                    else cadPartTypes.Add(part.PartType);
+                    if (part.IsCADPart) cadPartTypes.Add(part.PartType);
+                    else stlPartTypes.Add(part.PartType);
                 }
                 if (stlPartTypes.Count + cadPartTypes.Count != 1)
                     throw new CaeException("Compound part can be made from only CAD or only stl based geometry parts " + 
@@ -3138,10 +3141,9 @@ namespace PrePoMax
         // Preview
         private async void PreviewEdgeMesh(string[] partNames)
         {
-            await PreviewEdgeMeshAsync(partNames, null, null);
+            await PreviewEdgeMeshAsync(partNames, null);
         }
-        private async Task PreviewEdgeMeshAsync(string[] partNames, MeshingParameters meshingParameters,
-                                                  FeMeshRefinement meshRefinement)
+        private async Task PreviewEdgeMeshAsync(string[] partNames, MeshSetupItem meshSetupItem)
         {
             bool stateSet = false;
             try
@@ -3154,7 +3156,7 @@ namespace PrePoMax
                     {
                         foreach (var partName in partNames)
                         {
-                            _controller.PreviewEdgeMesh(partName, meshingParameters, meshRefinement);
+                            _controller.PreviewEdgeMesh(partName, meshSetupItem);
                         }
                     });
                 }
@@ -3276,7 +3278,7 @@ namespace PrePoMax
                     {
                         Selection selection = new Selection();
                         selection.Add(new SelectionNodeIds(vtkSelectOperation.None, false,
-                                                           _controller.Model.Geometry.GetPartIdsByNames(partNames)));
+                                                           _controller.Model.Geometry.GetPartIdsFomPartNames(partNames)));
                         selection.SelectItem = vtkSelectItem.Part;
                         selection.CurrentView = (int)ViewGeometryModelResults.Geometry;
                         _controller.Selection = selection;
@@ -3284,7 +3286,7 @@ namespace PrePoMax
                         //
                         InvokeIfRequired(() => {
                             //_controller.HighlightSelection();
-                            SelectionChanged(_controller.Model.Geometry.GetPartIdsByNames(partNames));
+                            SelectionChanged(_controller.Model.Geometry.GetPartIdsFomPartNames(partNames));
                         });
                         //
                         firstTime = false;
@@ -3663,7 +3665,7 @@ namespace PrePoMax
                     _controller.MergeModelPartsCommand(partNames);
                 }
             }
-            else MessageBoxes.ShowError("Selected parts are of a different type and thus can not be merged.");
+            else MessageBoxes.ShowError("Selected parts are of a different type and thus cannot be merged.");
         }
         private void HideModelParts(string[] partNames)
         {
@@ -6466,7 +6468,7 @@ namespace PrePoMax
                     _controller.MergeResultParts(partNames);
                 }
             }
-            else MessageBoxes.ShowError("Selected parts are of a different type and thus can not be merged.");
+            else MessageBoxes.ShowError("Selected parts are of a different type and thus cannot be merged.");
         }
         private void HideResultParts(string[] partNames)
         {

@@ -42,7 +42,7 @@ namespace PrePoMax
                 CaeMesh.FeMesh mesh = Controller.DisplayedMesh;
                 if (mesh != null)
                 {
-                    CaeMesh.BasePart part = mesh.GetPartById(_partId);
+                    CaeMesh.BasePart part = mesh.GetPartFromId(_partId);
                     if (part != null && part.Visible) return true;
                 }
             }
@@ -72,7 +72,7 @@ namespace PrePoMax
         {
             if (Controller.IsExplodedViewActive())
             {
-                CaeMesh.BasePart part = Controller.AllResults.CurrentResult.Mesh.GetPartById(_partId);
+                CaeMesh.BasePart part = Controller.AllResults.CurrentResult.Mesh.GetPartFromId(_partId);
                 position.X += part.Offset[0];
                 position.Y += part.Offset[1];
                 position.Z += part.Offset[2];

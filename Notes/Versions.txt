@@ -196,7 +196,7 @@ By Matej
 Errors:
 - if first step is Nlgeo then all the rest of them are Nlgeo - this is not so in PrePoMax.
 - on the wireframe view the query element command does not work 
-- running with no Admin rights the number of cpus can not be changed...
+- running with no Admin rights the number of cpus cannot be changed...
 - the mouseMove event gets fired every second?!
 - there is something wrong when using small dimension: 0.001 - negative Jacobian
 
@@ -523,7 +523,7 @@ Save As in now in AsyncMode.
 Added setting for enabling/disabling the saving of the results into pmx files.
 Redraw the dependent objects (loads, BCs, ...) if the child object changes
 Added support for material library
-Fixed bug: #1: %STR results can not be displayed
+Fixed bug: #1: %STR results cannot be displayed
 Fixed bug: #2: setting for open last file not working
 Added support for environmental variables: Settings/Calculix/Parallelization
 Bug fixes

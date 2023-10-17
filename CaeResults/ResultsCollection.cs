@@ -54,20 +54,33 @@ namespace CaeResults
                 FeResults.WriteToFile(entry.Value, bw);
             }
         }
-        public static void ReadFromFile(ResultsCollection allResults, System.IO.BinaryReader br, int version)
+        public static bool ReadFromFile(ResultsCollection allResults, System.IO.BinaryReader br, int version)
         {
             string resultsName;
             int numResults = br.ReadInt32();
+            HashSet<string> addedResultNames = new HashSet<string>();
             //
             if (numResults > 0)
             {
                 for (int i = 0; i < numResults; i++)
                 {
                     resultsName = br.ReadString();
-                    allResults.SetCurrentResult(resultsName);
-                    if (allResults.CurrentResult != null) FeResults.ReadFromFile(allResults.CurrentResult, br, version);
+                    // If something goes wrong the name is written incorrectly
+                    if (allResults._results.ContainsKey(resultsName))
+                    {
+                        allResults.SetCurrentResult(resultsName);
+                        if (allResults.CurrentResult != null)
+                        {
+                            addedResultNames.Add(resultsName);
+                            FeResults.ReadFromFile(allResults.CurrentResult, br, version);
+                        }
+                    }
                 }
             }
+            HashSet<string> failedResultNames = allResults._results.Keys.Except(addedResultNames).ToHashSet();
+            foreach (var failedResultName in failedResultNames) allResults._results.Remove(failedResultName);
+            //
+            return failedResultNames.Count == 0;
         }
         //
         public void Clear()

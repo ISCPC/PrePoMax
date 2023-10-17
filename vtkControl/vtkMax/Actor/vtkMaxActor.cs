@@ -279,6 +279,7 @@ namespace vtkControl
             _colorContours = data.ColorContours;
             _sectionViewPossible = data.SectionViewPossible;
             _drawOnGeometry = data.DrawOnGeometry;
+            _useSecondaryHighlightColor = data.UseSecondaryHighightColor;
             //
             UpdateColor();
         }
@@ -1680,7 +1681,7 @@ namespace vtkControl
             if (data.Geometry.NodesAnimation != null)
             {
                 if (frameNumber < 0 || frameNumber >= data.Geometry.NodesAnimation.Length)
-                    throw new Exception("The animation frame can not be set.");
+                    throw new Exception("The animation frame cannot be set.");
                 //
                 vtkMaxActorAnimationData animationData = 
                     new vtkMaxActorAnimationData(data.Geometry.NodesAnimation[frameNumber].Coor, 

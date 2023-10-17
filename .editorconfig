@@ -1,0 +1,10 @@
+# All files
+[*]
+indent_style = space
+spelling_exclusion_path=.\exclusion.dic
+
+# Xml files
+[*.xml]
+indent_size = 2
+
+

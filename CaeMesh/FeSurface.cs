@@ -133,7 +133,7 @@ namespace CaeMesh
         }
         public void AddElementFace(FeFaceName faceName, string elementSetName)
         {
-            if (faceName == FeFaceName.Empty) throw new CaeException("The face name of the surface can not be 'Empty'.");
+            if (faceName == FeFaceName.Empty) throw new CaeException("The face name of the surface cannot be 'Empty'.");
             if (_elementFaces == null) _elementFaces = new Dictionary<FeFaceName, string>();
             //_type = FeSurfaceType.Element;
             _elementFaces.Add(faceName, elementSetName);

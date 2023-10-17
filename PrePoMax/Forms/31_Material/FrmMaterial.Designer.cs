@@ -317,6 +317,7 @@
             this.dgvData.EnablePlotMenu = true;
             this.dgvData.Location = new System.Drawing.Point(3, 3);
             this.dgvData.Name = "dgvData";
+            this.dgvData.ShowErrorMsg = true;
             this.dgvData.Size = new System.Drawing.Size(429, 231);
             this.dgvData.StartPlotAtZero = false;
             this.dgvData.TabIndex = 0;
@@ -421,7 +422,7 @@
             this.btnOKAddNew.Name = "btnOKAddNew";
             this.btnOKAddNew.Size = new System.Drawing.Size(90, 23);
             this.btnOKAddNew.TabIndex = 17;
-            this.btnOKAddNew.Text = "OK - Add new";
+            this.btnOKAddNew.Text = "OK - New";
             this.btnOKAddNew.UseVisualStyleBackColor = true;
             this.btnOKAddNew.Click += new System.EventHandler(this.btnOKAddNew_Click);
             // 

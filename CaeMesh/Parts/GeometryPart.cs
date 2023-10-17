@@ -59,14 +59,15 @@ namespace CaeMesh
             get
             {
                 if (_cadFileData != null) return StringCompressor.DecompressString(_cadFileData);
-                else return _cadFileData;
+                else return null;
             }
             set
             {
-                if (value == null) _cadFileData = value;
-                else _cadFileData = CaeGlobals.StringCompressor.CompressString(value);
+                if (value == null) _cadFileData = null;
+                else _cadFileData = StringCompressor.CompressString(value);
             }
         }
+        public bool IsCADPart { get { return _cadFileData != null; } }
 
 
         // Constructors                                                                                                             

@@ -41,8 +41,8 @@ namespace CaeMesh
             _geometryType = geometryType;
             _geometryId = FeMesh.GetGeometryId(_id, (int)_geometryType, _part.PartId);
             //
-            if (_geometryType == GeometryType.ShellEdgeSurface) _nodeIds = part.Visualization.GetNodeIdsByEdge(_id);
-            else _nodeIds = part.Visualization.GetNodeIdsBySurface(_id);
+            if (_geometryType == GeometryType.ShellEdgeSurface) _nodeIds = part.Visualization.GetNodeIdsForEdgeId(_id);
+            else _nodeIds = part.Visualization.GetNodeIdsForSurfaceId(_id);
             //
             _boundingBox = new BoundingBox();
             _boundingBox.IncludeFirstCoor(_nodes[_nodeIds.First()]);

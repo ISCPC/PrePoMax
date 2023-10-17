@@ -580,28 +580,37 @@ namespace PrePoMax.Forms
         {
             string noUnit = "/";
             // Density
-            SetGridViewUnit(nameof(DensityDataPoint.DensityEq), _controller.Model.UnitSystem.DensityUnitAbbreviation);
+            SetGridViewUnit(nameof(DensityDataPoint.DensityEq), _controller.Model.UnitSystem.DensityUnitAbbreviation,
+                            new StringDensityFromConverter());
             // Elastic
-            SetGridViewUnit(nameof(ElasticDataPoint.YoungsModulusEq), _controller.Model.UnitSystem.PressureUnitAbbreviation);
-            SetGridViewUnit(nameof(ElasticDataPoint.PoissonsRatioEq), noUnit);
+            SetGridViewUnit(nameof(ElasticDataPoint.YoungsModulusEq), _controller.Model.UnitSystem.PressureUnitAbbreviation,
+                            new StringPressureFromConverter());
+            SetGridViewUnit(nameof(ElasticDataPoint.PoissonsRatioEq), noUnit,
+                            new StringDoubleConverter());
             // Plastic
-            SetGridViewUnit(nameof(PlasticDataPoint.StressEq), _controller.Model.UnitSystem.PressureUnitAbbreviation);
-            SetGridViewUnit(nameof(PlasticDataPoint.StrainEq), noUnit);
+            SetGridViewUnit(nameof(PlasticDataPoint.StressEq), _controller.Model.UnitSystem.PressureUnitAbbreviation,
+                            new StringPressureFromConverter());
+            SetGridViewUnit(nameof(PlasticDataPoint.StrainEq), noUnit,
+                            new StringDoubleConverter());
             // Thermal expansion
             SetGridViewUnit(nameof(ThermalExpansionDataPoint.ThermalExpansionEq),
-                            _controller.Model.UnitSystem.ThermalExpansionUnitAbbreviation);
+                            _controller.Model.UnitSystem.ThermalExpansionUnitAbbreviation,
+                            new StringThermalExpansionFromConverter());
             // Thermal conductivity
             SetGridViewUnit(nameof(ThermalConductivityDataPoint.ThermalConductivityEq),
-                            _controller.Model.UnitSystem.ThermalConductivityUnitAbbreviation);
+                            _controller.Model.UnitSystem.ThermalConductivityUnitAbbreviation,
+                            new StringThermalConductivityFromConverter());
             // Specific heat
-            SetGridViewUnit(nameof(SpecificHeatDataPoint.SpecificHeatEq), _controller.Model.UnitSystem.SpecificHeatUnitAbbreviation);
+            SetGridViewUnit(nameof(SpecificHeatDataPoint.SpecificHeatEq), _controller.Model.UnitSystem.SpecificHeatUnitAbbreviation,
+                            new StringSpecificHeatFromConverter());
             // Temperature
-            SetGridViewUnit(nameof(TempDataPoint.TemperatureEq), _controller.Model.UnitSystem.TemperatureUnitAbbreviation);
+            SetGridViewUnit(nameof(TempDataPoint.TemperatureEq), _controller.Model.UnitSystem.TemperatureUnitAbbreviation,
+                            new StringTemperatureFromConverter());
             //
             dgvData.XColIndex = 1;
             dgvData.StartPlotAtZero = true;
         }
-        private void SetGridViewUnit(string columnName, string unit)
+        private void SetGridViewUnit(string columnName, string unit, TypeConverter converter)
         {
             DataGridViewColumn col = dgvData.Columns[columnName];
             if (col != null)
@@ -610,6 +619,8 @@ namespace PrePoMax.Forms
                 if (col.HeaderText != null) col.HeaderText = col.HeaderText.Replace("?", unit);
                 // Alignment
                 col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                // Converter
+                col.Tag = converter;
             }
         }
         private string GetMaterialName()
@@ -656,7 +667,7 @@ namespace PrePoMax.Forms
                 }
             }
             //
-            string temperatureName = nameof(TempDataPoint.Temperature);
+            string temperatureName = nameof(TempDataPoint.TemperatureEq);
             DataGridViewColumn col = dgvData.Columns[temperatureName];
             if (col != null) col.Visible = cbTemperatureDependent.Checked;
         }

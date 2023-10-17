@@ -142,7 +142,21 @@ namespace GmshCommon {
 				dimTags[i] = gcnew System::Tuple<int, int>(nDimTags[i].first, nDimTags[i].second);
 		}
 
-
+        static void GetAdjacencies(int dim, int tag,
+                                   [System::Runtime::InteropServices::Out] array<int>^% upward,
+                                   [System::Runtime::InteropServices::Out] array<int>^% downward)
+        {
+            std::vector<int> upward_native;
+            std::vector<int> downward_native;
+            //
+            gmsh::model::getAdjacencies(dim, tag, upward_native, downward_native);
+            //
+            upward = gcnew array<int>(upward_native.size());
+            Marshal::Copy(IntPtr(upward_native.data()), upward, 0, upward->Length);
+            //
+            downward = gcnew array<int>(downward_native.size());
+            Marshal::Copy(IntPtr(downward_native.data()), downward, 0, downward->Length);
+        }
 
 		static void GetBoundary(array<System::Tuple<int, int>^>^ tags, [System::Runtime::InteropServices::Out] array<System::Tuple<int, int>^>^% outDimTags, System::Boolean combined, System::Boolean oriented, System::Boolean recursive)
 		{
@@ -259,24 +273,24 @@ namespace GmshCommon {
 		static array<int>^ GetEntitiesForPhysicalGroup(int dim, int tag)
 		{
 			std::vector<int> tags;
+            //
 			gmsh::model::getEntitiesForPhysicalGroup(dim, tag, tags);
-
+            //
 			array<int>^ entities = gcnew array<int>(tags.size());
-
 			Marshal::Copy(IntPtr(tags.data()), entities, 0, entities->Length);
-
+            //
 			return entities;
 		}
 
 		static void RemovePhysicalGroups(array<System::Tuple<int, int>^>^ dimTags)
 		{
 			gmsh::vectorpair nDimTags;
-
+            //
 			for (int i = 0; i < dimTags->Length; ++i)
 			{
 				nDimTags.push_back(std::pair<int, int>(dimTags[i]->Item1, dimTags[i]->Item2));
 			}
-
+            //
 			gmsh::model::removePhysicalGroups(nDimTags);
 		}
 
@@ -502,7 +516,17 @@ namespace GmshCommon {
 
 			}
 
-			static void RemoveDuplicateNodes()
+            static void RemoveDuplicateNodes(array<System::Tuple<int, int>^>^ tags)
+            {
+                gmsh::vectorpair dimTags;
+                for (int i = 0; i < tags->Length; ++i)
+                {
+                    dimTags.push_back(std::pair<int, int>(tags[i]->Item1, tags[i]->Item2));
+                }
+                gmsh::model::mesh::removeDuplicateNodes(dimTags);
+            }
+			
+            static void RemoveDuplicateNodes()
 			{
 				gmsh::model::mesh::removeDuplicateNodes();
 			}
@@ -553,6 +577,16 @@ namespace GmshCommon {
 				Marshal::Copy(IntPtr(nDeterminants.data()), determinants, 0, nDeterminants.size());
 				Marshal::Copy(IntPtr(nCoord.data()), coord, 0, nCoord.size());
 			}
+           
+            static void Recombine()
+            {
+                gmsh::model::mesh::recombine();
+            }
+
+            static void Refine()
+            {
+                gmsh::model::mesh::refine();
+            }
 
 			static void SetRecombine(int dim, int tag)
 			{
@@ -568,6 +602,49 @@ namespace GmshCommon {
 			{
 				gmsh::model::mesh::setAlgorithm(dim, tag, val);
 			}
+
+            static void SetTransfiniteSurface(int tag, System::String^ arrangement, array<int>^ cornerTags)
+            {
+                std::vector<int> cornerTags_native = std::vector<int>();
+                std::string arrangement_native = msclr::interop::marshal_as<std::string>(arrangement);
+                //
+                gmsh::model::mesh::setTransfiniteSurface(tag, arrangement_native, cornerTags_native);
+            }
+            
+            static void SetTransfiniteAutomatic()
+            {
+                gmsh::model::mesh::setTransfiniteAutomatic();
+            
+            }
+            
+            static void SetTransfiniteAutomatic(double cornerAngle)
+            {
+                gmsh::vectorpair& dimTags_native = gmsh::vectorpair();
+                bool recombine = true;
+                //
+                gmsh::model::mesh::setTransfiniteAutomatic(dimTags_native, cornerAngle, recombine);
+            }
+            
+            static void SetTransfiniteAutomatic(double cornerAngle, bool recombine)
+            {
+                gmsh::vectorpair& dimTags_native = gmsh::vectorpair();
+                //
+                gmsh::model::mesh::setTransfiniteAutomatic(dimTags_native, cornerAngle, recombine);
+            }
+            
+            static void SetTransfiniteAutomatic(array<System::Tuple<int, int>^>^ dimTags, double cornerAngle, bool recombine)
+            {
+                gmsh::vectorpair dimTags_native(0);
+                for (int i = 0; i < dimTags->Length; ++i)
+                    dimTags_native.push_back(std::pair<int, int>(dimTags[i]->Item1, dimTags[i]->Item2));
+                //
+                gmsh::model::mesh::setTransfiniteAutomatic(dimTags_native, cornerAngle, recombine);
+            }
+            
+            static inline void SetOrder(int order)
+            {
+                gmsh::model::mesh::setOrder(order);
+            }
 		};
 
 		ref class Geo
@@ -605,15 +682,6 @@ namespace GmshCommon {
 				return gmsh::model::geo::addSurfaceLoop(nSurfaceTags, tag);
 			}
 
-
-			/*static void Extrude(const gmsh::vectorpair& dimTags,
-				const double dx,
-				const double dy,
-				const double dz,
-				gmsh::vectorpair& outDimTags,
-				const std::vector<int>& numElements = std::vector<int>(),
-				const std::vector<double>& heights = std::vector<double>(),
-				const bool recombine = false)*/
 			static void Extrude(array<System::Tuple<int, int>^>^ dimTags,
 								double dx,
 								double dy,
@@ -626,23 +694,54 @@ namespace GmshCommon {
 				gmsh::vectorpair dimTags_native(0);
 				for (int i = 0; i < dimTags->Length; ++i)
 					dimTags_native.push_back(std::pair<int, int>(dimTags[i]->Item1, dimTags[i]->Item2));
-
+                //
 				gmsh::vectorpair outDimTags_native;
-
+                //
 				std::vector<int> numElements_native(numElements->Length);
 				Marshal::Copy(numElements, 0, IntPtr(numElements_native.data()), numElements->Length);
-
+                //
 				std::vector<double> heights_native(heights->Length);
 				Marshal::Copy(heights, 0, IntPtr(heights_native.data()), heights->Length);
-
+                //
 				gmsh::model::occ::extrude(dimTags_native, dx, dy, dz, outDimTags_native, numElements_native, heights_native, recombine);
-
-
+                //
 				outDimTags = gcnew array<System::Tuple<int, int>^>(outDimTags_native.size());
 				for (int i = 0; i < outDimTags_native.size(); ++i)
 					outDimTags[i] = gcnew System::Tuple<int, int>(outDimTags_native[i].first, outDimTags_native[i].second);
-
 			}
+
+            static void Revolve(array<System::Tuple<int, int>^>^ dimTags,
+                double x,
+                double y,
+                double z,
+                double ax,
+                double ay,
+                double az,
+                double angle,
+                [System::Runtime::InteropServices::Out] array<System::Tuple<int, int>^>^% outDimTags,
+                array<int>^ numElements,
+                array<double>^ heights,
+                bool recombine)
+            {
+                gmsh::vectorpair dimTags_native(0);
+                for (int i = 0; i < dimTags->Length; ++i)
+                    dimTags_native.push_back(std::pair<int, int>(dimTags[i]->Item1, dimTags[i]->Item2));
+                //
+                gmsh::vectorpair outDimTags_native;
+                //
+                std::vector<int> numElements_native(numElements->Length);
+                Marshal::Copy(numElements, 0, IntPtr(numElements_native.data()), numElements->Length);
+                //
+                std::vector<double> heights_native(heights->Length);
+                Marshal::Copy(heights, 0, IntPtr(heights_native.data()), heights->Length);
+                //
+                gmsh::model::occ::revolve(dimTags_native, x, y, z, ax, ay, az, angle, outDimTags_native,
+                                          numElements_native, heights_native, recombine);
+                //
+                outDimTags = gcnew array<System::Tuple<int, int>^>(outDimTags_native.size());
+                for (int i = 0; i < outDimTags_native.size(); ++i)
+                    outDimTags[i] = gcnew System::Tuple<int, int>(outDimTags_native[i].first, outDimTags_native[i].second);
+            }
 		};
 
 		ref class OCC
@@ -796,6 +895,26 @@ namespace GmshCommon {
 				}
 
 			}
+            static void GetMass(int dim, int tag, [System::Runtime::InteropServices::Out] double% mass)
+            {
+                double mass_native = 0;
+                gmsh::model::occ::getMass(dim, tag, mass_native);
+                mass = mass_native;
+            }
+
+            static void GetEntitiesInBoundingBox(double xMin, double yMin, double zMin,
+                                                 double xMax, double yMax, double zMax,
+                                                 [System::Runtime::InteropServices::Out] array<System::Tuple<int, int>^>^% outDimTags,
+                                                 int dim)
+            {
+                gmsh::vectorpair outDimTags_native;
+                //
+                gmsh::model::occ::getEntitiesInBoundingBox(xMin, yMin, zMin, xMax, yMax, zMax, outDimTags_native, dim);
+                //
+                outDimTags = gcnew array<System::Tuple<int, int>^>(outDimTags_native.size());
+                for (int i = 0; i < outDimTags_native.size(); ++i)
+                    outDimTags[i] = gcnew System::Tuple<int, int>(outDimTags_native[i].first, outDimTags_native[i].second);
+            }
 
 			static int AddPoint(double x, double y, double z, int tag)
 			{
@@ -977,6 +1096,34 @@ namespace GmshCommon {
 
 				return gmsh::model::occ::addVolume(nShellTags, tag);
 			}
+
+            //
+            static void GetSizes(array<System::Tuple<int, int>^>^ dimTags, 
+                [System::Runtime::InteropServices::Out] array<double>^% sizes)
+            {
+                std::vector<double> sizes_native;
+                //
+                gmsh::vectorpair dimTags_native;
+                for (int i = 0; i < dimTags->Length; ++i)
+                {
+                    dimTags_native.push_back(std::pair<int, int>(dimTags[i]->Item1, dimTags[i]->Item2));
+                }
+                //
+                gmsh::model::mesh::getSizes(dimTags_native, sizes_native);
+                //
+                sizes = gcnew array<double>(sizes_native.size());
+                Marshal::Copy(IntPtr(sizes_native.data()), sizes, 0, sizes_native.size());
+            }
+            static void SetSize(array<System::Tuple<int, int>^>^ dimTags, double size)
+            {
+                gmsh::vectorpair dimTags_native;
+                for (int i = 0; i < dimTags->Length; ++i)
+                {
+                    dimTags_native.push_back(std::pair<int, int>(dimTags[i]->Item1, dimTags[i]->Item2));
+                }
+                //
+                gmsh::model::occ::mesh::setSize(dimTags_native, size);
+            }
 		};
 	};
 }

@@ -31,7 +31,7 @@ namespace PrePoMax.Forms
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dgvData = new System.Windows.Forms.DataGridView();
             this.cmsData = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiSwapMasterSlave = new System.Windows.Forms.ToolStripMenuItem();
@@ -79,14 +79,14 @@ namespace PrePoMax.Forms
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvData.ContextMenuStrip = this.cmsData;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvData.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvData.DefaultCellStyle = dataGridViewCellStyle2;
             this.dgvData.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dgvData.Location = new System.Drawing.Point(7, 22);
             this.dgvData.Name = "dgvData";
@@ -143,7 +143,7 @@ namespace PrePoMax.Forms
             // 
             // cbGroupBy
             // 
-            this.cbGroupBy.FormattingEnabled = true;
+            this.cbGroupBy.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbGroupBy.Location = new System.Drawing.Point(68, 62);
             this.cbGroupBy.Name = "cbGroupBy";
             this.cbGroupBy.Size = new System.Drawing.Size(87, 23);
@@ -194,6 +194,7 @@ namespace PrePoMax.Forms
             // 
             // cbContactPairMethod
             // 
+            this.cbContactPairMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbContactPairMethod.FormattingEnabled = true;
             this.cbContactPairMethod.Location = new System.Drawing.Point(118, 62);
             this.cbContactPairMethod.Name = "cbContactPairMethod";
@@ -211,6 +212,7 @@ namespace PrePoMax.Forms
             // 
             // cbSurfaceInteraction
             // 
+            this.cbSurfaceInteraction.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbSurfaceInteraction.FormattingEnabled = true;
             this.cbSurfaceInteraction.Location = new System.Drawing.Point(118, 40);
             this.cbSurfaceInteraction.Name = "cbSurfaceInteraction";
@@ -228,6 +230,7 @@ namespace PrePoMax.Forms
             // 
             // cbAbjustMesh
             // 
+            this.cbAbjustMesh.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbAbjustMesh.FormattingEnabled = true;
             this.cbAbjustMesh.Location = new System.Drawing.Point(118, 84);
             this.cbAbjustMesh.Name = "cbAbjustMesh";
@@ -245,6 +248,7 @@ namespace PrePoMax.Forms
             // 
             // cbType
             // 
+            this.cbType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbType.FormattingEnabled = true;
             this.cbType.Location = new System.Drawing.Point(118, 18);
             this.cbType.Name = "cbType";

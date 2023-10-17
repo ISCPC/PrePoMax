@@ -34,7 +34,7 @@ namespace PrePoMax
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(_geometryId);
             FeMesh mesh = Controller.DisplayedMesh;
             int edgeId = itemTypePartIds[0];
-            BasePart part = mesh.GetPartById(itemTypePartIds[2]);
+            BasePart part = mesh.GetPartFromId(itemTypePartIds[2]);
             double length;
             string lenUnit = Controller.GetLengthUnit();
             string fieldUnit = "";

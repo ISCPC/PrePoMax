@@ -189,6 +189,7 @@ namespace PrePoMax.Forms
             _coorLinesToDraw[0][2] = _translateParameters.Z1;
             _coorLinesToDraw[1] = _coorNodesToDraw[0];
             //
+            _controller.ClearAllSelection();
             _controller.HighlightNodes(_coorNodesToDraw);
             _controller.HighlightConnectedLines(_coorLinesToDraw);
         }

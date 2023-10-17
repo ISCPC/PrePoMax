@@ -55,7 +55,8 @@ namespace PrePoMax
         public static string MeshParametersFileName = "meshParameters";
         public static string MeshRefinementFileName = "meshRefinement";
         public static string VolFileName = "geometry.vol";
-        public static string MmgMeshFileName = "geometry.mesh";
+        public static string MmgMeshFileName = "mesh.mesh";
+        public static string InpMeshFileName = "mesh.inp";
         public static string EdgeNodesFileName = "edgeNodes";
         // Names
         public static string NameSeparator = ":";        

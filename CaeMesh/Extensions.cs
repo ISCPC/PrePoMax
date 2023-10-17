@@ -15,6 +15,25 @@ namespace CaeMesh
             else throw new NotSupportedException();
         }
         //
+        public static bool IsEdge(this GeometryType geometryType)
+        {
+            if (geometryType == GeometryType.Edge ||
+                geometryType == GeometryType.ShellEdgeSurface) return true;
+            else return false;
+        }
+        public static bool IsShellSurface(this GeometryType geometryType)
+        {
+            if (geometryType == GeometryType.ShellFrontSurface ||
+                geometryType == GeometryType.ShellBackSurface) return true;
+            else return false;
+        }
+        public static bool IsSurface(this GeometryType geometryType)
+        {
+            if (geometryType == GeometryType.SolidSurface ||
+                geometryType == GeometryType.ShellFrontSurface ||
+                geometryType == GeometryType.ShellBackSurface) return true;
+            else return false;
+        }
        
     }
 }

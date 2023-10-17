@@ -28,7 +28,7 @@ namespace FileInOut.Output.Calculix
         {
             _elementSet = elementSet;
             if (model != null && _elementSet is FeElementSet es && es.CreatedFromParts)
-                _partNames = model.Mesh.GetPartNamesByIds(es.Labels);
+                _partNames = model.Mesh.GetPartNamesFromPartIds(es.Labels);
             else _partNames = null;
         }
 

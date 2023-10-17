@@ -283,6 +283,11 @@
     <Compile Include="Forms\11_MeshSetup\FrmMeshSetupItem.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Forms\11_MeshSetup\ViewShellGmsh.cs" />
+    <Compile Include="Forms\11_MeshSetup\ViewTransfiniteMesh.cs" />
+    <Compile Include="Forms\11_MeshSetup\ViewTetrahedralGmsh.cs" />
+    <Compile Include="Forms\11_MeshSetup\ViewRevolveMesh.cs" />
+    <Compile Include="Forms\11_MeshSetup\ViewGmshSetupItem.cs" />
     <Compile Include="Forms\11_MeshSetup\ViewExtrudeMesh.cs" />
     <Compile Include="Forms\11_MeshSetup\ViewMeshSetupItem.cs" />
     <Compile Include="Forms\31_Material\ViewSlipWear.cs" />
@@ -829,6 +834,9 @@
     <EmbeddedResource Include="Forms\00_Common\FrmSelectItemSet.resx">
       <DependentUpon>FrmSelectItemSet.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

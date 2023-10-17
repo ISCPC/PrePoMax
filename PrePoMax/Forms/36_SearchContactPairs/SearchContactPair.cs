@@ -112,7 +112,7 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Data")]
         [OrderedDisplayName(6, 10, "Distance")]
         [DescriptionAttribute("Set the distance inside which the slave nodes will be included/projected.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthDefaultConverter))]
         public double Distance { get { return _distance; } set { _distance = value; } }
         //
         [Browsable(false)]
@@ -149,10 +149,10 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public void PopulateDropDownLists(string[] surfaceInteractionNames, string[] conctactPairMethodNames)
+        public void PopulateDropDownLists(string[] surfaceInteractionNames, string[] contactPairMethodNames)
         {
             _dctd.PopulateProperty(nameof(SurfaceInteractionName), surfaceInteractionNames);
-            _dctd.PopulateProperty(nameof(ContactPairMethod), conctactPairMethodNames);
+            _dctd.PopulateProperty(nameof(ContactPairMethod), contactPairMethodNames);
             //
             _dctd.GetProperty(nameof(GeometryTypeName)).SetIsBrowsable(false);
             //

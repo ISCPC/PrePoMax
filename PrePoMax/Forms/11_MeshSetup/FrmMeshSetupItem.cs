@@ -28,7 +28,7 @@ namespace PrePoMax.Forms
 
 
         // Callbacks                                                                                                                
-        public Func<string[], MeshingParameters, FeMeshRefinement, Task> PreviewEdgeMeshAsync;
+        public Func<string[], MeshSetupItem, Task> PreviewEdgeMeshAsync;
 
 
 
@@ -46,7 +46,11 @@ namespace PrePoMax.Forms
                     _viewMeshSetupItem = new ViewMeshingParameters(mp.DeepClone(), advancedView);
                 }
                 else if (value is FeMeshRefinement mr) _viewMeshSetupItem = new ViewFeMeshRefinement(mr.DeepClone());
+                else if (value is ShellGmsh sg) _viewMeshSetupItem = new ViewShellGmsh(sg.DeepClone());
+                else if (value is TetrahedralGmsh tg) _viewMeshSetupItem = new ViewTetrahedralGmsh(tg.DeepClone());
+                else if (value is TransfiniteMesh tm) _viewMeshSetupItem = new ViewTransfiniteMesh(tm.DeepClone());
                 else if (value is ExtrudeMesh em) _viewMeshSetupItem = new ViewExtrudeMesh(em.DeepClone());
+                else if (value is RevolveMesh rm) _viewMeshSetupItem = new ViewRevolveMesh(rm.DeepClone());
                 else throw new NotImplementedException("MeshSetupItemTypeException");
             }
         }
@@ -166,8 +170,14 @@ namespace PrePoMax.Forms
                 _meshingParametersChanged = false;
             }
             else if (MeshSetupItem is FeMeshRefinement mr) mr.Reset();
+            else if (MeshSetupItem is ShellGmsh sg) sg.Reset();
+            else if (MeshSetupItem is TetrahedralGmsh tg) tg.Reset();
+            else if (MeshSetupItem is TransfiniteMesh tm) tm.Reset();
             else if (MeshSetupItem is ExtrudeMesh em) em.Reset();
+            else if (MeshSetupItem is RevolveMesh rm) rm.Reset();
             else throw new NotSupportedException("MeshSetupItemTypeException");
+            //
+            _propertyItemChanged = true;
             //
             propertyGrid.Refresh();
         }
@@ -179,29 +189,18 @@ namespace PrePoMax.Forms
                 ItemSetDataEditor.SelectionForm.Enabled = false;
                 //
                 string[] partNames;
-                MeshingParameters meshingParameters = null;
-                FeMeshRefinement meshRefinement = null;
-                if (MeshSetupItem is MeshingParameters mp)
-                {
-                    meshingParameters = mp;
-                    partNames = _controller.DisplayedMesh.GetPartNamesByIds(MeshSetupItem.CreationIds);
-                }
-                else if (MeshSetupItem is FeMeshRefinement mr)
-                {
-                    meshRefinement = mr;
-                    partNames = _controller.Model.Geometry.GetPartNamesFromGeometryIds(MeshSetupItem.CreationIds);
-                }
-                else if (MeshSetupItem is ExtrudeMesh em)
-                {
-                    partNames = _controller.Model.Geometry.GetPartNamesFromGeometryIds(MeshSetupItem.CreationIds);
-                }
+                if (MeshSetupItem is MeshingParameters || MeshSetupItem is TetrahedralGmsh || MeshSetupItem is TransfiniteMesh)
+                    partNames = _controller.DisplayedMesh.GetPartNamesFromPartIds(MeshSetupItem.CreationIds);
+                else if (MeshSetupItem is ShellGmsh || MeshSetupItem is FeMeshRefinement || MeshSetupItem is ExtrudeMesh ||
+                         MeshSetupItem is RevolveMesh)
+                    partNames = _controller.DisplayedMesh.GetPartNamesFromGeometryIds(MeshSetupItem.CreationIds);
                 else throw new NotSupportedException("MeshSetupItemTypeException");
                 //
                 if (partNames != null && partNames.Length > 0)
                 {
-                    HighlightMeshSetupItem();
+                    HighlightMeshSetupItem(false);
                     //
-                    await PreviewEdgeMeshAsync?.Invoke(partNames, meshingParameters, meshRefinement);
+                    await PreviewEdgeMeshAsync?.Invoke(partNames, MeshSetupItem);
                 }
             }
             catch (Exception ex)
@@ -222,18 +221,13 @@ namespace PrePoMax.Forms
             if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
-                if (itemTag is ViewMeshingParameters vmp)
-                {
-                    _viewMeshSetupItem = vmp;
-                }
-                else if (itemTag is ViewFeMeshRefinement vmr)
-                {
-                    _viewMeshSetupItem = vmr;
-                }
-                else if (itemTag is ViewExtrudeMesh vem)
-                {
-                    _viewMeshSetupItem = vem;
-                }
+                if (itemTag is ViewMeshingParameters vmp) _viewMeshSetupItem = vmp;
+                else if (itemTag is ViewFeMeshRefinement vmr) _viewMeshSetupItem = vmr;
+                else if (itemTag is ViewShellGmsh vsg) _viewMeshSetupItem = vsg;
+                else if (itemTag is ViewTetrahedralGmsh vtg) _viewMeshSetupItem = vtg;
+                else if (itemTag is ViewTransfiniteMesh vtm) _viewMeshSetupItem = vtm;
+                else if (itemTag is ViewExtrudeMesh vem) _viewMeshSetupItem = vem;
+                else if (itemTag is ViewRevolveMesh vrm) _viewMeshSetupItem = vrm;
                 else throw new NotImplementedException("MeshSetupItemTypeException");
                 //
                 ShowHideSelectionForm();
@@ -267,6 +261,9 @@ namespace PrePoMax.Forms
             //
             if (MeshSetupItem.CreationIds == null || MeshSetupItem.CreationIds.Length == 0)
                 throw new CaeException("The mesh setup item selection must contain at least one item.");
+            //
+            string error = _controller.IsMeshSetupItemProperlyDefined(MeshSetupItem);
+            if (error != null) throw new CaeException(error);
             // When opened from regenerate
             if (this.Modal) { }
             // When opened normally
@@ -351,7 +348,11 @@ namespace PrePoMax.Forms
                 int selectedId;
                 if (_viewMeshSetupItem is ViewMeshingParameters) selectedId = 0;
                 else if (_viewMeshSetupItem is ViewFeMeshRefinement) selectedId = 1;
-                else if (_viewMeshSetupItem is ViewExtrudeMesh) selectedId = 2;
+                else if (_viewMeshSetupItem is ViewShellGmsh) selectedId = 2;
+                else if (_viewMeshSetupItem is ViewTetrahedralGmsh) selectedId = 3;
+                else if (_viewMeshSetupItem is ViewTransfiniteMesh) selectedId = 4;
+                else if (_viewMeshSetupItem is ViewExtrudeMesh) selectedId = 5;
+                else if (_viewMeshSetupItem is ViewRevolveMesh) selectedId = 6;
                 else throw new NotSupportedException("MeshSetupItemTypeException");
                 //
                 lvTypes.Items[selectedId].Tag = _viewMeshSetupItem;
@@ -374,7 +375,7 @@ namespace PrePoMax.Forms
                 //
                 if (ids != null && ids.Length > 0)
                 {
-                    string[] partNames = _controller.Model.Geometry.GetPartNamesByIds(ids);
+                    string[] partNames = _controller.Model.Geometry.GetPartNamesFromPartIds(ids);
                     MeshingParameters defaultMeshingParameters = _controller.GetPartDefaultMeshingParameters(partNames);
                     //
                     if (defaultMeshingParameters != null)
@@ -406,10 +407,30 @@ namespace PrePoMax.Forms
                 selectedId = 1;
                 _viewMeshSetupItem = new ViewFeMeshRefinement(mr.DeepClone());
             }
-            else if (meshSetupItem is ExtrudeMesh em)
+            else if (meshSetupItem is ShellGmsh sg)
             {
                 selectedId = 2;
+                _viewMeshSetupItem = new ViewShellGmsh(sg.DeepClone());
+            }
+            else if (meshSetupItem is TetrahedralGmsh tg)
+            {
+                selectedId = 3;
+                _viewMeshSetupItem = new ViewTetrahedralGmsh(tg.DeepClone());
+            }
+            else if (meshSetupItem is TransfiniteMesh tm)
+            {
+                selectedId = 4;
+                _viewMeshSetupItem = new ViewTransfiniteMesh(tm.DeepClone());
+            }
+            else if (meshSetupItem is ExtrudeMesh em)
+            {
+                selectedId = 5;
                 _viewMeshSetupItem = new ViewExtrudeMesh(em.DeepClone());
+            }
+            else if (meshSetupItem is RevolveMesh rm)
+            {
+                selectedId = 6;
+                _viewMeshSetupItem = new ViewRevolveMesh(rm.DeepClone());
             }
             else throw new NotSupportedException("MeshSetupItemTypeException");
             //
@@ -426,6 +447,8 @@ namespace PrePoMax.Forms
         //
         private void PopulateListOfMeshSetupItems()
         {
+            bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
+            //
             ListViewItem item;
             // Meshing parameters
             item = new ListViewItem("Meshing Parameters");
@@ -439,18 +462,47 @@ namespace PrePoMax.Forms
             ViewFeMeshRefinement vmr = new ViewFeMeshRefinement(mr);
             item.Tag = vmr;
             lvTypes.Items.Add(item);
-            // Mesh refinement
-            item = new ListViewItem("Extrude Mesh");
-            ExtrudeMesh em = new ExtrudeMesh(GetMeshSetupItemName("Extrude_Mesh"));
-            ViewExtrudeMesh vem = new ViewExtrudeMesh(em);
-            item.Tag = vem;
-            //lvTypes.Items.Add(item);
+            // Shell gmsh
+            item = new ListViewItem("Shell Gmsh");
+            ShellGmsh sg = new ShellGmsh(GetMeshSetupItemName("Shell_Gmsh"));
+            ViewShellGmsh vsg = new ViewShellGmsh(sg);
+            item.Tag = vsg;
+            lvTypes.Items.Add(item);
+            // Tetrahedral gmsh
+            item = new ListViewItem("Tetrahedral Gmsh");
+            TetrahedralGmsh tg = new TetrahedralGmsh(GetMeshSetupItemName("Tetrahedral_Gmsh"));
+            ViewTetrahedralGmsh vtg = new ViewTetrahedralGmsh(tg);
+            item.Tag = vtg;
+            lvTypes.Items.Add(item);
+            //
+            // Transfinite mesh
+            item = new ListViewItem("Transfinite Mesh");
+            TransfiniteMesh tm = new TransfiniteMesh(GetMeshSetupItemName("Transfinite_Mesh"));
+            ViewTransfiniteMesh vtm = new ViewTransfiniteMesh(tm);
+            item.Tag = vtm;
+            lvTypes.Items.Add(item);
+            //
+            if (!twoD)
+            {
+                // Extrude mesh
+                item = new ListViewItem("Extrude Mesh");
+                ExtrudeMesh em = new ExtrudeMesh(GetMeshSetupItemName("Extrude_Mesh"));
+                ViewExtrudeMesh vem = new ViewExtrudeMesh(em);
+                item.Tag = vem;
+                lvTypes.Items.Add(item);
+                // Revolve mesh
+                item = new ListViewItem("Revolve Mesh");
+                RevolveMesh rm = new RevolveMesh(GetMeshSetupItemName("Revolve_Mesh"));
+                ViewRevolveMesh vrm = new ViewRevolveMesh(rm);
+                item.Tag = vrm;
+                lvTypes.Items.Add(item);
+            }
         }
         private string GetMeshSetupItemName(string name)
         {
             return _meshSetupItemNames.GetNextNumberedKey(name);
         }
-        private void HighlightMeshSetupItem()
+        private void HighlightMeshSetupItem(bool highlightNodes = true)
         {
             try
             {
@@ -461,49 +513,20 @@ namespace PrePoMax.Forms
                 _controller.ClearSelectionHistory();
                 //
                 if (_viewMeshSetupItem == null) { }
-                else if (MeshSetupItem is MeshingParameters mp)
+                else
                 {
-                    SetSelectItem();
-                    //
-                    if (mp.CreationData != null)
+                    if (MeshSetupItem.CreationData != null && MeshSetupItem.CreationIds != null &&
+                        MeshSetupItem.CreationIds.Length > 0)
                     {
-                        _controller.Selection = mp.CreationData.DeepClone();
-                        _controller.HighlightSelection(true);
+                        try
+                        {
+                            _controller.HighlightMeshSetupItem(MeshSetupItem, highlightNodes);
+                        }
+                        catch { }
+                        // Set previous selection to continue it
+                        _controller.Selection = MeshSetupItem.CreationData.DeepClone();
                     }
                 }
-                else if (MeshSetupItem is FeMeshRefinement mr)
-                {
-                    // Surface.CreationData is set to null when the CreatedFrom is changed
-                    if (mr.CreationData != null && mr.CreationIds != null && mr.CreationIds.Length > 0)
-                    {
-                        // The selection is limited to one part
-                        int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(mr.CreationIds[0]);
-                        BasePart part = _controller.Model.Geometry.GetPartById(itemTypePartIds[2]);
-                        if (part == null) return;
-                        //
-                        bool backfaceCulling = part.PartType != PartType.Shell;
-                        //
-                        _controller.Selection = mr.CreationData.DeepClone();
-                        _controller.HighlightSelection(true, backfaceCulling);
-                    }
-                }
-                else if (MeshSetupItem is ExtrudeMesh em)
-                {
-                    // Surface.CreationData is set to null when the CreatedFrom is changed
-                    if (em.CreationData != null && em.CreationIds != null && em.CreationIds.Length > 0)
-                    {
-                        // The selection is limited to one part
-                        int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(em.CreationIds[0]);
-                        BasePart part = _controller.Model.Geometry.GetPartById(itemTypePartIds[2]);
-                        if (part == null) return;
-                        //
-                        bool backfaceCulling = part.PartType != PartType.Shell;
-                        //
-                        _controller.Selection = em.CreationData.DeepClone();
-                        _controller.HighlightSelection(true, backfaceCulling);
-                    }
-                }
-                else throw new NotSupportedException("MeshSetupItemTypeException");
             }
             catch { }
         }
@@ -530,7 +553,11 @@ namespace PrePoMax.Forms
             {
                 if (MeshSetupItem is MeshingParameters) _controller.SetSelectItemToPart();
                 else if (MeshSetupItem is FeMeshRefinement) _controller.SetSelectItemToGeometry();
-                else if (MeshSetupItem is ExtrudeMesh) _controller.SetSelectItemToGeometry();
+                else if (MeshSetupItem is ShellGmsh) _controller.SetSelectItemToPart();
+                else if (MeshSetupItem is TetrahedralGmsh) _controller.SetSelectItemToPart();
+                else if (MeshSetupItem is TransfiniteMesh) _controller.SetSelectItemToPart();
+                else if (MeshSetupItem is ExtrudeMesh) _controller.SetSelectItemToGeometrySurface();
+                else if (MeshSetupItem is RevolveMesh) _controller.SetSelectItemToGeometrySurface();
                 else throw new NotSupportedException("MeshSetupItemTypeException");
             }
             else _controller.SetSelectByToOff();
@@ -540,7 +567,9 @@ namespace PrePoMax.Forms
         {
             if (MeshSetupItem != null)
             {
-                if (MeshSetupItem is MeshingParameters || MeshSetupItem is FeMeshRefinement || MeshSetupItem is ExtrudeMesh)
+                if (MeshSetupItem is MeshingParameters || MeshSetupItem is FeMeshRefinement ||
+                    MeshSetupItem is ShellGmsh || MeshSetupItem is TetrahedralGmsh ||
+                    MeshSetupItem is TransfiniteMesh || MeshSetupItem is ExtrudeMesh || MeshSetupItem is RevolveMesh)
                 {
                     if (MeshSetupItem is MeshingParameters mp && !_meshingParametersChanged)
                     {
@@ -552,6 +581,11 @@ namespace PrePoMax.Forms
                     propertyGrid.Refresh();
                     //
                     _propertyItemChanged = true;
+                    //
+                    if (MeshSetupItem is ExtrudeMesh || MeshSetupItem is RevolveMesh)
+                    {
+                        _controller.IsMeshSetupItemProperlyDefined(MeshSetupItem);
+                    }
                     //
                     if (ids.Length != 0) HighlightMeshSetupItem(); // this will redraw the selection with correct backfaceCulling
                 }

@@ -318,6 +318,12 @@ namespace UserControls
             foreach (DataGridViewCell cell in SelectedCells)
             {
                 if (cell.Value == null) value = double.NaN;
+                else if (cell.Value is EquationString es)
+                {
+                    if (Columns[cell.ColumnIndex].Tag is TypeConverter tc && tc != null)
+                        value = Convert.ToDouble(tc.ConvertFrom(es.Equation));
+                    else throw new CaeException("The column type converter is missing.");
+                }
                 else value = (double)cell.Value;
                 //
                 if (values.TryGetValue(cell.RowIndex, out rowValues)) rowValues.Add(cell.ColumnIndex, value);

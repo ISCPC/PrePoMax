@@ -21,11 +21,11 @@ namespace vtkControl
             bool subtracted = false;
             for (uint tn = 0; tn < selection.GetNumberOfNodes(); ++tn)
             {
-                vtkSelectionNode tnode = selection.GetNode(tn);
+                vtkSelectionNode tNode = selection.GetNode(tn);
 
-                if (tnode.EqualProperties(node, true))
+                if (tNode.EqualProperties(node, true))
                 {
-                    tnode.SubtractSelectionList(node);
+                    tNode.SubtractSelectionList(node);
                     subtracted = true;
                 }
             }

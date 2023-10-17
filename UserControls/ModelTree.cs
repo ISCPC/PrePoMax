@@ -250,7 +250,7 @@ namespace UserControls
         public event Action<NamedClass[], string[]> PreviewEvent;
         public event Action<string[]> CreateCompoundPart;
         public event Action<string[]> SwapPartGeometries;
-        public event Func<string[], MeshingParameters, FeMeshRefinement, Task> PreviewEdgeMesh;
+        public event Func<string[], MeshSetupItem, Task> PreviewEdgeMesh;
         public event Action<string[]> CreateMeshEvent;
         public event Action<string[]> CopyGeometryToResultsEvent;
         public event Action EditCalculixKeywords;
@@ -1171,7 +1171,7 @@ namespace UserControls
                 {
                     if (node.Tag != null) names.Add(((NamedClass)node.Tag).Name);
                 }
-                if (names.Count > 0) await PreviewEdgeMesh?.Invoke(names.ToArray(), null, null);
+                if (names.Count > 0) await PreviewEdgeMesh?.Invoke(names.ToArray(), null);
             }
             catch (Exception ex)
             {
@@ -2838,8 +2838,7 @@ namespace UserControls
         }
         private bool CanDuplicate(TreeNode node)
         {
-            if (node.TreeView == cltvGeometry && node.Tag is MeshingParameters) return true;
-            else if (node.TreeView == cltvGeometry && node.Tag is FeMeshRefinement) return true;
+            if (node.TreeView == cltvGeometry && node.Tag is MeshSetupItem) return true;
             else if (node.TreeView == cltvModel && node.Tag is FeNodeSet) return true;
             else if (node.TreeView == cltvModel && node.Tag is FeElementSet) return true;
             else if (node.TreeView == cltvModel && node.Tag is FeSurface) return true;
@@ -2898,8 +2897,7 @@ namespace UserControls
         }
         private bool CanDeactivate(TreeNode node)
         {
-            if (node.Tag is MeshingParameters) return true;
-            else if (node.Tag is FeMeshRefinement) return true;
+            if (node.Tag is MeshSetupItem) return true;
             else if (node.Tag is Constraint) return true;
             else if (node.Tag is ContactPair) return true;
             else if (node.Tag is InitialCondition) return true;

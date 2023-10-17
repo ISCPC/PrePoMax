@@ -327,18 +327,23 @@ namespace PrePoMax.Forms
         private void SetAllGridViewUnits()
         {
             // Surface behavior
-            SetGridViewUnit(nameof(PressureOverclosureDataPoint.Pressure), _controller.Model.UnitSystem.PressureUnitAbbreviation);
-            SetGridViewUnit(nameof(PressureOverclosureDataPoint.Overclosure), _controller.Model.UnitSystem.LengthUnitAbbreviation);
+            SetGridViewUnit(nameof(PressureOverclosureDataPoint.Pressure), _controller.Model.UnitSystem.PressureUnitAbbreviation,
+                            new StringPressureFromConverter());
+            SetGridViewUnit(nameof(PressureOverclosureDataPoint.Overclosure), _controller.Model.UnitSystem.LengthUnitAbbreviation,
+                            new StringLengthFromConverter());
             // Gap conductance
             SetGridViewUnit(nameof(GapConductanceDataPoint.Conductance),
-                            _controller.Model.UnitSystem.HeatTransferCoefficientUnitAbbreviation);
-            SetGridViewUnit(nameof(GapConductanceDataPoint.Pressure), _controller.Model.UnitSystem.PressureUnitAbbreviation);
-            SetGridViewUnit(nameof(GapConductanceDataPoint.Temperature), _controller.Model.UnitSystem.TemperatureUnitAbbreviation);
+                            _controller.Model.UnitSystem.HeatTransferCoefficientUnitAbbreviation,
+                            new StringHeatTransferCoefficientFromConverter());
+            SetGridViewUnit(nameof(GapConductanceDataPoint.Pressure), _controller.Model.UnitSystem.PressureUnitAbbreviation,
+                            new StringPressureFromConverter());
+            SetGridViewUnit(nameof(GapConductanceDataPoint.TemperatureEq), _controller.Model.UnitSystem.TemperatureUnitAbbreviation,
+                            new StringTemperatureFromConverter());
             //
             dgvData.XColIndex = 1;
             dgvData.StartPlotAtZero = true;
         }
-        private void SetGridViewUnit(string columnName, string unit)
+        private void SetGridViewUnit(string columnName, string unit, TypeConverter converter)
         {
             DataGridViewColumn col = dgvData.Columns[columnName];
             if (col != null)
@@ -347,6 +352,8 @@ namespace PrePoMax.Forms
                 if (col.HeaderText != null) col.HeaderText = col.HeaderText.Replace("?", unit);
                 // Alignment
                 col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                // Converter
+                col.Tag = converter;
             }
         }
         private string GetSurfaceInteractionName()

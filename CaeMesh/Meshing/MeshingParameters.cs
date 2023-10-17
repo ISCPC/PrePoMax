@@ -247,8 +247,9 @@ namespace CaeMesh
         }
 
         // Methods                                                                                                                  
-        public void Reset()
+        public override void Reset()
         {
+            base.Reset();
             // Defaults
             _advancedView = false;
             _relativeSize = false;

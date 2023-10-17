@@ -101,7 +101,7 @@ namespace PrePoMax.Forms
                 }
                 else if (rbPart.Checked)
                 {
-                    BasePart part = _controller.DisplayedMesh.GetPartById(id);
+                    BasePart part = _controller.DisplayedMesh.GetPartFromId(id);
                     if (part != null)
                     {
                         _controller.Highlight3DObjects(new object[] { part });

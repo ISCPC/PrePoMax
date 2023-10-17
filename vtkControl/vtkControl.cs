@@ -45,6 +45,9 @@ namespace vtkControl
         private vtkLight _light1;
         private vtkLight _light2;
         private vtkLight _light3;
+        // Symbols resolution
+        private int _arrowTipResolution = 21;
+        private int _arrowShaftResolution = 15;
         // Widgets
         private vtkOrientationMarkerWidget _coorSys;
         private vtkMaxScaleWidget _scaleWidget;
@@ -94,6 +97,7 @@ namespace vtkControl
         //
         private HashSet<string> _selectableActorsFilter;
         //
+
         private object myLock = new object();
 
 
@@ -3032,7 +3036,7 @@ namespace vtkControl
             vtkMaxActor actor = new vtkMaxActor(data, false, true);
             AddActorGeometry(actor, data.Layer);
             //
-            AdjustCameraDistanceAndClippingRedraw();
+            //AdjustCameraDistanceAndClippingRedraw();  is this necessary?
         }
         public void AddCells(vtkMaxActorData data)
         {
@@ -3041,7 +3045,7 @@ namespace vtkControl
             //
             AddActor(actor, data.Layer, data.CanHaveElementEdges);
             //
-            AdjustCameraDistanceAndClippingRedraw();
+            //AdjustCameraDistanceAndClippingRedraw();
         }
         //
         public void AddSphereActor(vtkMaxActorData data, double symbolSize)
@@ -3262,10 +3266,10 @@ namespace vtkControl
             distanceToCamera.SetRenderer(_renderer);
             // Arrow
             vtkArrowSource arrow = vtkArrowSource.New();
-            arrow.SetTipResolution(21);
+            arrow.SetTipResolution(_arrowTipResolution);
             arrow.SetTipLength(0.3 / relativeSize);
             arrow.SetTipRadius(0.1 / relativeSize);
-            arrow.SetShaftResolution(15);
+            arrow.SetShaftResolution(_arrowShaftResolution);
             arrow.SetShaftRadius(0.03 / relativeSize);
             // Compute normals
             vtkPolyDataNormals normals = vtkPolyDataNormals.New();
@@ -3339,10 +3343,10 @@ namespace vtkControl
             distanceToCamera.SetRenderer(_renderer);
             // Arrow
             vtkArrowSource arrow = vtkArrowSource.New();
-            arrow.SetTipResolution(21);
+            arrow.SetTipResolution(_arrowTipResolution);
             arrow.SetTipLength(0.3);
             arrow.SetTipRadius(0.1);
-            arrow.SetShaftResolution(15);
+            arrow.SetShaftResolution(_arrowShaftResolution);
             arrow.SetShaftRadius(0.03);            
             // Cone
             vtkConeSource cone = vtkConeSource.New();
@@ -5682,7 +5686,7 @@ namespace vtkControl
             {
                 if (CaeGlobals.Tools.IsFileLocked(fileName))
                 {
-                    MessageBoxes.ShowWarning("The selected file can not be replaced.");
+                    MessageBoxes.ShowWarning("The selected file cannot be replaced.");
                     return;
                 }
             }
@@ -5743,7 +5747,7 @@ namespace vtkControl
                 {
                     if (CaeGlobals.Tools.IsFileLocked(fileNames[i]))
                     {
-                        MessageBoxes.ShowError("The file '" + fileNames[i] + "' can not be replaced.");
+                        MessageBoxes.ShowError("The file '" + fileNames[i] + "' cannot be replaced.");
                         return;
                     }
                 }
@@ -6138,7 +6142,8 @@ namespace vtkControl
         // Render
         private void RenderScene()
         {
-            if (_renderingOn) this.Invalidate();
+            if (_renderingOn)
+                this.Invalidate();
         }
 
         // Tools

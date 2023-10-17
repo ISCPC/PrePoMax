@@ -141,8 +141,8 @@ namespace PrePoMax.Forms
                 if (cbType.SelectedIndex == 0) type = SearchContactPairType.Tie;
                 else if (cbType.SelectedIndex == 1) type = SearchContactPairType.Contact;
                 else throw new NotSupportedException();
-                string[] surfaceInteracionNames = _controller.GetSurfaceInteractionNames();
-                if (surfaceInteracionNames.Length == 0) surfaceInteracionNames = new string[] { missing };
+                string[] surfaceInteractionNames = _controller.GetSurfaceInteractionNames();
+                if (surfaceInteractionNames.Length == 0) surfaceInteractionNames = new string[] { missing };
                 bool adjust = cbAbjustMesh.SelectedIndex == 0;
                 // Resolve
                 bool tryResolve = type == SearchContactPairType.Tie;

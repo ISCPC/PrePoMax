@@ -96,7 +96,7 @@ namespace PrePoMax
         }
         public double GetYoungsModulusValue()
         {
-            if (_points != null && _points.Count > 0) return _points[0].PoissonsRatio.Value;
+            if (_points != null && _points.Count > 0) return _points[0].YoungsModulus.Value;
             else return 0;
         }
 

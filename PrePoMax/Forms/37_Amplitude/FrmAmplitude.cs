@@ -246,13 +246,15 @@ namespace PrePoMax.Forms
             string noUnit = "/";
             // Amplitude
             SetGridViewUnit(nameof(AmplitudeDataPoint.Time), _controller.Model.UnitSystem.TimeUnitAbbreviation,
-                            _controller.Model.UnitSystem.FrequencyUnitAbbreviation);
-            SetGridViewUnit(nameof(AmplitudeDataPoint.Amplitude), noUnit, null);
+                            _controller.Model.UnitSystem.FrequencyUnitAbbreviation,
+                            new StringDoubleConverter());
+            SetGridViewUnit(nameof(AmplitudeDataPoint.Amplitude), noUnit, null,
+                            new StringDoubleConverter());
             //
             dgvData.XColIndex = 0;
             dgvData.StartPlotAtZero = true;
         }
-        private void SetGridViewUnit(string columnName, string unit1, string unit2)
+        private void SetGridViewUnit(string columnName, string unit1, string unit2, TypeConverter converter)
         {
             DataGridViewColumn col = dgvData.Columns[columnName];
             if (col != null)
@@ -267,9 +269,11 @@ namespace PrePoMax.Forms
                 col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
                 // Width
                 col.Width += 10;
+                // Converter
+                col.Tag = converter;
             }
         }
 
-       
+
     }
 }

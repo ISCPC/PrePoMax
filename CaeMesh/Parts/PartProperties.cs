@@ -9,7 +9,7 @@ namespace CaeMesh
     [Serializable]
     public struct PartProperties
     {
-        // Only the properties, that can not be changed by any other edit form (like MeshingParameters...)
+        // Only the properties, that cannot be changed by any other edit form (like MeshingParameters...)
         public string Name
         {
             get { return _name; }
@@ -24,6 +24,9 @@ namespace CaeMesh
         public bool ColorContours;
         public int NumberOfElements;
         public int NumberOfNodes;
+        //
+        public FeElementTypeLinearBeam LinearBeamType;
+        public FeElementTypeParabolicBeam ParabolicBeamType;
         //
         public FeElementTypeLinearTria LinearTriaType;
         public FeElementTypeParabolicTria ParabolicTriaType;

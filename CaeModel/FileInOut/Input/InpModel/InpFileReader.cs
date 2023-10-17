@@ -163,7 +163,7 @@ namespace FileInOut.Input
                     //
                     if (keyword == "*PART")
                     {
-                        // Files created in Gmesh containing only one part can have a name
+                        // Files created in Gmsh containing only one part can have a name
                         string newName = GetPartName(dataSet);
                         if (newName != null && mesh.Parts.Count == 1)
                         {
@@ -268,6 +268,115 @@ namespace FileInOut.Input
                 }
             }
         }
+        static public FeMesh ReadMesh(string fileName, ElementsToImport elementsToImport, bool convertToSecondOrder)
+        {
+            _errors = new List<string>();
+            if (fileName != null && File.Exists(fileName))
+            {
+                string[] lines = Tools.ReadAllLines(fileName);
+                lines = ReadIncludes(lines, 0, Path.GetDirectoryName(fileName));
+                //
+                string[] dataSet;
+                string[][] dataSets = GetDataSets(lines);
+                //
+                Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
+                Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
+                //
+                int[] ids;
+                string name;
+                string keyword;
+                List<InpElementSet> inpElementTypeSets = new List<InpElementSet>();
+                // Nodes and elements
+                for (int i = 0; i < dataSets.Length; i++)
+                {
+                    dataSet = dataSets[i];
+                    keyword = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
+                    //
+                    if (keyword == "*NODE") // nodes
+                    {
+                        nodes.AddRange(GetNodes(dataSet));
+                    }
+                    else if (keyword == "*ELEMENT") // elements
+                    {
+                        AddElements(dataSet, ref elements, ref inpElementTypeSets);
+                    }
+                }
+                // Geometry: itemId, allNodeIds
+                Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
+                Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
+                HashSet<int> vertexNodeIds = new HashSet<int>();
+                GetVertexEdgeSurfaceNodeIds(inpElementTypeSets, elements,
+                                            out vertexNodeIds, out edgeIdNodeIds, out surfaceIdNodeIds);
+                //
+                FeMesh mesh;
+                if (elementsToImport == ElementsToImport.Solid) // split into parts
+                    mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, inpElementTypeSets);
+                else //if (elementsToImport == ElementsToImport.Shell) // do not split
+                    mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh);
+                //else throw new NotSupportedException();
+                //
+                mesh.ConvertLineFeElementsToEdges(vertexNodeIds, true);
+                //
+                mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
+                mesh.RenumberVisualizationEdges(edgeIdNodeIds);
+                //
+                if (elementsToImport != ElementsToImport.All)
+                {
+                    if (!elementsToImport.HasFlag(ElementsToImport.Beam)) mesh.RemoveElementsByType<FeElement1D>();
+                    if (!elementsToImport.HasFlag(ElementsToImport.Shell)) mesh.RemoveElementsByType<FeElement2D>();
+                    if (!elementsToImport.HasFlag(ElementsToImport.Solid)) mesh.RemoveElementsByType<FeElement3D>();
+                }
+                //
+                
+                //
+                return mesh;
+            }
+            return null;
+        }
+        static private void GetVertexEdgeSurfaceNodeIds(List<InpElementSet> inpElementTypeSets, Dictionary<int, FeElement> elements,
+                                                        out HashSet<int> vertexNodeIds,
+                                                        out Dictionary<int, HashSet<int>> edgeIdNodeIds,
+                                                        out Dictionary<int, HashSet<int>> surfaceIdNodeIds)
+        {
+            string name;
+            HashSet<int> nodeIds;
+            vertexNodeIds = new HashSet<int>();
+            edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
+            surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
+            //
+            foreach (var inpElementSet in inpElementTypeSets)
+            {
+                name = inpElementSet.Name.ToUpper().Substring(0, 4);
+                if (name == "LINE")
+                {
+                    nodeIds = new HashSet<int>();
+                    foreach (int elementId in inpElementSet.ElementLabels) nodeIds.UnionWith(elements[elementId].NodeIds);
+                    edgeIdNodeIds.Add(edgeIdNodeIds.Count, nodeIds);
+                }
+                else if (name == "SURF")
+                {
+                    nodeIds = new HashSet<int>();
+                    foreach (int elementId in inpElementSet.ElementLabels) nodeIds.UnionWith(elements[elementId].NodeIds);
+                    surfaceIdNodeIds.Add(surfaceIdNodeIds.Count, nodeIds);
+                }
+            }
+            //
+            Dictionary<int, int> nodeIdCount = new Dictionary<int, int>();
+            foreach (var entry in edgeIdNodeIds)
+            {
+                foreach (var nodeId in entry.Value)
+                {
+                    if (nodeIdCount.ContainsKey(nodeId)) nodeIdCount[nodeId]++;
+                    else nodeIdCount.Add(nodeId, 1);
+                }
+            }
+            //
+            foreach (var entry in nodeIdCount)
+            {
+                if (entry.Value > 1) vertexNodeIds.Add(entry.Key);
+            }
+        }
+
         static public void ReadCel(string fileName,
                                    out Dictionary<int, FeElement> uniqueElements,
                                    out Dictionary<string, FeElementSet> elementSets)
@@ -565,6 +674,10 @@ namespace FileInOut.Input
                     switch (elementType)
                     {
                         // LINEAR ELEMENTS                                                                                          
+                        // Linear beam element
+                        case "T3D2":
+                            element = GetLinearBeamElement(ref i, lines, _splitter);
+                            break;
                         // Linear triangle element
                         case "S3":
                         case "S3R":
@@ -605,6 +718,10 @@ namespace FileInOut.Input
                             element = GetLinearHexaElement(ref i, lines, _splitter);
                             break;
                         // PARABOLIC ELEMENTS                                                                                       
+                        // Parabolic beam element
+                        case "T3D3":
+                            element = GetParabolicBeamElement(ref i, lines, _splitter);
+                            break;
                         // Parabolic triangle element
                         case "S6":
                         case "M3D6":
@@ -2372,6 +2489,15 @@ namespace FileInOut.Input
         }
 
         //  LINEAR ELEMENTS                                                                                                         
+        private static LinearBeamElement GetLinearBeamElement(ref int lineId, string[] lines, string[] splitter)
+        {
+            // 1, 598, 1368
+            int id;
+            int[] nodeIds;
+            GetElementIdAndNodeIds(2, ref lineId, lines, splitter, out id, out nodeIds);
+            //
+            return new LinearBeamElement(id, nodeIds);
+        }
         private static LinearTriangleElement GetLinearTriangleElement(ref int lineId, string[] lines, string[] splitter)
         {
             // 1, 598, 1368, 1306
@@ -2420,6 +2546,15 @@ namespace FileInOut.Input
 
 
         //  PARABOLIC ELEMENTS                                                                                                      
+        private static ParabolicBeamElement GetParabolicBeamElement(ref int lineId, string[] lines, string[] splitter)
+        {
+            // 1, 598, 1368, 1306
+            int id;
+            int[] nodeIds;
+            GetElementIdAndNodeIds(3, ref lineId, lines, splitter, out id, out nodeIds);
+            //
+            return new ParabolicBeamElement(id, nodeIds);
+        }
         private static ParabolicTriangleElement GetParabolicTriangleElement(ref int lineId, string[] lines, string[] splitter)
         {
             // 1, 598, 1368, 1306, 1291, 15 ,16
@@ -2500,7 +2635,7 @@ namespace FileInOut.Input
         private static void AddError(string error)
         {
             Errors.Add(error);
-            WriteDataToOutputStatic(error);
+            if (WriteDataToOutputStatic != null) WriteDataToOutputStatic(error);
         }
 
 
