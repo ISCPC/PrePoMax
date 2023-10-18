@@ -31,7 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Notes\Versions.txt = Notes\Versions.txt
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GmshCommon", "Gmsh\GmshCommon\GmshCommon.vcxproj", "{2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GmshCommon", "GmshCommon\GmshCommon.vcxproj", "{2089CD1F-E51F-4FE7-9BC0-20D7F22DDF10}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

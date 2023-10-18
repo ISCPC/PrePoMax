@@ -147,7 +147,7 @@
       <Project>{104caebc-0761-4850-a97d-3fc59116c5b6}</Project>
       <Name>CaeGlobals</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Gmsh\GmshCommon\GmshCommon.vcxproj">
+    <ProjectReference Include="..\GmshCommon\GmshCommon.vcxproj">
       <Project>{2089cd1f-e51f-4fe7-9bc0-20d7f22ddf10}</Project>
       <Name>GmshCommon</Name>
     </ProjectReference>
