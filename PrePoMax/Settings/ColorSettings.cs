@@ -53,7 +53,7 @@ namespace PrePoMax
             _colorTable = new Color[]
             {
                 Color.Beige,
-                Color.SeaGreen,
+                Color.DarkSeaGreen,
                 Color.LightGray,
                 Color.SteelBlue,
                 Color.BurlyWood,

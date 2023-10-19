@@ -185,10 +185,10 @@ namespace PrePoMax.Forms
                 _dctd.GetProperty(nameof(LinearHexaType)).SetIsBrowsable(false);
                 _dctd.GetProperty(nameof(ParabolicHexaType)).SetIsBrowsable(false);
                 //
-                if (PartType == PartType.Compound)
-                {
-                    _dctd.GetProperty(nameof(Color)).SetIsBrowsable(false);
-                }
+                //if (PartType == PartType.Compound)
+                //{
+                //    _dctd.GetProperty(nameof(Color)).SetIsBrowsable(false);
+                //}
             }
             else if (currentView == ViewGeometryModelResults.Model)
             {

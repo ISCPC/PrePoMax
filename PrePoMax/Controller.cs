@@ -1374,6 +1374,8 @@ namespace PrePoMax
                 for (int i = 0; i < importedPartNames.Length; i++)
                     compPart.BoundingBox.IncludeBox(_model.Geometry.Parts[importedPartNames[i]].BoundingBox);
                 compPart.CADFileDataFromFile(brepFileName);
+                compPart.PartId = _model.Geometry.GetMaxPartId() + 1;
+                _model.Geometry.SetPartColorFromColorTable(compPart);
                 _model.Geometry.Parts.Add(compoundPartName, compPart);
             }
             //
@@ -2482,15 +2484,21 @@ namespace PrePoMax
             if (!(geomPart is CompoundGeometryPart)) _form.UpdateActor(oldPartName, geomPart.Name, geomPart.Color);
             _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldPartName, geomPart, null);
             AnnotateWithColorLegend();
-            // Rename the mesh part in pair with the geometry part
-            if (oldPartName != geomPart.Name && _model.Mesh != null && _model.Mesh.Parts.ContainsKey(oldPartName))
+            // Update the mesh part in pair with the geometry part properties
+            if (_model.Mesh != null && _model.Mesh.Parts.ContainsKey(oldPartName))
             {
                 string newPartName = geomPart.Name;
                 MeshPart meshPart = GetModelPart(oldPartName);
-                meshPart.Name = newPartName;
-                _model.Mesh.Parts.Replace(oldPartName, meshPart.Name, meshPart);
-                // Update
-                _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldPartName, meshPart, null);
+                // Color
+                meshPart.Color = geomPart.Color;
+                // Rename
+                if (oldPartName != geomPart.Name)
+                {
+                    meshPart.Name = newPartName;
+                    _model.Mesh.Parts.Replace(oldPartName, meshPart.Name, meshPart);
+                    // Update
+                    _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldPartName, meshPart, null);
+                }
             }
         }
         // Sub menu Transform
@@ -4768,6 +4776,8 @@ namespace PrePoMax
                 // Save element type enum
                 GeometryPart geomPart = GetGeometryPart(oldPartName);
                 geomPart.AddElementTypeEnums(meshPart.GetElementTypeEnums());
+                // Recolor the geometry part in pair
+                geomPart.Color = meshPart.Color;
                 // Rename the geometry part in pair
                 if (oldPartName != newPartProperties.Name)
                 {
