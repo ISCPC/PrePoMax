@@ -40,6 +40,7 @@ namespace CaeMesh
         private int _optimizeSteps2D;               //ISerializable
         private int _optimizeSteps3D;               //ISerializable
         private bool _splitCompoundMesh;            //ISerializable
+        private bool _mergeCompoundParts;           //ISerializable
         // mmgPlatform
         private bool _useMmg;                       //ISerializable
         private double _hausdorff;                  //ISerializable  0.01 for objects of size 1; allowed distance from geometry
@@ -162,7 +163,24 @@ namespace CaeMesh
             }
         }
         //
-        public bool SplitCompoundMesh { get { return _splitCompoundMesh; } set { _splitCompoundMesh = value; } }
+        public bool SplitCompoundMesh
+        {
+            get { return _splitCompoundMesh; }
+            set
+            {
+                _splitCompoundMesh = value;
+                if (_splitCompoundMesh) _mergeCompoundParts = false;
+            }
+        }
+        public bool MergeCompoundParts
+        {
+            get { return _mergeCompoundParts; }
+            set
+            {
+                _mergeCompoundParts = value;
+                if (_mergeCompoundParts) _splitCompoundMesh = false;
+            }
+        }
         // mmgPlatform
         public bool UseMmg { get { return _useMmg; } set { _useMmg = value; } }
         public double Hausdorff
@@ -233,6 +251,8 @@ namespace CaeMesh
                         _optimizeSteps3D = (int)entry.Value; break;
                     case "_splitCompoundMesh":
                         _splitCompoundMesh = (bool)entry.Value; break;
+                    case "_mergeCompoundParts":
+                        _mergeCompoundParts = (bool)entry.Value; break;
                     //
                     case "_useMmg":
                         _useMmg = (bool)entry.Value; break;
@@ -269,6 +289,7 @@ namespace CaeMesh
             _quadDominated = false;
             _midsideNodesOnGeometry = false;
             _splitCompoundMesh = false;
+            _mergeCompoundParts = false;
             //
             _useMmg = false;
             _hausdorff = 0.01;
@@ -357,6 +378,7 @@ namespace CaeMesh
             _quadDominated = meshingParameters.QuadDominated;
             _midsideNodesOnGeometry = meshingParameters.MidsideNodesOnGeometry;
             _splitCompoundMesh = meshingParameters.SplitCompoundMesh;
+            _mergeCompoundParts = meshingParameters.MergeCompoundParts;
             //
             _useMmg = meshingParameters.UseMmg;
             _hausdorff = meshingParameters.Hausdorff;
@@ -390,6 +412,7 @@ namespace CaeMesh
             if (meshingParameters1._quadDominated != meshingParameters2._quadDominated) return false;
             if (meshingParameters1._midsideNodesOnGeometry != meshingParameters2._midsideNodesOnGeometry) return false;
             if (meshingParameters1._splitCompoundMesh != meshingParameters2._splitCompoundMesh) return false;
+            if (meshingParameters1._mergeCompoundParts != meshingParameters2._mergeCompoundParts) return false;
             //
             if (meshingParameters1._useMmg != meshingParameters2._useMmg) return false;
             if (meshingParameters1._hausdorff != meshingParameters2._hausdorff) return false;
@@ -420,6 +443,7 @@ namespace CaeMesh
             info.AddValue("_optimizeSteps2D", _optimizeSteps2D, typeof(int));
             info.AddValue("_optimizeSteps3D", _optimizeSteps3D, typeof(int));
             info.AddValue("_splitCompoundMesh", _splitCompoundMesh, typeof(bool));
+            info.AddValue("_mergeCompoundParts", _mergeCompoundParts, typeof(bool));
             //
             info.AddValue("_useMmg", _useMmg, typeof(bool));
             info.AddValue("_hausdorff", _hausdorff, typeof(double));

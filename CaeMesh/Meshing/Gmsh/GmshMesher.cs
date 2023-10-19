@@ -79,19 +79,13 @@ namespace CaeMesh
                     else throw new NotSupportedException("MeshSetupItemTypeException");
                 }
                 else throw new NotSupportedException("MeshSetupItemTypeException");
-
-                // Gmsh GEO tutorial 11
-                //Gmsh.Mesh.Recombine();
-                //Gmsh.SetNumber("Mesh.SubdivisionAlgorithm", 1);
-                //Gmsh.Mesh.Refine();
-
                 // Element order
                 if (!preview && partMeshingParameters.SecondOrder)
                 {
                     if (!partMeshingParameters.MidsideNodesOnGeometry) Gmsh.SetNumber("Mesh.SecondOrderLinear", 1); // first
-                    Gmsh.SetNumber("Mesh.HighOrderOptimize", 1);                                                // second
-                    Gmsh.SetNumber("Mesh.SecondOrderIncomplete", 1);                                            // second
-                    Gmsh.Mesh.SetOrder(2);                                                                      // third
+                    Gmsh.SetNumber("Mesh.HighOrderOptimize", 1);                                                    // second
+                    Gmsh.SetNumber("Mesh.SecondOrderIncomplete", 1);                                                // second
+                    Gmsh.Mesh.SetOrder(2);                                                                          // third
                 }
                 // Output
                 Gmsh.Write(inpFileName);
@@ -239,14 +233,22 @@ namespace CaeMesh
                 // Extrude
                 if (extrudeMesh != null)
                 {
-                    Gmsh.Geo.Extrude(extrudeDimTags, extrudeMesh.Direction[0], extrudeMesh.Direction[1], extrudeMesh.Direction[2],
+                    Gmsh.Geo.Extrude(extrudeDimTags,
+                                     extrudeMesh.Direction[0],
+                                     extrudeMesh.Direction[1],
+                                     extrudeMesh.Direction[2],
                                      out outDimTags, numElements, height, true);
                 }
                 // Revolve
                 else if (revolveMesh != null)
                 {
-                    Gmsh.Geo.Revolve(extrudeDimTags, revolveMesh.AxisCenter[0], revolveMesh.AxisCenter[1], revolveMesh.AxisCenter[2],
-                                     revolveMesh.AxisDirection[0], revolveMesh.AxisDirection[1], revolveMesh.AxisDirection[2],
+                    Gmsh.Geo.Revolve(extrudeDimTags,
+                                     revolveMesh.AxisCenter[0],
+                                     revolveMesh.AxisCenter[1],
+                                     revolveMesh.AxisCenter[2],
+                                     revolveMesh.AxisDirection[0],
+                                     revolveMesh.AxisDirection[1],
+                                     revolveMesh.AxisDirection[2],
                                      revolveMesh.AngleDeg * Math.PI / 180,
                                      out outDimTags, numElements, height, true);
                 }
@@ -267,9 +269,9 @@ namespace CaeMesh
                     }
                 }
                 double maxVolume = Math.Max(initialVolume, extrudedVolume);
-                //if (Math.Abs(initialVolume - extrudedVolume) > 1E-2 * maxVolume)
-                //    throw new CaeGlobals.CaeException("The volume of the extruded mesh is not equal to the volume of the geometry " +
-                //        "it represents. Try selecting other surfaces for the extrusion.");
+                if (Math.Abs(initialVolume - extrudedVolume) > 1E-2 * maxVolume)
+                    throw new CaeGlobals.CaeException("The volume of the extruded mesh is not equal to the volume " + 
+                        "of the geometry it represents. Try selecting other surfaces for the extrusion.");
                 //
                 Gmsh.OCC.Remove(new Tuple<int, int>[] { new Tuple<int, int>(3, 1) }, true);
                 //
@@ -277,13 +279,6 @@ namespace CaeMesh
                 //
                 Gmsh.Generate(3);
             }
-            //
-            //
-            //Tuple<int, int>[] removeDimTags = new Tuple<int, int>[] { new Tuple<int, int>(3, 2), new Tuple<int, int>(3, 3) };
-            //Gmsh.OCC.RemoveAllDuplicates();
-            //Gmsh.Mesh.RemoveDuplicateNodes(removeDimTags);
-            //Gmsh.Mesh.RemoveDuplicateElements();
-            //Gmsh.Mesh.RemoveDuplicateNodes();
         }
         //
         public static bool CheckMeshVolume(GeometryPart part, ExtrudeMesh extrudeMesh, 

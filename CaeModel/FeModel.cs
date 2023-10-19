@@ -878,7 +878,7 @@ namespace CaeModel
             return noErrors;
         }
         public void ImportGeneratedMeshFromMeshFile(string fileName, BasePart part, bool convertToSecondOrder,
-                                                    bool splitCompoundMesh)
+                                                    bool splitCompoundMesh, bool mergeCompoundParts)
         {
             FileInOut.Input.ElementsToImport elementsToImport;
             GeometryPart subPart;
@@ -892,11 +892,14 @@ namespace CaeModel
                 else throw new NotSupportedException();
             }
             else throw new NotSupportedException();
-            // Get part names - determine, if we need one part or multiple parts
+            // Get part names - determine, if one part or multiple parts are needed
             string[] prevPartNames;
-            if (part is CompoundGeometryPart cgp) prevPartNames = cgp.SubPartNames.ToArray();
+            if (part is CompoundGeometryPart cgp)
+            {
+                if (mergeCompoundParts) prevPartNames = new string[] { part.Name };
+                else prevPartNames = cgp.SubPartNames.ToArray();
+            }
             else prevPartNames = new string[] { part.Name };
-            
             // Called after meshing in PrePoMax - the parts are sorted by id
             FeMesh mesh;
             if (Path.GetExtension(fileName) == ".vol")

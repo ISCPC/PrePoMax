@@ -1430,31 +1430,35 @@ namespace PrePoMax
                 throw new CaeException("The file: '" + fileName + "' does not exist." + Environment.NewLine +
                                        "The reason is a failed mesh generation procedure for part: " + part.Name);
             //
-            string[] partNames;
-            if (part is CompoundGeometryPart cgp) partNames = cgp.SubPartNames.ToArray();
-            else partNames = new string[] { part.Name };
+            List<string> partNames = new List<string>();
+            if (part is CompoundGeometryPart cgp) { partNames.Add(cgp.Name); partNames.AddRange(cgp.SubPartNames); }
+            else partNames.Add(part.Name);
             //
-            int[] removedPartIds = RemoveModelParts(partNames, false, true);
+            int[] removedPartIds = RemoveModelParts(partNames.ToArray(), false, true);
             //
             bool convertToSecondOrder = false;
             bool splitCompoundMesh = false;
+            bool mergeCompoundParts = false;
             MeshingParameters meshingParameters;
             if (part is GeometryPart gp)
             {
                 meshingParameters = GetPartMeshingParameters(gp.Name);
                 // Convert mesh to second order
                 if (Path.GetExtension(fileName) == ".mesh") convertToSecondOrder = meshingParameters.SecondOrder;   // mmg
+                else if (Path.GetExtension(fileName) == ".inp") convertToSecondOrder = false;   // Gmsh already converted it
                 else convertToSecondOrder = meshingParameters.SecondOrder && !meshingParameters.MidsideNodesOnGeometry;
                 //
                 if (convertToSecondOrder) _form.WriteDataToOutput("Converting mesh to second order...");
                 // Split compound mesh
                 splitCompoundMesh = meshingParameters.SplitCompoundMesh;
+                // Merge compound parts
+                mergeCompoundParts = meshingParameters.MergeCompoundParts;
             }
             // Import, convert and split mesh
-            _model.ImportGeneratedMeshFromMeshFile(fileName, part, convertToSecondOrder, splitCompoundMesh);
+            _model.ImportGeneratedMeshFromMeshFile(fileName, part, convertToSecondOrder, splitCompoundMesh, mergeCompoundParts);
             // Calculate the number of new nodes and elements
             BasePart basePart;
-            if (convertToSecondOrder)
+            if (convertToSecondOrder || Path.GetExtension(fileName) == ".inp")
             {
                 int numPoints = 0;
                 int numElements = 0;
@@ -1476,7 +1480,7 @@ namespace PrePoMax
             {
                 for (int i = 0; i < removedPartIds.Length; i++)
                 {
-                    if (removedPartIds[i] != -1)    // compound
+                    if (removedPartIds[i] != -1 && _model.Mesh.Parts.ContainsKey(partNames[i]))    // compound
                     {
                         _model.Mesh.ChangePartId(partNames[i], removedPartIds[i]);
                         renumbered = true;
