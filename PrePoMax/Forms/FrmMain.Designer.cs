@@ -1964,6 +1964,7 @@
             // 
             // tsmiCreateAndImportCompoundPart
             // 
+            this.tsmiCreateAndImportCompoundPart.Image = global::PrePoMax.Properties.Resources.Compound;
             this.tsmiCreateAndImportCompoundPart.Name = "tsmiCreateAndImportCompoundPart";
             this.tsmiCreateAndImportCompoundPart.Size = new System.Drawing.Size(221, 22);
             this.tsmiCreateAndImportCompoundPart.Text = "Create Compound Part";
@@ -2015,46 +2016,46 @@
             this.tsmiDeleteMeshSetupItem});
             this.tsmiMeshSetupItem.Image = global::PrePoMax.Properties.Resources.Mesh_refinement;
             this.tsmiMeshSetupItem.Name = "tsmiMeshSetupItem";
-            this.tsmiMeshSetupItem.Size = new System.Drawing.Size(180, 22);
+            this.tsmiMeshSetupItem.Size = new System.Drawing.Size(176, 22);
             this.tsmiMeshSetupItem.Text = "Mesh Setup Item";
             // 
             // tsmiCreateMeshSetupItem
             // 
             this.tsmiCreateMeshSetupItem.Name = "tsmiCreateMeshSetupItem";
-            this.tsmiCreateMeshSetupItem.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateMeshSetupItem.Size = new System.Drawing.Size(124, 22);
             this.tsmiCreateMeshSetupItem.Text = "Create";
             this.tsmiCreateMeshSetupItem.Click += new System.EventHandler(this.tsmiCreateMeshSetupItem_Click);
             // 
             // tsmiEditMeshSetupItem
             // 
             this.tsmiEditMeshSetupItem.Name = "tsmiEditMeshSetupItem";
-            this.tsmiEditMeshSetupItem.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditMeshSetupItem.Size = new System.Drawing.Size(124, 22);
             this.tsmiEditMeshSetupItem.Text = "Edit";
             this.tsmiEditMeshSetupItem.Click += new System.EventHandler(this.tsmiEditMeshSetupItem_Click);
             // 
             // tsmiDuplicateMeshSetupItem
             // 
             this.tsmiDuplicateMeshSetupItem.Name = "tsmiDuplicateMeshSetupItem";
-            this.tsmiDuplicateMeshSetupItem.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDuplicateMeshSetupItem.Size = new System.Drawing.Size(124, 22);
             this.tsmiDuplicateMeshSetupItem.Text = "Duplicate";
             this.tsmiDuplicateMeshSetupItem.Click += new System.EventHandler(this.tsmiDuplicateMeshSetupItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(121, 6);
             // 
             // tsmiDeleteMeshSetupItem
             // 
             this.tsmiDeleteMeshSetupItem.Name = "tsmiDeleteMeshSetupItem";
-            this.tsmiDeleteMeshSetupItem.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteMeshSetupItem.Size = new System.Drawing.Size(124, 22);
             this.tsmiDeleteMeshSetupItem.Text = "Delete";
             this.tsmiDeleteMeshSetupItem.Click += new System.EventHandler(this.tsmiDeleteMeshSetupItem_Click);
             // 
             // tsmiPreviewEdgeMesh
             // 
             this.tsmiPreviewEdgeMesh.Name = "tsmiPreviewEdgeMesh";
-            this.tsmiPreviewEdgeMesh.Size = new System.Drawing.Size(180, 22);
+            this.tsmiPreviewEdgeMesh.Size = new System.Drawing.Size(176, 22);
             this.tsmiPreviewEdgeMesh.Text = "Preview Edge Mesh";
             this.tsmiPreviewEdgeMesh.Click += new System.EventHandler(this.tsmiPreviewEdgeMesh_Click);
             // 
@@ -2062,7 +2063,7 @@
             // 
             this.tsmiCreateMesh.Image = global::PrePoMax.Properties.Resources.Part;
             this.tsmiCreateMesh.Name = "tsmiCreateMesh";
-            this.tsmiCreateMesh.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateMesh.Size = new System.Drawing.Size(176, 22);
             this.tsmiCreateMesh.Text = "Create Mesh";
             this.tsmiCreateMesh.Click += new System.EventHandler(this.tsmiCreateMesh_Click);
             // 

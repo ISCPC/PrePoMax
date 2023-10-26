@@ -964,6 +964,7 @@
     <None Include="Icons\Step\Preview_defined_field.ico" />
     <None Include="Icons\Common\Search.ico" />
     <None Include="Icons\Geometry\Meshing_parameters.ico" />
+    <None Include="Icons\Common\Compound.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

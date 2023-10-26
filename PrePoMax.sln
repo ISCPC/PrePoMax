@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrePoMax", "PrePoMax\PrePoMax.csproj", "{1BA289A1-1DEE-4EE3-80C6-0150A1BEAFD4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BBD81130-CB98-4B1A-AF72-1833BB292761} = {BBD81130-CB98-4B1A-AF72-1833BB292761}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaeJob", "CaeJob\CaeJob.csproj", "{A449B1D6-DA0D-4A08-9B64-2CD929830399}"
 EndProject

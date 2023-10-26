@@ -218,7 +218,7 @@
             this.tsmiSpaceDelete,
             this.tsmiDelete});
             this.cmsTree.Name = "cmsTree";
-            this.cmsTree.Size = new System.Drawing.Size(212, 842);
+            this.cmsTree.Size = new System.Drawing.Size(212, 864);
             // 
             // tsmiCreate
             // 
@@ -272,6 +272,7 @@
             // 
             // tsmiCompoundPart
             // 
+            this.tsmiCompoundPart.Image = global::UserControls.Properties.Resources.Compound;
             this.tsmiCompoundPart.Name = "tsmiCompoundPart";
             this.tsmiCompoundPart.Size = new System.Drawing.Size(211, 22);
             this.tsmiCompoundPart.Text = "Create Compound Part";

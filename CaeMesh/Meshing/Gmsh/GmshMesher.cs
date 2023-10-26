@@ -178,17 +178,18 @@ namespace CaeMesh
                     Gmsh.SetNumber("Mesh.RecombineMinimumQuality", gsi.RecombineMinQuality);
                 }
                 // Transfinite
+                bool transfiniteVolume = gsi is TransfiniteMesh && gsi.TransfiniteThreeSided && gsi.TransfiniteFourSided;
                 if (_isOCC && (gsi.TransfiniteThreeSided || gsi.TransfiniteFourSided))
                     //Gmsh.Mesh.SetTransfiniteAutomatic(gsi.TransfiniteAngleRad, recombine);
-                    SetTransfiniteSurfaces(gsi.TransfiniteThreeSided, gsi.TransfiniteFourSided, recombine);
+                    SetTransfiniteSurfaces(gsi.TransfiniteThreeSided, gsi.TransfiniteFourSided, transfiniteVolume, recombine);
                 //
-                if (meshSetupItem is ShellGmsh)
+                if (gsi is ShellGmsh)
                     ShellGmsh(gsi, partMeshingParameters, preview);
-                else if (meshSetupItem is TetrahedralGmsh)
+                else if (gsi is TetrahedralGmsh)
                     TetrahedralGmsh(gsi, partMeshingParameters, preview);
-                else if (meshSetupItem is TransfiniteMesh)
+                else if (gsi is TransfiniteMesh)
                     TransfiniteMesh(gsi, partMeshingParameters, preview);
-                else if (meshSetupItem is ExtrudeMesh || meshSetupItem is RevolveMesh)
+                else if (gsi is ExtrudeMesh || gsi is RevolveMesh)
                     ExtrudeRevolveMesh(gsi, partMeshingParameters, preview);
                 else throw new NotSupportedException("MeshSetupItemTypeException");
             }
@@ -423,7 +424,8 @@ namespace CaeMesh
 
             return null;
         }
-        private void SetTransfiniteSurfaces(bool transfiniteThreeSided, bool transfiniteFourSided, bool recombine)
+        private void SetTransfiniteSurfaces(bool transfiniteThreeSided, bool transfiniteFourSided, bool transfiniteVolume,
+                                            bool recombine)
         {
             int[] volumeIds;
             int[] edgeIds;
@@ -508,7 +510,8 @@ namespace CaeMesh
                 volumeId = entry.Key;
                 volume = entry.Value;
                 //
-                if (volumeId > 0) volume.Transfinite = true;
+                if (!transfiniteVolume) volume.Transfinite = false;
+                else if (volumeId > 0) volume.Transfinite = true;
                 else volume.Transfinite = false;
                 //
                 if (volume.SurfaceIds.Count == 5 || volume.SurfaceIds.Count == 6)
