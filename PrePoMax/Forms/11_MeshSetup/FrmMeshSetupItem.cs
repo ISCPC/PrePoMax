@@ -319,6 +319,7 @@ namespace PrePoMax.Forms
             lvTypes.Items.Clear();
             propertyGrid.SelectedObject = null;
             _meshingParametersChanged = false;
+            _controller.ClearAllSelection();
             //
             _meshSetupItemNames = _controller.GetMeshSetupItemNames();
             _meshSetupItemToEditName = meshSetupItemToEditName;
@@ -358,6 +359,8 @@ namespace PrePoMax.Forms
                 lvTypes.Items[selectedId].Tag = _viewMeshSetupItem;
                 _preselectIndex = selectedId;
             }
+
+            //
             ShowHideSelectionForm();
             //
             return true;

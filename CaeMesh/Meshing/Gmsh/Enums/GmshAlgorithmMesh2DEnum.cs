@@ -1,6 +1,7 @@
 ﻿using DynamicTypeDescriptor;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,8 +21,8 @@ namespace CaeMesh.Meshing
         Delaunay = 5,
         [StandardValue("FrontalDelaunay", DisplayName = "Frontal-Delaunay")]
         FrontalDelaunay = 6,
-        [StandardValue("BAMG", DisplayName = "BAMG")]
-        BAMG = 7,
+        //[StandardValue("BAMG", DisplayName = "BAMG")]
+        //BAMG = 7,
         [StandardValue("FrontalDelaunayQuads", DisplayName = "Frontal-Delaunay for quads")]
         FrontalDelaunayQuads = 8,
         [StandardValue("PackingOfParallelograms", DisplayName = "Packing of parallelograms")]

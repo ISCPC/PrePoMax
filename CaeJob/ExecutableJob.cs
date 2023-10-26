@@ -25,7 +25,7 @@ namespace CaeJob
     //}
 
     [Serializable]
-    public class NetgenJob : NamedClass
+    public class ExecutableJob : NamedClass
     {
         // Variables                                                                                                                
         protected string _workDirectory;
@@ -96,7 +96,7 @@ namespace CaeJob
 
 
         // Constructor                                                                                                              
-        public NetgenJob(string name, string executable, string argument, string workDirectory)
+        public ExecutableJob(string name, string executable, string argument, string workDirectory)
             : base(name)
         {
             _executable = executable;
@@ -110,8 +110,6 @@ namespace CaeJob
             _sbOutput = null;
         }
 
-        // Event handlers                                                                                                           
-       
 
         // Methods                                                                                                                  
         public void Submit()
@@ -144,11 +142,10 @@ namespace CaeJob
         {
             RunCompleted();
         }
-
         private void Run()
         {
             if (!File.Exists(_executable)) throw new Exception("The file '" + _executable + "' does not exist.");
-            if (!Tools.WaitForFileToUnlock(_executable, 5000)) throw new Exception("The netgen mesher is busy.");
+            if (!Tools.WaitForFileToUnlock(_executable, 5000)) throw new Exception("The mesher is busy.");
             //
             string tmpName = Path.GetFileName(Name);
             _outputFileName = Path.Combine(_workDirectory, "_output_" + tmpName + ".txt");
@@ -216,8 +213,12 @@ namespace CaeJob
                 if (_exe.WaitForExit(ms) && _outputWaitHandle.WaitOne(ms) && _errorWaitHandle.WaitOne(ms))
                 {
                     // Process completed. Check process.ExitCode here.
-                    // after Kill() _jobStatus is Killed
-                    if (_jobStatus == JobStatus.Running) _jobStatus = JobStatus.OK;
+                    // after Kill() _jobStatus is Killed                    
+                    if (_jobStatus == JobStatus.Running)
+                    {
+                        _jobStatus = JobStatus.OK;
+                        if (_exe.ExitCode != 0) _jobStatus = JobStatus.Failed;
+                    }
                 }
                 else
                 {
@@ -228,7 +229,6 @@ namespace CaeJob
                 _exe.Close();
             }
         }
-
         private void _exe_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data == null)
@@ -242,7 +242,6 @@ namespace CaeJob
                 AddDataToOutput(e.Data);
             }
         }
-
         private void _exe_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data == null)
@@ -255,7 +254,6 @@ namespace CaeJob
                 AddDataToOutput(e.Data);
             }
         }
-
         void RunCompleted()
         {
             _watch.Stop();
@@ -268,7 +266,7 @@ namespace CaeJob
             // Dereference the link to otheh objects
             AppendOutput = null;
         }
-
+        //
         public void Kill(string message)
         {
             try
@@ -291,7 +289,7 @@ namespace CaeJob
             { }
             finally
             {
-                // Dereference the link to otheh objects
+                // Dereference the link to other objects
                 AppendOutput = null;
             }
         }

@@ -49,11 +49,13 @@ namespace PrePoMax
         //
         public static string NetGenMesher = @"\NetGen\NetGenMesher.exe";
         public static string MmgsMesher = @"\NetGen\mmgs.exe";
+        public static string GmshMesher = @"\lib\GmshMesher.exe";
         public static string VisFileName = "geometry.vis";
         public static string BrepFileName = "geometry.brep";
         public static string StlFileName = "geometry.stl";        
         public static string MeshParametersFileName = "meshParameters";
         public static string MeshRefinementFileName = "meshRefinement";
+        public static string GmshDataFileName = "gmshData";
         public static string VolFileName = "geometry.vol";
         public static string MmgMeshFileName = "mesh.mesh";
         public static string InpMeshFileName = "mesh.inp";

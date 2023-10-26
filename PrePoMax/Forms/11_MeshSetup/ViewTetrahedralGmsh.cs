@@ -28,7 +28,6 @@ namespace PrePoMax.Forms
             SetBase(_tetrahedronGmsh);
             //
             _dctd.GetProperty(nameof(AlgorithmRecombine)).SetIsBrowsable(false);
-            _dctd.GetProperty(nameof(Transfinite)).SetIsBrowsable(false);
             _dctd.GetProperty(nameof(TransfiniteAngleDeg)).SetIsBrowsable(false);
             //
             _dctd.GetProperty(nameof(ElementSizeType)).SetIsBrowsable(false);

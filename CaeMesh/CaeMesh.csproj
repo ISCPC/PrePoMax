@@ -52,11 +52,13 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoundingBox.cs" />
@@ -104,6 +106,8 @@
     <Compile Include="Geometry\GeomSurface.cs" />
     <Compile Include="Geometry\GeometryItem.cs" />
     <Compile Include="Meshing\Gmsh\Enums\GmshAlgorithmMesh3DEnum.cs" />
+    <Compile Include="Meshing\Gmsh\GmshData.cs" />
+    <Compile Include="Meshing\Gmsh\GmshMesher.cs" />
     <Compile Include="Meshing\Gmsh\ShellGmsh.cs" />
     <Compile Include="Meshing\Gmsh\TransfiniteMesh.cs" />
     <Compile Include="Meshing\Gmsh\TetrahedralGmsh.cs" />
@@ -113,7 +117,6 @@
     <Compile Include="Meshing\Gmsh\Enums\ElementSizeTypeEnum.cs" />
     <Compile Include="Meshing\Gmsh\Enums\GmshAlgorithmRecombinationEnum.cs" />
     <Compile Include="Meshing\Gmsh\Enums\GmshAlgorithmMesh2DEnum.cs" />
-    <Compile Include="Meshing\Gmsh\GmshMesher.cs" />
     <Compile Include="Meshing\MeshSetupItem.cs" />
     <Compile Include="Parts\NodalDataStructures.cs" />
     <Compile Include="Meshing\FeMeshRefinement.cs" />

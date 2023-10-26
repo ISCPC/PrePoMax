@@ -940,6 +940,53 @@ namespace CaeModel
                     _mesh.Parts[importedPart.Name].Color = _geometry.Parts[importedPart.Name].Color;
             }
         }
+        public static bool DeepCompare(object obj, object another)
+        {
+            if (ReferenceEquals(obj, another))
+                return true;
+            if ((obj == null) || (another == null))
+                return false;
+            //Compare two object's class, return false if they are difference
+            if (obj.GetType() != another.GetType())
+                return false;
+
+            var result = true;
+            //Get all properties of obj
+            //And compare each other
+            foreach (var property in obj.GetType().GetProperties())
+            {
+                var objValue = property.GetValue(obj);
+                var anotherValue = property.GetValue(another);
+                if (!objValue.Equals(anotherValue))
+                    result = false;
+            }
+
+            return result;
+        }
+
+        public static bool CompareEx(object obj, object another)
+        {
+            if (ReferenceEquals(obj, another))
+                return true;
+            if ((obj == null) || (another == null))
+                return false;
+            if (obj.GetType() != another.GetType())
+                return false;
+
+            //properties: int, double, DateTime, etc, not class
+            if (!obj.GetType().IsClass) return obj.Equals(another);
+
+            var result = true;
+            foreach (var property in obj.GetType().GetProperties())
+            {
+                var objValue = property.GetValue(obj);
+                var anotherValue = property.GetValue(another);
+                //Recursion
+                if (!DeepCompare(objValue, anotherValue))
+                    result = false;
+            }
+            return result;
+        }
         public void ImportGeneratedRemeshFromMeshFile(string fileName, int[] elementIds, BasePart part,
                                                       bool convertToSecondOrder, Dictionary<int[], FeNode> midNodes)
         {
@@ -1181,20 +1228,6 @@ namespace CaeModel
             else if (meshSetupItem is RevolveMesh rm) return IsRevolveMeshProperlyDefined(rm);
             else throw new NotSupportedException("MeshSetupItemTypeException");
         }
-        public string IsTetrahedralGmshProperlyDefined(TetrahedralGmsh tetrahedralGmsh)
-        {
-            BasePart part;
-            int[] partIds = FeMesh.GetPartIdsFromGeometryIds(tetrahedralGmsh.CreationIds);
-            //
-            foreach (var partId in partIds)
-            {
-                part = _geometry.GetPartFromId(partId);
-                //
-                if (part.PartType != PartType.Solid && part.PartType != PartType.SolidAsShell)
-                    return "The tetrahedral gmsh setup item can only be defined on solid parts.";
-            }
-            return null;
-        }
         public string IsShellGmshProperlyDefined(ShellGmsh shellGmsh)
         {
             BasePart part;
@@ -1209,27 +1242,59 @@ namespace CaeModel
             }
             return null;
         }
-        public string IsTransfiniteMeshProperlyDefined(TransfiniteMesh transfiniteMesh)
+        public string IsTetrahedralGmshProperlyDefined(TetrahedralGmsh tetrahedralGmsh)
         {
             BasePart part;
-            int[] partIds = FeMesh.GetPartIdsFromGeometryIds(transfiniteMesh.CreationIds);
+            int[] partIds = FeMesh.GetPartIdsFromGeometryIds(tetrahedralGmsh.CreationIds);
             //
             foreach (var partId in partIds)
             {
                 part = _geometry.GetPartFromId(partId);
                 //
                 if (part.PartType != PartType.Solid && part.PartType != PartType.SolidAsShell)
+                    return "The tetrahedral gmsh setup item can only be defined on solid parts.";
+            }
+            return null;
+        }
+        public string IsTransfiniteMeshProperlyDefined(TransfiniteMesh transfiniteMesh)
+        {
+            GeometryPart part;
+            int[] partIds = FeMesh.GetPartIdsFromGeometryIds(transfiniteMesh.CreationIds);
+            //
+            int numTri;
+            int numQuad;
+            HashSet<int> triSurfaceEdgeIds = new HashSet<int>();
+            foreach (var partId in partIds)
+            {
+                part = (GeometryPart)_geometry.GetPartFromId(partId);
+                //
+                if (!part.IsCADPart)
+                    return "The transfinite gmsh setup item cannot be defined on a stl based part.";
+                if (part.PartType != PartType.Solid && part.PartType != PartType.SolidAsShell)
                     return "The transfinite gmsh setup item can only be defined on solid parts.";
                 //
-                if (part.Visualization.FaceCount == 6)
+                if (part.Visualization.FaceCount == 5 || part.Visualization.FaceCount == 6)
                 {
+                    numTri = 0;
+                    numQuad = 0;
+                    triSurfaceEdgeIds.Clear();
                     for (int i = 0; i < part.Visualization.FaceCount; i++)
                     {
-                        if (part.Visualization.FaceEdgeIds[i].Length != 4)
-                            return "The transfinite gmsh setup item can only be defined on solid parts with quadrangular faces.";
+                        if (part.Visualization.FaceEdgeIds[i].Length == 3)
+                        {
+                            numTri++;
+                            triSurfaceEdgeIds.UnionWith(part.Visualization.FaceEdgeIds[i]);
+                        }
+                        else if (part.Visualization.FaceEdgeIds[i].Length == 4) numQuad++;
                     }
+                    if (!(numQuad == 6 || (numQuad == 3 && numTri == 2)))
+                        return "The transfinite gmsh setup item can only be defined on solid parts with triangular and " +
+                               "quadrangular faces.";
+                    if (numQuad == 3 && numTri == 2 && triSurfaceEdgeIds.Count != 6)
+                        return "The transfinite gmsh setup item can only be defined on solid parts with non touching " +
+                               "triangular faces.";
                 }
-                else return "The transfinite gmsh setup item can only be defined on solid parts with 6 faces.";
+                else return "The transfinite gmsh setup item can only be defined on solid parts with 5 or 6 faces.";
             }
             return null;
         }
@@ -1248,10 +1313,11 @@ namespace CaeModel
             {
                 // Get part
                 int partId = selectedPartIds[0];
-                BasePart part = _geometry.GetPartFromId(partId);
+                GeometryPart part = (GeometryPart)_geometry.GetPartFromId(partId);
+                //
                 if (IsPartCompoundSubPart(part.Name))
                     return "The extrude mesh setup item cannot be defined on a compound part.";
-                if (!((GeometryPart)part).IsCADPart)
+                if (!part.IsCADPart)
                     return "The extrude mesh setup item cannot be defined on a stl based part.";
                 if (part.PartType != PartType.Solid && part.PartType != PartType.SolidAsShell)
                     return "The extrude mesh setup item cannot be defined on a shell part.";
@@ -1369,10 +1435,10 @@ namespace CaeModel
             {
                 // Get part
                 int partId = selectedPartIds[0];
-                BasePart part = _geometry.GetPartFromId(partId);
+                GeometryPart part = (GeometryPart)_geometry.GetPartFromId(partId);
                 if (IsPartCompoundSubPart(part.Name))
                     return "The revolve mesh setup item cannot be defined on a compound part.";
-                if (!((GeometryPart)part).IsCADPart)
+                if (!part.IsCADPart)
                     return "The revolve mesh setup item cannot be defined on a stl based part.";
                 if (part.PartType != PartType.Solid && part.PartType != PartType.SolidAsShell)
                     return "The revolve mesh setup item cannot be defined on a shell part.";

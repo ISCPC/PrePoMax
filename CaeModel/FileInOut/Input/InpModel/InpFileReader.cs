@@ -9,6 +9,7 @@ using CaeGlobals;
 using CaeModel;
 using FileInOut.Output.Calculix;
 using System.Reflection;
+using Octree;
 
 namespace FileInOut.Input
 {
@@ -116,12 +117,12 @@ namespace FileInOut.Input
                     //
                     if (keyword == "*NODE") // nodes
                     {
-                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
+                        WriteDataToOutputStatic?.Invoke("Reading keyword line: " + dataSet[0]);
                         nodes.AddRange(GetNodes(dataSet));
                     }
                     else if (keyword == "*ELEMENT") // elements
                     {
-                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
+                        WriteDataToOutputStatic?.Invoke("Reading keyword line: " + dataSet[0]);
                         AddElements(dataSet, ref elements, ref inpElementTypeSets);
                     }
                 }
@@ -159,7 +160,7 @@ namespace FileInOut.Input
                     dataSet = dataSets[i];
                     keyword = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
                     //
-                    WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
+                    WriteDataToOutputStatic?.Invoke("Reading keyword line: " + dataSet[0]);
                     //
                     if (keyword == "*PART")
                     {
@@ -340,6 +341,9 @@ namespace FileInOut.Input
         {
             string name;
             HashSet<int> nodeIds;
+            int mainNodeCount;
+            int[] mainNodeIds;
+            FeElement element;
             vertexNodeIds = new HashSet<int>();
             edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
             surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
@@ -356,7 +360,17 @@ namespace FileInOut.Input
                 else if (name == "SURF")
                 {
                     nodeIds = new HashSet<int>();
-                    foreach (int elementId in inpElementSet.ElementLabels) nodeIds.UnionWith(elements[elementId].NodeIds);
+                    foreach (int elementId in inpElementSet.ElementLabels)
+                    {
+                        element = elements[elementId];
+                        // Get only main nodes for the surface recognition
+                        if (element.NodeIds.Length > 4) mainNodeCount = element.NodeIds.Length / 2;
+                        else mainNodeCount = element.NodeIds.Length;
+                        //
+                        mainNodeIds = new int[mainNodeCount];
+                        Array.Copy(element.NodeIds, 0, mainNodeIds, 0, mainNodeCount);
+                        nodeIds.UnionWith(mainNodeIds);
+                    }
                     surfaceIdNodeIds.Add(surfaceIdNodeIds.Count, nodeIds);
                 }
             }

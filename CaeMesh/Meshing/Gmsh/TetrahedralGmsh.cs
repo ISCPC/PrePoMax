@@ -50,7 +50,6 @@ namespace CaeMesh
         {
             base.Reset();
             //
-            Transfinite = false;
         }
         public void CopyFrom(TetrahedralGmsh tetrahedronGmsh)
         {

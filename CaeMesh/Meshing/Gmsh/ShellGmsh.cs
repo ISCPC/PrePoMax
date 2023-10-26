@@ -15,7 +15,7 @@ namespace CaeMesh
     public class ShellGmsh : GmshSetupItem, ISerializable
     {
         // Variables                                                                                                                
-
+        //private bool _
 
         // Properties                                                                                                               
 

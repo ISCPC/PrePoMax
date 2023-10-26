@@ -65,7 +65,7 @@ namespace PrePoMax
         [NonSerialized] protected List<string> _errors;
         //
         protected FeModel _model;
-        protected NetgenJob _netgenJob;
+        [NonSerialized] protected ExecutableJob _executableJob;
         protected FeResults _results;
         protected ResultsCollection _allResults;
         [NonSerialized] protected FeResults _wearResults;
@@ -118,11 +118,11 @@ namespace PrePoMax
         public bool ModelChanged { get { return _modelChanged; } set { _modelChanged = value; } }
         public bool SavingFile { get { return _savingFile; } }
         public FeModel Model { get { return _model; } }
-        public bool MeshJobIdle
+        public bool ExecutableJobIdle
         {
             get
             {
-                if (_netgenJob != null && _netgenJob.JobStatus == JobStatus.Running) return false;
+                if (_executableJob != null && _executableJob.JobStatus == JobStatus.Running) return false;
                 else return true;
             }
         }
@@ -1248,16 +1248,16 @@ namespace PrePoMax
                               " \"" + assemblyFileName.ToUTF8() + "\"" +
                               " \"" + outFileName.ToUTF8() + "\"";
             //
-            _netgenJob = new NetgenJob("SplitStep", executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJob_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob("SplitStep", executable, argument, settings.WorkDirectory);
+            _executableJob.AppendOutput += executableJob_AppendOutput;
+            _executableJob.Submit();
             //
             string brepFile;
             List<string> brepFiles = new List<string>();
             string outFileNameNoExtension = Path.GetFileNameWithoutExtension(outFileName);
             string searchPattern = "*" + outFileNameNoExtension + "*";
             //
-            if (_netgenJob.JobStatus == JobStatus.OK)
+            if (_executableJob.JobStatus == JobStatus.OK)
             {
                 string[] allFiles = Directory.GetFiles(settings.WorkDirectory, searchPattern);
                 foreach (var fileName in allFiles)
@@ -1341,16 +1341,16 @@ namespace PrePoMax
             for (int i = 0; i < inFileNames.Length; i++) argument += " \"" + inFileNames[i].ToUTF8() + "\"";
             argument += " \"" + brepFileName.ToUTF8() + "\"";
             //
-            _netgenJob = new NetgenJob("CompoundPart", executable, argument, workDirectory);
-            _netgenJob.AppendOutput += netgenJob_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob("CompoundPart", executable, argument, workDirectory);
+            _executableJob.AppendOutput += executableJob_AppendOutput;
+            _executableJob.Submit();
             //
             for (int i = 0; i < inFileNames.Length; i++)
             {
                 if (File.Exists(inFileNames[i])) File.Delete(inFileNames[i]);
             }
             //
-            if (_netgenJob.JobStatus == JobStatus.OK) return new string[] { brepFileName };
+            if (_executableJob.JobStatus == JobStatus.OK) return new string[] { brepFileName };
             else return null;
         }
         private void ImportBrepCompoundPart(string brepFileName, string[] createdFromPartNames,
@@ -1402,11 +1402,11 @@ namespace PrePoMax
                               "\"" + visFileName + "\" " +
                               _settings.Graphics.GeometryDeflection.ToString();
             //
-            _netgenJob = new NetgenJob("Brep", executable, argument, calculixSettings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJob_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob("Brep", executable, argument, calculixSettings.WorkDirectory);
+            _executableJob.AppendOutput += executableJob_AppendOutput;
+            _executableJob.Submit();
             //
-            if (_netgenJob.JobStatus == JobStatus.OK)
+            if (_executableJob.JobStatus == JobStatus.OK)
             {
                 string[] addedPartNames = _model.ImportGeometryFromBrepFile(visFileName, brepFileName);
                 if (addedPartNames.Length == 0)
@@ -1422,7 +1422,7 @@ namespace PrePoMax
                 return null;
             }
         }
-        private void netgenJob_AppendOutput(string data)
+        private void executableJob_AppendOutput(string data)
         {
             _form.WriteDataToOutput(data);
         }
@@ -1777,15 +1777,12 @@ namespace PrePoMax
                               "\"" + brepFileName.ToUTF8() + "\" " +
                               "\"" + stepFileName.ToUTF8() + "\"";
             //
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+            _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+            _executableJob.Submit();
             // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK)
-            {
-                //
+            if (_executableJob.JobStatus == JobStatus.OK)
                 _form.WriteDataToOutput("Part " + part.Name + " exported to file: " + stepFileName);
-            }
             else return;
         }
         public void ExportGeometryPartsAsMmgMesh(string[] partNames, string fileName)
@@ -2569,13 +2566,13 @@ namespace PrePoMax
                               scaleFactors[0] + " " + scaleFactors[1] + " " + scaleFactors[2];
 
             //
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+            _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+            _executableJob.Submit();
             // Job completed
             CheckAndUpdateModelValidity();
             //
-            if (_netgenJob.JobStatus == JobStatus.OK) return outputBrepFileName;
+            if (_executableJob.JobStatus == JobStatus.OK) return outputBrepFileName;
             else return null;
         }
         // End Transform
@@ -2859,11 +2856,11 @@ namespace PrePoMax
                               "\"" + outputBrepFileName.ToUTF8() + "\" " +
                               faceIdsArgument;
             //
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+            _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+            _executableJob.Submit();
             // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK) return outputBrepFileName;
+            if (_executableJob.JobStatus == JobStatus.OK) return outputBrepFileName;
             else return null;
         }
         private bool ReplacePartGeometryFromFile(GeometryPart part, string fileName, bool keepGeometrySelections)
@@ -3006,11 +3003,11 @@ namespace PrePoMax
                               node1.X + " " + node1.Y + " " + node1.Z + " " +
                               node2.X + " " + node2.Y + " " + node2.Z;
             //
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+            _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+            _executableJob.Submit();
             // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK) return outputBrepFileName;
+            if (_executableJob.JobStatus == JobStatus.OK) return outputBrepFileName;
             else return null;
         }
         // End CAD Part
@@ -3319,7 +3316,7 @@ namespace PrePoMax
             if (part == null) part = GetModelPart(partName);
             if (part == null) return null;
             //
-            if (!MeshJobIdle) throw new Exception("The meshing is already in progress.");
+            if (!ExecutableJobIdle) throw new Exception("The meshing is already in progress.");
             //
             MeshingParameters defaultMeshingParameters = GetDefaultMeshingParameters("Default");
             double factorMax = defaultMeshingParameters.FactorMax;
@@ -3501,11 +3498,11 @@ namespace PrePoMax
                               "\"" + meshRefinementFileName + "\" " +
                               "\"" + edgeNodesFileName + "\"";
 
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+            _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+            _executableJob.Submit();
             // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK)
+            if (_executableJob.JobStatus == JobStatus.OK)
             {
                 ImportGeneratedNodeMesh(volFileName, part, false);
                 return true;
@@ -3552,11 +3549,11 @@ namespace PrePoMax
                               "\"" + meshParametersFileName + "\" " +
                               "\"" + meshRefinementFileName + "\"";
             //
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+            _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+            _executableJob.Submit();
             // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK)
+            if (_executableJob.JobStatus == JobStatus.OK)
             {
                 ImportGeneratedNodeMesh(volFileName, part, false);
                 return true;
@@ -3573,89 +3570,110 @@ namespace PrePoMax
                 return false;
             }
             //
+            string executable = Application.StartupPath + Globals.GmshMesher;
             string brepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
             string inpFileName = Path.Combine(settings.WorkDirectory, Globals.InpMeshFileName);
+            string gmshDataFileName = Path.Combine(settings.WorkDirectory, Globals.GmshDataFileName);
             //
             if (File.Exists(brepFileName)) File.Delete(brepFileName);
             if (File.Exists(inpFileName)) File.Delete(inpFileName);
+            if (File.Exists(gmshDataFileName)) File.Delete(gmshDataFileName);
             //
             SuppressExplodedView(new string[] { part.Name });
             File.WriteAllText(brepFileName, part.CADFileData);
             MeshingParameters partMeshingParameters = GetPartMeshingParameters(part.Name, meshSetupItems);
             Dictionary<int, double> vertexIdMeshSize = GetVertexIdMeshSize(part.Name, meshSetupItems);
+            GmshData gmshData = new GmshData(brepFileName, inpFileName, partMeshingParameters, vertexIdMeshSize,
+                                             gmshSetupItems, true);
+            gmshData.WriteToFile(gmshDataFileName);
             ResumeExplodedViews(false);
             //
-            string error = GmshMesher.CreateMesh(brepFileName, inpFileName, partMeshingParameters, vertexIdMeshSize, gmshSetupItems,
-                                                 netgenJobMeshing_AppendOutput, true);
-            if (error != null) throw new CaeException(error);
-            //                                                                                              
-            int id2;
-            int[] key;
-            FeElement element;
-            CompareIntArray comparer = new CompareIntArray();
-            HashSet<int[]> edgeKeys = new HashSet<int[]>(comparer);
-            List<double[][]> lines = new List<double[][]>();
-            double[][] line;
+            string argument = Globals.GmshDataFileName;
             //
-            FileInOut.Input.ElementsToImport elementsToImport;
-            bool importEdges = gmshSetupItems.Length == 1 &&
-                (gmshSetupItems[0] is ShellGmsh ||gmshSetupItems[0] is ExtrudeMesh || gmshSetupItems[0] is RevolveMesh);
-            if (importEdges) elementsToImport = FileInOut.Input.ElementsToImport.Shell;
-            else elementsToImport = FileInOut.Input.ElementsToImport.Beam;
-            // Mesh
-            FeMesh mesh = FileInOut.Input.InpFileReader.ReadMesh(inpFileName, elementsToImport, false);
-            // Exploded view
-            if (IsExplodedViewActive())
+            bool jobCompleted;
+            if (System.Diagnostics.Debugger.IsAttached)
             {
-                double[] offset;
-                if (part is CompoundGeometryPart cgp) offset = _model.Geometry.Parts[cgp.SubPartNames[0]].Offset;
-                else offset = part.Offset;
-                //
-                Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
-                foreach (var entry in mesh.Parts) partOffsets.Add(entry.Key, offset);
-                mesh.ApplyExplodedView(partOffsets);
+                GmshMesher mesher = new GmshMesher(gmshData, _form.WriteDataToOutput);
+                string error = mesher.CreateMesh();
+                jobCompleted = error == null;
             }
-            // Import edges
-            if (importEdges)
-            {
-                foreach (var entry in mesh.Elements)
-                {
-                    element = entry.Value;
-                    int numOfNodes = -1;
-                    if (entry.Value is LinearTriangleElement) numOfNodes = 3;
-                    else if (entry.Value is LinearQuadrilateralElement) numOfNodes = 4;
-                    //
-                    if (numOfNodes > 0)
-                    {
-                        for (int i = 0; i < numOfNodes; i++)
-                        {
-                            id2 = (i + 1) % numOfNodes;
-                            key = Tools.GetSortedKey(element.NodeIds[i], element.NodeIds[id2]);
-                            if (!edgeKeys.Contains(key))
-                            {
-                                line = new double[2][];
-                                line[0] = mesh.Nodes[element.NodeIds[i]].Coor;
-                                line[1] = mesh.Nodes[element.NodeIds[id2]].Coor;
-                                lines.Add(line);
-                                edgeKeys.Add(key);
-                            }
-                        }
-                    }
-                    else throw new NotSupportedException();
-                }
-                //
-                HighlightConnectedEdges(lines.ToArray());
-            }
-            // Import nodes
             else
             {
-                double[][] nodeCoor = mesh.GetAllNodeCoor();
-                DrawNodes("nodeMesh", nodeCoor, Color.Black, vtkRendererLayer.Selection, -1, true);
+                _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+                _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+                _executableJob.Submit();
+                // Job completed
+                jobCompleted = _executableJob.JobStatus == JobStatus.OK;
             }
-
-
-
-            return true;
+            //
+            if (jobCompleted)
+            {
+                int id2;
+                int[] key;
+                FeElement element;
+                CompareIntArray comparer = new CompareIntArray();
+                HashSet<int[]> edgeKeys = new HashSet<int[]>(comparer);
+                List<double[][]> lines = new List<double[][]>();
+                double[][] line;
+                //
+                FileInOut.Input.ElementsToImport elementsToImport;
+                bool importEdges = gmshSetupItems.Length == 1 &&
+                    (gmshSetupItems[0] is ShellGmsh || gmshSetupItems[0] is ExtrudeMesh || gmshSetupItems[0] is RevolveMesh);
+                if (importEdges) elementsToImport = FileInOut.Input.ElementsToImport.Shell;
+                else elementsToImport = FileInOut.Input.ElementsToImport.Beam;
+                // Mesh
+                FeMesh mesh = FileInOut.Input.InpFileReader.ReadMesh(inpFileName, elementsToImport, false);
+                // Exploded view
+                if (IsExplodedViewActive())
+                {
+                    double[] offset;
+                    if (part is CompoundGeometryPart cgp) offset = _model.Geometry.Parts[cgp.SubPartNames[0]].Offset;
+                    else offset = part.Offset;
+                    //
+                    Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
+                    foreach (var entry in mesh.Parts) partOffsets.Add(entry.Key, offset);
+                    mesh.ApplyExplodedView(partOffsets);
+                }
+                // Import edges
+                if (importEdges)
+                {
+                    foreach (var entry in mesh.Elements)
+                    {
+                        element = entry.Value;
+                        int numOfNodes = -1;
+                        if (entry.Value is LinearTriangleElement) numOfNodes = 3;
+                        else if (entry.Value is LinearQuadrilateralElement) numOfNodes = 4;
+                        //
+                        if (numOfNodes > 0)
+                        {
+                            for (int i = 0; i < numOfNodes; i++)
+                            {
+                                id2 = (i + 1) % numOfNodes;
+                                key = Tools.GetSortedKey(element.NodeIds[i], element.NodeIds[id2]);
+                                if (!edgeKeys.Contains(key))
+                                {
+                                    line = new double[2][];
+                                    line[0] = mesh.Nodes[element.NodeIds[i]].Coor;
+                                    line[1] = mesh.Nodes[element.NodeIds[id2]].Coor;
+                                    lines.Add(line);
+                                    edgeKeys.Add(key);
+                                }
+                            }
+                        }
+                        else throw new NotSupportedException();
+                    }
+                    //
+                    HighlightConnectedEdges(lines.ToArray());
+                }
+                // Import nodes
+                else
+                {
+                    double[][] nodeCoor = mesh.GetAllNodeCoor();
+                    DrawNodes("nodeMesh", nodeCoor, Color.Black, vtkRendererLayer.Selection, -1, true);
+                }
+                return true;
+            }
+            else return false;
         }
         public void ImportGeneratedNodeMesh(string fileName, GeometryPart part, bool resetCamera)
         {
@@ -3689,9 +3707,70 @@ namespace PrePoMax
         }
         private bool CreateMeshFromStl(GeometryPart part)
         {
-            if (part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell) return CreateMeshFromSolidStl(part);
-            else if (part.PartType == PartType.Shell) return CreateMeshFromShellStl(part);
-            else throw new NotSupportedException();
+            MeshSetupItem[] meshSetupItems = GetActiveValidGmshSetupItems(part.Name);
+            //
+            if (meshSetupItems.Length > 0) return CreateMeshFromStlGmsh(part, meshSetupItems);
+            else
+            {
+                if (part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell) return CreateMeshFromSolidStl(part);
+                else if (part.PartType == PartType.Shell) return CreateMeshFromShellStl(part);
+                else throw new NotSupportedException();
+            }
+        }
+        private bool CreateMeshFromStlGmsh(GeometryPart part, MeshSetupItem[] meshSetupItems)
+        {
+            _form.WriteDataToOutput("");
+            //
+            CalculixSettings settings = _settings.Calculix;
+            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+            {
+                MessageBoxes.ShowWorkDirectoryError();
+                return false;
+            }
+            //
+            string executable = Application.StartupPath + Globals.GmshMesher;
+            string stlFileName = Path.Combine(settings.WorkDirectory, Globals.StlFileName);
+            string inpFileName = Path.Combine(settings.WorkDirectory, Globals.InpMeshFileName);
+            string gmshDataFileName = Path.Combine(settings.WorkDirectory, Globals.GmshDataFileName);
+            //
+            if (File.Exists(stlFileName)) File.Delete(stlFileName);
+            if (File.Exists(inpFileName)) File.Delete(inpFileName);
+            if (File.Exists(gmshDataFileName)) File.Delete(gmshDataFileName);
+            //
+            string[] partNames = new string[] { part.Name };
+            SuppressExplodedView(partNames);
+            FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, partNames);
+            MeshingParameters partMeshingParameters = GetPartMeshingParameters(part.Name);
+            Dictionary<int, double> vertexIdMeshSize = GetVertexIdMeshSize(part.Name);
+            GmshData gmshData = new GmshData(stlFileName, inpFileName, partMeshingParameters, vertexIdMeshSize,
+                                             meshSetupItems, false);
+            gmshData.WriteToFile(gmshDataFileName);
+            ResumeExplodedViews(false);
+            //
+            string argument = Globals.GmshDataFileName;
+            //
+            bool jobCompleted;
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                GmshMesher mesher = new GmshMesher(gmshData, _form.WriteDataToOutput);
+                string error = mesher.CreateMesh();
+                jobCompleted = error == null;
+            }
+            else
+            {
+                _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+                _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+                _executableJob.Submit();
+                // Job completed
+                jobCompleted = _executableJob.JobStatus == JobStatus.OK;
+            }
+            //
+            if (jobCompleted)
+            {
+                ImportGeneratedMesh(inpFileName, part, true);
+                return true;
+            }
+            else return false;
         }
         private bool CreateMeshFromSolidStl(GeometryPart part)
         {
@@ -3730,16 +3809,16 @@ namespace PrePoMax
                               "\"" + meshRefinementFileName + "\" " +
                               "\"" + edgeNodesFileName + "\"";
             //
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+            _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+            _executableJob.Submit();
             // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK)
+            if (_executableJob.JobStatus == JobStatus.OK)
             {
                 ImportGeneratedMesh(volFileName, part, false);
                 return true;
             }
-            else return false;
+            else throw new CaeException("Mesh generation failed.");
         }
         private bool CreateMeshFromShellStl(GeometryPart part)
         {
@@ -3782,11 +3861,11 @@ namespace PrePoMax
                               "-in \"" + mmgInFileName + "\" " +
                               "-out \"" + mmgOutFileName + "\" ";
             //
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+            _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+            _executableJob.Submit();
             // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK)
+            if (_executableJob.JobStatus == JobStatus.OK)
             {
                 FeMesh mesh = FileInOut.Input.MmgFileReader.Read(mmgOutFileName, MeshRepresentation.Geometry);
                 GeometryPart partOut = (GeometryPart)mesh.Parts.First().Value;
@@ -3807,18 +3886,18 @@ namespace PrePoMax
                            "-in \"" + mmgInFileName + "\" " +
                            "-out \"" + mmgOutFileName + "\" ";
                 //
-                _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-                _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-                _netgenJob.Submit();
+                _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+                _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+                _executableJob.Submit();
                 //
-                if (_netgenJob.JobStatus == JobStatus.OK)
+                if (_executableJob.JobStatus == JobStatus.OK)
                 {
                     ImportGeneratedMesh(mmgOutFileName, part, false);
                     return true;
                 }
-                else return false;
+                else throw new CaeException("Mesh generation failed.");
             }
-            else return false;
+            else throw new CaeException("Mesh generation failed.");
         }
         private bool CreateMeshFromBrep(GeometryPart part)
         {
@@ -3860,17 +3939,17 @@ namespace PrePoMax
                               "\"" + meshParametersFileName + "\" " +
                               "\"" + meshRefinementFileName + "\"";
             //
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+            _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+            _executableJob.Submit();
             // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK)
+            if (_executableJob.JobStatus == JobStatus.OK)
             {
                 //bool convertToSecondOrder = meshingParameters.SecondOrder && !meshingParameters.MidsideNodesOnGeometry;
                 ImportGeneratedMesh(volFileName, part, true);
                 return true;
             }
-            else return false;
+            else throw new CaeException("Mesh generation failed.");
         }
         private bool CreateMeshFromBrepGmsh(GeometryPart part, MeshSetupItem[] meshSetupItems)
         {
@@ -3883,24 +3962,48 @@ namespace PrePoMax
                 return false;
             }
             //
+            string executable = Application.StartupPath + Globals.GmshMesher;
             string brepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
             string inpFileName = Path.Combine(settings.WorkDirectory, Globals.InpMeshFileName);
+            string gmshDataFileName = Path.Combine(settings.WorkDirectory, Globals.GmshDataFileName);
             //
             if (File.Exists(brepFileName)) File.Delete(brepFileName);
             if (File.Exists(inpFileName)) File.Delete(inpFileName);
+            if (File.Exists(gmshDataFileName)) File.Delete(gmshDataFileName);
             //
             SuppressExplodedView(new string[] { part.Name });
             File.WriteAllText(brepFileName, part.CADFileData);
             MeshingParameters partMeshingParameters = GetPartMeshingParameters(part.Name);
             Dictionary<int, double> vertexIdMeshSize = GetVertexIdMeshSize(part.Name);
+            GmshData gmshData = new GmshData(brepFileName, inpFileName, partMeshingParameters, vertexIdMeshSize,
+                                             meshSetupItems, false);
+            gmshData.WriteToFile(gmshDataFileName);
             ResumeExplodedViews(false);
             //
-            string error = GmshMesher.CreateMesh(brepFileName, inpFileName, partMeshingParameters, vertexIdMeshSize, 
-                                                 meshSetupItems, netgenJobMeshing_AppendOutput, false);
-            if (error != null) throw new CaeException(error);
+            string argument = Globals.GmshDataFileName;
             //
-            ImportGeneratedMesh(inpFileName, part, true);
-            return true;
+            bool jobCompleted;
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                GmshMesher mesher = new GmshMesher(gmshData, _form.WriteDataToOutput);
+                string error = mesher.CreateMesh();
+                jobCompleted = error == null;
+            }
+            else
+            {
+                _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+                _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+                _executableJob.Submit();
+                // Job completed
+                jobCompleted = _executableJob.JobStatus == JobStatus.OK;
+            }
+            //
+            if (jobCompleted)
+            {
+                ImportGeneratedMesh(inpFileName, part, true);
+                return true;
+            }
+            else throw new CaeException("Mesh generation failed.");
         }
         private void CreateMeshRefinementFile(GeometryPart part, string fileName,
                                               OrderedDictionary<string, MeshSetupItem> meshSetupItems = null)
@@ -4002,15 +4105,15 @@ namespace PrePoMax
             File.WriteAllText(fileName, sb.ToString());
         }
         //
-        public void StopNetGenJob()
+        public void StopExecutableJob()
         {
-            if (_netgenJob != null && _netgenJob.JobStatus == JobStatus.Running)
+            if (_executableJob != null && _executableJob.JobStatus == JobStatus.Running)
             {
-                _netgenJob.Kill("Cancel button clicked.");
+                _executableJob.Kill("Cancel button clicked.");
                 _form.SetStateReady(Globals.MeshingText);
             }
         }
-        void netgenJobMeshing_AppendOutput(string data)
+        void executableJobMeshing_AppendOutput(string data)
         {
             _form.WriteDataToOutput(data);
         }
@@ -4151,6 +4254,8 @@ namespace PrePoMax
             }
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            //
+            ClearAllSelection();
         }
         //
         private void UpdateMeshSetupItems(bool updateSelection = true)
@@ -4522,11 +4627,11 @@ namespace PrePoMax
                               "-in \"" + mmgInFileName + "\" " +
                               "-out \"" + mmgOutFileName + "\" ";
             //
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+            _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+            _executableJob.Submit();
             // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK)
+            if (_executableJob.JobStatus == JobStatus.OK)
             {
                 // Check if all elements are linear or all elements are parabolic
                 HashSet<bool> parabolic = new HashSet<bool>();
@@ -4536,7 +4641,7 @@ namespace PrePoMax
                 ImportGeneratedRemesh(mmgOutFileName, elementIds, part, parabolic.First(), midNodes, preview);
                 return true;
             }
-            else return false;
+            else throw new CaeException("Mesh generation failed.");
         }
         private bool RemeshShellElementsFromPart(BasePart part)
         {
@@ -4568,11 +4673,11 @@ namespace PrePoMax
                               "-in \"" + mmgInFileName + "\" " +
                               "-out \"" + mmgOutFileName + "\" ";
             //
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
+            _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
+            _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
+            _executableJob.Submit();
             // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK)
+            if (_executableJob.JobStatus == JobStatus.OK)
             {
                 ImportGeneratedMesh(mmgOutFileName, part, false);
                 return true;

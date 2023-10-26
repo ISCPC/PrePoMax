@@ -15,7 +15,7 @@ namespace PrePoMax.Forms
     public class ViewGmshSetupItem : ViewMeshSetupItem
     {
         // Variables                                                                                                                
-        private GmshSetupItem _gmshSetupItem;
+        protected GmshSetupItem _gmshSetupItem;
 
 
         // Properties                                                                                                               
@@ -61,16 +61,25 @@ namespace PrePoMax.Forms
         }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(5, 10, "Transfinite")]
-        [DescriptionAttribute("Use automatic transfinite meshing constraints on the entire model.")]
-        public bool Transfinite
+        [OrderedDisplayName(5, 10, "Transfinite 3-sided faces")]
+        [DescriptionAttribute("Use automatic transfinite meshing constraints on 3-sided model faces.")]
+        public bool TransfiniteThreeSided
         {
-            get { return _gmshSetupItem.Transfinite; }
-            set { _gmshSetupItem.Transfinite = value; UpdateVisibility(); }
+            get { return _gmshSetupItem.TransfiniteThreeSided; }
+            set { _gmshSetupItem.TransfiniteThreeSided = value; UpdateVisibility(); }
         }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(6, 10, "Transfinite threshold angle")]
+        [OrderedDisplayName(6, 10, "Transfinite 4-sided faces")]
+        [DescriptionAttribute("Use automatic transfinite meshing constraints on 4-sided model faces.")]
+        public bool TransfiniteFourSided
+        {
+            get { return _gmshSetupItem.TransfiniteFourSided; }
+            set { _gmshSetupItem.TransfiniteFourSided = value; UpdateVisibility(); }
+        }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(7, 10, "Transfinite threshold angle")]
         [DescriptionAttribute("Quadrangular faces with a corner angle larger than the threshold angle are ignored.")]
         [TypeConverter(typeof(StringAngleDegConverter))]
         public double TransfiniteAngleDeg
@@ -117,7 +126,8 @@ namespace PrePoMax.Forms
             //
             UpdateVisibility();
             //
-            _dctd.RenameBooleanPropertyToYesNo(nameof(Transfinite));
+            _dctd.RenameBooleanPropertyToYesNo(nameof(TransfiniteThreeSided));
+            _dctd.RenameBooleanPropertyToYesNo(nameof(TransfiniteFourSided));
         }
         public override MeshSetupItem GetBase()
         {
@@ -138,9 +148,9 @@ namespace PrePoMax.Forms
                 }
             }
             // Transfinite
-            if (_dctd.GetProperty(nameof(Transfinite)).IsBrowsable)
+            if (_dctd.GetProperty(nameof(TransfiniteFourSided)).IsBrowsable)
             {
-                _dctd.GetProperty(nameof(TransfiniteAngleDeg)).SetIsBrowsable(Transfinite);
+                _dctd.GetProperty(nameof(TransfiniteAngleDeg)).SetIsBrowsable(false);
             }
             // Element size
             if (_dctd.GetProperty(nameof(ElementSizeType)).IsBrowsable)

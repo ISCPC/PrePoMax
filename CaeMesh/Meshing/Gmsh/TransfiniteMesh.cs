@@ -49,6 +49,7 @@ namespace CaeMesh
         public override void Reset()
         {
             base.Reset();
+            AlgorithmRecombine = GmshAlgorithmRecombineEnum.Simple;
         }
         public void CopyFrom(TransfiniteMesh transfiniteMesh)
         {

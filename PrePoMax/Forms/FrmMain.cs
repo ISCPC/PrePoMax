@@ -7685,7 +7685,7 @@ namespace PrePoMax
         }
         private void tsslCancel_Click(object sender, EventArgs e)
         {
-            _controller.StopNetGenJob();
+            _controller.StopExecutableJob();
         }
         #endregion  ################################################################################################################
 

@@ -2648,7 +2648,7 @@ namespace CaeMesh
         {
             HashSet<int> elementIds = new HashSet<int>();
             for (int i = 0; i < partNamesToMerge.Length; i++) elementIds.UnionWith(_parts[partNamesToMerge[i]].Labels);
-            string name = _elementSets.GetNextNumberedKey("Element_Set_To_Merge");
+            string name = _elementSets.GetNextNumberedKey("parts");
             FeElementSet elementSet = new FeElementSet(name, elementIds.ToArray());
             _elementSets.Add(elementSet.Name, elementSet);
             //

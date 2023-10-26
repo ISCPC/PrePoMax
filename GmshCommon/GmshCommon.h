@@ -59,6 +59,11 @@ namespace GmshCommon {
 			gmsh::initialize();
 		}
 
+        static int IsInitialized()
+        {
+            return gmsh::isInitialized();
+        }
+
 		static void FinalizeGmsh()
 		{
 			gmsh::finalize();
@@ -143,8 +148,8 @@ namespace GmshCommon {
 		}
 
         static void GetAdjacencies(int dim, int tag,
-                                   [System::Runtime::InteropServices::Out] array<int>^% upward,
-                                   [System::Runtime::InteropServices::Out] array<int>^% downward)
+            [System::Runtime::InteropServices::Out] array<int>^% upward,
+            [System::Runtime::InteropServices::Out] array<int>^% downward)
         {
             std::vector<int> upward_native;
             std::vector<int> downward_native;
@@ -152,10 +157,12 @@ namespace GmshCommon {
             gmsh::model::getAdjacencies(dim, tag, upward_native, downward_native);
             //
             upward = gcnew array<int>(upward_native.size());
-            Marshal::Copy(IntPtr(upward_native.data()), upward, 0, upward->Length);
+            if (upward_native.size() > 0)
+                Marshal::Copy(IntPtr(upward_native.data()), upward, 0, upward->Length);
             //
             downward = gcnew array<int>(downward_native.size());
-            Marshal::Copy(IntPtr(downward_native.data()), downward, 0, downward->Length);
+            if (downward_native.size() > 0)
+                Marshal::Copy(IntPtr(downward_native.data()), downward, 0, downward->Length);
         }
 
 		static void GetBoundary(array<System::Tuple<int, int>^>^ tags, [System::Runtime::InteropServices::Out] array<System::Tuple<int, int>^>^% outDimTags, System::Boolean combined, System::Boolean oriented, System::Boolean recursive)
@@ -297,6 +304,25 @@ namespace GmshCommon {
 		ref class Mesh
 		{
 		public:
+            
+
+            static void Clear()
+            {
+                gmsh::model::mesh::clear();
+            }
+            
+            static void Clear(array<System::Tuple<int, int>^>^ dimTags)
+            {
+                gmsh::vectorpair dimTags_native;
+                //
+                for (int i = 0; i < dimTags->Length; ++i)
+                {
+                    dimTags_native.push_back(std::pair<int, int>(dimTags[i]->Item1, dimTags[i]->Item2));
+                }
+                //
+                gmsh::model::mesh::clear(dimTags_native);
+            }
+
 			static void AddNodes(int dim, int tag, array<IntPtr>^ nodeTags, array<double>^ coordinates)
 			{
 				std::vector<size_t> nnodeTags(nodeTags->Length);
@@ -603,12 +629,64 @@ namespace GmshCommon {
 				gmsh::model::mesh::setAlgorithm(dim, tag, val);
 			}
 
-            static void SetTransfiniteSurface(int tag, System::String^ arrangement, array<int>^ cornerTags)
+            static void SetSizeFromBoundary(int dim, int tag, int val)
             {
-                std::vector<int> cornerTags_native = std::vector<int>();
+                gmsh::model::mesh::setSizeFromBoundary(dim, tag, val);
+            }
+
+            static void SetCompound(int dim, array<int>^ tags)
+            {
+                std::vector<int> tags_native(tags->Length);
+                Marshal::Copy(tags, 0, IntPtr(tags_native.data()), tags->Length);
+                //
+                gmsh::model::mesh::setCompound(dim, tags_native);
+            }
+
+            static void SetTransfiniteCurve(int tag, int numNodes)
+            {
+                gmsh::model::mesh::setTransfiniteCurve(tag, numNodes);
+            }
+
+            static void SetTransfiniteCurve(int tag, int numNodes, System::String^ meshType, double coef)
+            {
+                std::string meshType_native = msclr::interop::marshal_as<std::string>(meshType);
+                //
+                gmsh::model::mesh::setTransfiniteCurve(tag, numNodes, meshType_native, coef);
+            }
+
+            static void SetTransfiniteSurface(int tag)
+            {
+                gmsh::model::mesh::setTransfiniteSurface(tag);
+            }
+
+            static void SetTransfiniteSurface(int tag, System::String^ arrangement)
+            {
                 std::string arrangement_native = msclr::interop::marshal_as<std::string>(arrangement);
                 //
+                gmsh::model::mesh::setTransfiniteSurface(tag, arrangement_native);
+            }
+
+            static void SetTransfiniteSurface(int tag, System::String^ arrangement, array<int>^ cornerTags)
+            {
+                std::string arrangement_native = msclr::interop::marshal_as<std::string>(arrangement);
+                //
+                std::vector<int> cornerTags_native(cornerTags->Length);
+                Marshal::Copy(cornerTags, 0, IntPtr(cornerTags_native.data()), cornerTags->Length);
+                //
                 gmsh::model::mesh::setTransfiniteSurface(tag, arrangement_native, cornerTags_native);
+            }
+
+            static void SetTransfiniteVolume(int tag)
+            {
+                gmsh::model::mesh::setTransfiniteVolume(tag);
+            }
+
+            static void SetTransfiniteVolume(int tag, array<int>^ cornerTags)
+            {
+                std::vector<int> cornerTags_native(cornerTags->Length);
+                Marshal::Copy(cornerTags, 0, IntPtr(cornerTags_native.data()), cornerTags->Length);
+                //
+                gmsh::model::mesh::setTransfiniteVolume(tag, cornerTags_native);
             }
             
             static void SetTransfiniteAutomatic()
@@ -639,6 +717,16 @@ namespace GmshCommon {
                     dimTags_native.push_back(std::pair<int, int>(dimTags[i]->Item1, dimTags[i]->Item2));
                 //
                 gmsh::model::mesh::setTransfiniteAutomatic(dimTags_native, cornerAngle, recombine);
+            }
+
+            static void SetSmoothing(int dim, int tag, int val)
+            {
+                gmsh::model::mesh::setSmoothing(dim, tag, val);
+            }
+
+            static void SetOutwardOrientation(int tag)
+            {
+                gmsh::model::mesh::setOutwardOrientation(tag);
             }
             
             static inline void SetOrder(int order)
