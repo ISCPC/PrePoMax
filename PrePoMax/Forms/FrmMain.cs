@@ -3206,8 +3206,9 @@ namespace PrePoMax
                             break;
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        if (ex is CaeException) errors.Add(partName + ": " + ex.Message);
                         errors.Add("Mesh generation failed for part " + partName +
                                    ". Check the geometry and/or adjust the meshing parameters.");
                     }

@@ -328,9 +328,10 @@ namespace FileInOut.Input
                     if (!elementsToImport.HasFlag(ElementsToImport.Solid)) mesh.RemoveElementsByType<FeElement3D>();
                 }
                 //
-                
+
                 //
-                return mesh;
+                if (_errors.Count == 0) return mesh;
+                else return null;
             }
             return null;
         }

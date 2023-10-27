@@ -1473,9 +1473,9 @@ namespace CaeMesh
                 return (min + max) / 2;
             }
         }
-        public void GetArcEdgeDataForEdgeId(HashSet<int> edgeIds, HashSet<int> startNodeIds, Dictionary<int, FeNode> nodes,
-                                            out double r, out double arcAngleDeg,
-                                            out double[] axisCenter, out double[] axisDirection)
+        public void GetArcEdgeDataForEdgeIds(HashSet<int> edgeIds, HashSet<int> startNodeIds, Dictionary<int, FeNode> nodes,
+                                             out double r, out double arcAngleDeg,
+                                             out double[] axisCenter, out double[] axisDirection)
         {
             r = -1;
             arcAngleDeg = -1;
@@ -1490,13 +1490,18 @@ namespace CaeMesh
             if (edgeIds.Count < 1) return;
             else
             {
+                int numLines = 0;
                 foreach (var edgeId in edgeIds)
                 {
                     GetArcEdgeDataForEdgeId(edgeId, startNodeIds, nodes, out r, out arcAngleDeg, out axisCenter, out axisDirection);
-                    radii.Add(r);
-                    arcAnglesDeg.Add(arcAngleDeg);
-                    bbCenter.IncludeCoor(axisCenter);
-                    bbDirection.IncludeCoor(axisDirection);
+                    if (double.IsInfinity(r)) numLines++;
+                    else
+                    {
+                        radii.Add(r);
+                        arcAnglesDeg.Add(arcAngleDeg);
+                        bbCenter.IncludeCoor(axisCenter);
+                        bbDirection.IncludeCoor(axisDirection);
+                    }
                 }
                 //
                 bool equal = true;
@@ -1525,7 +1530,9 @@ namespace CaeMesh
                 }
                 else
                 {
-                    r = -1;
+                    if (numLines == edgeIds.Count) r = double.PositiveInfinity;
+                    else r = -1;
+                    //
                     arcAngleDeg = -1;
                     axisCenter = null;
                     axisDirection = null;
@@ -1542,7 +1549,8 @@ namespace CaeMesh
             axisDirection = null;
             int[] nodeIds = GetOrderedNodeIdsForEdgeId(edgeId);
             //
-            if (nodeIds.Length < 3) return;
+            if (nodeIds.Length == 2) { r = double.PositiveInfinity; }
+            else if (nodeIds.Length < 3) { }
             else
             {
                 if (!startNodeIds.Contains(nodeIds[0])) Array.Reverse(nodeIds);

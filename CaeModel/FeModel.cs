@@ -1477,7 +1477,7 @@ namespace CaeModel
                         double arcAngleDeg;
                         double[] axisCenter;
                         double[] axisDirection;
-                        vis.GetArcEdgeDataForEdgeId(directionEdgeIds, surfaceVertices, _geometry.Nodes,
+                        vis.GetArcEdgeDataForEdgeIds(directionEdgeIds, surfaceVertices, _geometry.Nodes,
                                                     out r, out arcAngleDeg, out axisCenter, out axisDirection);
                         if (r > 0 && arcAngleDeg > 0)
                         {
