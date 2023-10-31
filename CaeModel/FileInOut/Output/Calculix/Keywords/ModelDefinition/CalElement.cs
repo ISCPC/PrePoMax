@@ -53,6 +53,7 @@ namespace FileInOut.Output.Calculix
                     count++;
                     if (count == 17)        // 16 entries per line; 17th entry goes in new line
                     {
+                        sb.Append(",");
                         sb.AppendLine();
                         sb.Append(nodeId);
                     }

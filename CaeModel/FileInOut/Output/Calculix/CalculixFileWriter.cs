@@ -9,6 +9,7 @@ using System.IO;
 using FileInOut.Output.Calculix;
 using CaeGlobals;
 using Microsoft.SqlServer.Server;
+using System.Reflection;
 
 namespace FileInOut.Output
 {
@@ -68,41 +69,11 @@ namespace FileInOut.Output
             // Allways add a title keyword to get all possible keyword types to the keyword editor
             //
             // Collect pre-tension loads
-            string name;
-            List<PreTensionLoad> preTensionLoadsList;
-            OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads =
-                new OrderedDictionary<string, List<PreTensionLoad>>("Pretension Loads", StringComparer.OrdinalIgnoreCase);
-            foreach (var step in model.StepCollection.StepsList)
-            {
-                foreach (var entry in step.Loads)
-                {
-                    if (entry.Value is PreTensionLoad ptl)
-                    {
-                        name = ptl.SurfaceName;
-                        if (!ptl.AutoComputeDirection) name += "@" + ptl.X.ToString() + ptl.Y.ToString() + ptl.Z.ToString();
-                        //
-                        if (preTensionLoads.TryGetValue(name, out preTensionLoadsList)) preTensionLoadsList.Add(ptl);
-                        else preTensionLoads.Add(name, new List<PreTensionLoad>() { ptl });
-                    }
-                }
-            }
+            OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads;
+            GetPretensionLoads(model, out preTensionLoads);
             // Prepare reference points
-            Dictionary<string, int[]> referencePointsNodeIds = new Dictionary<string, int[]>();
-            if (model.Mesh != null)
-            {
-                // Fill reference point nodes
-                int id = model.Mesh.MaxNodeId;
-                foreach (var entry in model.Mesh.ReferencePoints)
-                {
-                    referencePointsNodeIds.Add(entry.Key, new int[] { id + 1, id + 2 });
-                    id += 2;
-                }
-                foreach (var entry in preTensionLoads)
-                {
-                    referencePointsNodeIds.Add(entry.Key, new int[] { id + 1 });
-                    id++;
-                }
-            }
+            Dictionary<string, int[]> referencePointsNodeIds;
+            GetReferencePoints(model, preTensionLoads, out referencePointsNodeIds);
             // Prepare point springs
             List<CalElement> springElements;
             List<CalElementSet> springElementSets;
@@ -186,6 +157,47 @@ namespace FileInOut.Output
             //
             return keywords;
         }
+        static private void GetPretensionLoads(FeModel model, out OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads)
+        {
+            string name;
+            List<PreTensionLoad> preTensionLoadsList;
+            preTensionLoads =
+                new OrderedDictionary<string, List<PreTensionLoad>>("Pretension Loads", StringComparer.OrdinalIgnoreCase);
+            foreach (var step in model.StepCollection.StepsList)
+            {
+                foreach (var entry in step.Loads)
+                {
+                    if (entry.Value is PreTensionLoad ptl)
+                    {
+                        name = ptl.SurfaceName;
+                        if (!ptl.AutoComputeDirection) name += "@" + ptl.X.ToString() + ptl.Y.ToString() + ptl.Z.ToString();
+                        //
+                        if (preTensionLoads.TryGetValue(name, out preTensionLoadsList)) preTensionLoadsList.Add(ptl);
+                        else preTensionLoads.Add(name, new List<PreTensionLoad>() { ptl });
+                    }
+                }
+            }
+        }
+        static private void GetReferencePoints(FeModel model, OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads,
+                                               out Dictionary<string, int[]> referencePointsNodeIds)
+        {
+            referencePointsNodeIds = new Dictionary<string, int[]>();
+            if (model.Mesh != null)
+            {
+                // Fill reference point nodes
+                int id = model.Mesh.MaxNodeId;
+                foreach (var entry in model.Mesh.ReferencePoints)
+                {
+                    referencePointsNodeIds.Add(entry.Key, new int[] { id + 1, id + 2 });
+                    id += 2;
+                }
+                foreach (var entry in preTensionLoads)
+                {
+                    referencePointsNodeIds.Add(entry.Key, new int[] { id + 1 });
+                    id++;
+                }
+            }
+        }
         static private void GetPointSprings(FeModel model, Dictionary<string, int[]> referencePointsNodeIds,
                                             out List<CalElement> springElements,
                                             out List<CalElementSet> springElementSets,
@@ -208,7 +220,7 @@ namespace FileInOut.Output
                 List<FeElement> newElements;
                 List<FeElement> oneSpringElements;
                 HashSet<string> elementSetNames = new HashSet<string>(model.Mesh.ElementSets.Keys);
-                    
+                //
                 elementSetNames.UnionWith(model.Mesh.Parts.Keys);
                 // Collect point and surface springs
                 Dictionary<string, PointSpring[]> activeSprings = new Dictionary<string, PointSpring[]>();
