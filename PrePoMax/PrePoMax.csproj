@@ -292,6 +292,7 @@
     <Compile Include="Forms\11_MeshSetup\ViewMeshSetupItem.cs" />
     <Compile Include="Forms\31_Material\ViewSlipWear.cs" />
     <Compile Include="Forms\32_Section\ViewMembraneSection.cs" />
+    <Compile Include="Forms\33_Constraint\ViewCompressionOnly.cs" />
     <Compile Include="Forms\33_Constraint\ViewSpring.cs" />
     <Compile Include="Forms\33_Constraint\ViewSurfaceSpring.cs" />
     <Compile Include="Forms\36_SearchContactPairs\FrmSearchContactPairs.cs">

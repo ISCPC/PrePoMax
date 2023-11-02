@@ -303,6 +303,10 @@ namespace CaeModel
                 {
                     valid = ss.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsValidKey(ss.RegionName);
                 }
+                else if (constraint is CompressionOnly co)
+                {
+                    valid = co.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsValidKey(co.RegionName);
+                }
                 else if (constraint is RigidBody rb)
                 {
                     valid = rb.ReferencePointName != null

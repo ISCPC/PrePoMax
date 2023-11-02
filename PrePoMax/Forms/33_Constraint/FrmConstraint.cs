@@ -31,6 +31,7 @@ namespace PrePoMax.Forms
             {
                 if (value is PointSpring ps) _viewConstraint = new ViewPointSpring(ps.DeepClone());
                 else if (value is SurfaceSpring ss) _viewConstraint = new ViewSurfaceSpring(ss.DeepClone());
+                else if (value is CompressionOnly co) _viewConstraint = new ViewCompressionOnly(co.DeepClone());
                 else if (value is RigidBody rb) _viewConstraint = new ViewRigidBody(rb.DeepClone());
                 else if (value is Tie tie) _viewConstraint = new ViewTie(tie.DeepClone());
                 else throw new NotImplementedException();
@@ -56,14 +57,23 @@ namespace PrePoMax.Forms
             this.cmsPropertyGrid.SuspendLayout();
             this.SuspendLayout();
             // 
+            // gbType
+            // 
+            this.gbType.Size = new System.Drawing.Size(310, 100);
+            // 
+            // lvTypes
+            // 
+            this.lvTypes.Size = new System.Drawing.Size(298, 72);
+            // 
             // gbProperties
             // 
-            this.gbProperties.Size = new System.Drawing.Size(310, 362);
+            this.gbProperties.Location = new System.Drawing.Point(12, 118);
+            this.gbProperties.Size = new System.Drawing.Size(310, 352);
             // 
             // propertyGrid
             // 
             this.propertyGrid.ContextMenuStrip = this.cmsPropertyGrid;
-            this.propertyGrid.Size = new System.Drawing.Size(298, 334);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 324);
             // 
             // btnOK
             // 
@@ -82,12 +92,12 @@ namespace PrePoMax.Forms
             this.cmsPropertyGrid.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiSwapMasterSlave});
             this.cmsPropertyGrid.Name = "cmsPropertyGrid";
-            this.cmsPropertyGrid.Size = new System.Drawing.Size(173, 26);
+            this.cmsPropertyGrid.Size = new System.Drawing.Size(174, 26);
             // 
             // tsmiSwapMasterSlave
             // 
             this.tsmiSwapMasterSlave.Name = "tsmiSwapMasterSlave";
-            this.tsmiSwapMasterSlave.Size = new System.Drawing.Size(172, 22);
+            this.tsmiSwapMasterSlave.Size = new System.Drawing.Size(173, 22);
             this.tsmiSwapMasterSlave.Text = "Swap Master/Slave";
             this.tsmiSwapMasterSlave.Click += new System.EventHandler(this.tsmiSwapMasterSlave_Click);
             // 
@@ -131,6 +141,13 @@ namespace PrePoMax.Forms
                     _controller.Selection.EnableShellEdgeFaceSelection = true;
                     // 2D
                     if ((vss.GetBase() as SurfaceSpring).TwoD) _controller.Selection.LimitSelectionToShellEdges = true;
+                }
+                else if (itemTag is ViewCompressionOnly vco)
+                {
+                    _viewConstraint = vco;
+                    _controller.Selection.EnableShellEdgeFaceSelection = true;
+                    // 2D
+                    if ((vco.GetBase() as CompressionOnly).TwoD) _controller.Selection.LimitSelectionToShellEdges = true;
                 }
                 else if (itemTag is ViewRigidBody vrd)
                 {
@@ -196,6 +213,12 @@ namespace PrePoMax.Forms
                 //
                 if (ss.GetSpringStiffnessValues().Length == 0)
                     throw new CaeException("At least one stiffness must be larger than 0.");
+            }
+            //
+            if (Constraint is CompressionOnly co)
+            {
+                if (co.RegionType == RegionTypeEnum.Selection && (co.CreationIds == null || co.CreationIds.Length == 0))
+                    throw new CaeException("The compression only constraint region selection must contain at least one item.");
             }
             //
             if (Constraint is RigidBody rb && rb.RegionType == RegionTypeEnum.Selection &&
@@ -286,6 +309,7 @@ namespace PrePoMax.Forms
                 Constraint = _controller.GetConstraint(_constraintToEditName); // to clone                
                 if (Constraint is PointSpring ps && ps.CreationData != null) ps.RegionType = RegionTypeEnum.Selection;
                 else if (Constraint is SurfaceSpring ss && ss.CreationData != null) ss.RegionType = RegionTypeEnum.Selection;
+                else if (Constraint is CompressionOnly co && co.CreationData != null) co.RegionType = RegionTypeEnum.Selection;
                 else if (Constraint is RigidBody rb && rb.CreationData != null) rb.RegionType = RegionTypeEnum.Selection;
                 else if (Constraint is Tie tie)
                 {
@@ -321,6 +345,19 @@ namespace PrePoMax.Forms
                     else throw new NotSupportedException();
                     //
                     vss.PopulateDropDownLists(surfaceNames);
+                    // Context menu strip
+                    propertyGrid.ContextMenuStrip = null;
+                }
+                else if (_viewConstraint is ViewCompressionOnly vco)
+                {
+                    selectedId = lvTypes.FindItemWithText("Compression Only Support").Index;
+                    // Master
+                    if (vco.MasterRegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vco.MasterRegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref surfaceNames, vco.SurfaceName, s => { vco.SurfaceName = s; });
+                    else throw new NotSupportedException();
+                    //
+                    vco.PopulateDropDownLists(surfaceNames);
                     // Context menu strip
                     propertyGrid.ContextMenuStrip = null;
                 }
@@ -389,6 +426,15 @@ namespace PrePoMax.Forms
             vss.PopulateDropDownLists(surfaceNames);
             item.Tag = vss;
             vss.Color = color;
+            lvTypes.Items.Add(item);
+            // Compression only support
+            item = new ListViewItem("Compression Only Support");
+            CompressionOnly compressionOnly = new CompressionOnly(GetConstraintName("Compression_Only_Support"),
+                                                                  "", RegionTypeEnum.Selection, twoD);
+            ViewCompressionOnly vco = new ViewCompressionOnly(compressionOnly);
+            vco.PopulateDropDownLists(surfaceNames);
+            item.Tag = vco;
+            vco.Color = color;
             lvTypes.Items.Add(item);
             // Rigid body
             item = new ListViewItem("Rigid Body");
@@ -476,6 +522,11 @@ namespace PrePoMax.Forms
                     // Master
                     HighlightRegion(ss.MasterRegionType, ss.MasterRegionName, ss.CreationData, true, false);
                 }
+                else if (Constraint is CompressionOnly co)
+                {
+                    // Master
+                    HighlightRegion(co.MasterRegionType, co.MasterRegionName, co.CreationData, true, false);
+                }
                 else if (Constraint is RigidBody rb)
                 {
                     // Master
@@ -544,6 +595,8 @@ namespace PrePoMax.Forms
                     ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
                 else if (Constraint is SurfaceSpring ss && ss.RegionType == RegionTypeEnum.Selection)
                     ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+                else if (Constraint is CompressionOnly co && co.RegionType == RegionTypeEnum.Selection)
+                    ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
                 else if (Constraint is RigidBody rb && rb.RegionType == RegionTypeEnum.Selection)
                 {
                     ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
@@ -578,6 +631,11 @@ namespace PrePoMax.Forms
             else if (Constraint is SurfaceSpring ss)
             {
                 if (ss.RegionType == RegionTypeEnum.Selection) _controller.SetSelectItemToSurface();
+                else _controller.SetSelectByToOff();
+            }
+            else if (Constraint is CompressionOnly co)
+            {
+                if (co.RegionType == RegionTypeEnum.Selection) _controller.SetSelectItemToSurface();
                 else _controller.SetSelectByToOff();
             }
             else if (Constraint is RigidBody rb)
@@ -629,6 +687,15 @@ namespace PrePoMax.Forms
                     {
                         ss.CreationIds = ids;
                         ss.CreationData = _controller.Selection.DeepClone();
+                        changed = true;
+                    }
+                }
+                else if (Constraint is CompressionOnly co)
+                {
+                    if (co.RegionType == RegionTypeEnum.Selection)
+                    {
+                        co.CreationIds = ids;
+                        co.CreationData = _controller.Selection.DeepClone();
                         changed = true;
                     }
                 }
@@ -691,6 +758,11 @@ namespace PrePoMax.Forms
                 else if (Constraint is SurfaceSpring ss)
                 {
                     if (ss.CreationData != null) return ss.CreationData.IsGeometryBased();
+                    else return true;
+                }
+                else if (Constraint is CompressionOnly co)
+                {
+                    if (co.CreationData != null) return co.CreationData.IsGeometryBased();
                     else return true;
                 }
                 else if (Constraint is RigidBody rb)

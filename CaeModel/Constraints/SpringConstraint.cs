@@ -26,7 +26,6 @@ namespace CaeModel
         public int[] CreationIds { get { return MasterCreationIds; } set { MasterCreationIds = value; } }
         public Selection CreationData { get { return MasterCreationData; } set { MasterCreationData = value; } }
         //
-        
         public EquationContainer K1 { get { return _k1; } set { SetK1(value); } }
         public EquationContainer K2 { get { return _k2; } set { SetK2(value); } }
         public EquationContainer K3 { get { return _k3; } set { SetK3(value); } }
@@ -99,16 +98,6 @@ namespace CaeModel
             if (value < 0 || TwoD) return 0;
             else return value;
         }
-        // IContainsEquations
-        public override void CheckEquations()
-        {
-            base.CheckEquations();
-            //
-            _k1.CheckEquation();
-            _k2.CheckEquation();
-            _k3.CheckEquation();
-        }
-
         public int[] GetSpringDirections()
         {
             List<int> directions = new List<int>();
@@ -124,6 +113,15 @@ namespace CaeModel
             if (_k2.Value > 0) values.Add(_k2.Value);
             if (_k3.Value > 0) values.Add(_k3.Value);
             return values.ToArray();
+        }
+        // IContainsEquations
+        public override void CheckEquations()
+        {
+            base.CheckEquations();
+            //
+            _k1.CheckEquation();
+            _k2.CheckEquation();
+            _k3.CheckEquation();
         }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)

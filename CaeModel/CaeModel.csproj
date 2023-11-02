@@ -133,7 +133,7 @@
     <Compile Include="Sections\MembraneSection.cs" />
     <Compile Include="Sections\ShellSection.cs" />
     <Compile Include="Constraints\PointSpring.cs" />
-    <Compile Include="Steps\BoundaryConditions\CompressionOnlyBC.cs" />
+    <Compile Include="Constraints\CompressionOnly.cs" />
     <Compile Include="Steps\BoundaryConditions\TemperatureBC.cs" />
     <Compile Include="Steps\BoundaryConditions\FixedBC.cs" />
     <Compile Include="Steps\BoundaryConditions\SubmodelBC.cs" />

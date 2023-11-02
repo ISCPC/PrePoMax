@@ -6487,6 +6487,27 @@ namespace PrePoMax
                     ss.CreationIds = null;
                 }
             }
+            else if (constraint is CompressionOnly co)
+            {
+                // Surface
+                if (co.RegionType == RegionTypeEnum.Selection)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces,
+                                                           constraint.Name + CaeMesh.Globals.MasterNameSuffix);
+                    FeSurface surface = new FeSurface(name, co.CreationIds, co.CreationData.DeepClone());
+                    surface.Internal = true;
+                    AddSurface(surface, update);
+                    //
+                    co.RegionName = name;
+                    co.RegionType = RegionTypeEnum.SurfaceName;
+                }
+                // Clear the creation data if not used
+                else
+                {
+                    co.CreationData = null;
+                    co.CreationIds = null;
+                }
+            }
             else if (constraint is RigidBody rb)
             {
                 // Node set
@@ -11649,6 +11670,25 @@ namespace PrePoMax
                     // Symbol
                     if (count > 0) DrawSpringSymbols(prefixName, ss, coor, masterColor, symbolSize, symbolLayer);
                 }
+                else if (constraint is CompressionOnly co)
+                {
+                    if (!_model.Mesh.Surfaces.ContainsKey(co.MasterRegionName)) return;
+                    //
+                    count += DrawSurface(prefixName, co.MasterRegionName, masterColor, layer, true, false, onlyVisible);
+                    if (layer == vtkRendererLayer.Selection)
+                        DrawSurfaceEdge(prefixName, co.MasterRegionName, masterColor, layer, true, false, onlyVisible);
+                    //
+                    if (count > 0)
+                    {
+                        // 2D
+                        //if (co.TwoD)
+                        //    DrawShellEdgeLoadSymbols(prefixName, dLoad.SurfaceName, dLoad.Magnitude.Value,
+                        //                             color, symbolSize, layer);
+                        // 3D
+                        //else 
+                            DrawCompressionOnlySymbols(prefixName, co, masterColor, symbolSize, layer);
+                    }
+                }
                 else if (constraint is RigidBody rb)
                 {
                     // Master
@@ -11796,6 +11836,67 @@ namespace PrePoMax
                 data.Geometry.Nodes.Normals = allNormals.ToArray();
                 ApplyLighting(data);
                 _form.AddOrientedSpringActor(data, symbolSize);
+            }
+        }
+        public void DrawCompressionOnlySymbols(string prefixName, CompressionOnly compressionOnly, Color color, int symbolSize,
+                                               vtkRendererLayer layer)
+        {
+            FeSurface surface = _model.Mesh.Surfaces[compressionOnly.MasterRegionName];
+            //
+            List<int> allElementIds = new List<int>();
+            List<FeFaceName> allElementFaceNames = new List<FeFaceName>();
+            List<double[]> allCoor = new List<double[]>();
+            double[] faceCenter;
+            FeElementSet elementSet;
+            foreach (var entry in surface.ElementFaces)     // entry:  S3; elementSetName
+            {
+                elementSet = _model.Mesh.ElementSets[entry.Value];
+                foreach (var elementId in elementSet.Labels)
+                {
+                    allElementIds.Add(elementId);
+                    allElementFaceNames.Add(entry.Key);
+                    _model.Mesh.GetElementFaceCenter(elementId, entry.Key, out faceCenter);
+                    allCoor.Add(faceCenter);
+                }
+            }
+            //
+            int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(allCoor.ToArray(), 6);
+            // Front shell face which is a S2 POS face works in the same way as a solid face
+            // Back shell face which is a S1 NEG must be inverted
+            int id;
+            double[] faceNormal;
+            bool shellElement;
+            double[][] distributedCoor = new double[distributedElementIds.Length][];
+            double[][] distributedLoadNormals = new double[distributedElementIds.Length][];
+            for (int i = 0; i < distributedElementIds.Length; i++)
+            {
+                id = distributedElementIds[i];
+                _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
+                                                          out faceNormal, out shellElement);
+                //
+                if (shellElement)
+                {
+                    faceNormal[0] *= -1;
+                    faceNormal[1] *= -1;
+                    faceNormal[2] *= -1;
+                }
+                //
+                distributedCoor[i] = faceCenter;
+                distributedLoadNormals[i] = faceNormal;
+            }
+            // Cones
+            if (allCoor.Count > 0)
+            {
+                vtkMaxActorData data = new vtkMaxActorData();
+                data.Name = prefixName;
+                data.Color = color;
+                data.Layer = layer;
+                data.Geometry.Nodes.Coor = distributedCoor.ToArray();
+                data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
+                data.SectionViewPossible = false;
+                ApplyLighting(data);
+                bool translate = true;
+                _form.AddOrientedDisplacementConstraintActor(data, symbolSize);
             }
         }
         // Contact pairs
@@ -14352,7 +14453,8 @@ namespace PrePoMax
             {
                 constraint = _model.Constraints[constraintName];
                 //
-                if (constraint is PointSpring || constraint is SurfaceSpring || constraint is RigidBody || constraint is Tie)
+                if (constraint is PointSpring || constraint is SurfaceSpring || constraint is CompressionOnly ||
+                    constraint is RigidBody || constraint is Tie)
                 {
                     DrawConstraint(constraint, Color.Red, Color.Red, symbolSize, nodeSize, vtkRendererLayer.Selection, false);
                 }

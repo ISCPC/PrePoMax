@@ -11,31 +11,36 @@ using System.Drawing;
 namespace CaeModel
 {
     [Serializable]
-    public class CompressionOnlyBC : BoundaryCondition, ISerializable
+    public class CompressionOnly : Constraint, ISerializable
     {
         // Variables                                                                                                                
-        private EquationContainer _springStiffness;
-        private EquationContainer _tensileForceAtNegInfinity;
+        private EquationContainer _springStiffness;                 //ISerializable
+        private EquationContainer _tensileForceAtNegativeInfinity;  //ISerializable
 
 
         // Properties                                                                                                               
+        public string RegionName { get { return MasterRegionName; } set { MasterRegionName = value; } }
+        public RegionTypeEnum RegionType { get { return MasterRegionType; } set { MasterRegionType = value; } }
+        //
+        public int[] CreationIds { get { return MasterCreationIds; } set { MasterCreationIds = value; } }
+        public Selection CreationData { get { return MasterCreationData; } set { MasterCreationData = value; } }
+        //
         public EquationContainer SpringStiffness { get { return _springStiffness; } set { SetSpringStiffness(value); } }
-        public EquationContainer TensileForceAtNegInfinity
+        public EquationContainer TensileForceAtNegativeInfinity
         {
-            get { return _tensileForceAtNegInfinity; }
-            set { SetTensileForceAtNegInfinity(value); }
+            get { return _tensileForceAtNegativeInfinity; }
+            set { SetTensileForceAtNegativeInfinity(value); }
         }
 
 
         // Constructors                                                                                                             
-        public CompressionOnlyBC(string name, string regionName, RegionTypeEnum regionType, bool twoD)
-            : base(name, regionName, regionType, twoD, false, 0)
+        public CompressionOnly(string name, string regionName, RegionTypeEnum regionType, bool twoD)
+            : base(name, regionName, regionType, "", RegionTypeEnum.None, twoD)
         {
-
-            SpringStiffness = new EquationContainer(typeof(StringForcePerLengthConverter), 10E12);
-            TensileForceAtNegInfinity = new EquationContainer(typeof(StringForceConverter), 10E-3);
+            SpringStiffness = new EquationContainer(typeof(StringForcePerLengthConverter), 1E12);
+            TensileForceAtNegativeInfinity = new EquationContainer(typeof(StringForceConverter), 1E-3);
         }
-        public CompressionOnlyBC(SerializationInfo info, StreamingContext context)
+        public CompressionOnly(SerializationInfo info, StreamingContext context)
            : base(info, context)
         {
             foreach (SerializationEntry entry in info)
@@ -46,7 +51,7 @@ namespace CaeModel
                         SetSpringStiffness((EquationContainer)entry.Value, false);
                         break;
                     case "_tensileForceAtNegInfinity":
-                        SetTensileForceAtNegInfinity((EquationContainer)entry.Value, false);
+                        SetTensileForceAtNegativeInfinity((EquationContainer)entry.Value, false);
                         break;
                     default:
                         break;
@@ -60,9 +65,9 @@ namespace CaeModel
         {
             EquationContainer.SetAndCheck(ref _springStiffness, value, null, checkEquation);
         }
-        private void SetTensileForceAtNegInfinity(EquationContainer value, bool checkEquation = true)
+        private void SetTensileForceAtNegativeInfinity(EquationContainer value, bool checkEquation = true)
         {
-            EquationContainer.SetAndCheck(ref _tensileForceAtNegInfinity, value, null, checkEquation);
+            EquationContainer.SetAndCheck(ref _tensileForceAtNegativeInfinity, value, null, checkEquation);
         }
         // IContainsEquations
         public override void CheckEquations()
@@ -70,7 +75,7 @@ namespace CaeModel
             base.CheckEquations();
             //
             _springStiffness.CheckEquation();
-            _tensileForceAtNegInfinity.CheckEquation();
+            _tensileForceAtNegativeInfinity.CheckEquation();
         }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -79,7 +84,7 @@ namespace CaeModel
             base.GetObjectData(info, context);
             //
             info.AddValue("_springStiffness", _springStiffness, typeof(EquationContainer));
-            info.AddValue("_tensileForceAtNegInfinity", _tensileForceAtNegInfinity, typeof(EquationContainer));
+            info.AddValue("_tensileForceAtNegInfinity", _tensileForceAtNegativeInfinity, typeof(EquationContainer));
         }
     }
 }
