@@ -1004,6 +1004,6 @@
   <PropertyGroup>
     <PostBuildEvent>rd /s /q "de" "en" "es" "fr" "hu" "it" "ja" "pt" "ru" "sk" "sv" "tr" "zh-cn" "zh-tw"
 IF NOT exist "$(TargetDir)lib\" ( mkdir "$(TargetDir)lib\")
-copy "C:\PrePoMax-master\GmshMesher\bin\x64\Debug\GmshMesher.exe" "C:\PrePoMax-master\PrePoMax\bin\x64\Debug\lib"</PostBuildEvent>
+copy "$(SolutionDir)GmshMesher\bin\x64\$(ConfigurationName)\GmshMesher.exe" "$(TargetDir)lib"</PostBuildEvent>
   </PropertyGroup>
 </Project>
