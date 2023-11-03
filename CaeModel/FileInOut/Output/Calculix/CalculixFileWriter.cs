@@ -10,6 +10,7 @@ using FileInOut.Output.Calculix;
 using CaeGlobals;
 using Microsoft.SqlServer.Server;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace FileInOut.Output
 {
@@ -71,6 +72,11 @@ namespace FileInOut.Output
             // Collect pre-tension loads
             OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads;
             GetPretensionLoads(model, out preTensionLoads);
+            // Collect compression only constraints
+            List<CompressionOnly> compressionOnlyConstraints;
+            GetCompressionOnlyConstraintData(model);
+            // Prepare additional nodes and node sets
+            
             // Prepare reference points
             Dictionary<string, int[]> referencePointsNodeIds;
             GetReferencePoints(model, preTensionLoads, out referencePointsNodeIds);
@@ -176,6 +182,80 @@ namespace FileInOut.Output
                         else preTensionLoads.Add(name, new List<PreTensionLoad>() { ptl });
                     }
                 }
+            }
+        }
+        static private void GetCompressionOnlyConstraintData(FeModel model)
+        {
+            HashSet<int> elementIdsHash = new HashSet<int>();
+
+            bool shellEdgeFace;
+            bool shellElement;
+            double[] faceNormal;
+
+            FeElement element;
+            FeElementSet elementSet;
+            FeSurface surface;
+
+            Vec3D normalVec;
+            List<Vec3D> nodeNormals;
+            Dictionary<int, List<Vec3D>> nodeIdNodeNormals = new Dictionary<int, List<Vec3D>>();
+
+            foreach (var constraintEntry in model.Constraints)
+            {
+                if (constraintEntry.Value is CompressionOnly co)
+                {
+                    if (co.Active && co.Valid)
+                    {
+                        surface = model.Mesh.Surfaces[co.MasterRegionName];
+                        //
+                        foreach (var entry in surface.ElementFaces)
+                        {
+                            elementSet = model.Mesh.ElementSets[entry.Value];
+                            foreach (var elementId in elementSet.Labels)
+                            {
+                                if (elementIdsHash.Contains(elementId))
+                                    throw new CaeException("Element id: " + elementId +
+                                                           " has more than one compression only constraint defined.");
+                                //
+                                element = model.Mesh.Elements[elementId];
+                                elementIdsHash.Add(elementId);
+                                //
+                                model.Mesh.GetElementFaceCenterAndNormal(elementId, entry.Key, out _, out faceNormal,
+                                                                         out shellElement);
+                                // Invert normal
+                                shellEdgeFace = shellElement && entry.Key != FeFaceName.S1 && entry.Key != FeFaceName.S2;
+                                if (shellElement && !shellEdgeFace)
+                                {
+                                    faceNormal[0] *= -1;
+                                    faceNormal[1] *= -1;
+                                    faceNormal[2] *= -1;
+                                }
+                                normalVec = new Vec3D(faceNormal);
+                                //
+                                foreach (var nodeId in element.NodeIds)
+                                {
+                                    if (nodeIdNodeNormals.TryGetValue(nodeId, out nodeNormals)) nodeNormals.Add(normalVec);
+                                    else nodeIdNodeNormals.Add(nodeId, new List<Vec3D>() { normalVec });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            //
+            List<int> nodeIds;
+            double[] normal;
+            CompareDoubleArray comparer = new CompareDoubleArray();
+            Dictionary<double[], List<int>> normalNodeIds = new Dictionary<double[], List<int>>(comparer);
+            foreach (var entry in nodeIdNodeNormals)
+            {
+                normalVec = new Vec3D();
+                foreach (var normalEntry in entry.Value) normalVec += normalEntry;
+                normalVec.Normalize();
+                normal = normalVec.CoorRounded(4);
+                //
+                if (normalNodeIds.TryGetValue(normal, out nodeIds)) nodeIds.Add(entry.Key);
+                else normalNodeIds.Add(normal, new List<int>() { entry.Key });
             }
         }
         static private void GetReferencePoints(FeModel model, OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads,
@@ -725,6 +805,7 @@ namespace FileInOut.Output
                     {
                         if (entry.Value is PointSpring) { } // this contraint is split into elements and a section
                         else if (entry.Value is SurfaceSpring) { } // this contraint is split into point springs
+                        else if (entry.Value is CompressionOnly) { } // this contraint is split into GAPUNI elements and GAP section
                         else if (entry.Value is RigidBody rb)
                         {
                             string surfaceNodeSetName = null;

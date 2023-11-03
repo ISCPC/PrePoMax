@@ -3983,7 +3983,8 @@ namespace PrePoMax
             string argument = Globals.GmshDataFileName;
             //
             bool jobCompleted;
-            if (System.Diagnostics.Debugger.IsAttached)
+            bool debuggerAttached = System.Diagnostics.Debugger.IsAttached;
+            if (debuggerAttached)
             {
                 GmshMesher mesher = new GmshMesher(gmshData, _form.WriteDataToOutput);
                 string error = mesher.CreateMesh();
@@ -11865,6 +11866,7 @@ namespace PrePoMax
             // Back shell face which is a S1 NEG must be inverted
             int id;
             double[] faceNormal;
+            bool shellEdgeFace;
             bool shellElement;
             double[][] distributedCoor = new double[distributedElementIds.Length][];
             double[][] distributedLoadNormals = new double[distributedElementIds.Length][];
@@ -11873,8 +11875,10 @@ namespace PrePoMax
                 id = distributedElementIds[i];
                 _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
                                                           out faceNormal, out shellElement);
-                //
-                if (shellElement)
+                // Invert normal
+                shellEdgeFace = shellElement && allElementFaceNames[id] != FeFaceName.S1 &&
+                                allElementFaceNames[id] != FeFaceName.S2;
+                if (shellElement && ! shellEdgeFace)
                 {
                     faceNormal[0] *= -1;
                     faceNormal[1] *= -1;
@@ -13153,7 +13157,7 @@ namespace PrePoMax
             if (symbolCoor.Length > 0)
             {
                 double[][] normals = new double[symbolCoor.Length][];
-                for (int i = 0; i < symbolCoor.Length; i++) normals[i] = new double[] { 1 ,0, 0};
+                for (int i = 0; i < symbolCoor.Length; i++) normals[i] = new double[] { 1, 0, 0};
                 //
                 vtkMaxActorData data = new vtkMaxActorData();
                 data.Name = prefixName;

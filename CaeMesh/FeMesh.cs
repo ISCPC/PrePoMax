@@ -4818,6 +4818,11 @@ namespace CaeMesh
             //
             return true;
         }
+        public int[] GetSurfaceNodeIds(string surfaceName)
+        {
+            string nodeSetName = _surfaces[surfaceName].NodeSetName;
+            return _nodeSets[nodeSetName].Labels;
+        }
         public int[] GetSurfaceNodeIds(int elementId, int[] cellFaceGlobalNodeIds)
         {
             BasePart part;

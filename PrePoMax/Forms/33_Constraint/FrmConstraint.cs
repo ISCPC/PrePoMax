@@ -350,7 +350,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewConstraint is ViewCompressionOnly vco)
                 {
-                    selectedId = lvTypes.FindItemWithText("Compression Only Support").Index;
+                    selectedId = lvTypes.FindItemWithText("Compression Only Constraint").Index;
                     // Master
                     if (vco.MasterRegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vco.MasterRegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -428,8 +428,8 @@ namespace PrePoMax.Forms
             vss.Color = color;
             lvTypes.Items.Add(item);
             // Compression only support
-            item = new ListViewItem("Compression Only Support");
-            CompressionOnly compressionOnly = new CompressionOnly(GetConstraintName("Compression_Only_Support"),
+            item = new ListViewItem("Compression Only Constraint");
+            CompressionOnly compressionOnly = new CompressionOnly(GetConstraintName("Compression_Only_Constraint"),
                                                                   "", RegionTypeEnum.Selection, twoD);
             ViewCompressionOnly vco = new ViewCompressionOnly(compressionOnly);
             vco.PopulateDropDownLists(surfaceNames);

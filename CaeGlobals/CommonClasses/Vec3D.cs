@@ -74,7 +74,12 @@ namespace CaeGlobals
         {
             return new Vec3D(this);
         }
-
+        public double[] CoorRounded(int numDigits)
+        {
+            return new double[] { Math.Round(X, numDigits),
+                                  Math.Round(Y, numDigits),
+                                  Math.Round(Z, numDigits) };
+        }
 
         #region STATIC UTILITIES
 
