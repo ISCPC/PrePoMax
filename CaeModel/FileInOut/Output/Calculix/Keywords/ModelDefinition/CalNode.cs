@@ -14,17 +14,21 @@ namespace FileInOut.Output.Calculix
         // Variables                                                                                                                
         private IDictionary<string, FeReferencePoint> _referencePoints;
         private IDictionary<int, FeNode> _nodes;
+        private Dictionary<int, FeNode> _additionalNodes;
         private ModelSpaceEnum _modelSpace;
         private IDictionary<string, int[]> _referencePointsNodeIds;
         private Dictionary<int, double[]> _deformations;
 
 
         // Constructor                                                                                                              
-        public CalNode(FeModel model, IDictionary<string, int[]> referencePointsNodeIds,
+        public CalNode(FeModel model, List<FeNode> additionalNodes,
+                       IDictionary<string, int[]> referencePointsNodeIds,
                        Dictionary<int, double[]> deformations)
         {
             _referencePoints = model.Mesh.ReferencePoints;
             _nodes = model.Mesh.Nodes;
+            _additionalNodes = new Dictionary<int, FeNode>();
+            foreach (var node in additionalNodes) _additionalNodes.Add(node.Id, node);
             _modelSpace = model.Properties.ModelSpace;
             _referencePointsNodeIds = referencePointsNodeIds;
             _deformations = deformations;
@@ -41,28 +45,11 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            FeNode node;
-            double[] def;
             StringBuilder sb = new StringBuilder();
-            List<int> sortedIds = _nodes.Keys.ToList();
-            sortedIds.Sort();
-            foreach (int nodeId in sortedIds)
-            {
-                node = _nodes[nodeId];
-                //
-                if (_deformations != null && _deformations.TryGetValue(nodeId, out def))
-                {
-                    node.X += def[0];
-                    node.Y += def[1];
-                    node.Z += def[2];
-                }
-                //
-                if (_modelSpace == ModelSpaceEnum.ThreeD)
-                    sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", node.Id, node.X, node.Y, node.Z).AppendLine();
-                else if (_modelSpace.IsTwoD())
-                    sb.AppendFormat("{0}, {1:E8}, {2:E8}", node.Id, node.X, node.Y).AppendLine();
-                else throw new NotSupportedException();
-            }
+            //
+            WriteNodes(sb, _nodes);
+            //
+            WriteNodes(sb, _additionalNodes);
             //
             FeReferencePoint rp;
             foreach (var entry in _referencePointsNodeIds)
@@ -96,6 +83,31 @@ namespace FileInOut.Output.Calculix
                 else throw new NotSupportedException();
             }
             return sb.ToString();
+        }
+        //
+        private void WriteNodes(StringBuilder sb, IDictionary<int, FeNode> nodes)
+        {
+            FeNode node;
+            double[] def;
+            List<int> sortedIds = nodes.Keys.ToList();
+            sortedIds.Sort();
+            foreach (int nodeId in sortedIds)
+            {
+                node = nodes[nodeId];
+                //
+                if (_deformations != null && _deformations.TryGetValue(nodeId, out def))
+                {
+                    node.X += def[0];
+                    node.Y += def[1];
+                    node.Z += def[2];
+                }
+                //
+                if (_modelSpace == ModelSpaceEnum.ThreeD)
+                    sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", node.Id, node.X, node.Y, node.Z).AppendLine();
+                else if (_modelSpace.IsTwoD())
+                    sb.AppendFormat("{0}, {1:E8}, {2:E8}", node.Id, node.X, node.Y).AppendLine();
+                else throw new NotSupportedException();
+            }
         }
     }
 }

@@ -9,6 +9,14 @@ namespace CaeMesh
 {
     // 2D                                                                                                                           
     [Serializable]
+    public enum FeElementTypeGap
+    {
+        [StandardValue("None", Visible = false)]
+        None = 0,
+        GAPUNI = 10,
+    }
+    //
+    [Serializable]
     public enum FeElementTypeSpring
     {
         [StandardValue("None", Visible = false)]

@@ -78,6 +78,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPhysicalConstants.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\InitialConditions\CalInitialVelocity.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Material\CalSlipWear.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Section\CalGapSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Section\CalMembraneSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Section\CalLinearSpringSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalGapConductance.cs" />
@@ -130,7 +131,9 @@
     <Compile Include="Materials\ElasticWithDensity.cs" />
     <Compile Include="ModelProperties.cs" />
     <Compile Include="Parameters\EquationParameter.cs" />
+    <Compile Include="Sections\GapSection.cs" />
     <Compile Include="Sections\MembraneSection.cs" />
+    <Compile Include="Sections\LinearSpringSection.cs" />
     <Compile Include="Sections\ShellSection.cs" />
     <Compile Include="Constraints\PointSpring.cs" />
     <Compile Include="Constraints\CompressionOnly.cs" />

@@ -69,22 +69,27 @@ namespace FileInOut.Output
             // Only keywords from the model, not user keywords
             // Allways add a title keyword to get all possible keyword types to the keyword editor
             //
+            int maxNodeId = model.Mesh.MaxNodeId;
+            int maxElementId = model.Mesh.MaxElementId;
+            List<FeNode> additionalNodes = new List<FeNode>();
+            List<FeNodeSet> additionalNodeSets = new List<FeNodeSet>();
+            List<CalElement> additionalElementKeywords = new List<CalElement>();
+            List<FeElementSet> additionalElementSets = new List<FeElementSet>();
+            List<Section> additionalSections = new List<Section>();
+            List<BoundaryCondition> additionalBoundaryConditions = new List<BoundaryCondition>();
             // Collect pre-tension loads
             OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads;
             GetPretensionLoads(model, out preTensionLoads);
             // Collect compression only constraints
-            List<CompressionOnly> compressionOnlyConstraints;
-            GetCompressionOnlyConstraintData(model);
-            // Prepare additional nodes and node sets
-            
+            GetCompressionOnlyConstraintData(model, ref maxNodeId, ref maxElementId, ref additionalNodes, ref additionalNodeSets,
+                                             ref additionalElementKeywords, ref additionalElementSets, ref additionalSections,
+                                             ref additionalBoundaryConditions);
             // Prepare reference points
             Dictionary<string, int[]> referencePointsNodeIds;
-            GetReferencePoints(model, preTensionLoads, out referencePointsNodeIds);
+            GetReferencePoints(model, preTensionLoads, ref maxNodeId, out referencePointsNodeIds);
             // Prepare point springs
-            List<CalElement> springElements;
-            List<CalElementSet> springElementSets;
-            List<CalLinearSpringSection> linearSpringSections;
-            GetPointSprings(model, referencePointsNodeIds, out springElements, out springElementSets, out linearSpringSections);
+            GetPointSprings(model, referencePointsNodeIds, ref maxElementId, ref additionalElementKeywords,
+                            ref additionalElementSets, ref additionalSections);
             //
             CalTitle title;
             List<CalculixKeyword> keywords = new List<CalculixKeyword>();
@@ -103,19 +108,19 @@ namespace FileInOut.Output
             // Nodes
             title = new CalTitle("Nodes", "");
             keywords.Add(title);
-            AppendNodes(model, referencePointsNodeIds, deformations, title);
+            AppendNodes(model, additionalNodes, referencePointsNodeIds, deformations, title);
             // Elements
             title = new CalTitle("Elements", "");
             keywords.Add(title);
-            AppendElements(model, springElements, title);
+            AppendElements(model, additionalElementKeywords, title);
             // Node sets
             title = new CalTitle("Node sets", "");
             keywords.Add(title);
-            AppendNodeSets(model, referencePointsNodeIds, title);
+            AppendNodeSets(model, additionalNodeSets, referencePointsNodeIds, title);
             // Element sets
             title = new CalTitle("Element sets", "");
             keywords.Add(title);
-            AppendElementSets(model, springElementSets, title);
+            AppendElementSets(model, additionalElementSets, title);
             // Surfaces
             title = new CalTitle("Surfaces", "");
             keywords.Add(title);
@@ -131,7 +136,7 @@ namespace FileInOut.Output
             // Sections
             title = new CalTitle("Sections", "");
             keywords.Add(title);
-            AppendSections(model, linearSpringSections, title);
+            AppendSections(model, additionalSections, title);
             // Pre-tension sections
             title = new CalTitle("Pre-tension sections", "");
             keywords.Add(title);
@@ -159,7 +164,7 @@ namespace FileInOut.Output
             // Steps
             title = new CalTitle("Steps", "");
             keywords.Add(title);
-            AppendSteps(model, referencePointsNodeIds, title);
+            AppendSteps(model, additionalBoundaryConditions, referencePointsNodeIds, title);
             //
             return keywords;
         }
@@ -184,22 +189,29 @@ namespace FileInOut.Output
                 }
             }
         }
-        static private void GetCompressionOnlyConstraintData(FeModel model)
+        static private void GetCompressionOnlyConstraintData(FeModel model, ref int maxNodeId, ref int maxElementId,
+                                                             ref List<FeNode> additionalNodes,
+                                                             ref List<FeNodeSet> additionalNodeSets,
+                                                             ref List<CalElement> additionalElementKeywords,
+                                                             ref List<FeElementSet> additionalElementSets,
+                                                             ref List<Section> additionalSections,
+                                                             ref List<BoundaryCondition> additionalBoundaryConditions)
         {
             HashSet<int> elementIdsHash = new HashSet<int>();
-
+            //
+            bool twoD = model.Properties.ModelSpace.IsTwoD();
             bool shellEdgeFace;
             bool shellElement;
             double[] faceNormal;
-
+            //
             FeElement element;
             FeElementSet elementSet;
             FeSurface surface;
-
+            //
             Vec3D normalVec;
             List<Vec3D> nodeNormals;
             Dictionary<int, List<Vec3D>> nodeIdNodeNormals = new Dictionary<int, List<Vec3D>>();
-
+            // Get all nodes and their normals
             foreach (var constraintEntry in model.Constraints)
             {
                 if (constraintEntry.Value is CompressionOnly co)
@@ -232,7 +244,7 @@ namespace FileInOut.Output
                                 }
                                 normalVec = new Vec3D(faceNormal);
                                 //
-                                foreach (var nodeId in element.NodeIds)
+                                foreach (var nodeId in element.GetNodeIdsFromFaceName(entry.Key))
                                 {
                                     if (nodeIdNodeNormals.TryGetValue(nodeId, out nodeNormals)) nodeNormals.Add(normalVec);
                                     else nodeIdNodeNormals.Add(nodeId, new List<Vec3D>() { normalVec });
@@ -242,7 +254,7 @@ namespace FileInOut.Output
                     }
                 }
             }
-            //
+            // Get a dictionary of all node ids that have the same normal
             List<int> nodeIds;
             double[] normal;
             CompareDoubleArray comparer = new CompareDoubleArray();
@@ -257,15 +269,61 @@ namespace FileInOut.Output
                 if (normalNodeIds.TryGetValue(normal, out nodeIds)) nodeIds.Add(entry.Key);
                 else normalNodeIds.Add(normal, new List<int>() { entry.Key });
             }
+            // Get nodes, elements, element sets, gap sections, boundary conditions
+            int count = 1;
+            int newNodeId = maxNodeId;
+            int newElementId = maxElementId;
+            List<int> elementIds;
+            string name;
+            FeNode node;
+            nodeIds = new List<int>();
+            LinearGapElement gapElement;
+            List<FeElement> elementsToAdd = new List<FeElement>();
+            foreach (var entry in normalNodeIds)
+            {
+                normal = entry.Key;
+                elementIds = new List<int>();
+                name = "Internal_Compression_Only_Constraint_ElementSet_" + count++;
+                //
+                foreach (var nodeId in entry.Value)
+                {
+                    newNodeId++;
+                    newElementId++;
+                    nodeIds.Add(newNodeId);
+                    //
+                    node = new FeNode(newNodeId, model.Mesh.Nodes[nodeId].Coor);
+                    additionalNodes.Add(node);
+                    gapElement = new LinearGapElement(newElementId, new int[] { newNodeId, nodeId });
+                    elementIds.Add(newElementId);
+                    elementsToAdd.Add(gapElement);
+                }
+                //
+                additionalElementSets.Add(new FeElementSet(name, elementIds.ToArray()));
+                additionalSections.Add(new GapSection("GapSection", name, 0, normal, twoD));
+            }
+            //
+            additionalElementKeywords.Add(new CalElement(FeElementTypeGap.GAPUNI.ToString(), null, elementsToAdd));
+            // Boundary conditions
+            name = "Internal_Compression_Only_Constraint_NodeSet_1";
+            additionalNodeSets.Add(new FeNodeSet(name, nodeIds.ToArray()));
+            DisplacementRotation dr = new DisplacementRotation("Compression_Only_BC", name, RegionTypeEnum.NodeSetName,
+                                                               twoD, false, 0);
+            dr.U1.SetEquationFromValue(0);
+            dr.U2.SetEquationFromValue(0);
+            dr.U3.SetEquationFromValue(0);
+            additionalBoundaryConditions.Add(dr);
+            //
+            maxNodeId = newNodeId;
+            maxElementId = newElementId;
         }
         static private void GetReferencePoints(FeModel model, OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads,
-                                               out Dictionary<string, int[]> referencePointsNodeIds)
+                                               ref int maxNodeId, out Dictionary<string, int[]> referencePointsNodeIds)
         {
             referencePointsNodeIds = new Dictionary<string, int[]>();
             if (model.Mesh != null)
             {
                 // Fill reference point nodes
-                int id = model.Mesh.MaxNodeId;
+                int id = maxNodeId;
                 foreach (var entry in model.Mesh.ReferencePoints)
                 {
                     referencePointsNodeIds.Add(entry.Key, new int[] { id + 1, id + 2 });
@@ -276,26 +334,25 @@ namespace FileInOut.Output
                     referencePointsNodeIds.Add(entry.Key, new int[] { id + 1 });
                     id++;
                 }
+                //
+                maxNodeId = id;
             }
         }
-        static private void GetPointSprings(FeModel model, Dictionary<string, int[]> referencePointsNodeIds,
-                                            out List<CalElement> springElements,
-                                            out List<CalElementSet> springElementSets,
-                                            out List<CalLinearSpringSection> linearSpringSections)
+        static private void GetPointSprings(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, ref int maxElementId,
+                                            ref List<CalElement> additionalElementKeywords,
+                                            ref List<FeElementSet> additionalElementSets,
+                                            ref List<Section> additionalSections)
         {
-            springElements = new List<CalElement>();
-            springElementSets = new List<CalElementSet>();
-            linearSpringSections = new List<CalLinearSpringSection>();
-            //
             if (model.Mesh != null)
             {
+                bool twoD = model.Properties.ModelSpace.IsTwoD();
                 int count;
                 int[] elementIds;
                 int[] refPointIds;
                 int[] directions;
                 double[] stiffnesses;
                 string name;
-                int elementId = model.Mesh.MaxElementId;
+                int elementId = maxElementId;
                 FeNodeSet nodeSet;
                 List<FeElement> newElements;
                 List<FeElement> oneSpringElements;
@@ -364,8 +421,9 @@ namespace FileInOut.Output
                             elementIds = new int[newElements.Count];
                             foreach (var element in newElements) elementIds[count++] = element.Id;
                             // Add items
-                            springElementSets.Add(new CalElementSet(new FeGroup(name, elementIds)));
-                            linearSpringSections.Add(new CalLinearSpringSection(name, directions[i], stiffnesses[i]));
+                            additionalElementSets.Add(new FeElementSet(name, elementIds));
+                            additionalSections.Add(new LinearSpringSection("LinearSpringSection", name, directions[i],
+                                                                           stiffnesses[i], twoD));
                             oneSpringElements.AddRange(newElements);
                         }
                     }
@@ -373,8 +431,10 @@ namespace FileInOut.Output
                     name = entry.Key + "_All";
                     if (elementSetNames.Contains(name)) name = elementSetNames.GetNextNumberedKey(name);
                     elementSetNames.Add(name);
-                    springElements.Add(new CalElement(FeElementTypeSpring.SPRING1.ToString(), name, oneSpringElements));
+                    additionalElementKeywords.Add(new CalElement(FeElementTypeSpring.SPRING1.ToString(), name, oneSpringElements));
                 }
+                //
+                maxElementId = elementId;
             }
         }
         static public bool AddUserKeywordByIndices(List<CalculixKeyword> keywords, int[] indices, CalculixKeyword userKeyword)
@@ -483,12 +543,13 @@ namespace FileInOut.Output
             CalSubmodel submodel = new CalSubmodel(model.Properties.GlobalResultsFileName, nodeSetNames);
             parent.AddKeyword(submodel);
         }
-        static private void AppendNodes(FeModel model, Dictionary<string, int[]> referencePointsNodeIds,
+        static private void AppendNodes(FeModel model, List<FeNode> additionalNodes,
+                                        Dictionary<string, int[]> referencePointsNodeIds,
                                         Dictionary<int, double[]> deformations, CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
-                CalNode node = new CalNode(model, referencePointsNodeIds, deformations);
+                CalNode node = new CalNode(model, additionalNodes, referencePointsNodeIds, deformations);
                 parent.AddKeyword(node);
             }
 
@@ -551,25 +612,22 @@ namespace FileInOut.Output
                 foreach (var additionalElementKeyword in additionalElements) parent.AddKeyword(additionalElementKeyword);
             }
         }
-        static private void AppendNodeSets(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
+        static private void AppendNodeSets(FeModel model, List<FeNodeSet> additionalNodeSets,
+                                           Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
                 HashSet<string> nodeSetNames = new HashSet<string>();
-                CalNodeSet calNodeSet;
-                foreach (var entry in model.Mesh.NodeSets)
-                {
-                    if (entry.Value.Active)
-                    {
-                        calNodeSet = new CalNodeSet(entry.Value);
-                        parent.AddKeyword(calNodeSet);
-                    }
-                    else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
-                }
+                //
+                foreach (var entry in model.Mesh.NodeSets) AppendNodeSet(entry.Value, parent);
+                nodeSetNames.UnionWith(model.Mesh.NodeSets.Keys);
+                //
+                foreach (var additionalNodeSet in additionalNodeSets) AppendNodeSet(additionalNodeSet, parent);
                 nodeSetNames.UnionWith(model.Mesh.NodeSets.Keys);
                 // Reference points
                 FeReferencePoint rp;
                 FeNodeSet rpNodeSet;
+                CalNodeSet calNodeSet;
                 foreach (var entry in referencePointsNodeIds)
                 {
                     if (model.Mesh.ReferencePoints.TryGetValue(entry.Key, out rp))
@@ -619,6 +677,16 @@ namespace FileInOut.Output
                 }
             }
         }
+        static private void AppendNodeSet(FeNodeSet nodeSet, CalculixKeyword parent)
+        {
+            CalNodeSet calNodeSet;
+            if (nodeSet.Active)
+            {
+                calNodeSet = new CalNodeSet(nodeSet);
+                parent.AddKeyword(calNodeSet);
+            }
+            else parent.AddKeyword(new CalDeactivated(nodeSet.Name));
+        }
         static private void AppendParts(FeModel model, CalculixKeyword parent)
         {
             if (model.Mesh != null)
@@ -635,23 +703,24 @@ namespace FileInOut.Output
                 }
             }
         }
-        static private void AppendElementSets(FeModel model, List<CalElementSet> additionalElementSets, CalculixKeyword parent)
+        static private void AppendElementSets(FeModel model, List<FeElementSet> additionalElementSets, CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
-                CalElementSet elementSet;
-                foreach (var entry in model.Mesh.ElementSets)
-                {
-                    if (entry.Value.Active)
-                    {
-                        elementSet = new CalElementSet(entry.Value, model);
-                        parent.AddKeyword(elementSet);
-                    }
-                }
+                foreach (var entry in model.Mesh.ElementSets) AppendElementSet(model, entry.Value, parent);
                 // Additional element sets
-                foreach (var additionalElementSet in additionalElementSets)
-                    parent.AddKeyword(additionalElementSet);
+                foreach (var entry in additionalElementSets) AppendElementSet(model, entry, parent);
             }
+        }
+        static private void AppendElementSet(FeModel model, FeElementSet elementSet, CalculixKeyword parent)
+        {
+            CalElementSet calElementSet;
+            if (elementSet.Active)
+            {
+                calElementSet = new CalElementSet(elementSet, model);
+                parent.AddKeyword(calElementSet);
+            }
+            else parent.AddKeyword(new CalDeactivated(elementSet.Name));
         }
         static private void AppendSurfaces(FeModel model, CalculixKeyword parent)
         {
@@ -669,9 +738,6 @@ namespace FileInOut.Output
                 }
             }
         }
-
-
-
         static private void AppendMaterials(FeModel model, CalculixKeyword parent, string[] materialNames = null)
         {
             CalMaterial material;
@@ -732,28 +798,27 @@ namespace FileInOut.Output
             }
             
         }
-        static private void AppendSections(FeModel model, List<CalLinearSpringSection> linearSpringSections,
-                                           CalculixKeyword parent)
+        static private void AppendSections(FeModel model, List<Section> additionalSections, CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
-                foreach (var entry in model.Sections)
-                {
-                    if (entry.Value.Active)
-                    {
-                        if (entry.Value is SolidSection ss) parent.AddKeyword(new CalSolidSection(ss));                        
-                        else if (entry.Value is ShellSection shs) parent.AddKeyword(new CalShellSection(shs));
-                        else if (entry.Value is MembraneSection ms) parent.AddKeyword(new CalMembraneSection(ms));
-                        else throw new NotImplementedException();
-                    }
-                    else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
-                }
-                //
-                foreach (var calLinearSpringSection in linearSpringSections)
-                {
-                    parent.AddKeyword(calLinearSpringSection);
-                }
+                foreach (var entry in model.Sections) AppendSection(entry.Value, parent);
+                // Additional sections
+                foreach (var section in additionalSections) AppendSection(section, parent);
             }
+        }
+        static private void AppendSection(Section section, CalculixKeyword parent)
+        {
+            if (section.Active)
+            {
+                if (section is LinearSpringSection lss) parent.AddKeyword(new CalLinearSpringSection(lss));
+                else if (section is GapSection gs) parent.AddKeyword(new CalGapSection(gs));
+                else if (section is SolidSection ss) parent.AddKeyword(new CalSolidSection(ss));
+                else if (section is ShellSection shs) parent.AddKeyword(new CalShellSection(shs));
+                else if (section is MembraneSection ms) parent.AddKeyword(new CalMembraneSection(ms));
+                else throw new NotImplementedException();
+            }
+            else parent.AddKeyword(new CalDeactivated(section.Name));
         }
         static private HashSet<string> MaterialNamesUsedInActiveSections(FeModel model)
         {
@@ -911,7 +976,8 @@ namespace FileInOut.Output
             }
         }
         //
-        static private void AppendSteps(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
+        static private void AppendSteps(FeModel model, List<BoundaryCondition> additionalBoundaryConditions,
+                                        Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
         {
             CalTitle title;
             HashSet<Type> loadTypes = model.StepCollection.GetAllLoadTypes();
@@ -1023,6 +1089,13 @@ namespace FileInOut.Output
                     if (step.Active && bcEntry.Value.Active)
                         AppendBoundaryCondition(model, step, bcEntry.Value, referencePointsNodeIds, title);
                     else title.AddKeyword(new CalDeactivated(bcEntry.Value.Name));
+                }
+                //
+                foreach (var additionalBoundaryCondition in additionalBoundaryConditions)
+                {
+                    if (step.Active && additionalBoundaryCondition.Active)
+                        AppendBoundaryCondition(model, step, additionalBoundaryCondition, referencePointsNodeIds, title);
+                    else title.AddKeyword(new CalDeactivated(additionalBoundaryCondition.Name));
                 }
                 // Loads
                 if (step.Active)

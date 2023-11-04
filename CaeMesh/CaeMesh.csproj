@@ -72,6 +72,7 @@
     <Compile Include="ContactSearch\ContactSurface.cs" />
     <Compile Include="ContactSearch\MasterSlaveItem.cs" />
     <Compile Include="Elements\0D\FeElement0D.cs" />
+    <Compile Include="Elements\1D\LinearGapElement.cs" />
     <Compile Include="Elements\1D\LinearSpringElement.cs" />
     <Compile Include="Elements\VtkCellType.cs" />
     <Compile Include="Enums\GeomCurveType.cs" />

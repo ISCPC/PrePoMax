@@ -10,19 +10,19 @@ using CaeGlobals;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalLinearSpringSection : CalculixKeyword
+    internal class CalGapSection : CalculixKeyword
     {
         // Variables                                                                                                                
-        private LinearSpringSection _linearSpringSection;
+        private GapSection _gapSection;
 
 
         // Properties                                                                                                               
 
 
         // Constructor                                                                                                              
-        public CalLinearSpringSection(LinearSpringSection linearSpringSection)
+        public CalGapSection(GapSection gapSection)
         {
-            _linearSpringSection = linearSpringSection;
+            _gapSection = gapSection;
         }
 
 
@@ -30,14 +30,17 @@ namespace FileInOut.Output.Calculix
         public override string GetKeywordString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("*Spring, Elset={0}{1}", _linearSpringSection.RegionName, Environment.NewLine);
+            sb.AppendFormat("*Gap, Elset={0}{1}", _gapSection.RegionName, Environment.NewLine);
             return sb.ToString();
         }
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("{0}{1}", _linearSpringSection.Direction, Environment.NewLine);
-            sb.AppendFormat("{0}{1}", _linearSpringSection.Stiffness.Value.ToCalculiX16String(true), Environment.NewLine);
+            sb.AppendFormat("{0}, {1}, {2}, {3}{4}", _gapSection.Clearance,
+                                                     _gapSection.Direction[0].ToCalculiX16String(),
+                                                     _gapSection.Direction[1].ToCalculiX16String(),
+                                                     _gapSection.Direction[2].ToCalculiX16String(),
+                                                     Environment.NewLine);
             return sb.ToString();
         }
     }
