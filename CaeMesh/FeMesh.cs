@@ -509,28 +509,6 @@ namespace CaeMesh
                     SetItemValidity(mr, valid, items);
                     if (!valid && mr.Active) invalidItems.Add("Mesh refinement: " + mr.Name);
                 }
-                else if (entry.Value is TetrahedralGmsh tg)
-                {
-                    valid = tg.Valid;              // this is set to invalid after deleting a part
-                    if (!valid) tg.Valid = true;   // set this to true to detect a change in validity
-                    //
-                    string[] partNames = GetPartNamesFromPartIds(tg.CreationIds);
-                    if (partNames == null || partNames.Length == 0) valid &= false;
-                    else
-                    {
-                        foreach (var partName in partNames)
-                        {
-                            if (!_parts.ContainsKey(partName))
-                            {
-                                valid &= false;
-                                break;
-                            }
-                        }
-                    }
-                    //
-                    SetItemValidity(tg, valid, items);
-                    if (!valid && tg.Active) invalidItems.Add("Tetrahedron gmsh: " + tg.Name);
-                }
                 else if (entry.Value is ShellGmsh sg)
                 {
                     valid = sg.Valid;              // this is set to invalid after deleting a part
@@ -552,6 +530,28 @@ namespace CaeMesh
                     //
                     SetItemValidity(sg, valid, items);
                     if (!valid && sg.Active) invalidItems.Add("Shell gmsh: " + sg.Name);
+                }
+                else if (entry.Value is TetrahedralGmsh tg)
+                {
+                    valid = tg.Valid;              // this is set to invalid after deleting a part
+                    if (!valid) tg.Valid = true;   // set this to true to detect a change in validity
+                    //
+                    string[] partNames = GetPartNamesFromPartIds(tg.CreationIds);
+                    if (partNames == null || partNames.Length == 0) valid &= false;
+                    else
+                    {
+                        foreach (var partName in partNames)
+                        {
+                            if (!_parts.ContainsKey(partName))
+                            {
+                                valid &= false;
+                                break;
+                            }
+                        }
+                    }
+                    //
+                    SetItemValidity(tg, valid, items);
+                    if (!valid && tg.Active) invalidItems.Add("Tetrahedron gmsh: " + tg.Name);
                 }
                 else if (entry.Value is TransfiniteMesh tm)
                 {
@@ -6912,7 +6912,8 @@ namespace CaeMesh
             //
             foreach (var entry in _meshSetupItems)
             {
-                if (entry.Value is MeshingParameters || entry.Value is TetrahedralGmsh || entry.Value is TransfiniteMesh)
+                if (entry.Value is MeshingParameters || entry.Value is ShellGmsh ||  entry.Value is TetrahedralGmsh ||
+                    entry.Value is TransfiniteMesh)
                 {
                     if (!(keepGeometrySelections && entry.Value.CreationData.IsGeometryBased()))
                     {
@@ -6935,7 +6936,7 @@ namespace CaeMesh
                         }
                     }
                 }
-                else if (entry.Value is FeMeshRefinement || entry.Value is ExtrudeMesh)
+                else if (entry.Value is FeMeshRefinement || entry.Value is ExtrudeMesh || entry.Value is RevolveMesh)
                 {
                     if (!(keepGeometrySelections && entry.Value.CreationData.IsGeometryBased()))
                     {
