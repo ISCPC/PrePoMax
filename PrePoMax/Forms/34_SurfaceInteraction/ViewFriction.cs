@@ -49,7 +49,7 @@ namespace PrePoMax.PropertyViews
             //
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             //
-            StringForcePerVolumeDefaultConverter.SetInitialValue = "100000 N/mm^3";
+            StringForcePerVolumeDefaultConverter.SetInitialValue = CaeModel.Friction.InitialStickSlope;
         }
 
 

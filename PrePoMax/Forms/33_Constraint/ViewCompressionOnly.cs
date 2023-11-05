@@ -36,7 +36,7 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(0, 10, "Spring stiffness")]
         [DescriptionAttribute("Value of the spring stiffness for the gap property definition.")]
-        [TypeConverter(typeof(EquationForcePerLengthConverter))]
+        [TypeConverter(typeof(EquationForcePerLengthDefaultConverter))]
         [Id(1, 3)]
         public virtual EquationString SpringStiffness
         {
@@ -47,7 +47,7 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Tensile force")]
         [DescriptionAttribute("Value of the tensile force for the gap property definition.")]
-        [TypeConverter(typeof(EquationForceConverter))]
+        [TypeConverter(typeof(EquationForceDefaultConverter))]
         [Id(2, 3)]
         public virtual EquationString TensileForceAtNegativeInfinity
         {
@@ -74,6 +74,11 @@ namespace PrePoMax
             SetBase(_constraint, regionTypePropertyNamePairs, null);
             //
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            StringForcePerLengthDefaultConverter.SetInitialValue =
+                CaeModel.GapSection.InitialSpringStiffness.ToString();
+            StringForceDefaultConverter.SetInitialValue =
+                CaeModel.GapSection.InitialTensileForceAtNegativeInfinity.ToString();
         }
 
 

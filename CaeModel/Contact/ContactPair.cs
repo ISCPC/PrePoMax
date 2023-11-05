@@ -34,6 +34,10 @@ namespace CaeModel
     [Serializable]
     public class ContactPair : NamedClass, IMasterSlaveMultiRegion
     {
+        // Static variables                                                                                                         
+        public static readonly double InitialAdjustmentSize = 0.01;
+
+
         // Variables                                                                                                                
         private static string _positive = "The value must be larger than 0.";
         //

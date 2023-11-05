@@ -97,7 +97,7 @@ namespace PrePoMax
             //
             DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo(nameof(Adjust));
             //
-            StringLengthDefaultConverter.SetInitialValue = "0.05 mm";
+            StringLengthDefaultConverter.SetInitialValue = Tie.InitialPositionTolerance.ToString();
         }
 
 

@@ -34,8 +34,7 @@ namespace CaeGlobals
         {
             set
             {
-                if (_lengthUnit == (LengthUnit)MyUnit.NoUnit) _initialValue = Length.Parse(value).Value;
-                else _initialValue = Length.Parse(value).ToUnit(_lengthUnit).Value;
+                if (!double.TryParse(value, out _initialValue)) _initialValue = ConvertToCurrentUnits(value);
                 _initialValue = Tools.RoundToSignificantDigits(_initialValue, 3);
             }
         }

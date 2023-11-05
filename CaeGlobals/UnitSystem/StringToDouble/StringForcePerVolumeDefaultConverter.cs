@@ -49,7 +49,14 @@ namespace CaeGlobals
                 else _volumeUnit = Volume.ParseUnit(value);
             }
         }
-        public static string SetInitialValue { set { _initialValue = Tools.RoundToSignificantDigits(ConvertToCurrentUnits(value), 3); } }
+        public static string SetInitialValue
+        {
+            set
+            {
+                if (!double.TryParse(value, out _initialValue)) _initialValue = ConvertToCurrentUnits(value);
+                _initialValue = Tools.RoundToSignificantDigits(_initialValue, 3);
+            }
+        }
 
 
         // Constructors                                                                                                             

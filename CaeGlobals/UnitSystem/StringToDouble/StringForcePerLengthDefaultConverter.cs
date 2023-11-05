@@ -11,10 +11,10 @@ using UnitsNet.Units;
 
 namespace CaeGlobals
 {
-    public class StringFrequencyDefaultConverter : TypeConverter
+    public class StringForcePerLengthDefaultConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static FrequencyUnit _frequencyUnit = FrequencyUnit.Hertz;
+        protected static ForcePerLengthUnit _forcePerLengthUnit = ForcePerLengthUnit.NewtonPerMeter;
         //
         protected ArrayList values;
         protected string _default = "Default";
@@ -22,12 +22,12 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
-        public static string SetUnit 
+        public static string SetUnit
         {
             set
             {
-                if (value == "") _frequencyUnit = (FrequencyUnit)MyUnit.NoUnit;
-                else _frequencyUnit = Frequency.ParseUnit(value);
+                if (value == "") _forcePerLengthUnit = (ForcePerLengthUnit)MyUnit.NoUnit;
+                else _forcePerLengthUnit = ForcePerLength.ParseUnit(value);
             }
         }
         public static string SetInitialValue
@@ -41,7 +41,7 @@ namespace CaeGlobals
 
 
         // Constructors                                                                                                             
-        public StringFrequencyDefaultConverter()
+        public StringForcePerLengthDefaultConverter()
         {
             // Initializes the standard values list with defaults.
             values = new ArrayList(new double[] { double.NaN, _initialValue });
@@ -59,7 +59,7 @@ namespace CaeGlobals
             StandardValuesCollection svc = new StandardValuesCollection(values);
             return svc;
         }
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
         {
             if (sourceType == typeof(string)) return true;
             else return base.CanConvertFrom(context, sourceType);
@@ -87,7 +87,8 @@ namespace CaeGlobals
                         else
                         {
                             string valueString = valueDouble.ToString();
-                            if ((int)_frequencyUnit != MyUnit.NoUnit) valueString += " " + Frequency.GetAbbreviation(_frequencyUnit);
+                            if ((int)_forcePerLengthUnit != MyUnit.NoUnit)
+                                valueString += " " + ForcePerLength.GetAbbreviation(_forcePerLengthUnit);
                             return valueString;
                         }
                     }
@@ -99,14 +100,13 @@ namespace CaeGlobals
                 return base.ConvertTo(context, culture, value, destinationType);
             }
         }
-        //
-        public static double ConvertToCurrentUnits(string valueWithUnitString)
+        private static double ConvertToCurrentUnits(string valueWithUnitString)
         {
             try
             {
-                Frequency frequency = Frequency.Parse(valueWithUnitString);
-                if ((int)_frequencyUnit != MyUnit.NoUnit) frequency = frequency.ToUnit(_frequencyUnit);
-                return frequency.Value;
+                ForcePerLength forcePerLength = ForcePerLength.Parse(valueWithUnitString);
+                if ((int)_forcePerLengthUnit != MyUnit.NoUnit) forcePerLength = forcePerLength.ToUnit(_forcePerLengthUnit);
+                return forcePerLength.Value;
             }
             catch (Exception ex)
             {
@@ -116,11 +116,11 @@ namespace CaeGlobals
         public static string SupportedUnitAbbreviations()
         {
             string abb;
-            string supportedUnitAbbreviations = "Supported frequency abbreviations: ";
-            var allUnits = Frequency.Units;
+            string supportedUnitAbbreviations = "Supported force per length abbreviations: ";
+            var allUnits = ForcePerLength.Units;
             for (int i = 0; i < allUnits.Length; i++)
             {
-                abb = Frequency.GetAbbreviation(allUnits[i]);
+                abb = ForcePerLength.GetAbbreviation(allUnits[i]);
                 if (abb != null) abb.Trim();
                 if (abb.Length > 0) supportedUnitAbbreviations += abb;
                 if (i != allUnits.Length - 1) supportedUnitAbbreviations += ", ";

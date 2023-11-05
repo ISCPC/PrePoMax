@@ -174,7 +174,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\FieldOutput\CalElFile.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\FieldOutput\CalNodeFile.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalFrequencyStep.cs" />
-    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalTie.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Constraints\CalTie.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalSTLoad.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalMomentLoad.cs" />
     <Compile Include="FileInOut\Output\Calculix\CalculixFileWriter.cs" />
@@ -182,7 +182,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalCLoad.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalElementSet.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Material\CalElastic.cs" />
-    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalRigidBody.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Constraints\CalRigidBody.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Section\CalSolidSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Material\CalMaterial.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalStaticStep.cs" />

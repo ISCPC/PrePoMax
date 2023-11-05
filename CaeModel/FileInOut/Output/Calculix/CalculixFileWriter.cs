@@ -203,14 +203,26 @@ namespace FileInOut.Output
             bool shellEdgeFace;
             bool shellElement;
             double[] faceNormal;
-            //
             FeElement element;
             FeElementSet elementSet;
             FeSurface surface;
-            //
             Vec3D normalVec;
             List<Vec3D> nodeNormals;
             Dictionary<int, List<Vec3D>> nodeIdNodeNormals = new Dictionary<int, List<Vec3D>>();
+            //
+            List<int> nodeIds;
+            double[] normal;
+            CompareDoubleArray comparer = new CompareDoubleArray();
+            Dictionary<double[], List<int>> normalNodeIds = new Dictionary<double[], List<int>>(comparer);
+            int count;
+            int newNodeId = maxNodeId;
+            int newElementId = maxElementId;
+            List<int> elementIds;
+            string name;
+            FeNode node;
+            List<int> bcNodeIds = new List<int>();
+            LinearGapElement gapElement;
+            List<FeElement> elementsToAdd = new List<FeElement>();
             // Get all nodes and their normals
             foreach (var constraintEntry in model.Constraints)
             {
@@ -251,61 +263,57 @@ namespace FileInOut.Output
                                 }
                             }
                         }
+                        
+                        
+                        // Get a dictionary of all node ids that have the same normal
+                        normalNodeIds.Clear();
+                        foreach (var entry in nodeIdNodeNormals)
+                        {
+                            normalVec = new Vec3D();
+                            foreach (var normalEntry in entry.Value) normalVec += normalEntry;
+                            normalVec.Normalize();
+                            normal = normalVec.CoorRounded(4);
+                            //
+                            if (normalNodeIds.TryGetValue(normal, out nodeIds)) nodeIds.Add(entry.Key);
+                            else normalNodeIds.Add(normal, new List<int>() { entry.Key });
+                        }
+                        // Get nodes, elements, element sets, gap sections, boundary conditions
+                        count = 1;
+                        foreach (var entry in normalNodeIds)
+                        {
+                            normal = entry.Key;
+                            elementIds = new List<int>();
+                            name = co.Name + "_ElementSet" + count++;
+                            //
+                            foreach (var nodeId in entry.Value)
+                            {
+                                newNodeId++;
+                                newElementId++;
+                                bcNodeIds.Add(newNodeId);
+                                //
+                                double offset = 0;
+                                node = new FeNode(newNodeId, model.Mesh.Nodes[nodeId].Coor);
+                                node.X -= offset * normal[0];
+                                node.Y -= offset * normal[1];
+                                node.Z -= offset * normal[2];
+                                additionalNodes.Add(node);
+                                gapElement = new LinearGapElement(newElementId, new int[] { newNodeId, nodeId });
+                                elementIds.Add(newElementId);
+                                elementsToAdd.Add(gapElement);
+                            }
+                            //
+                            additionalElementSets.Add(new FeElementSet(name, elementIds.ToArray()));
+                            additionalSections.Add(new GapSection("GapSection", name, 0, normal, co.SpringStiffness.Value,
+                                                                  co.TensileForceAtNegativeInfinity.Value, twoD));
+                        }
                     }
                 }
             }
-            // Get a dictionary of all node ids that have the same normal
-            List<int> nodeIds;
-            double[] normal;
-            CompareDoubleArray comparer = new CompareDoubleArray();
-            Dictionary<double[], List<int>> normalNodeIds = new Dictionary<double[], List<int>>(comparer);
-            foreach (var entry in nodeIdNodeNormals)
-            {
-                normalVec = new Vec3D();
-                foreach (var normalEntry in entry.Value) normalVec += normalEntry;
-                normalVec.Normalize();
-                normal = normalVec.CoorRounded(4);
-                //
-                if (normalNodeIds.TryGetValue(normal, out nodeIds)) nodeIds.Add(entry.Key);
-                else normalNodeIds.Add(normal, new List<int>() { entry.Key });
-            }
-            // Get nodes, elements, element sets, gap sections, boundary conditions
-            int count = 1;
-            int newNodeId = maxNodeId;
-            int newElementId = maxElementId;
-            List<int> elementIds;
-            string name;
-            FeNode node;
-            nodeIds = new List<int>();
-            LinearGapElement gapElement;
-            List<FeElement> elementsToAdd = new List<FeElement>();
-            foreach (var entry in normalNodeIds)
-            {
-                normal = entry.Key;
-                elementIds = new List<int>();
-                name = "Internal_Compression_Only_Constraint_ElementSet_" + count++;
-                //
-                foreach (var nodeId in entry.Value)
-                {
-                    newNodeId++;
-                    newElementId++;
-                    nodeIds.Add(newNodeId);
-                    //
-                    node = new FeNode(newNodeId, model.Mesh.Nodes[nodeId].Coor);
-                    additionalNodes.Add(node);
-                    gapElement = new LinearGapElement(newElementId, new int[] { newNodeId, nodeId });
-                    elementIds.Add(newElementId);
-                    elementsToAdd.Add(gapElement);
-                }
-                //
-                additionalElementSets.Add(new FeElementSet(name, elementIds.ToArray()));
-                additionalSections.Add(new GapSection("GapSection", name, 0, normal, twoD));
-            }
-            //
+            // Add all elements
             additionalElementKeywords.Add(new CalElement(FeElementTypeGap.GAPUNI.ToString(), null, elementsToAdd));
             // Boundary conditions
-            name = "Internal_Compression_Only_Constraint_NodeSet_1";
-            additionalNodeSets.Add(new FeNodeSet(name, nodeIds.ToArray()));
+            name = "Internal_All_Compression_Only_Constraints_NodeSet";
+            additionalNodeSets.Add(new FeNodeSet(name, bcNodeIds.ToArray()));
             DisplacementRotation dr = new DisplacementRotation("Compression_Only_BC", name, RegionTypeEnum.NodeSetName,
                                                                twoD, false, 0);
             dr.U1.SetEquationFromValue(0);

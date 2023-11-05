@@ -10,6 +10,10 @@ namespace CaeModel
     [Serializable]
     public class Friction : SurfaceInteractionProperty
     {
+        // Static variables                                                                                                                
+        public static readonly string InitialStickSlope = "100000 N/mm^3";
+
+
         // Variables                                                                                                                
         private static string _positive = "The value must be larger than 0.";
         //

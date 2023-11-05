@@ -35,12 +35,30 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
+            double springStiffness;
+            if (double.IsNaN(_gapSection.SpringStiffness)) springStiffness = GapSection.InitialSpringStiffness;
+            else springStiffness = _gapSection.SpringStiffness;
+            //
+            double tensileForce;
+            if (double.IsNaN(_gapSection.TensileForceAtNegativeInfinity))
+                tensileForce = GapSection.InitialTensileForceAtNegativeInfinity;
+            else tensileForce = _gapSection.TensileForceAtNegativeInfinity;
+            //
+
+            string properties = "";
+            if (!double.IsNaN(_gapSection.SpringStiffness) || !double.IsNaN(_gapSection.TensileForceAtNegativeInfinity))
+                properties = string.Format(", , {0}, {1}",
+                                           springStiffness.ToCalculiX16String(),
+                                           tensileForce.ToCalculiX16String());
+            
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("{0}, {1}, {2}, {3}{4}", _gapSection.Clearance,
-                                                     _gapSection.Direction[0].ToCalculiX16String(),
-                                                     _gapSection.Direction[1].ToCalculiX16String(),
-                                                     _gapSection.Direction[2].ToCalculiX16String(),
-                                                     Environment.NewLine);
+            sb.AppendFormat("{0}, {1}, {2}, {3}{4}{5}",
+                            _gapSection.Clearance,
+                            _gapSection.Direction[0].ToCalculiX16String(),
+                            _gapSection.Direction[1].ToCalculiX16String(),
+                            _gapSection.Direction[2].ToCalculiX16String(),
+                            properties,
+                            Environment.NewLine);
             return sb.ToString();
         }
     }

@@ -159,7 +159,7 @@ namespace PrePoMax
             Adjust = _contactPair.Adjust;   // update visibility
             ApplyYesNo();
             //
-            StringLengthDefaultConverter.SetInitialValue = "0.01 mm";
+            StringLengthDefaultConverter.SetInitialValue = CaeModel.ContactPair.InitialAdjustmentSize.ToString();
         }
 
 

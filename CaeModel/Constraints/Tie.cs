@@ -15,6 +15,10 @@ namespace CaeModel
     [Serializable]
     public class Tie : Constraint, ISerializable
     {
+        // Static variables                                                                                                         
+        public static readonly double InitialPositionTolerance = 0.05;
+
+
         // Variables                                                                                                                
         private static string _nonNegative = "The value must be larger or equal to 0.";
         private EquationContainer _positionTolerance;       //ISerializable

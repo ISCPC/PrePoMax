@@ -31,14 +31,14 @@ namespace CaeModel
             get { return _tensileForceAtNegativeInfinity; }
             set { SetTensileForceAtNegativeInfinity(value); }
         }
-
+        
 
         // Constructors                                                                                                             
         public CompressionOnly(string name, string regionName, RegionTypeEnum regionType, bool twoD)
             : base(name, regionName, regionType, "", RegionTypeEnum.None, twoD)
         {
-            SpringStiffness = new EquationContainer(typeof(StringForcePerLengthConverter), 1E12);
-            TensileForceAtNegativeInfinity = new EquationContainer(typeof(StringForceConverter), 1E-3);
+            SpringStiffness = new EquationContainer(typeof(StringForcePerLengthDefaultConverter), double.NaN);
+            TensileForceAtNegativeInfinity = new EquationContainer(typeof(StringForceDefaultConverter), double.NaN);
         }
         public CompressionOnly(SerializationInfo info, StreamingContext context)
            : base(info, context)
