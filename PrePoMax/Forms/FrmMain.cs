@@ -8723,7 +8723,8 @@ namespace PrePoMax
             {
                 //_vtk.SwitchLights();
                 //_controller.TestCreateSurface();
-                AnimateModel58();
+                //AnimateModel58();
+                _vtk.Export(GetFileNameToSaveAs());
             }
             catch
             {

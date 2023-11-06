@@ -12,6 +12,7 @@ using System.Drawing;
 using System.Data;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
+using static System.Collections.Specialized.BitVector32;
 
 namespace CaeModel
 {
@@ -784,9 +785,7 @@ namespace CaeModel
             Dictionary<double, List<int>> thicknessSectionIds = new Dictionary<double, List<int>>();
             foreach (var entry in _sections)
             {
-                if (entry.Value is ShellSection ss) thickness = ss.Thickness.Value;
-                else if (entry.Value is MembraneSection ms) thickness = ms.Thickness.Value;
-                else thickness = -1;
+                thickness = GetSectionThickness(entry.Value);
                 //
                 if (thicknessSectionIds.TryGetValue(thickness, out sectionIds)) sectionIds.Add(count);
                 else thicknessSectionIds.Add(thickness, new List<int>() { count });
@@ -811,6 +810,13 @@ namespace CaeModel
             elementIdSectionThicknessId = new Dictionary<int, int>();
             foreach (var entry in elementIdSectionId)
                 elementIdSectionThicknessId.Add(entry.Key, sectionIdSectionThicknessId[entry.Value]);
+        }
+        public double GetSectionThickness(Section section)
+        {
+            if (_properties.ModelSpace.IsTwoD() && section is SolidSection sos) return sos.Thickness.Value;
+            else if (section is ShellSection shs) return shs.Thickness.Value;
+            else if (section is MembraneSection ms) return ms.Thickness.Value;
+            else return -1;
         }
         //
         public void RemoveLostUserKeywords(Action<int> SetNumberOfUserKeywords)

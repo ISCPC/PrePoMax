@@ -11356,12 +11356,15 @@ namespace PrePoMax
                     List<Color> sectionThicknessColors = new List<Color>();
                     HashSet<double> sectionThickness = new HashSet<double>();                    
                     int count = 0;
+                    double thickness;
                     foreach (var entry in _model.Sections)
                     {
-                        if (!sectionThickness.Contains(entry.Value.Thickness.Value))
+                        thickness = _model.GetSectionThickness(entry.Value);
+                        //
+                        if (thickness != -1 && !sectionThickness.Contains(thickness))
                         {
                             sectionThicknessColors.Add(colorSettings.ColorTable[count++]);
-                            sectionThickness.Add(entry.Value.Thickness.Value);
+                            sectionThickness.Add(thickness);
                         }
                     }
                     // Sort thicknesses

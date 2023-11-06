@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Management;
 using System.Reflection.Emit;
 using System.Windows;
+using System.IO;
 
 namespace vtkControl
 {
@@ -6170,6 +6171,43 @@ namespace vtkControl
 
 
         // Test
+        public void Export(string fileName)
+        {
+            foreach (var entry in _actors)
+            {
+                if (entry.Key == "Solid_part-1")
+                {
+                    vtkPolyDataWriter writer = new vtkPolyDataWriter();
+                    writer.SetInput(entry.Value.GeometryMapper.GetInput());
+                    fileName = Path.Combine(Path.GetDirectoryName(fileName), Path.GetFileNameWithoutExtension(fileName) + ".vtk");
+                    writer.SetFileName(fileName);
+                    writer.Write();
+                }
+
+            }
+
+            return;
+
+            _renderWindow.RemoveRenderer(_selectionRenderer);
+            _renderWindow.RemoveRenderer(_overlayRenderer);
+            vtkOBJExporter exporter = vtkOBJExporter.New();
+            //vtkX3DExporter exporter = vtkX3DExporter.New();
+            //vtkVRMLExporter exporter = vtkVRMLExporter.New();
+            
+
+            exporter.SetRenderWindow(_renderWindow);
+            exporter.DebugOn();
+
+            //exporter.SetFileName(Path.Combine(Path.GetDirectoryName(fileName), Path.GetFileNameWithoutExtension(fileName) + ".vrml"));
+            exporter.SetFilePrefix(Path.Combine(Path.GetDirectoryName(fileName), Path.GetFileNameWithoutExtension(fileName) + ".out"));
+            //string outName = exporter.GetFilePrefix();
+            
+            exporter.Update();
+            exporter.Write();
+
+            _renderWindow.AddRenderer(_selectionRenderer);
+            _renderWindow.AddRenderer(_overlayRenderer);
+        }
         public void AddTetrahedronFaces(double[][] nodes, int[][] tetrahedrons, Color color, int faceId, vtkRendererLayer layer)
         {
             // Create the points
