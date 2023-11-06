@@ -1564,7 +1564,7 @@ namespace vtkControl
                 vtkLookupTable cellLut = vtkLookupTable.New();
                 cellLut.SetNumberOfTableValues(_colorTable.Length + 1); // +1 for the missing color
                 cellLut.Build();
-                cellLut.SetTableValue(0, 1, 1, 1, 1);                 // White for missing color
+                cellLut.SetTableValue(0, 1, 1, 1, 0.5);                 // White for missing color
                 for (int i = 0; i < _colorTable.Length; i++)
                     cellLut.SetTableValue(i + 1, _colorTable[i].R / 255d, _colorTable[i].G / 255d, _colorTable[i].B / 255d, 1);
                 //cellLut.SetValueRange(0, _colorTable.Length - 1);
