@@ -30,6 +30,7 @@ using PrePoMax.Commands;
 using System.Windows.Input;
 using PrePoMax.Properties;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace PrePoMax
 {
@@ -11406,7 +11407,22 @@ namespace PrePoMax
                     {
                         if (entry.Value.Visible && entry.Value.Active)
                         {
-                            if (entry.Value is RigidBody rb)
+                            if (entry.Value is PointSpring pts)
+                            {
+                                itemColors.Add(pts.MasterColor);
+                                itemNames.Add(pts.Name);
+                            }
+                            else if (entry.Value is SurfaceSpring srs)
+                            {
+                                itemColors.Add(srs.MasterColor);
+                                itemNames.Add(srs.Name);
+                            }
+                            else if (entry.Value is CompressionOnly co)
+                            {
+                                itemColors.Add(co.MasterColor);
+                                itemNames.Add(co.Name);
+                            }
+                            else if (entry.Value is RigidBody rb)
                             {
                                 itemColors.Add(rb.MasterColor);
                                 itemNames.Add(rb.Name);

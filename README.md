@@ -12,7 +12,7 @@ First delete the two existing references to the VTK library:
 *  In Solution Explorer find the vtkControl project and then find the References branch
 *  Delete the references starting with Kitware. (right click and Delete).
  
-Secondly add the two references again using the folowing procedure:
+Secondly add the two references again using the following procedure:
 *  Right click on References from vtkControl project in the Solution Explorer Window and selected Add Reference
 *  A Reference manager window opens where you select Browse on the left side and then press the Browse button on the bottom right
 *  Browse for the file Kitware.VTK.dll which should be in the ActiViz installation folder: "C:\Program Files\ActiViz.NET 5.8.0 OpenSource Edition\bin\Kitware.VTK.dll"
@@ -26,13 +26,14 @@ Compiling PrePoMax only creates some of its subfolders and default settings are 
 
 # Structure
 
-The PrePoMax is a solution which consists of 10 projects:
+The PrePoMax is a solution which consists of 11 projects:
 *  CaeGlobals: global classes for all other projects to use
 *  CaeJob: classes for running the analysis
 *  CaeMesh: classes for FE mesh: nodes, elements, sets, ...
 *  CaeModel: classes for FE model. Model contains FE mesh + materials, sections, ...
 *  CaeResults: classes for FE results. Results contain FE mesh + field outputs, ...
 *  GmshCommon: wrapper for the Gmsh mesher from https://github.com/tsvilans/gmsh_common 
+*  GmshMesher: a stand alone executable used for running the Gmsh meshing routines
 *  PrePoMax: classes for user interface
 *  STL: classes for stl geometry import
 *  UserControls: classes for more complex user controls, as model tree view...
