@@ -57,6 +57,8 @@ namespace CaeMesh
                 Gmsh.Add("Model-1");
                 Gmsh.Logger.Start();
                 _currentLogLine = 0;
+                // Common options
+                Gmsh.SetNumber("Geometry.OCCScaling", 1);
                 //
                 _thread = new Thread(new ThreadStart(() => CreateMesh(_geometryFileName, _inpFileName, _partMeshingParameters,
                                                                       _vertexIdMeshSize, _gmshSetupItems, _writeOutput, _preview)));
