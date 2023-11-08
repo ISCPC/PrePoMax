@@ -1259,8 +1259,11 @@ namespace CaeMesh
             part.Visualization.Cells = visualizationCells;
             // Model edges
             part.Visualization.EdgeCells = visualizationCells;
-            HashSet<int> vertexIds = ExtractVerticesFromEdgesByAngle(part, edgeAngle, true);
-            int[] nodeIds = vertexIds.ToArray();
+            HashSet<int> vertexNodeIds = ExtractVerticesFromEdgesByAngle(part, edgeAngle, true);
+            //
+            SplitVisualizationEdgesAndFaces(part, vertexNodeIds);
+            //
+            int[] nodeIds = vertexNodeIds.ToArray();
             int[][] modelPoints = new int[nodeIds.Length][];
             for (int i = 0; i < nodeIds.Length; i++) modelPoints[i] = new int[] { nodeIds[i] };
             // Overwrite edges
@@ -1722,11 +1725,14 @@ namespace CaeMesh
         private void ComputeFaceAreas(BasePart part)
         {
             VisualizationData visualization = part.Visualization;
-            visualization.FaceAreas = new double[visualization.CellIdsByFace.Length];
-            // For each face
-            for (int i = 0; i < visualization.CellIdsByFace.Length; i++)
+            if (visualization.CellIdsByFace != null)    // for wire parts
             {
-                visualization.FaceAreas[i] = ComputeFaceArea(visualization, i, _nodes);
+                visualization.FaceAreas = new double[visualization.CellIdsByFace.Length];
+                // For each face
+                for (int i = 0; i < visualization.CellIdsByFace.Length; i++)
+                {
+                    visualization.FaceAreas[i] = ComputeFaceArea(visualization, i, _nodes);
+                }
             }
         }
         public double ComputeFaceArea(VisualizationData visualization, int faceId, Dictionary<int, FeNode> nodes)
@@ -2997,6 +3003,8 @@ namespace CaeMesh
                 ExtractSolidPartVisualization(part, Globals.EdgeAngle);
             else if (part.PartType == PartType.Shell || part.PartType == PartType.SolidAsShell)
                 ExtractShellPartVisualization(part, isCADPart: false, Globals.EdgeAngle);
+            else if (part.PartType == PartType.Wire)
+                ExtractWirePartVisualization(part, Globals.EdgeAngle);
             else if (part.PartType == PartType.Unknown)
                 throw new NotSupportedException();
             //
@@ -3056,6 +3064,8 @@ namespace CaeMesh
                     ExtractSolidPartVisualization(newPart, Globals.EdgeAngle);
                 else if (newPart.PartType == PartType.Shell || newPart.PartType == PartType.SolidAsShell)
                     ExtractShellPartVisualization(newPart, isCADPart: false, Globals.EdgeAngle);
+                else if (newPart.PartType == PartType.Wire)
+                    ExtractWirePartVisualization(newPart, Globals.EdgeAngle);
                 else if (newPart.PartType == PartType.Unknown)
                     throw new NotSupportedException();
             }

@@ -2328,7 +2328,7 @@ namespace UserControls
             //
             foreach (var key in list)
             {
-                if (dictionary[key] is NamedClass nc && nc.Internal) continue;
+                //if (dictionary[key] is NamedClass nc && nc.Internal) continue;
                 //
                 nodeToAdd = node.Nodes.Add(key.ToString());
                 nodeToAdd.Name = nodeToAdd.Text;
@@ -2547,6 +2547,11 @@ namespace UserControls
                                 {
                                     if (bp.Color.A == 255) SetNodeImage(node, "Shell.ico");
                                     else SetNodeImage(node, "Shell_transparent.ico");
+                                }
+                                else if (partType == PartType.Wire)
+                                {
+                                    if (bp.Color.A == 255) SetNodeImage(node, "Wire.ico");
+                                    else SetNodeImage(node, "Wire_transparent.ico");
                                 }
                                 else if (partType == PartType.Compound)
                                 {
