@@ -43,6 +43,14 @@ namespace CaeResults
             { "TEM(%)", "TEM"},
             { "STR(%)", "STR"}
         };
+        private static readonly string _materialName = "MATERIAL_";
+        private static readonly string _gapMaterialName = "MATERIAL_GAP";
+        private static readonly string _springMaterialName = "MATERIAL_SPRING";
+        //
+        private static readonly int _gapMaterialId = -1;
+        private static readonly int _springMaterialId = -2;
+
+
         // Methods                                                                                                                  
         static public FeResults Read(string fileName)
         {
@@ -57,6 +65,8 @@ namespace CaeResults
                 Dictionary<int, FeNode> nodes = null;
                 Dictionary<int, int> nodeIdsLookUp = null;
                 Dictionary<int, FeElement> elements = null;
+                HashSet<int> gapMaterialIds = null;
+                HashSet<int> springMaterialIds = null;
                 Dictionary<int, string> materialIdMaterialName = null;
                 Dictionary<int, List<int>> materialIdElementIds = null;
                 //
@@ -75,7 +85,7 @@ namespace CaeResults
                         result.HashName = GetHashName(dataSet);
                         result.DateTime = GetDateTime(dataSet);
                         result.UnitSystem = GetUnitSystem(dataSet);
-                        materialIdMaterialName = GetMaterialIdsAndNames(dataSet);
+                        GetMaterialIdsAndNames(dataSet, out materialIdMaterialName, out gapMaterialIds, out springMaterialIds);
                     }
                     else if (setID.StartsWith("    2C")) // Nodes
                     {
@@ -84,7 +94,7 @@ namespace CaeResults
                     }
                     else if (setID.StartsWith("    3C")) // Elements
                     {
-                        elements = GetElements(dataSet, out materialIdElementIds);
+                        elements = GetElements(dataSet, gapMaterialIds, springMaterialIds, out materialIdElementIds);
                         //elements = GetElementsFast(dataSet));
                     }
                     else if (setID.StartsWith("    1PSTEP")) // Fields
@@ -102,19 +112,48 @@ namespace CaeResults
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Results);
                 mesh.ResetPartsColor();
                 result.SetMesh(mesh, nodeIdsLookUp);
-                //
-                //
+                // Material element sets
+                FeElementSet elementSet;
                 if (materialIdMaterialName != null && materialIdElementIds != null &&
-                    materialIdMaterialName.Count == materialIdElementIds.Count)
+                    materialIdMaterialName.Count <= materialIdElementIds.Count)
                 {
-                    FeElementSet elementSet;
                     foreach (var entry in materialIdMaterialName)
                     {
                         elementSet = new FeElementSet(entry.Value, materialIdElementIds[entry.Key].ToArray());
                         result.Mesh.AddElementSet(elementSet);
                     }
                 }
-                //
+                // Gap element sets
+                BasePart[] modifiedParts;
+                BasePart[] newParts;
+                List<string> partNamesToRemove = new List<string>();
+                string oldPartName;
+                if (gapMaterialIds.Count > 0 && materialIdElementIds.ContainsKey(_gapMaterialId))
+                {
+                    elementSet = new FeElementSet(_gapMaterialName, materialIdElementIds[_gapMaterialId].ToArray());
+                    result.Mesh.AddElementSet(elementSet);
+                    result.Mesh.CreatePartsFromElementSets(new string[] { elementSet.Name }, out modifiedParts, out newParts);
+                    // Rename parts
+                    if (newParts.Count() == 1)
+                    {
+                        oldPartName = newParts[0].Name;
+                        newParts[0].Name = "Gap_elements";
+                        result.Mesh.Parts.Replace(oldPartName, newParts[0].Name, newParts[0]);
+                    }
+                    // Get part names to remove
+                    foreach (var part in modifiedParts)
+                    {
+                        if (part.Labels.Length == 0) partNamesToRemove.Add(part.Name);
+                    }
+                    // Remove parts
+                    if (partNamesToRemove.Count > 0) result.Mesh.RemoveParts(partNamesToRemove.ToArray(), out _, false);
+                }
+                // Spring element sets - *SPRING elements are not written into the frd file
+                if (springMaterialIds.Count > 0 && materialIdElementIds.ContainsKey(_springMaterialId))
+                {
+                    elementSet = new FeElementSet(_springMaterialName, materialIdElementIds[_springMaterialId].ToArray());
+                    result.Mesh.AddElementSet(elementSet);
+                }
                 //
                 return result;
             }
@@ -227,14 +266,18 @@ namespace CaeResults
             //
             return new UnitSystem(unitSystemType);
         }
-        static private Dictionary<int, string> GetMaterialIdsAndNames(string[] lines)
+        static private void GetMaterialIdsAndNames(string[] lines, out Dictionary<int, string> materialIdMaterialName,
+                                                   out HashSet<int> gapMaterialIds, out HashSet<int> springMaterialIds)
         {
             //    1UMAT    1S235
             //    1UMAT    2SPRING
+            //    1UMAT    3GAP
             int materialId;
             string materialName;
             string[] tmp;
-            Dictionary<int, string> materialIdMaterialName = new Dictionary<int, string>();
+            materialIdMaterialName = new Dictionary<int, string>();
+            gapMaterialIds = new HashSet<int>();
+            springMaterialIds = new HashSet<int>();
             //
             for (int i = 0; i < lines.Length; i++)
             {
@@ -244,13 +287,14 @@ namespace CaeResults
                     if (tmp.Length == 2)
                     {
                         materialId = int.Parse(tmp[1].Substring(0, 5));
-                        materialName = "MATERIAL_" + tmp[1].Substring(5, tmp[1].Length - 5).Trim();
-                        materialIdMaterialName.Add(materialId, materialName);
+                        materialName = _materialName + tmp[1].Substring(5, tmp[1].Length - 5).Trim();
+                        //
+                        if (materialName == _gapMaterialName) gapMaterialIds.Add(materialId);
+                        else if (materialName == _springMaterialName) springMaterialIds.Add(materialId);
+                        else materialIdMaterialName.Add(materialId, materialName);
                     }
                 }
             }
-            //
-            return materialIdMaterialName;
         }
         static private List<string[]> GetDataSets(string[] lines)
         {
@@ -341,13 +385,14 @@ namespace CaeResults
 
             return nodes;
         }
-        static private Dictionary<int, FeElement> GetElements(string[] lines, out Dictionary<int, List<int>> materialIdElementIds)
+        static private Dictionary<int, FeElement> GetElements(string[] lines, HashSet<int> gapMaterialIds,
+                                                              HashSet<int> springMaterialIds,
+                                                              out Dictionary<int, List<int>> materialIdElementIds)
         {
             //        el.id   type       ?   mat.id      
             // -1      1413      3       0        1      
             //           n1        n1        n3        n4
             // -2       483       489       481       482
-
             Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
             List<int> elementIds;
             materialIdElementIds = new Dictionary<int, List<int>>();
@@ -358,14 +403,16 @@ namespace CaeResults
             string[] record1;
             string[] record2;
             string[] splitter = new string[] { " " };
-
-            // line 0 is the line with the SetID, number of elements
+            // Line 0 is the line with the SetID, number of elements
             for (int i = 1; i < lines.Length; i++)
             {
                 record1 = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                 id = int.Parse(record1[1]);
                 feDescriptorId = (FrdFeDescriptorId)int.Parse(record1[2]);
                 materialID = int.Parse(record1[4]);
+                //
+                if (gapMaterialIds.Contains(materialID)) materialID = _gapMaterialId;
+                else if (springMaterialIds.Contains(materialID)) materialID = _springMaterialId;
                 //
                 if (materialIdElementIds.TryGetValue(materialID, out elementIds)) elementIds.Add(id);
                 else materialIdElementIds.Add(materialID, new List<int> { id });
