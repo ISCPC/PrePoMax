@@ -7798,7 +7798,11 @@ namespace CaeMesh
             if (elementSet is BasePart part)
             {
                 int[][] edgeCells;
-                if (part.PartType.HasEdges()) edgeCells = part.Visualization.EdgeCells;
+                if (part.PartType.HasEdges())
+                {
+                    if (part.PartType == PartType.Wire) edgeCells = part.Visualization.Cells;
+                    else edgeCells = part.Visualization.EdgeCells;
+                }
                 else throw new Exception();
                 //
                 GetNodesAndCellsForEdges(edgeCells, out nodeIds, out nodeCoor, out cells, out cellTypes);
@@ -7837,7 +7841,7 @@ namespace CaeMesh
                 else if (cells[i].Length == 3) cellTypes[i] = (int)vtkCellType.VTK_QUADRATIC_EDGE;
                 else throw new NotSupportedException();
             }
-
+            //
             nodeIds = GetRenumberedNodesAndCells(out nodeCoor, ref cells);
         }
         private int[] GetRenumberedNodesAndCells(out double[][] nodeCoor, ref int[][] cells)
