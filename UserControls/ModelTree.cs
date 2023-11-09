@@ -2328,7 +2328,7 @@ namespace UserControls
             //
             foreach (var key in list)
             {
-                //if (dictionary[key] is NamedClass nc && nc.Internal) continue;
+                if (dictionary[key] is NamedClass nc && nc.Internal) continue;
                 //
                 nodeToAdd = node.Nodes.Add(key.ToString());
                 nodeToAdd.Name = nodeToAdd.Text;
