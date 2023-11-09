@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Input
 {
@@ -56,6 +57,8 @@ namespace FileInOut.Input
                         AddLineElements(dataSet.ToArray(), elements, ref elementStartId, edgeIdNodeIds, vertexNodeIds);
                     }
                 }
+                //
+                MergeEdgeElements(elements);
                 //
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, convertToSecondOrder,
                                          ImportOptions.DetectEdges);
@@ -298,7 +301,37 @@ namespace FileInOut.Input
                 vertexNodeIds.Add(maxId);
             }
         }
-      
+        private static void MergeEdgeElements(Dictionary<int, FeElement> elements)
+        {
+            int[] key;
+            FeElement[] elementsToRemove;
+            List<FeElement> elementsToMerge;
+            CompareIntArray comparer = new CompareIntArray();
+            Dictionary<int[], List<FeElement>> nodeIdsElements = new Dictionary<int[], List<FeElement>>(comparer);
+            foreach (var entry in elements)
+            {
+                if (entry.Value is FeElement1D edgeElement)
+                {
+                    key = edgeElement.NodeIds;
+                    Array.Sort(key);
+                    if (nodeIdsElements.TryGetValue(key, out elementsToMerge)) elementsToMerge.Add(edgeElement);
+                    else nodeIdsElements.Add(key, new List<FeElement>() { edgeElement });
+                }
+            }
+            //
+            foreach (var entry in nodeIdsElements)
+            {
+                if (entry.Value.Count > 1)
+                {
+                    elementsToRemove = entry.Value.ToArray();
+                    for (int i = 1; i < elementsToRemove.Length; i++)
+                    {
+                        elements.Remove(elementsToRemove[i].Id);
+                    }
+                }
+            }
+        }
+
 
         // Linear elements                                                                                                          
         static private LinearBeamElement GetLinearBeamElement(int id, string[] record)

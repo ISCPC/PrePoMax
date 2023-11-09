@@ -1263,11 +1263,11 @@ namespace CaeMesh
             //
             SplitVisualizationEdgesAndFaces(part, vertexNodeIds);
             //
-            int[] nodeIds = vertexNodeIds.ToArray();
-            int[][] modelPoints = new int[nodeIds.Length][];
-            for (int i = 0; i < nodeIds.Length; i++) modelPoints[i] = new int[] { nodeIds[i] };
+            //int[] nodeIds = vertexNodeIds.ToArray();
+            //int[][] modelPoints = new int[nodeIds.Length][];
+            //for (int i = 0; i < nodeIds.Length; i++) modelPoints[i] = new int[] { nodeIds[i] };
             // Overwrite edges
-            part.Visualization.EdgeCells = modelPoints;
+            //part.Visualization.EdgeCells = modelPoints;
         }
         private void ExtractEdgesFromShellByAngle(BasePart part, double angle)
         {
@@ -1524,7 +1524,8 @@ namespace CaeMesh
                     }
                 }
             }
-            return vertexNodeIds;
+            if (vertexNodeIds.Count == 0) return null;
+            else return vertexNodeIds;
         }
         private void CheckForFreeAndErrorElementsInCADPart(BasePart part)
         {
@@ -2523,29 +2524,32 @@ namespace CaeMesh
             HashSet<int> edgeIdsHash = new HashSet<int>();
             Dictionary<int, HashSet<int>> surfaceIdNewEdgeIds = new Dictionary<int, HashSet<int>>();
             int count = 0;
-            foreach (int[] edgeIds in visualization.FaceEdgeIds)
+            if (visualization.FaceCount > 0)
             {
-                foreach (int edgeId in edgeIds)
+                foreach (int[] edgeIds in visualization.FaceEdgeIds)
                 {
-                    if (edgeSplitTo.ContainsKey(edgeId))
+                    foreach (int edgeId in edgeIds)
                     {
-                        if (surfaceIdNewEdgeIds.TryGetValue(count, out edgeIdsHash))
+                        if (edgeSplitTo.ContainsKey(edgeId))
                         {
-                            edgeIdsHash.UnionWith(edgeSplitTo[edgeId]);
-                        }
-                        else
-                        {
-                            edgeIdsHash = new HashSet<int>(edgeIds);
-                            edgeIdsHash.UnionWith(edgeSplitTo[edgeId]);
-                            surfaceIdNewEdgeIds.Add(count, edgeIdsHash);
+                            if (surfaceIdNewEdgeIds.TryGetValue(count, out edgeIdsHash))
+                            {
+                                edgeIdsHash.UnionWith(edgeSplitTo[edgeId]);
+                            }
+                            else
+                            {
+                                edgeIdsHash = new HashSet<int>(edgeIds);
+                                edgeIdsHash.UnionWith(edgeSplitTo[edgeId]);
+                                surfaceIdNewEdgeIds.Add(count, edgeIdsHash);
+                            }
                         }
                     }
+                    count++;
                 }
-                count++;
-            }
-            foreach (var entry in surfaceIdNewEdgeIds)
-            {
-                visualization.FaceEdgeIds[entry.Key] = entry.Value.ToArray();
+                foreach (var entry in surfaceIdNewEdgeIds)
+                {
+                    visualization.FaceEdgeIds[entry.Key] = entry.Value.ToArray();
+                }
             }
             // If changes were made return true in order to recompute edge lengths
             return true;
@@ -3199,6 +3203,10 @@ namespace CaeMesh
                     SplitVisualizationEdgesAndFaces(part, vertexNodeIds);
                     //
                     if (checkForErrors) CheckForFreeAndErrorElementsInCADPart(part);
+                }
+                else if (part.PartType == PartType.Wire)
+                {
+                    SplitEdgesByVertices(part, vertexNodeIds);
                 }
             }
         }

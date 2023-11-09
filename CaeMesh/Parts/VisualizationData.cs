@@ -52,7 +52,7 @@ namespace CaeMesh
         /// FaceCount
         /// Return number of faces
         /// </summary>
-        public int FaceCount { get { return _cellIdsByFace.Length; } }
+        public int FaceCount { get { return _cellIdsByFace != null ? _cellIdsByFace.Length : 0; } }
 
         /// <summary>
         /// CellIdsByFace
@@ -522,16 +522,19 @@ namespace CaeMesh
                 map[orderedEdgeIds[i]] = i;
             }
             // Surface edges
-            int[][] newFaceEdgeIds = new int[_faceEdgeIds.Length][];
-            for (int i = 0; i < _faceEdgeIds.Length; i++)
+            if (_faceEdgeIds != null)
             {
-                newFaceEdgeIds[i] = new int[_faceEdgeIds[i].Length];
-                for (int j = 0; j < _faceEdgeIds[i].Length; j++)
+                int[][] newFaceEdgeIds = new int[_faceEdgeIds.Length][];
+                for (int i = 0; i < _faceEdgeIds.Length; i++)
                 {
-                    newFaceEdgeIds[i][j] = map[_faceEdgeIds[i][j]];
+                    newFaceEdgeIds[i] = new int[_faceEdgeIds[i].Length];
+                    for (int j = 0; j < _faceEdgeIds[i].Length; j++)
+                    {
+                        newFaceEdgeIds[i][j] = map[_faceEdgeIds[i][j]];
+                    }
                 }
+                _faceEdgeIds = newFaceEdgeIds;
             }
-            _faceEdgeIds = newFaceEdgeIds;
             // Edge cells
             int[][] newEdgeCellIdsByEdge = new int[_edgeCellIdsByEdge.Length][];
             for (int i = 0; i < orderedEdgeIds.Length; i++)
