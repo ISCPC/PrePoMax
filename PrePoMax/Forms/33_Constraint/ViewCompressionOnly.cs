@@ -55,6 +55,17 @@ namespace PrePoMax
             set { _constraint.TensileForceAtNegativeInfinity.Equation = value; }
         }
         //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(2, 10, "Offset")]
+        [DescriptionAttribute("The value for which one gap element node will be offset from the selected region.")]
+        [TypeConverter(typeof(EquationLengthConverter))]
+        [Id(3, 3)]
+        public virtual EquationString Offset
+        {
+            get { return _constraint.Offset.Equation; }
+            set { _constraint.Offset.Equation = value; }
+        }
+        //
         [Category("Appearance")]
         [DisplayName("Color")]
         [Description("Select the constraint color.")]

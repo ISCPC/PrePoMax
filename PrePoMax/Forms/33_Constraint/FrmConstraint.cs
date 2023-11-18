@@ -412,7 +412,7 @@ namespace PrePoMax.Forms
             ListViewItem item;
             // Point spring
             item = new ListViewItem("Point Spring");
-            PointSpring pointSpring = new PointSpring(GetConstraintName("Point_Spring"), "", RegionTypeEnum.Selection, twoD);
+            PointSpring pointSpring = new PointSpring(GetConstraintName("Point_Spring"), "", RegionTypeEnum.Selection, twoD, true);
             ViewPointSpring vps = new ViewPointSpring(pointSpring);
             vps.PopulateDropDownLists(nodeSetNames, referencePointNames);
             item.Tag = vps;
@@ -421,7 +421,7 @@ namespace PrePoMax.Forms
             // Surface spring
             item = new ListViewItem("Surface Spring");
             SurfaceSpring surfaceSpring = new SurfaceSpring(GetConstraintName("Surface_Spring"),
-                                                            "", RegionTypeEnum.Selection, twoD);
+                                                            "", RegionTypeEnum.Selection, twoD, true);
             ViewSurfaceSpring vss = new ViewSurfaceSpring(surfaceSpring);
             vss.PopulateDropDownLists(surfaceNames);
             item.Tag = vss;

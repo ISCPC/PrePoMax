@@ -76,6 +76,7 @@
     <Compile Include="FileInOut\Input\Mmg\MmgFileReader.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalAmplitude.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPhysicalConstants.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Constraints\CalEquation.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\InitialConditions\CalInitialVelocity.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Material\CalSlipWear.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Section\CalGapSection.cs" />

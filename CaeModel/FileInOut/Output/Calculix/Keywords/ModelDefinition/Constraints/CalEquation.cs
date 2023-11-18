@@ -10,38 +10,46 @@ using CaeGlobals;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalTie : CalculixKeyword
+    internal class CalEquation : CalculixKeyword
     {
         // Variables                                                                                                                
-        private Tie _tie;
+        private double[] _parameters;
 
 
         // Properties                                                                                                               
 
 
         // Constructor                                                                                                              
-        public CalTie(Tie tie)
+        public CalEquation(double[] parameters)
         {
-            _tie = tie;
+            if (parameters.Length % 3 != 0) throw new NotSupportedException();
+            _parameters = parameters;
         }
 
 
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            //*TIE, NAME=TIE-1, POSITION TOLERANCE=0, ADJUST=NO
-            //slaveSurfaceName, masterSurfaceName
-            StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("*Tie, Name={0}", _tie.Name);
-            if (!double.IsNaN(_tie.PositionTolerance.Value))
-                sb.AppendFormat(", Position tolerance={0}", _tie.PositionTolerance.Value.ToCalculiX16String());
-            if (!_tie.Adjust) sb.AppendFormat(", Adjust=No");
-            sb.AppendLine();
-            return sb.ToString();
+            //*EQUATION
+            //3
+            //3,2,2.3,28,1,4.05,17,1,-8.22
+            return "*Equation" + Environment.NewLine;
         }
         public override string GetDataString()
         {
-            return string.Format("{0}, {1}{2}", _tie.SlaveRegionName, _tie.MasterRegionName, Environment.NewLine);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine((_parameters.Length / 3).ToString());
+            sb.Append(_parameters[0]);
+            for (int i = 1; i < _parameters.Length; i++)
+            {
+                sb.Append(", ");
+                if (i % 12 == 0) sb.AppendLine();
+                sb.Append(_parameters[i].ToString());
+            }
+            //
+            if (_parameters.Length % 12 != 0) sb.AppendLine();
+            //
+            return sb.ToString();
         }
     }
 }

@@ -77,13 +77,14 @@ namespace FileInOut.Output
             List<FeElementSet> additionalElementSets = new List<FeElementSet>();
             List<Section> additionalSections = new List<Section>();
             List<BoundaryCondition> additionalBoundaryConditions = new List<BoundaryCondition>();
+            List<double[]> equationParameters = new List<double[]>();
             // Collect pre-tension loads
             OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads;
             GetPretensionLoads(model, out preTensionLoads);
             // Collect compression only constraints
             GetCompressionOnlyConstraintData(model, ref maxNodeId, ref maxElementId, ref additionalNodes, ref additionalNodeSets,
                                              ref additionalElementKeywords, ref additionalElementSets, ref additionalSections,
-                                             ref additionalBoundaryConditions);
+                                             ref additionalBoundaryConditions, ref equationParameters);
             // Prepare reference points
             Dictionary<string, int[]> referencePointsNodeIds;
             GetReferencePoints(model, preTensionLoads, ref maxNodeId, out referencePointsNodeIds);
@@ -144,7 +145,7 @@ namespace FileInOut.Output
             // Constraints
             title = new CalTitle("Constraints", "");
             keywords.Add(title);
-            AppendConstraints(model, referencePointsNodeIds, title);
+            AppendConstraints(model, referencePointsNodeIds, equationParameters, title);
             // Surface interactions
             title = new CalTitle("Surface interactions", "");
             keywords.Add(title);
@@ -189,7 +190,7 @@ namespace FileInOut.Output
                 }
             }
         }
-        static private void GetCompressionOnlyConstraintData(FeModel model, ref int maxNodeId, ref int maxElementId,
+        static private void GetCompressionOnlyConstraintDataGroup(FeModel model, ref int maxNodeId, ref int maxElementId,
                                                              ref List<FeNode> additionalNodes,
                                                              ref List<FeNodeSet> additionalNodeSets,
                                                              ref List<CalElement> additionalElementKeywords,
@@ -197,7 +198,7 @@ namespace FileInOut.Output
                                                              ref List<Section> additionalSections,
                                                              ref List<BoundaryCondition> additionalBoundaryConditions)
         {
-            HashSet<int> elementIdsHash = new HashSet<int>();
+            HashSet<string> elementIdsHash = new HashSet<string>();
             //
             bool twoD = model.Properties.ModelSpace.IsTwoD();
             bool shellEdgeFace;
@@ -237,12 +238,12 @@ namespace FileInOut.Output
                             elementSet = model.Mesh.ElementSets[entry.Value];
                             foreach (var elementId in elementSet.Labels)
                             {
-                                if (elementIdsHash.Contains(elementId))
+                                if (elementIdsHash.Contains(entry.Key.ToString() + "_" + elementId))
                                     throw new CaeException("Element id: " + elementId +
                                                            " has more than one compression only constraint defined.");
                                 //
                                 element = model.Mesh.Elements[elementId];
-                                elementIdsHash.Add(elementId);
+                                elementIdsHash.Add(entry.Key.ToString() + "_" + elementId);
                                 //
                                 model.Mesh.GetElementFaceCenterAndNormal(elementId, entry.Key, out _, out faceNormal,
                                                                          out shellElement);
@@ -263,8 +264,6 @@ namespace FileInOut.Output
                                 }
                             }
                         }
-                        
-                        
                         // Get a dictionary of all node ids that have the same normal
                         normalNodeIds.Clear();
                         foreach (var entry in nodeIdNodeNormals)
@@ -305,6 +304,298 @@ namespace FileInOut.Output
                             additionalElementSets.Add(new FeElementSet(name, elementIds.ToArray()));
                             additionalSections.Add(new GapSection("GapSection", name, 0, normal, co.SpringStiffness.Value,
                                                                   co.TensileForceAtNegativeInfinity.Value, twoD));
+                        }
+                    }
+                }
+            }
+            // Add all elements
+            additionalElementKeywords.Add(new CalElement(FeElementTypeGap.GAPUNI.ToString(), null, elementsToAdd));
+            // Boundary conditions
+            name = "Internal_All_Compression_Only_Constraints_NodeSet";
+            additionalNodeSets.Add(new FeNodeSet(name, bcNodeIds.ToArray()));
+            DisplacementRotation dr = new DisplacementRotation("Compression_Only_BC", name, RegionTypeEnum.NodeSetName,
+                                                               twoD, false, 0);
+            dr.U1.SetEquationFromValue(0);
+            dr.U2.SetEquationFromValue(0);
+            dr.U3.SetEquationFromValue(0);
+            additionalBoundaryConditions.Add(dr);
+            //
+            maxNodeId = newNodeId;
+            maxElementId = newElementId;
+        }
+        static private void GetCompressionOnlyConstraintDataSingle(FeModel model, ref int maxNodeId, ref int maxElementId,
+                                                             ref List<FeNode> additionalNodes,
+                                                             ref List<FeNodeSet> additionalNodeSets,
+                                                             ref List<CalElement> additionalElementKeywords,
+                                                             ref List<FeElementSet> additionalElementSets,
+                                                             ref List<Section> additionalSections,
+                                                             ref List<BoundaryCondition> additionalBoundaryConditions)
+        {
+            HashSet<string> elementIdsHash = new HashSet<string>();
+            //
+            bool twoD = model.Properties.ModelSpace.IsTwoD();
+            bool shellEdgeFace;
+            bool shellElement;
+            double[] faceNormal;
+            FeElement element;
+            FeElementSet elementSet;
+            FeSurface surface;
+            Vec3D normalVec;
+            List<Vec3D> nodeNormals;
+            Dictionary<int, List<Vec3D>> nodeIdNodeNormals = new Dictionary<int, List<Vec3D>>();
+            //
+            double[] normal;
+            Dictionary<int, double[]> nodeIdNormal = new Dictionary<int, double[]>();
+            int count;
+            int newNodeId = maxNodeId;
+            int newElementId = maxElementId;
+            List<int> elementIds;
+            string name;
+            FeNode node;
+            List<int> bcNodeIds = new List<int>();
+            LinearGapElement gapElement;
+            List<FeElement> elementsToAdd = new List<FeElement>();
+            double weightSum;
+            double nodeStiffness;
+            double nodeForce;
+            Dictionary<int, double> nodeIdNodeWeight;
+            // Get all nodes and their normals
+            foreach (var constraintEntry in model.Constraints)
+            {
+                if (constraintEntry.Value is CompressionOnly co)
+                {
+                    if (co.Active && co.Valid)
+                    {
+                        surface = model.Mesh.Surfaces[co.MasterRegionName];
+                        model.GetDistributedNodalValuesFromSurface(surface.Name, out nodeIdNodeWeight, out weightSum);
+                        //
+                        foreach (var entry in surface.ElementFaces)
+                        {
+                            elementSet = model.Mesh.ElementSets[entry.Value];
+                            foreach (var elementId in elementSet.Labels)
+                            {
+                                if (elementIdsHash.Contains(entry.Key.ToString() + "_" + elementId))
+                                    throw new CaeException("Element id: " + elementId +
+                                                           " has more than one compression only constraint defined.");
+                                //
+                                element = model.Mesh.Elements[elementId];
+                                elementIdsHash.Add(entry.Key.ToString() + "_" + elementId);
+                                //
+                                model.Mesh.GetElementFaceCenterAndNormal(elementId, entry.Key, out _, out faceNormal,
+                                                                         out shellElement);
+                                // Invert normal
+                                shellEdgeFace = shellElement && entry.Key != FeFaceName.S1 && entry.Key != FeFaceName.S2;
+                                if (shellElement && !shellEdgeFace)
+                                {
+                                    faceNormal[0] *= -1;
+                                    faceNormal[1] *= -1;
+                                    faceNormal[2] *= -1;
+                                }
+                                normalVec = new Vec3D(faceNormal);
+                                //
+                                foreach (var nodeId in element.GetNodeIdsFromFaceName(entry.Key))
+                                {
+                                    if (nodeIdNodeNormals.TryGetValue(nodeId, out nodeNormals)) nodeNormals.Add(normalVec);
+                                    else nodeIdNodeNormals.Add(nodeId, new List<Vec3D>() { normalVec });
+                                }
+                            }
+                        }
+                        // Get a dictionary of all node ids that have the same normal
+                        nodeIdNormal.Clear();
+                        foreach (var entry in nodeIdNodeNormals)
+                        {
+                            normalVec = new Vec3D();
+                            foreach (var normalEntry in entry.Value) normalVec += normalEntry;
+                            normalVec.Normalize();
+                            //
+                            nodeIdNormal.Add(entry.Key, normalVec.Coor);
+                        }
+                        // Get nodes, elements, element sets, gap sections, boundary conditions
+                        count = 1;
+                        foreach (var entry in nodeIdNormal)
+                        {
+                            normal = entry.Value;
+                            elementIds = new List<int>();
+                            name = co.Name + "_ElementSet" + count++;
+                            //
+                            newNodeId++;
+                            newElementId++;
+                            bcNodeIds.Add(newNodeId);
+                            //
+                            double offset = 0;
+                            node = new FeNode(newNodeId, model.Mesh.Nodes[entry.Key].Coor);
+                            node.X -= offset * normal[0];
+                            node.Y -= offset * normal[1];
+                            node.Z -= offset * normal[2];
+                            additionalNodes.Add(node);
+                            gapElement = new LinearGapElement(newElementId, new int[] { newNodeId, entry.Key });
+                            elementIds.Add(newElementId);
+                            elementsToAdd.Add(gapElement);
+                            //
+                            additionalElementSets.Add(new FeElementSet(name, elementIds.ToArray()));
+                            // Scale to nodal weights
+                            nodeStiffness = co.SpringStiffness.Value;
+                            if (double.IsNaN(nodeStiffness)) nodeStiffness = GapSection.InitialSpringStiffness;
+                            nodeStiffness = nodeStiffness * nodeIdNodeWeight[entry.Key] / weightSum;
+                            //
+                            nodeForce = co.TensileForceAtNegativeInfinity.Value;
+                            if (double.IsNaN(nodeForce)) nodeForce = GapSection.InitialTensileForceAtNegativeInfinity;
+                            nodeForce = nodeForce * nodeIdNodeWeight[entry.Key] / weightSum;
+                            //
+                            additionalSections.Add(new GapSection("GapSection", name, 0, normal, nodeStiffness, nodeForce, twoD));
+                        }
+                    }
+                }
+            }
+            // Add all elements
+            additionalElementKeywords.Add(new CalElement(FeElementTypeGap.GAPUNI.ToString(), null, elementsToAdd));
+            // Boundary conditions
+            name = "Internal_All_Compression_Only_Constraints_NodeSet";
+            additionalNodeSets.Add(new FeNodeSet(name, bcNodeIds.ToArray()));
+            DisplacementRotation dr = new DisplacementRotation("Compression_Only_BC", name, RegionTypeEnum.NodeSetName,
+                                                               twoD, false, 0);
+            dr.U1.SetEquationFromValue(0);
+            dr.U2.SetEquationFromValue(0);
+            dr.U3.SetEquationFromValue(0);
+            additionalBoundaryConditions.Add(dr);
+            //
+            maxNodeId = newNodeId;
+            maxElementId = newElementId;
+        }
+        static private void GetCompressionOnlyConstraintData(FeModel model, ref int maxNodeId, ref int maxElementId,
+                                                             ref List<FeNode> additionalNodes,
+                                                             ref List<FeNodeSet> additionalNodeSets,
+                                                             ref List<CalElement> additionalElementKeywords,
+                                                             ref List<FeElementSet> additionalElementSets,
+                                                             ref List<Section> additionalSections,
+                                                             ref List<BoundaryCondition> additionalBoundaryConditions,
+                                                             ref List<double[]> equationParameters)
+        {
+            HashSet<string> elementIdsHash = new HashSet<string>();
+            //
+            bool twoD = model.Properties.ModelSpace.IsTwoD();
+            bool shellEdgeFace;
+            bool shellElement;
+            double[] faceNormal;
+            FeElement element;
+            FeElementSet elementSet;
+            FeSurface surface;
+            Vec3D normalVec;
+            List<Vec3D> nodeNormals;
+            Dictionary<int, List<Vec3D>> nodeIdNodeNormals = new Dictionary<int, List<Vec3D>>();
+            //
+            double[] normal;
+            Dictionary<int, double[]> nodeIdNormal = new Dictionary<int, double[]>();
+            int count;
+            int newNodeId = maxNodeId;
+            int newElementId = maxElementId;
+            List<int> elementIds;
+            string name;
+            double offset;
+            FeNode node1;
+            FeNode node2;
+            List<int> bcNodeIds = new List<int>();
+            LinearGapElement gapElement;
+            List<FeElement> elementsToAdd = new List<FeElement>();
+            double weightSum;
+            double nodeStiffness;
+            double nodeForce;
+            Dictionary<int, double> nodeIdNodeWeight;
+            // Get all nodes and their normals
+            foreach (var constraintEntry in model.Constraints)
+            {
+                if (constraintEntry.Value is CompressionOnly co)
+                {
+                    if (co.Active && co.Valid)
+                    {
+                        surface = model.Mesh.Surfaces[co.MasterRegionName];
+                        model.GetDistributedNodalValuesFromSurface(surface.Name, out nodeIdNodeWeight, out weightSum);
+                        offset = co.Offset.Value;
+                        //
+                        foreach (var entry in surface.ElementFaces)
+                        {
+                            elementSet = model.Mesh.ElementSets[entry.Value];
+                            foreach (var elementId in elementSet.Labels)
+                            {
+                                if (elementIdsHash.Contains(entry.Key.ToString() + "_" + elementId))
+                                    throw new CaeException("Element id: " + elementId +
+                                                           " has more than one compression only constraint defined.");
+                                //
+                                element = model.Mesh.Elements[elementId];
+                                elementIdsHash.Add(entry.Key.ToString() + "_" + elementId);
+                                //
+                                model.Mesh.GetElementFaceCenterAndNormal(elementId, entry.Key, out _, out faceNormal,
+                                                                         out shellElement);
+                                // Invert normal
+                                shellEdgeFace = shellElement && entry.Key != FeFaceName.S1 && entry.Key != FeFaceName.S2;
+                                if (shellElement && !shellEdgeFace)
+                                {
+                                    faceNormal[0] *= -1;
+                                    faceNormal[1] *= -1;
+                                    faceNormal[2] *= -1;
+                                }
+                                normalVec = new Vec3D(faceNormal);
+                                //
+                                foreach (var nodeId in element.GetNodeIdsFromFaceName(entry.Key))
+                                {
+                                    if (nodeIdNodeNormals.TryGetValue(nodeId, out nodeNormals)) nodeNormals.Add(normalVec);
+                                    else nodeIdNodeNormals.Add(nodeId, new List<Vec3D>() { normalVec });
+                                }
+                            }
+                        }
+                        // Get a dictionary of all node ids that have the same normal
+                        nodeIdNormal.Clear();
+                        foreach (var entry in nodeIdNodeNormals)
+                        {
+                            normalVec = new Vec3D();
+                            foreach (var normalEntry in entry.Value) normalVec += normalEntry;
+                            normalVec.Normalize();
+                            //
+                            nodeIdNormal.Add(entry.Key, normalVec.Coor);
+                        }
+                        // Get nodes, elements, element sets, gap sections, boundary conditions
+                        count = 1;
+                        foreach (var entry in nodeIdNormal)
+                        {
+                            normal = entry.Value;
+                            elementIds = new List<int>();
+                            name = co.Name + "_ElementSet" + count++;
+                            // Node 1
+                            newNodeId++;
+                            bcNodeIds.Add(newNodeId);
+                            //
+                            
+                            node1 = new FeNode(newNodeId, model.Mesh.Nodes[entry.Key].Coor);
+                            node1.X -= offset * normal[0];
+                            node1.Y -= offset * normal[1];
+                            node1.Z -= offset * normal[2];
+                            additionalNodes.Add(node1);
+                            // Node 2
+                            newNodeId++;
+                            //
+                            node2 = new FeNode(newNodeId, model.Mesh.Nodes[entry.Key].Coor);
+                            additionalNodes.Add(node2);
+                            //
+                            newElementId++;
+                            gapElement = new LinearGapElement(newElementId, new int[] { node1.Id, node2.Id });
+                            elementIds.Add(newElementId);
+                            elementsToAdd.Add(gapElement);
+                            // Equations
+                            equationParameters.Add(new double[] { node2.Id, 1, 1, entry.Key, 1, -1 });
+                            equationParameters.Add(new double[] { node2.Id, 2, 1, entry.Key, 2, -1 });
+                            equationParameters.Add(new double[] { node2.Id, 3, 1, entry.Key, 3, -1 });
+                            //
+                            additionalElementSets.Add(new FeElementSet(name, elementIds.ToArray()));
+                            // Scale to nodal weights
+                            nodeStiffness = co.SpringStiffness.Value;
+                            if (double.IsNaN(nodeStiffness)) nodeStiffness = GapSection.InitialSpringStiffness;
+                            nodeStiffness = nodeStiffness * nodeIdNodeWeight[entry.Key] / weightSum;
+                            //
+                            nodeForce = co.TensileForceAtNegativeInfinity.Value;
+                            if (double.IsNaN(nodeForce)) nodeForce = GapSection.InitialTensileForceAtNegativeInfinity;
+                            nodeForce = nodeForce * nodeIdNodeWeight[entry.Key] / weightSum;
+                            //
+                            additionalSections.Add(new GapSection("GapSection", name, 0, normal, nodeStiffness, nodeForce, twoD));
                         }
                     }
                 }
@@ -868,7 +1159,7 @@ namespace FileInOut.Output
             }
         }
         static private void AppendConstraints(FeModel model, Dictionary<string, int[]> referencePointsNodeIds,
-                                              CalculixKeyword parent)
+                                              List<double[]> equationParameters, CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
@@ -876,9 +1167,9 @@ namespace FileInOut.Output
                 {
                     if (entry.Value.Active)
                     {
-                        if (entry.Value is PointSpring) { } // this contraint is split into elements and a section
-                        else if (entry.Value is SurfaceSpring) { } // this contraint is split into point springs
-                        else if (entry.Value is CompressionOnly) { } // this contraint is split into GAPUNI elements and GAP section
+                        if (entry.Value is PointSpring) { } // this constraint is split into elements and a section
+                        else if (entry.Value is SurfaceSpring) { } // this constraint is split into point springs
+                        else if (entry.Value is CompressionOnly) { } // this constraint is split into GAPUNI elements and GAP section
                         else if (entry.Value is RigidBody rb)
                         {
                             string surfaceNodeSetName = null;
@@ -895,6 +1186,11 @@ namespace FileInOut.Output
                         else throw new NotImplementedException();
                     }
                     else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
+                }
+                // Equations
+                foreach (var equationParameter in equationParameters)
+                {
+                    parent.AddKeyword(new CalEquation(equationParameter));
                 }
             }
         }

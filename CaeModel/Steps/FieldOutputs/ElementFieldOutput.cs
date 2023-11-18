@@ -59,5 +59,14 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
+        public string GetVariablesString()
+        {
+            string result = _variables.ToString();
+            //
+            bool error = _variables.HasFlag(ElementFieldVariable.ERR) || _variables.HasFlag(ElementFieldVariable.HER) ||
+                         _variables.HasFlag(ElementFieldVariable.ZZS);
+            if (_variables.HasFlag(ElementFieldVariable.S) && !error) result += ", NOE";
+            return result;
+        }
     }
 }

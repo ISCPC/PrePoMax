@@ -25,6 +25,7 @@ namespace CaeModel
         public LinearSpringSection(string name, string elementSetName, int direction, double stiffness, bool twoD)
             : base(name, null, elementSetName, RegionTypeEnum.ElementSetName, 1, twoD)
         {
+            _direction = direction;
             Stiffness = new EquationContainer(typeof(StringForcePerLengthConverter), stiffness);
         }
         public LinearSpringSection(SerializationInfo info, StreamingContext context)

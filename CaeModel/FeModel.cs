@@ -1555,7 +1555,7 @@ namespace CaeModel
                                 spring.K1.Value / area * entry.Value,
                                 spring.K2.Value / area * entry.Value,
                                 spring.K3.Value / area * entry.Value,
-                                spring.TwoD));
+                                spring.TwoD, false));
                 }
             }
             //

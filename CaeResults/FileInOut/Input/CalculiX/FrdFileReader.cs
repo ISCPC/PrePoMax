@@ -119,8 +119,11 @@ namespace CaeResults
                 {
                     foreach (var entry in materialIdMaterialName)
                     {
-                        elementSet = new FeElementSet(entry.Value, materialIdElementIds[entry.Key].ToArray());
-                        result.Mesh.AddElementSet(elementSet);
+                        if (materialIdElementIds.ContainsKey(entry.Key))
+                        {
+                            elementSet = new FeElementSet(entry.Value, materialIdElementIds[entry.Key].ToArray());
+                            result.Mesh.AddElementSet(elementSet);
+                        }
                     }
                 }
                 // Gap element sets

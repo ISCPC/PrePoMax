@@ -39,7 +39,7 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            return string.Format("{0}{1}", _elementFieldOutput.Variables.ToString(), Environment.NewLine);
+            return string.Format("{0}{1}", _elementFieldOutput.GetVariablesString(), Environment.NewLine);
         }
     }
 }

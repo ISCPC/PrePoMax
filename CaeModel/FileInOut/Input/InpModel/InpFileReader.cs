@@ -283,8 +283,6 @@ namespace FileInOut.Input
                 Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
                 Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
                 //
-                int[] ids;
-                string name;
                 string keyword;
                 List<InpElementSet> inpElementTypeSets = new List<InpElementSet>();
                 // Nodes and elements
@@ -308,6 +306,8 @@ namespace FileInOut.Input
                 HashSet<int> vertexNodeIds = new HashSet<int>();
                 GetVertexEdgeSurfaceNodeIds(inpElementTypeSets, elements,
                                             out vertexNodeIds, out edgeIdNodeIds, out surfaceIdNodeIds);
+                //
+                MergeEdgeElements(elements);
                 //
                 FeMesh mesh;
                 if (elementsToImport == ElementsToImport.Solid) // split into parts
@@ -1462,9 +1462,12 @@ namespace FileInOut.Input
                     else if (record2[0].Trim().ToUpper() == "ELSET") regionName = record2[1].Trim();
                     else if (record2[0].Trim().ToUpper() == "MATERIAL") materialName = record2[1].Trim();
                 }
+                // Thickness for 2D
+                double thickness = 1;
+                if (dataSet.Length == 2) thickness = double.Parse(dataSet[1]);
                 //
                 string name = sections.GetNextNumberedKey("Section");
-                var section = new SolidSection(name, materialName, regionName, RegionTypeEnum.ElementSetName, 0, false);
+                var section = new SolidSection(name, materialName, regionName, RegionTypeEnum.ElementSetName, thickness, false);
                 //
                 return section;
             }
@@ -1968,9 +1971,9 @@ namespace FileInOut.Input
                 _errors.Add("Failed to import boundary condition: " + lines.ToRows());
             }
         }
-        private static void MergeStepBoudaryConditions(Dictionary<string, BoundaryCondition> boundaryConditions,
-                                                       Dictionary<string, FeNodeSet> nodeSets,
-                                                       Step step, FeMesh mesh)
+        private static void MergeStepBoundaryConditions(Dictionary<string, BoundaryCondition> boundaryConditions,
+                                                        Dictionary<string, FeNodeSet> nodeSets,
+                                                        Step step, FeMesh mesh)
         {
             try
             {
@@ -2261,7 +2264,8 @@ namespace FileInOut.Input
                     variables = (ElementFieldVariable)Enum.Parse(typeof(ElementFieldVariable), record1[0].ToUpper());
                     for (int i = 1; i < record1.Length; i++)
                     {
-                        variables |= (ElementFieldVariable)Enum.Parse(typeof(ElementFieldVariable), record1[i].ToUpper());
+                        if (record1[i].ToUpper() == "NOE") continue;
+                        else variables |= (ElementFieldVariable)Enum.Parse(typeof(ElementFieldVariable), record1[i].ToUpper());
                     }
                     ElementFieldOutput elementFieldOutput = new ElementFieldOutput(name, variables);
                     // Add to step
@@ -2502,6 +2506,37 @@ namespace FileInOut.Input
                 _errors.Add("Failed to import contact history output: " + lines.ToRows());
             }
         }
+        private static void MergeEdgeElements(Dictionary<int, FeElement> elements)
+        {
+            int[] key;
+            FeElement[] elementsToRemove;
+            List<FeElement> elementsToMerge;
+            CompareIntArray comparer = new CompareIntArray();
+            Dictionary<int[], List<FeElement>> nodeIdsElements = new Dictionary<int[], List<FeElement>>(comparer);
+            foreach (var entry in elements)
+            {
+                if (entry.Value is FeElement1D edgeElement)
+                {
+                    key = edgeElement.NodeIds;
+                    Array.Sort(key);
+                    if (nodeIdsElements.TryGetValue(key, out elementsToMerge)) elementsToMerge.Add(edgeElement);
+                    else nodeIdsElements.Add(key, new List<FeElement>() { edgeElement });
+                }
+            }
+            //
+            foreach (var entry in nodeIdsElements)
+            {
+                if (entry.Value.Count > 1)
+                {
+                    elementsToRemove = entry.Value.ToArray();
+                    for (int i = 1; i < elementsToRemove.Length; i++)
+                    {
+                        elements.Remove(elementsToRemove[i].Id);
+                    }
+                }
+            }
+        }
+
 
         //  LINEAR ELEMENTS                                                                                                         
         private static LinearBeamElement GetLinearBeamElement(ref int lineId, string[] lines, string[] splitter)

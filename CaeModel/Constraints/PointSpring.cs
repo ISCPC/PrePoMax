@@ -22,17 +22,14 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public PointSpring(string name, string regionName, RegionTypeEnum regionType, bool twoD)
-            : base(name, regionName, regionType, twoD)
+        public PointSpring(string name, string regionName, RegionTypeEnum regionType, bool twoD, bool checkPositive)
+            : base(name, regionName, regionType, twoD, checkPositive)
         {
         }
-        public PointSpring(string name, int nodeId, double k1, double k2, double k3, bool twoD)
-           : base(name, null, RegionTypeEnum.NodeId, twoD)
+        public PointSpring(string name, int nodeId, double k1, double k2, double k3, bool twoD, bool checkPositive)
+           : base(name, null, RegionTypeEnum.NodeId, k1, k2, k3, twoD, checkPositive)
         {
             _nodeId = nodeId;
-            K1.SetEquationFromValue(k1);
-            K2.SetEquationFromValue(k2);
-            K3.SetEquationFromValue(k3);
         }
 
         public PointSpring(SerializationInfo info, StreamingContext context)

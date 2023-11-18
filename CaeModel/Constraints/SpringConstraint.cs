@@ -14,6 +14,7 @@ namespace CaeModel
     public abstract class SpringConstraint : Constraint, ISerializable
     {
         // Variables                                                                                                                
+        private bool _checkPositive;        //ISerializable
         private EquationContainer _k1;      //ISerializable
         private EquationContainer _k2;      //ISerializable
         private EquationContainer _k3;      //ISerializable
@@ -32,20 +33,31 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public SpringConstraint(string name, string regionName, RegionTypeEnum regionType, bool twoD)
+        public SpringConstraint(string name, string regionName, RegionTypeEnum regionType, bool twoD, bool checkPositive)
+            : this(name, regionName, regionType, 0, 0, 0, twoD, checkPositive)
+        {
+        }
+        public SpringConstraint(string name, string regionName, RegionTypeEnum regionType, double k1, double k2, double k3,
+                                bool twoD, bool checkPositive)
             : base(name, regionName, regionType, "", RegionTypeEnum.None, twoD)
         {
-            K1 = new EquationContainer(typeof(StringForcePerLengthConverter), 0);
-            K2 = new EquationContainer(typeof(StringForcePerLengthConverter), 0);
-            K3 = new EquationContainer(typeof(StringForcePerLengthConverter), 0);
+            _checkPositive = checkPositive;
+            K1 = new EquationContainer(typeof(StringForcePerLengthConverter), k1);
+            K2 = new EquationContainer(typeof(StringForcePerLengthConverter), k2);
+            K3 = new EquationContainer(typeof(StringForcePerLengthConverter), k3);
         }
         public SpringConstraint(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+            // Compatibility for version v1.5.2
+            _checkPositive = false;
+            //
             foreach (SerializationEntry entry in info)
             {
                 switch (entry.Name)
                 {
+                    case "_checkPositive":
+                        _checkPositive = (bool)entry.Value; break;
                     case "_k1":
                         // Compatibility for version v1.4.0
                         if (entry.Value is double valueK1)
@@ -90,28 +102,28 @@ namespace CaeModel
         //
         protected double CheckPositive(double value)
         {
-            if (value < 0) return 0;
+            if (_checkPositive && value < 0) return 0;
             else return value;
         }
         protected double CheckPositiveAnd2D(double value)
         {
-            if (value < 0 || TwoD) return 0;
+            if ((_checkPositive && value < 0) || TwoD) return 0;
             else return value;
         }
         public int[] GetSpringDirections()
         {
             List<int> directions = new List<int>();
-            if (_k1.Value > 0) directions.Add(1);
-            if (_k2.Value > 0) directions.Add(2);
-            if (_k3.Value > 0) directions.Add(3);
+            if (_k1.Value != 0) directions.Add(1);
+            if (_k2.Value != 0) directions.Add(2);
+            if (_k3.Value != 0) directions.Add(3);
             return directions.ToArray();
         }
         public double[] GetSpringStiffnessValues()
         {
             List<double> values = new List<double>();
-            if (_k1.Value > 0) values.Add(_k1.Value);
-            if (_k2.Value > 0) values.Add(_k2.Value);
-            if (_k3.Value > 0) values.Add(_k3.Value);
+            if (_k1.Value != 0) values.Add(_k1.Value);
+            if (_k2.Value != 0) values.Add(_k2.Value);
+            if (_k3.Value != 0) values.Add(_k3.Value);
             return values.ToArray();
         }
         // IContainsEquations
@@ -129,6 +141,7 @@ namespace CaeModel
             // Using typeof() works also for null fields
             base.GetObjectData(info, context);
             //
+            info.AddValue("_checkPositive", _checkPositive, typeof(bool));
             info.AddValue("_k1", _k1, typeof(EquationContainer));
             info.AddValue("_k2", _k2, typeof(EquationContainer));
             info.AddValue("_k3", _k3, typeof(EquationContainer));

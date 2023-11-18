@@ -22,8 +22,8 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public SurfaceSpring(string name, string regionName, RegionTypeEnum regionType, bool twoD)
-            : base(name, regionName, regionType, twoD)
+        public SurfaceSpring(string name, string regionName, RegionTypeEnum regionType, bool twoD, bool checkPositive)
+            : base(name, regionName, regionType, twoD, checkPositive)
         {
             _stiffnessPerArea = false;
         }

@@ -493,7 +493,8 @@ namespace PrePoMax
             //
             ClearModel();
             ClearResults();
-            //
+            // Selection
+            _selection = new Selection();
             SetSelectByToDefault();
             //
             _modelChanged = false;  // must be here since ClearResults can set it to true
