@@ -508,6 +508,7 @@ namespace FileInOut.Output
                 {
                     if (co.Active && co.Valid)
                     {
+                        nodeIdNodeNormals.Clear();
                         surface = model.Mesh.Surfaces[co.MasterRegionName];
                         model.GetDistributedNodalValuesFromSurface(surface.Name, out nodeIdNodeWeight, out weightSum);
                         offset = co.Offset.Value;
@@ -557,60 +558,66 @@ namespace FileInOut.Output
                         count = 1;
                         foreach (var entry in nodeIdNormal)
                         {
-                            normal = entry.Value;
-                            elementIds = new List<int>();
-                            name = co.Name + "_ElementSet" + count++;
-                            // Node 1
-                            newNodeId++;
-                            bcNodeIds.Add(newNodeId);
-                            //
-                            
-                            node1 = new FeNode(newNodeId, model.Mesh.Nodes[entry.Key].Coor);
-                            node1.X -= offset * normal[0];
-                            node1.Y -= offset * normal[1];
-                            node1.Z -= offset * normal[2];
-                            additionalNodes.Add(node1);
-                            // Node 2
-                            newNodeId++;
-                            //
-                            node2 = new FeNode(newNodeId, model.Mesh.Nodes[entry.Key].Coor);
-                            additionalNodes.Add(node2);
-                            //
-                            newElementId++;
-                            gapElement = new LinearGapElement(newElementId, new int[] { node1.Id, node2.Id });
-                            elementIds.Add(newElementId);
-                            elementsToAdd.Add(gapElement);
-                            // Equations
-                            equationParameters.Add(new double[] { node2.Id, 1, 1, entry.Key, 1, -1 });
-                            equationParameters.Add(new double[] { node2.Id, 2, 1, entry.Key, 2, -1 });
-                            equationParameters.Add(new double[] { node2.Id, 3, 1, entry.Key, 3, -1 });
-                            //
-                            additionalElementSets.Add(new FeElementSet(name, elementIds.ToArray()));
-                            // Scale to nodal weights
-                            nodeStiffness = co.SpringStiffness.Value;
-                            if (double.IsNaN(nodeStiffness)) nodeStiffness = GapSection.InitialSpringStiffness;
-                            nodeStiffness = nodeStiffness * nodeIdNodeWeight[entry.Key] / weightSum;
-                            //
-                            nodeForce = co.TensileForceAtNegativeInfinity.Value;
-                            if (double.IsNaN(nodeForce)) nodeForce = GapSection.InitialTensileForceAtNegativeInfinity;
-                            nodeForce = nodeForce * nodeIdNodeWeight[entry.Key] / weightSum;
-                            //
-                            additionalSections.Add(new GapSection("GapSection", name, 0, normal, nodeStiffness, nodeForce, twoD));
+                            if (nodeIdNodeWeight[entry.Key] != 0)
+                            {
+                                normal = entry.Value;
+                                elementIds = new List<int>();
+                                name = co.Name + "_ElementSet" + count++;
+                                // Node 1
+                                newNodeId++;
+                                bcNodeIds.Add(newNodeId);
+                                //
+                                node1 = new FeNode(newNodeId, model.Mesh.Nodes[entry.Key].Coor);
+                                node1.X -= offset * normal[0];
+                                node1.Y -= offset * normal[1];
+                                node1.Z -= offset * normal[2];
+                                additionalNodes.Add(node1);
+                                // Node 2
+                                newNodeId++;
+                                //
+                                node2 = new FeNode(newNodeId, model.Mesh.Nodes[entry.Key].Coor);
+                                additionalNodes.Add(node2);
+                                //
+                                newElementId++;
+                                gapElement = new LinearGapElement(newElementId, new int[] { node1.Id, node2.Id });
+                                elementIds.Add(newElementId);
+                                elementsToAdd.Add(gapElement);
+                                // Equations
+                                equationParameters.Add(new double[] { node2.Id, 1, 1, entry.Key, 1, -1 });
+                                equationParameters.Add(new double[] { node2.Id, 2, 1, entry.Key, 2, -1 });
+                                equationParameters.Add(new double[] { node2.Id, 3, 1, entry.Key, 3, -1 });
+                                //
+                                additionalElementSets.Add(new FeElementSet(name, elementIds.ToArray()));
+                                // Scale to nodal weights
+                                nodeStiffness = co.SpringStiffness.Value;
+                                if (double.IsNaN(nodeStiffness)) nodeStiffness = GapSection.InitialSpringStiffness;
+                                nodeStiffness = nodeStiffness * nodeIdNodeWeight[entry.Key] / weightSum;
+                                //
+                                nodeForce = co.TensileForceAtNegativeInfinity.Value;
+                                if (double.IsNaN(nodeForce)) nodeForce = GapSection.InitialTensileForceAtNegativeInfinity;
+                                nodeForce = nodeForce * nodeIdNodeWeight[entry.Key] / weightSum;
+                                // Gap section
+                                additionalSections.Add(new GapSection("GapSection", name, 0, normal, nodeStiffness, nodeForce, twoD));
+                            }
                         }
                     }
                 }
             }
             // Add all elements
-            additionalElementKeywords.Add(new CalElement(FeElementTypeGap.GAPUNI.ToString(), null, elementsToAdd));
+            if (elementsToAdd.Count > 0)
+                additionalElementKeywords.Add(new CalElement(FeElementTypeGap.GAPUNI.ToString(), null, elementsToAdd));
             // Boundary conditions
-            name = "Internal_All_Compression_Only_Constraints_NodeSet";
-            additionalNodeSets.Add(new FeNodeSet(name, bcNodeIds.ToArray()));
-            DisplacementRotation dr = new DisplacementRotation("Compression_Only_BC", name, RegionTypeEnum.NodeSetName,
-                                                               twoD, false, 0);
-            dr.U1.SetEquationFromValue(0);
-            dr.U2.SetEquationFromValue(0);
-            dr.U3.SetEquationFromValue(0);
-            additionalBoundaryConditions.Add(dr);
+            if (bcNodeIds.Count > 0)
+            {
+                name = "Internal_All_Compression_Only_Constraints_NodeSet";
+                additionalNodeSets.Add(new FeNodeSet(name, bcNodeIds.ToArray()));
+                DisplacementRotation dr = new DisplacementRotation("Compression_Only_BC", name, RegionTypeEnum.NodeSetName,
+                                                                   twoD, false, 0);
+                dr.U1.SetEquationFromValue(0);
+                dr.U2.SetEquationFromValue(0);
+                dr.U3.SetEquationFromValue(0);
+                additionalBoundaryConditions.Add(dr);
+            }
             //
             maxNodeId = newNodeId;
             maxElementId = newElementId;

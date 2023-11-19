@@ -412,7 +412,8 @@ namespace CaeResults
                 record1 = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                 id = int.Parse(record1[1]);
                 feDescriptorId = (FrdFeDescriptorId)int.Parse(record1[2]);
-                materialID = int.Parse(record1[4]);
+                if (record1.Length == 5) materialID = int.Parse(record1[4]);    // ResultsForLastIterations has different output 
+                else materialID = -1;
                 //
                 if (gapMaterialIds.Contains(materialID)) materialID = _gapMaterialId;
                 else if (springMaterialIds.Contains(materialID)) materialID = _springMaterialId;
