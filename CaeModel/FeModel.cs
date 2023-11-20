@@ -1620,7 +1620,8 @@ namespace CaeModel
                 {
                     element = _mesh.Elements[elementId];
                     A = element.GetArea(entry.Key, _mesh.Nodes);
-                    if (element is FeElement2D element2D)
+                    // Is shell edge face
+                    if (element is FeElement2D element2D && entry.Key != FeFaceName.S1 && entry.Key != FeFaceName.S2)
                     {
                         sectionId = elementIdSectionId[elementId];
                         if (sectionId == -1) throw new CaeException("Missing section assignment at element " + elementId +
