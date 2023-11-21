@@ -28,7 +28,7 @@ namespace CaeModel
         public override string RegionName { get { return _regionName; } set { _regionName = value; } }
         public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public int NodeId { get { return _nodeId; } set { _nodeId = value; } }
-        public EquationContainer F1 { get { UpdateEquations();  return _f1; } set { SetF1(value); } }
+        public EquationContainer F1 { get { UpdateEquations(); return _f1; } set { SetF1(value); } }
         public EquationContainer F2 { get { UpdateEquations(); return _f2; } set { SetF2(value); } }
         public EquationContainer F3 { get { UpdateEquations(); return _f3; } set { SetF3(value); } }
         public EquationContainer Magnitude { get { UpdateEquations(); return _magnitude; } set { SetMagnitude(value); } }

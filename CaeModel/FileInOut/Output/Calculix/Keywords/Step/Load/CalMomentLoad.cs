@@ -60,13 +60,13 @@ namespace FileInOut.Output.Calculix
             //
             foreach (var dir in directions)
             {
-                if (_load.RegionType == CaeGlobals.RegionTypeEnum.NodeId)
+                if (_load.RegionType == RegionTypeEnum.NodeId)
                     sb.AppendFormat("{0}, {1}, {2}", _load.NodeId, dir,
                                     (ratio * _load.GetDirection(dir - 4)).ToCalculiX16String());
-                else if (_load.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName) // node set
+                else if (_load.RegionType == RegionTypeEnum.NodeSetName) // node set
                     sb.AppendFormat("{0}, {1}, {2}", _load.RegionName, dir,
                                     (ratio * _load.GetDirection(dir - 4)).ToCalculiX16String());
-                else if (_load.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) // reference point
+                else if (_load.RegionType == RegionTypeEnum.ReferencePointName) // reference point
                     sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[1], dir - 3,
                                     (ratio * _load.GetDirection(dir - 4)).ToCalculiX16String());
                 sb.AppendLine();

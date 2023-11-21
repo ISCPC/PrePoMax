@@ -51,13 +51,31 @@ namespace CaeGlobals
             if (_stringDoubleConverterType == null) throw new NotSupportedException();
             TypeConverter stringDoubleConverter = (TypeConverter)Activator.CreateInstance(_stringDoubleConverterType);
             return (string)stringDoubleConverter.ConvertTo(value, typeof(string));
+            //return (string)Converter.ConvertTo(value, typeof(string));
         }
         private double GetValueFromEquation(string equation)
         {
             if (_stringDoubleConverterType == null) throw new NotSupportedException();
             TypeConverter stringDoubleConverter = (TypeConverter)Activator.CreateInstance(_stringDoubleConverterType);
             return Convert.ToDouble(stringDoubleConverter.ConvertFrom(equation));
+            //return Convert.ToDouble(Converter.ConvertFrom(equation));
         }
+        //private TypeConverter Converter
+        //{
+        //    get
+        //    {
+        //        if (_converters == null) _converters = new Dictionary<Type, TypeConverter>();
+        //        //
+        //        TypeConverter converter;
+        //        if (!_converters.TryGetValue(_stringDoubleConverterType, out converter))
+        //        {
+        //            converter = (TypeConverter)Activator.CreateInstance(_stringDoubleConverterType);
+        //            _converters.Add(_stringDoubleConverterType, converter);
+        //        }
+        //        //
+        //        return converter;
+        //    }
+        //}
         public void SetConverterType(Type stringDoubleConverterType)
         {
             if (IsEquation())

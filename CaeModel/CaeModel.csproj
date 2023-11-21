@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="Amplitude\Amplitude.cs" />
     <Compile Include="Amplitude\AmplitudeTabular.cs" />
+    <Compile Include="Constraints\PointSpringData.cs" />
     <Compile Include="Constraints\SpringConstraint.cs" />
     <Compile Include="Constraints\SurfaceSpring.cs" />
     <Compile Include="Contact\ContactPair.cs" />
@@ -150,6 +151,7 @@
     <Compile Include="Steps\Damping\DampingRatioFromTo.cs" />
     <Compile Include="Steps\Damping\Damping.cs" />
     <Compile Include="Steps\Damping\ModalDamping.cs" />
+    <Compile Include="Steps\Loads\CLoadData.cs" />
     <Compile Include="Steps\ModalDynamicsStep.cs" />
     <Compile Include="Steps\SteadyStateDynamicsStep.cs" />
     <Compile Include="Steps\DefinedFields\DefinedField.cs" />

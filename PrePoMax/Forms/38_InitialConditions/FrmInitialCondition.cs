@@ -213,9 +213,9 @@ namespace PrePoMax.Forms
                     // Check for deleted entities
                     if (viv.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (viv.RegionType == RegionTypeEnum.PartName.ToFriendlyString())
-                        CheckMissingValueRef(ref nodeSetNames, viv.PartName, s => { viv.PartName = s; });
+                        CheckMissingValueRef(ref partNames, viv.PartName, s => { viv.PartName = s; });
                     else if (viv.RegionType == RegionTypeEnum.ElementSetName.ToFriendlyString())
-                        CheckMissingValueRef(ref surfaceNames, viv.ElementSetName, s => { viv.ElementSetName = s; });
+                        CheckMissingValueRef(ref elementSetNames, viv.ElementSetName, s => { viv.ElementSetName = s; });
                     else throw new NotSupportedException();
                     //
                     viv.PopulateDropDownLists(partNames, elementSetNames);

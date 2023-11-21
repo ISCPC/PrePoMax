@@ -8,6 +8,7 @@ using UnitsNet.Units;
 using NCalc;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Diagnostics;
 
 namespace CaeGlobals
 {
@@ -20,6 +21,8 @@ namespace CaeGlobals
         // Methods                                                                                                                  
         static public double ConvertFromString(string valueString, Func<string, double> ConvertToCurrentUnits)
         {
+            //var list = Trace.Listeners;
+            //
             double valueDouble;
             valueString = valueString.Trim();
             //

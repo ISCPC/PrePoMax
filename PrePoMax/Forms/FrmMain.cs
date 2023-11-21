@@ -8724,7 +8724,9 @@ namespace PrePoMax
                 //_vtk.SwitchLights();
                 //_controller.TestCreateSurface();
                 //AnimateModel58();
-                _vtk.Export(GetFileNameToSaveAs());
+                //_vtk.Export(GetFileNameToSaveAs());
+                //TestSpring();
+                TestEquation();
             }
             catch
             {
@@ -8827,6 +8829,36 @@ namespace PrePoMax
             //
             //if (timerTest.Enabled) timerTest.Stop();
             //else timerTest.Start();
+        }
+        private void TestEquation()
+        {
+            EquationContainer equationContainer1;
+            EquationContainer equationContainer2;
+            for (int i = 0; i < 10000; i++)
+            {
+                equationContainer1 = new EquationContainer(typeof(StringLengthConverter), 1.4);
+                equationContainer2 = new EquationContainer(typeof(StringLengthConverter), 1);
+                EquationContainer.SetAndCheck(ref equationContainer2, equationContainer1, null, false);
+            }
+        }
+        private void TestSpring()
+        {
+            int[] directions;
+            PointSpring pointSpring;
+            PointSpringData pointSpringData;
+            List<CaeModel.Constraint> constraints = new List<CaeModel.Constraint>();
+            for (int i = 0; i < 10000; i++)
+            {
+                pointSpring = new PointSpring("spring", 101, 1, 2, 3, false, false);
+                directions = pointSpring.GetSpringDirections();
+            }
+            directions = null;
+            //
+            for (int i = 0; i < 10000; i++)
+            {
+                pointSpringData = new PointSpringData("spring", 101, 1, 2, 3);
+                directions = pointSpringData.GetSpringDirections();
+            }
         }
         private void AnimateModel58()
         {

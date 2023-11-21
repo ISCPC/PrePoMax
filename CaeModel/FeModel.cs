@@ -13,6 +13,7 @@ using System.Data;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
 using static System.Collections.Specialized.BitVector32;
+using System.Net.NetworkInformation;
 
 namespace CaeModel
 {
@@ -1537,51 +1538,64 @@ namespace CaeModel
             return false;
         }
         // Springs                                                                                  
-        public PointSpring[] GetPointSpringsFromSurfaceSpring(SurfaceSpring spring)
+        public PointSpringData[] GetPointSpringsFromSurfaceSpring(SurfaceSpring spring)
         {
-            Dictionary<int, double> nodalStiffnesses;
-            double area;
-            GetDistributedNodalValuesFromSurface(spring.RegionName, out nodalStiffnesses, out area);
+            List<PointSpringData> springs = new List<PointSpringData>();
             //
-            if (spring.StiffnessPerArea) area = 1;      // account for the stiffness type
-            //
-            List<PointSpring> springs = new List<PointSpring>();
-            foreach (var entry in nodalStiffnesses)
+            if (spring.GetSpringDirections().Length != 0)
             {
-                if (entry.Value != 0 && (spring.GetSpringDirections().Length > 0))
+                double area;
+                Dictionary<int, double> nodalStiffnesses;
+                GetDistributedNodalValuesFromSurface(spring.RegionName, out nodalStiffnesses, out area);
+                //
+                if (spring.StiffnessPerArea) area = 1;      // account for the stiffness type
+                //
+                double k1ByArea = spring.K1.Value / area;
+                double k2ByArea = spring.K2.Value / area;
+                double k3ByArea = spring.K3.Value / area;
+                //
+                foreach (var entry in nodalStiffnesses)
                 {
-                    springs.Add(new PointSpring(spring.Name + "_" + entry.Key.ToString(),
-                                entry.Key,
-                                spring.K1.Value / area * entry.Value,
-                                spring.K2.Value / area * entry.Value,
-                                spring.K3.Value / area * entry.Value,
-                                spring.TwoD, false));
+                    if (entry.Value != 0)
+                    {
+                        springs.Add(new PointSpringData(spring.Name + "_" + entry.Key.ToString(), entry.Key,
+                                    k1ByArea  * entry.Value,
+                                    k2ByArea  * entry.Value,
+                                    k3ByArea  * entry.Value));
+                    }
                 }
             }
             //
             return springs.ToArray();
         }
         // Loads                                                                                    
-        public CLoad[] GetNodalLoadsFromSurfaceTraction(STLoad load)
+        public CLoadData[] GetNodalLoadsFromSurfaceTraction(STLoad load)
         {
-            Dictionary<int, double> nodalForces;
-            double area;
-            GetDistributedNodalValuesFromSurface(load.SurfaceName, out nodalForces, out area);
+            List<CLoadData> loads = new List<CLoadData>();
             //
-            List<CLoad> loads = new List<CLoad>();
-            CLoad cLoad;
-            foreach (var entry in nodalForces)
+            if (load.Magnitude.Value != 0)
             {
-                if (entry.Value != 0 && (load.Magnitude.Value != 0))
+                double area;
+                Dictionary<int, double> nodalForces;
+                GetDistributedNodalValuesFromSurface(load.SurfaceName, out nodalForces, out area);
+                //
+                //
+                double f1ByArea = load.F1.Value / area;
+                double f2ByArea = load.F2.Value / area;
+                double f3ByArea = load.F3.Value / area;
+                //
+                CLoadData cLoad;
+                foreach (var entry in nodalForces)
                 {
-                    cLoad = new CLoad("_CLoad_" + entry.Key.ToString(), entry.Key,
-                                      load.F1.Value / area * entry.Value,
-                                      load.F2.Value / area * entry.Value,
-                                      load.F3.Value / area * entry.Value,
-                                      load.TwoD, load.Complex,
-                                      load.PhaseDeg.Value);
-                    cLoad.AmplitudeName = load.AmplitudeName;
-                    loads.Add(cLoad);
+                    if (entry.Value != 0)
+                    {
+                        cLoad = new CLoadData("_CLoad_" + entry.Key.ToString(), entry.Key,
+                                              f1ByArea * entry.Value,
+                                              f2ByArea * entry.Value,
+                                              f3ByArea * entry.Value);
+                        cLoad.AmplitudeName = load.AmplitudeName;
+                        loads.Add(cLoad);
+                    }
                 }
             }
             //
