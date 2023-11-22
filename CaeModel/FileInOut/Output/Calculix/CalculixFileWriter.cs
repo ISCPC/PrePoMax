@@ -75,7 +75,7 @@ namespace FileInOut.Output
             List<FeNodeSet> additionalNodeSets = new List<FeNodeSet>();
             List<CalElement> additionalElementKeywords = new List<CalElement>();
             List<FeElementSet> additionalElementSets = new List<FeElementSet>();
-            List<Section> additionalSections = new List<Section>();
+            List<SectionData> additionalSectionData = new List<SectionData>();
             List<BoundaryCondition> additionalBoundaryConditions = new List<BoundaryCondition>();
             List<double[]> equationParameters = new List<double[]>();
             // Collect pre-tension loads
@@ -83,14 +83,14 @@ namespace FileInOut.Output
             GetPretensionLoads(model, out preTensionLoads);
             // Collect compression only constraints
             GetCompressionOnlyConstraintData(model, ref maxNodeId, ref maxElementId, ref additionalNodes, ref additionalNodeSets,
-                                             ref additionalElementKeywords, ref additionalElementSets, ref additionalSections,
+                                             ref additionalElementKeywords, ref additionalElementSets, ref additionalSectionData,
                                              ref additionalBoundaryConditions, ref equationParameters);
             // Prepare reference points
             Dictionary<string, int[]> referencePointsNodeIds;
             GetReferencePoints(model, preTensionLoads, ref maxNodeId, out referencePointsNodeIds);
             // Prepare point springs
             GetPointSprings(model, referencePointsNodeIds, ref maxElementId, ref additionalElementKeywords,
-                            ref additionalElementSets, ref additionalSections);
+                            ref additionalElementSets, ref additionalSectionData);
             //
             CalTitle title;
             List<CalculixKeyword> keywords = new List<CalculixKeyword>();
@@ -137,7 +137,7 @@ namespace FileInOut.Output
             // Sections
             title = new CalTitle("Sections", "");
             keywords.Add(title);
-            AppendSections(model, additionalSections, title);
+            AppendSections(model, additionalSectionData, title);
             // Pre-tension sections
             title = new CalTitle("Pre-tension sections", "");
             keywords.Add(title);
@@ -195,7 +195,7 @@ namespace FileInOut.Output
                                                              ref List<FeNodeSet> additionalNodeSets,
                                                              ref List<CalElement> additionalElementKeywords,
                                                              ref List<FeElementSet> additionalElementSets,
-                                                             ref List<Section> additionalSections,
+                                                             ref List<SectionData> additionalSectionData,
                                                              ref List<BoundaryCondition> additionalBoundaryConditions,
                                                              ref List<double[]> equationParameters)
         {
@@ -219,15 +219,18 @@ namespace FileInOut.Output
             int newElementId = maxElementId;
             List<int> elementIds;
             string name;
-            double offset;
+            
             FeNode node1;
             FeNode node2;
             List<int> bcNodeIds = new List<int>();
             LinearGapElement gapElement;
             List<FeElement> elementsToAdd = new List<FeElement>();
-            double weightSum;
+            double area;
             double nodeStiffness;
             double nodeForce;
+            double offset;
+            double nodeStiffnessPerArea;
+            double nodeForcePerArea;
             Dictionary<int, double> nodeIdNodeWeight;
             // Get all nodes and their normals
             foreach (var constraintEntry in model.Constraints)
@@ -238,7 +241,16 @@ namespace FileInOut.Output
                     {
                         nodeIdNodeNormals.Clear();
                         surface = model.Mesh.Surfaces[co.MasterRegionName];
-                        model.GetDistributedNodalValuesFromSurface(surface.Name, out nodeIdNodeWeight, out weightSum);
+                        model.GetDistributedNodalValuesFromSurface(surface.Name, out nodeIdNodeWeight, out area);
+                        //
+                        nodeStiffnessPerArea = co.SpringStiffness.Value;
+                        if (double.IsNaN(nodeStiffnessPerArea)) nodeStiffnessPerArea = GapSectionData.InitialSpringStiffness;
+                        nodeStiffnessPerArea = nodeStiffnessPerArea / area;
+                        //
+                        nodeForcePerArea = co.TensileForceAtNegativeInfinity.Value;
+                        if (double.IsNaN(nodeForcePerArea)) nodeForcePerArea = GapSectionData.InitialTensileForceAtNegativeInfinity;
+                        nodeForcePerArea = nodeForcePerArea / area;
+                        //
                         offset = co.Offset.Value;
                         //
                         foreach (var entry in surface.ElementFaces)
@@ -316,16 +328,12 @@ namespace FileInOut.Output
                                 equationParameters.Add(new double[] { node2.Id, 3, 1, entry.Key, 3, -1 });
                                 //
                                 additionalElementSets.Add(new FeElementSet(name, elementIds.ToArray()));
-                                // Scale to nodal weights
-                                nodeStiffness = co.SpringStiffness.Value;
-                                if (double.IsNaN(nodeStiffness)) nodeStiffness = GapSection.InitialSpringStiffness;
-                                nodeStiffness = nodeStiffness * nodeIdNodeWeight[entry.Key] / weightSum;
-                                //
-                                nodeForce = co.TensileForceAtNegativeInfinity.Value;
-                                if (double.IsNaN(nodeForce)) nodeForce = GapSection.InitialTensileForceAtNegativeInfinity;
-                                nodeForce = nodeForce * nodeIdNodeWeight[entry.Key] / weightSum;
+                                // Scale to nodal area
+                                nodeStiffness = nodeStiffnessPerArea * nodeIdNodeWeight[entry.Key];
+                                nodeForce = nodeForcePerArea * nodeIdNodeWeight[entry.Key];
                                 // Gap section
-                                additionalSections.Add(new GapSection("GapSection", name, 0, normal, nodeStiffness, nodeForce, twoD));
+                                additionalSectionData.Add(new GapSectionData("GapSectionData", name, 0, normal,
+                                                                             nodeStiffness, nodeForce));
                             }
                         }
                     }
@@ -375,7 +383,7 @@ namespace FileInOut.Output
         static private void GetPointSprings(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, ref int maxElementId,
                                             ref List<CalElement> additionalElementKeywords,
                                             ref List<FeElementSet> additionalElementSets,
-                                            ref List<Section> additionalSections)
+                                            ref List<SectionData> additionalSectionData)
         {
             if (model.Mesh != null)
             {
@@ -456,8 +464,8 @@ namespace FileInOut.Output
                             foreach (var element in newElements) elementIds[count++] = element.Id;
                             // Add items
                             additionalElementSets.Add(new FeElementSet(name, elementIds));
-                            additionalSections.Add(new LinearSpringSection("LinearSpringSection", name, directions[i],
-                                                                           stiffnesses[i], twoD));
+                            additionalSectionData.Add(new LinearSpringSectionData("LinearSpringSection", name, directions[i],
+                                                                                  stiffnesses[i]));
                             oneSpringElements.AddRange(newElements);
                         }
                     }
@@ -832,22 +840,27 @@ namespace FileInOut.Output
             }
             
         }
-        static private void AppendSections(FeModel model, List<Section> additionalSections, CalculixKeyword parent)
+        static private void AppendSections(FeModel model, List<SectionData> additionalSectionData, CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
                 foreach (var entry in model.Sections) AppendSection(entry.Value, parent);
                 // Additional sections
-                foreach (var section in additionalSections) AppendSection(section, parent);
+                foreach (var section in additionalSectionData)
+                {
+                    if (section.Active)
+                    {
+                        if (section is LinearSpringSectionData lssd) parent.AddKeyword(new CalLinearSpringSection(lssd));
+                        else if (section is GapSectionData gsd) parent.AddKeyword(new CalGapSection(gsd));
+                    }
+                }
             }
         }
         static private void AppendSection(Section section, CalculixKeyword parent)
         {
             if (section.Active)
             {
-                if (section is LinearSpringSection lss) parent.AddKeyword(new CalLinearSpringSection(lss));
-                else if (section is GapSection gs) parent.AddKeyword(new CalGapSection(gs));
-                else if (section is SolidSection ss) parent.AddKeyword(new CalSolidSection(ss));
+                if (section is SolidSection ss) parent.AddKeyword(new CalSolidSection(ss));
                 else if (section is ShellSection shs) parent.AddKeyword(new CalShellSection(shs));
                 else if (section is MembraneSection ms) parent.AddKeyword(new CalMembraneSection(ms));
                 else throw new NotImplementedException();

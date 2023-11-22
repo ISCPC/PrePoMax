@@ -9,26 +9,26 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
-    public class LinearSpringSection : Section, ISerializable
+    public class LinearSpringSectionData : SectionData, ISerializable
     {
         // Variables                                                                                                                
         private int _direction;                 //ISerializable
-        private EquationContainer _stiffness;   //ISerializable
+        private double _stiffness;              //ISerializable
 
 
         // Properties                                                                                                               
         public int Direction { get { return _direction; } set { _direction = value; } }
-        public EquationContainer Stiffness { get { return _stiffness; } set { SetStiffness(value); } }
+        public double Stiffness { get { return _stiffness; } set { _stiffness = value; } }
 
 
         // Constructors                                                                                                             
-        public LinearSpringSection(string name, string elementSetName, int direction, double stiffness, bool twoD)
-            : base(name, null, elementSetName, RegionTypeEnum.ElementSetName, 1, twoD)
+        public LinearSpringSectionData(string name, string elementSetName, int direction, double stiffness)
+            : base(name, null, elementSetName, RegionTypeEnum.ElementSetName, 1)
         {
             _direction = direction;
-            Stiffness = new EquationContainer(typeof(StringForcePerLengthConverter), stiffness);
+            _stiffness= stiffness;
         }
-        public LinearSpringSection(SerializationInfo info, StreamingContext context)
+        public LinearSpringSectionData(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             foreach (SerializationEntry entry in info)
@@ -39,7 +39,7 @@ namespace CaeModel
                         _direction = (int)entry.Value;
                         break;
                     case "_stiffness":
-                        SetStiffness((EquationContainer)entry.Value, false);
+                        _stiffness = (double)entry.Value;
                         break;
                     default:
                         break;
@@ -49,17 +49,8 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        private void SetStiffness(EquationContainer value, bool checkEquation = true)
-        {
-            EquationContainer.SetAndCheck(ref _stiffness, value, null, checkEquation);
-        }
-        // IContainsEquations
-        public override void CheckEquations()
-        {
-            base.CheckEquations();
-            //
-            _stiffness.CheckEquation();
-        }
+        
+
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {
@@ -67,7 +58,7 @@ namespace CaeModel
             base.GetObjectData(info, context);
             //
             info.AddValue("_direction", _direction, typeof(int));
-            info.AddValue("_stiffness", _stiffness, typeof(EquationContainer));
+            info.AddValue("_stiffness", _stiffness, typeof(double));
         }
     }
 }

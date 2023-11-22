@@ -9,7 +9,7 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
-    public class GapSection : Section, ISerializable
+    public class GapSectionData : SectionData, ISerializable
     {
         // Static Variables                                                                                                         
         public static readonly double InitialSpringStiffness = 1E12;
@@ -35,16 +35,16 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public GapSection(string name, string elementSetName, double clearance, double[] direction,
-                          double springStiffness, double tensileForceAtNegativeInfinity, bool twoD)
-            : base(name, null, elementSetName, RegionTypeEnum.ElementSetName, 1, twoD)
+        public GapSectionData(string name, string elementSetName, double clearance, double[] direction,
+                          double springStiffness, double tensileForceAtNegativeInfinity)
+            : base(name, null, elementSetName, RegionTypeEnum.ElementSetName, 1)
         {
             _clearance = clearance;
             _direction = direction;
             _springStiffness = springStiffness;
             _tensileForceAtNegativeInfinity = tensileForceAtNegativeInfinity;
         }
-        public GapSection(SerializationInfo info, StreamingContext context)
+        public GapSectionData(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             foreach (SerializationEntry entry in info)
@@ -71,11 +71,8 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        public override void CheckEquations()
-        {
-            base.CheckEquations();
-            //
-        }
+       
+
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {

@@ -13,16 +13,16 @@ namespace FileInOut.Output.Calculix
     internal class CalGapSection : CalculixKeyword
     {
         // Variables                                                                                                                
-        private GapSection _gapSection;
+        private GapSectionData _gapSectionData;
 
 
         // Properties                                                                                                               
 
 
         // Constructor                                                                                                              
-        public CalGapSection(GapSection gapSection)
+        public CalGapSection(GapSectionData gapSectionData)
         {
-            _gapSection = gapSection;
+            _gapSectionData = gapSectionData;
         }
 
 
@@ -30,33 +30,32 @@ namespace FileInOut.Output.Calculix
         public override string GetKeywordString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("*Gap, Elset={0}{1}", _gapSection.RegionName, Environment.NewLine);
+            sb.AppendFormat("*Gap, Elset={0}{1}", _gapSectionData.RegionName, Environment.NewLine);
             return sb.ToString();
         }
         public override string GetDataString()
         {
             double springStiffness;
-            if (double.IsNaN(_gapSection.SpringStiffness)) springStiffness = GapSection.InitialSpringStiffness;
-            else springStiffness = _gapSection.SpringStiffness;
+            if (double.IsNaN(_gapSectionData.SpringStiffness)) springStiffness = GapSectionData.InitialSpringStiffness;
+            else springStiffness = _gapSectionData.SpringStiffness;
             //
             double tensileForce;
-            if (double.IsNaN(_gapSection.TensileForceAtNegativeInfinity))
-                tensileForce = GapSection.InitialTensileForceAtNegativeInfinity;
-            else tensileForce = _gapSection.TensileForceAtNegativeInfinity;
+            if (double.IsNaN(_gapSectionData.TensileForceAtNegativeInfinity))
+                tensileForce = GapSectionData.InitialTensileForceAtNegativeInfinity;
+            else tensileForce = _gapSectionData.TensileForceAtNegativeInfinity;
             //
-
             string properties = "";
-            if (!double.IsNaN(_gapSection.SpringStiffness) || !double.IsNaN(_gapSection.TensileForceAtNegativeInfinity))
+            if (!double.IsNaN(_gapSectionData.SpringStiffness) || !double.IsNaN(_gapSectionData.TensileForceAtNegativeInfinity))
                 properties = string.Format(", , {0}, {1}",
                                            springStiffness.ToCalculiX16String(),
                                            tensileForce.ToCalculiX16String());
             
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("{0}, {1}, {2}, {3}{4}{5}",
-                            _gapSection.Clearance,
-                            _gapSection.Direction[0].ToCalculiX16String(),
-                            _gapSection.Direction[1].ToCalculiX16String(),
-                            _gapSection.Direction[2].ToCalculiX16String(),
+                            _gapSectionData.Clearance,
+                            _gapSectionData.Direction[0].ToCalculiX16String(),
+                            _gapSectionData.Direction[1].ToCalculiX16String(),
+                            _gapSectionData.Direction[2].ToCalculiX16String(),
                             properties,
                             Environment.NewLine);
             return sb.ToString();
