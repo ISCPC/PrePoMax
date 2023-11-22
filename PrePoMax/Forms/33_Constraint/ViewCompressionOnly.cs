@@ -87,9 +87,9 @@ namespace PrePoMax
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             //
             StringForcePerLengthDefaultConverter.SetInitialValue =
-                CaeModel.GapSection.InitialSpringStiffness.ToString();
+                CaeModel.GapSectionData.InitialSpringStiffness.ToString();
             StringForceDefaultConverter.SetInitialValue =
-                CaeModel.GapSection.InitialTensileForceAtNegativeInfinity.ToString();
+                CaeModel.GapSectionData.InitialTensileForceAtNegativeInfinity.ToString();
         }
 
 

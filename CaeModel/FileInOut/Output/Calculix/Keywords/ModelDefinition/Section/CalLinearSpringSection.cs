@@ -13,16 +13,16 @@ namespace FileInOut.Output.Calculix
     internal class CalLinearSpringSection : CalculixKeyword
     {
         // Variables                                                                                                                
-        private LinearSpringSection _linearSpringSection;
+        private LinearSpringSectionData _linearSpringSectionData;
 
 
         // Properties                                                                                                               
 
 
         // Constructor                                                                                                              
-        public CalLinearSpringSection(LinearSpringSection linearSpringSection)
+        public CalLinearSpringSection(LinearSpringSectionData linearSpringSectionData)
         {
-            _linearSpringSection = linearSpringSection;
+            _linearSpringSectionData = linearSpringSectionData;
         }
 
 
@@ -30,14 +30,14 @@ namespace FileInOut.Output.Calculix
         public override string GetKeywordString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("*Spring, Elset={0}{1}", _linearSpringSection.RegionName, Environment.NewLine);
+            sb.AppendFormat("*Spring, Elset={0}{1}", _linearSpringSectionData.RegionName, Environment.NewLine);
             return sb.ToString();
         }
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("{0}{1}", _linearSpringSection.Direction, Environment.NewLine);
-            sb.AppendFormat("{0}{1}", _linearSpringSection.Stiffness.Value.ToCalculiX16String(true), Environment.NewLine);
+            sb.AppendFormat("{0}{1}", _linearSpringSectionData.Direction, Environment.NewLine);
+            sb.AppendFormat("{0}{1}", _linearSpringSectionData.Stiffness.ToCalculiX16String(true), Environment.NewLine);
             return sb.ToString();
         }
     }
