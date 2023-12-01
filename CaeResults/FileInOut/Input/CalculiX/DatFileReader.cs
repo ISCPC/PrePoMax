@@ -391,6 +391,7 @@ namespace CaeResults
                                 //      1655   1  1.186531E-02 -3.997792E-02 -3.119545E-03  1.104426E-02  2.740127E-03 -9.467634E-03
                                 lines[0] = lines[0].Replace("(elem, integ.pnt.,sxx,syy,szz,sxy,sxz,syz)",
                                                             "(Id,Int.Pnt.,S11,S22,S33,S12,S13,S23)");
+                                RepairShellStressLines(lines);
                             }
                             else if (name == HOFieldNames.Strains)
                             {
@@ -525,9 +526,22 @@ namespace CaeResults
                                 lines[0] = lines[0].Replace("total body heating for set", "total body heating (BHE) for set");
                             }
                         }
+                        //stresses (elem, integ.pnt.,sxx,syy,szz,sxy,sxz,syz) for set INTERNAL_SELECTION-1_EH_OUTPUT-1 and time  0.2000000E+01
+                        //
+                        //19   1 -8.604228E-16  1.101896E-14  5.000000E-01  2.171349E-16  2.768470E-16 -1.250697E-15 _shell_0000000019   
+
                     }
-                    
+
                 }
+            }
+        }
+        static private void RepairShellStressLines(string[] lines)
+        {
+            int start;
+            for (int i = 1; i < lines.Length; i++)
+            {
+                start = lines[i].IndexOf("_sh");
+                if (start > 0) lines[i] = lines[i].Substring(0, start);
             }
         }
         static private string RepairSetName(string setName, Dictionary<string, string> repairedSetNames)
@@ -819,9 +833,11 @@ namespace CaeResults
                         offset = 0;
                     }                    
                     //                                                                                  
-                    // For ecah component
+                    // For each component
                     for (int j = 0; j < values.Length - offset; j++)
                     {
+                        //19   1 - 8.604228E-16  1.101896E-14  5.000000E-01  2.171349E-16  2.768470E-16 - 1.250697E-15 _shell_0000000019
+
                         // Get or create a component
                         if (!field.Components.TryGetValue(repairedDataSet.ComponentNames[j + offset], out component))
                         {

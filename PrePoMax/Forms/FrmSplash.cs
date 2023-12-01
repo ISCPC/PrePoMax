@@ -15,7 +15,7 @@ namespace PrePoMax.Forms
         public FrmSplash()
         {
             InitializeComponent();
-
+            //
             ShowHelp = false;
             labProgramName.Text = Globals.ProgramName;
         }

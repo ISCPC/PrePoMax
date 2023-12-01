@@ -563,7 +563,7 @@ namespace PrePoMax
         // COMMANDS ********************************************************************************
         public void ImportFileCommand(string fileName, bool onlyMaterials)
         {
-            Commands.CImportFile comm = new Commands.CImportFile(fileName, onlyMaterials);
+            CImportFile comm = new CImportFile(fileName, onlyMaterials);
             _commands.AddAndExecute(comm);
         }
         public void SaveToPmxCommand(string fileName)
@@ -3984,12 +3984,13 @@ namespace PrePoMax
             //
             string argument = Globals.GmshDataFileName;
             //
+            string error = null;
             bool jobCompleted;
             bool debuggerAttached = System.Diagnostics.Debugger.IsAttached;
             if (debuggerAttached)
             {
                 GmshMesher mesher = new GmshMesher(gmshData, _form.WriteDataToOutput);
-                string error = mesher.CreateMesh();
+                error = mesher.CreateMesh();
                 jobCompleted = error == null;
             }
             else
@@ -4006,7 +4007,12 @@ namespace PrePoMax
                 ImportGeneratedMesh(inpFileName, part, true);
                 return true;
             }
-            else throw new CaeException("Mesh generation failed.");
+            else
+            {
+                string message = "Mesh generation failed.";
+                if (error != null) message += Environment.NewLine + error;
+                throw new CaeException(message);
+            }
         }
         private void CreateMeshRefinementFile(GeometryPart part, string fileName,
                                               OrderedDictionary<string, MeshSetupItem> meshSetupItems = null)

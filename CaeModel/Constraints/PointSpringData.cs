@@ -37,8 +37,10 @@ namespace CaeModel
 
         // Constructors                                                                                                             
         public PointSpringData(PointSpring pointSpring)
-           : this(pointSpring.Name, pointSpring.NodeId, pointSpring.K1.Value, pointSpring.K2.Value, pointSpring.K3.Value)
+           : this(pointSpring.Name, -1, pointSpring.K1.Value, pointSpring.K2.Value, pointSpring.K3.Value)
         {
+            _regionName = pointSpring.RegionName;
+            _regionType = pointSpring.RegionType;
         }
         public PointSpringData(string name, int nodeId, double k1, double k2, double k3)
         {

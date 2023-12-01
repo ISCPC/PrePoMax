@@ -312,7 +312,6 @@ namespace PrePoMax
                 _frmAnalyzeGeometry = new FrmAnalyzeGeometry(_controller);
                 AddFormToAllForms(_frmAnalyzeGeometry);
                 //
-
                 _frmMeshSetupItem = new FrmMeshSetupItem(_controller);
                 _frmMeshSetupItem.PreviewEdgeMeshAsync = PreviewEdgeMeshAsync;
                 AddFormToAllForms(_frmMeshSetupItem);
@@ -453,6 +452,9 @@ namespace PrePoMax
             finally
             {
                 this.TopMost = false;
+                // Set form size - after top most
+                _controller.Settings.General.ApplyFormSize(this);
+                
             }
             //
             if (!System.Diagnostics.Debugger.IsAttached)
@@ -477,17 +479,17 @@ namespace PrePoMax
             timer.Tick += new EventHandler(async (object s, EventArgs ea) =>
             {
                 timer.Stop();
-                // Set form size
-                _controller.Settings.General.ApplyFormSize(this);
                 // Vtk
                 _vtk.Enabled = true;
                 // Reduce flicker
-                _vtk.Left += _vtk.Width;
+                int offset = 2 * _vtk.Width;
+                _vtk.Left += offset;
                 _vtk.Visible = true;
+                _vtk.ResetScaleBarPosition();   // start after the vtk size is set
                 _controller.Redraw();
                 _vtk.SetZoomFactor(1000);    // set starting zoom larger that the object
                 Application.DoEvents();
-                _vtk.Left -= _vtk.Width;
+                _vtk.Left -= offset;
                 _vtk.Visible = false;
                 // Close splash 
                 splash.BeginInvoke((MethodInvoker)delegate () { splash.Close(); });
@@ -532,6 +534,14 @@ namespace PrePoMax
                         string extension = Path.GetExtension(fileName).ToLower();
                         HashSet<string> importExtensions = GetFileImportExtensions();
                         //
+                        New(ModelSpaceEnum.ThreeD, UnitSystemType.MM_TON_S_C);
+                        SetStateWorking("Rendering...");
+                        SetStateReady("Rendering...");
+                        //SetMenuAndToolStripVisibility();
+                        //_controller.DrawGeometry(true);
+
+                        //SetMenuAndToolStripVisibility();
+
                         if (extension == ".pmx" || extension == ".pmh" || extension == ".frd")
                             await Task.Run(() => OpenAsync(fileName, _controller.Open));
                         else if (importExtensions.Contains(extension))
@@ -624,8 +634,9 @@ namespace PrePoMax
                 // Save form size and location and delete history files
                 if (e.Cancel == false && _controller != null)
                 {
-                    _controller.Settings.General.SaveFormSize(this);
-                    _controller.Settings.SaveToFile();
+                    SettingsContainer settings = _controller.Settings;  // get a clone
+                    settings.General.SaveFormSize(this);                // save form size
+                    _controller.Settings = settings;                    // update values and save to file
                     //
                     _controller.DeleteHistoryFiles();
                     //
@@ -652,13 +663,9 @@ namespace PrePoMax
         private void UpdateVtkControlSize()
         {
             // Update vtk control size
-            _vtk.Location = panelControl.Location;
-            _vtk.Top += 1;
-            _vtk.Left += 1;
-            //
-            _vtk.Size = panelControl.Size;
-            _vtk.Width -= 2;
-            _vtk.Height -= 2;
+            Rectangle bounds = panelControl.Bounds;
+            bounds.Inflate(-2, -2);
+            if (_vtk.Bounds != bounds) _vtk.Bounds = bounds;
         }
         private bool TestWriteAccess()
         {
@@ -1306,6 +1313,8 @@ namespace PrePoMax
         {
             try
             {
+                //this.TopMost = true;
+                //
                 if ((_controller.ModelChanged || _controller.ModelInitialized || _controller.ResultsInitialized) &&
                     MessageBoxes.ShowWarningQuestion("OK to close the current model?") != DialogResult.OK) return false;
                 //
@@ -1340,6 +1349,10 @@ namespace PrePoMax
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                //this.TopMost = false;
             }
             return true;
         }
@@ -8513,30 +8526,33 @@ namespace PrePoMax
         }
         private void WriteLineToOutputWithDate(string data)
         {
-            int numColDate = 20;
-            int numCol = 150 + numColDate;
-            int numRows = 100;      // number of displayed lines
-
-            List<string> lines = new List<string>(outputLines);
-            List<string> wrappedLines = new List<string>();
-
-            while (numColDate + data.Length > numCol)
+            if (outputLines != null)
             {
-                wrappedLines.Add(data.Substring(0, numCol - numColDate) + "...");
-                data = data.Substring(numCol - numColDate);
+                int numColDate = 20;
+                int numCol = 150 + numColDate;
+                int numRows = 100;      // number of displayed lines
+                //
+                List<string> lines = new List<string>(outputLines);
+                List<string> wrappedLines = new List<string>();
+                //
+                while (numColDate + data.Length > numCol)
+                {
+                    wrappedLines.Add(data.Substring(0, numCol - numColDate) + "...");
+                    data = data.Substring(numCol - numColDate);
+                }
+                wrappedLines.Add(data);
+                //
+                foreach (var wrappedLine in wrappedLines)
+                {
+                    lines.Add(DateTime.Now.ToString("MM/dd/yy HH:mm:ss").PadRight(numColDate) + wrappedLine);
+                }
+                //
+                int firstLine = Math.Max(0, lines.Count - numRows);
+                int numLines = Math.Min(lines.Count, numRows);
+                //
+                outputLines = new string[numLines];
+                Array.Copy(lines.ToArray(), firstLine, outputLines, 0, numLines);
             }
-            wrappedLines.Add(data);
-
-            foreach (var wrappedLine in wrappedLines)
-            {
-                lines.Add(DateTime.Now.ToString("MM/dd/yy HH:mm:ss").PadRight(numColDate) + wrappedLine);
-            }
-
-            int firstLine = Math.Max(0, lines.Count - numRows);
-            int numLines = Math.Min(lines.Count, numRows);
-
-            outputLines = new string[numLines];
-            Array.Copy(lines.ToArray(), firstLine, outputLines, 0, numLines);
         }
 
         #region Invoke  ############################################################################################################
@@ -8726,7 +8742,7 @@ namespace PrePoMax
                 //AnimateModel58();
                 //_vtk.Export(GetFileNameToSaveAs());
                 //TestSpring();
-                TestEquation();
+                TestSuperposition();
             }
             catch
             {
@@ -8829,6 +8845,10 @@ namespace PrePoMax
             //
             //if (timerTest.Enabled) timerTest.Stop();
             //else timerTest.Start();
+        }
+        private void TestSuperposition()
+        {
+            _controller.CurrentResult.TestSuperposition();
         }
         private void TestEquation()
         {

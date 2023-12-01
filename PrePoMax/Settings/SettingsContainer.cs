@@ -207,7 +207,7 @@ namespace PrePoMax
         }
         private void LoadFromFile(string fileName)
         {            
-            Dictionary<string, ISettings> items = CaeGlobals.Tools.LoadDumpFromFile<Dictionary<string, ISettings>>(fileName);
+            Dictionary<string, ISettings> items = Tools.LoadDumpFromFile<Dictionary<string, ISettings>>(fileName);
             FromDictionary(items);
         }
         //

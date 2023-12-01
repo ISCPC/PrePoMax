@@ -132,16 +132,15 @@ namespace PrePoMax
             Point location;
             Rectangle resolution = Screen.FromControl(form).Bounds;
             //
-            if (_formWindowState == FormWindowState.Normal && form.Size.Width < resolution.Width * 0.9 &&
-                form.Size.Height < resolution.Height * 0.9)
-            {
-                size = form.Size;
-                location = form.Location;
-            }
-            else
+            if (form.WindowState == FormWindowState.Maximized)
             {
                 size = form.RestoreBounds.Size;
                 location = form.RestoreBounds.Location;
+            }
+            else
+            {
+                size = form.Size;
+                location = form.Location;
             }
             //
             Point center = new Point(location.X + size.Width / 2, location.Y + size.Height / 2);
@@ -162,19 +161,16 @@ namespace PrePoMax
                                      (int)(resolution.Height * _formRelativeYLocation));
             //
             Rectangle bounds = new Rectangle(new Point(center.X - _formSize.Width / 2, center.Y - _formSize.Height / 2), _formSize);
-            //
+            // Limit it to the screen
             if (bounds.Right > resolution.Width) bounds.X = resolution.Width - bounds.Width;
             if (bounds.Left <= 0) bounds.X = 0;
             if (bounds.Bottom > resolution.Bottom) bounds.Y = resolution.Height - bounds.Height;
             if (bounds.Top <= 0) bounds.Y = 0;
-            //
+            // Set form size
+            form.SetBounds(bounds.X, bounds.Y, bounds.Width, bounds.Height);    // also sets the restore bounds
             form.WindowState = _formWindowState;
-            form.Bounds = bounds;
             // Prevent minimized window at startup
             if (form.WindowState == FormWindowState.Minimized) form.WindowState = FormWindowState.Normal;
         }
-
-
-
     }
 }

@@ -13,6 +13,8 @@ using System.Collections.Concurrent;
 using System.Data;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
+using System.Collections;
+using System.IO;
 
 namespace CaeResults
 {
@@ -4660,6 +4662,182 @@ namespace CaeResults
                 }
             }
         }
+        // Superposition
+        public void TestSuperposition()
+        {
+            string[] componentNames = new string[] { FOComponentNames.S11,
+                                                     FOComponentNames.S22,
+                                                     FOComponentNames.S33,
+                                                     FOComponentNames.S12,
+                                                     FOComponentNames.S23,
+                                                     FOComponentNames.S13 };
+            //
+            FieldData fieldData;
+            Field field;
+            int[] stepIds = GetAllStepIds();
+            float[][][] scv = new float[stepIds.Length][][];
+            for (int i = 0; i < stepIds.Length; i++)
+            {
+                fieldData = new FieldData(FOFieldNames.Stress, "", stepIds[i], 1);
+                field = GetField(fieldData);
+                scv[i] = new float[componentNames.Length][];
+                //
+                for (int j = 0; j < componentNames.Length; j++) scv[i][j] = field.GetComponentValues(componentNames[j]);
+            }
+            //
+            float[][] weights = new float[stepIds.Length][];
+            weights[0] = new float[] { 1.1f };                  // pressure
+            weights[1] = new float[] { 37000000 };                 // MAy
+            weights[2] = new float[] { 10000, -10000 };         // FAx
+            weights[3] = new float[] { 20000, -20000 };         // FAy
+            weights[4] = new float[] { 43000, -43000 };         // FAz
+            weights[5] = new float[] { 3000000, -3000000};            // MAx
+            weights[6] = new float[] { 21000000, -21000000 };         // MAz
+            weights[7] = new float[] { 10000, -10000 };         // FCx
+            weights[8] = new float[] { 5000, -5000 };           // FCy
+            weights[9] = new float[] { 9000, -9000 };           // FCz
+            weights[10] = new float[] { 3000000, - 3000000 };         // MCx
+            weights[11] = new float[] { 3100000, -3100000 };          // MCy
+            weights[12] = new float[] { 1000000, -1000000 };          // MCz
+            weights[13] = new float[] { 2000, -2000 };          // FDx
+            weights[14] = new float[] { 1400, -1400 };          // FDy
+            weights[15] = new float[] { 1400, -1400 };          // FDz
+            weights[16] = new float[] { 700000, -700000 };            // MDx
+            weights[17] = new float[] { 700000, -700000 };            // MDy
+            weights[18] = new float[] { 500000, -500000 };            // MDz
 
+            // Generate all possible combinations using efficient list manipulation
+            List<List<float>> combinations = new List<List<float>>();
+            combinations.Add(new List<float>());
+            foreach (float[] list in weights)
+            {
+                List<List<float>> tempCombinations = new List<List<float>>();
+
+                foreach (List<float> combination in combinations)
+                {
+                    foreach (float value in list)
+                    {
+                        List<float> newCombination = new List<float>(combination);
+                        newCombination.Add(value);
+                        tempCombinations.Add(newCombination);
+                    }
+                }
+                combinations = tempCombinations;
+            }
+            //
+            int count = 0;
+            List<float> maxCombination;
+            //
+            Field resultField;
+            object myLock = new object();
+            //
+            List<float>[] combinationsArray = combinations.ToArray();
+            float[] maxMisses = new float[combinationsArray.Length];
+            int[] indices = new int[combinationsArray.Length];
+            Parallel.For(0, combinationsArray.Length, new ParallelOptions { MaxDegreeOfParallelism = 16 }, combNum =>
+            //Parallel.ForEach(combinations, combination =>
+            //foreach (var combination in combinations)
+            {
+                float mises = 0;
+                float maxMises = 0;
+                float wi;
+                float[] w;
+                float[] valuesJ;
+                float[] scvIJ;
+                float[][] values;
+                //
+                w = combinationsArray[combNum].ToArray();
+                values = new float[componentNames.Length][];
+                //
+                for (int i = 0; i < componentNames.Length; i++) values[i] = new float[scv[0][i].Length];
+                //
+                for (int i = 0; i < stepIds.Length; i++)
+                {
+                    wi = w[i];
+                    for (int j = 0; j < componentNames.Length; j++)
+                    {
+                        valuesJ = values[j];
+                        scvIJ = scv[i][j];
+                        for (int k = 0; k < scvIJ.Length; k++)
+                        {
+                            valuesJ[k] += wi * scvIJ[k];
+                        }
+                    }
+                }
+                //
+                float a, b, c;
+                for (int i = 0; i < values[0].Length; i++)
+                {
+                    a = values[0][i] - values[1][i];
+                    b = values[1][i] - values[2][i];
+                    c = values[2][i] - values[0][i];
+                    mises = (float)Math.Sqrt(0.5f * (a * a + b * b + c * c +
+                        6 * (values[3][i] * values[3][i] + values[4][i] * values[4][i] + values[5][i] * values[5][i])));
+                    //
+                    //lock (myLock)
+                    {
+                        if (mises > maxMises)
+                        {
+                            maxMises = mises;
+                            //maxCombination = combinationsArray[combNum];
+                        }
+                    }
+                }
+                indices[combNum] = combNum;
+                maxMisses[combNum] = maxMises;
+                //
+                //resultField = new Field(FOFieldNames.Stress);
+                //for (int i = 0; i < componentNames.Length; i++)
+                //    resultField.AddComponent(new FieldComponent(componentNames[i], values[i]));
+                ////
+                //resultField.ComputeInvariants();
+                //
+                //mises = resultField.GetComponentMax(FOComponentNames.Mises);
+                //
+                //if (mises > maxMises)
+                //{
+                //    maxMises = mises;
+                //    maxCombination = combination;
+                //}
+                //
+                count++;
+                if (count % 1000 == 0) { System.Diagnostics.Debug.WriteLine(count); }
+            }
+            );
+            //
+            Array.Sort(maxMisses, indices);
+            //
+            int index;
+            string line;
+            List<string> lines = new List<string>();
+            for (int i = 0; i < indices.Length; i++)
+            {
+                index = indices[i];
+                line = maxMisses[i].ToString() + ";";
+                foreach (var value in combinationsArray[index]) line += value.ToString() + ";";
+                lines.Add(line);
+            }
+            //
+            File.WriteAllLines(@"C:\Temp\combinations.csv", lines.ToArray());
+            //
+            maxCombination = combinationsArray[indices.Last()];
+            float maxMisesAll = maxMisses.Last();
+            maxMisesAll = maxMisses.Last();
+        }
+
+
+        int i = 1;
+    }
+
+    public static class ListExtensions
+    {
+        public static List<List<T>> ChunkBy<T>(this List<T> source, int chunkSize)
+        {
+            return source
+                .Select((x, i) => new { Index = i, Value = x })
+                .GroupBy(x => x.Index / chunkSize)
+                .Select(x => x.Select(v => v.Value).ToList())
+                .ToList();
+        }
     }
 }

@@ -5906,6 +5906,10 @@ namespace vtkControl
         #endregion #################################################################################################################
 
         #region Widgets ############################################################################################################
+        public void ResetScaleBarPosition()
+        {
+            _scaleWidget.SetHorizontallyRelativePosition((Width - _scaleWidget.GetWidth()) / 2, 0);
+        }
         public void AddArrowWidget(string name, string text, string numberFormat, double[] anchorPoint,
                                    bool drawBackground, bool drawBorder, bool visible)
         {

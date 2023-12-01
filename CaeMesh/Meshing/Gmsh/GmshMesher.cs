@@ -98,94 +98,101 @@ namespace CaeMesh
                                 Dictionary<int, double> vertexIdMeshSize, MeshSetupItem[] gmshSetupItems,
                                 Action<string> writeOutput, bool preview)
         {
-            MeshSetupItem meshSetupItem = gmshSetupItems[0];
-            //
-            if (meshSetupItem is GmshSetupItem gsi)
+            try
             {
-                Tuple<int, int>[] outDimTags;
-                if (_isOCC) Gmsh.OCC.ImportShapes(geometryFileName, out outDimTags, false, "");
-                else
+                MeshSetupItem meshSetupItem = gmshSetupItems[0];
+                //
+                if (meshSetupItem is GmshSetupItem gsi)
                 {
-                    double angleDeg = 30;
-                    Gmsh.Merge(geometryFileName);
-                    Gmsh.Mesh.RemoveDuplicateNodes();
-                    Gmsh.Mesh.ClassifySurfaces(angleDeg * Math.PI / 180, true, false, angleDeg * Math.PI / 180, true);
-                    Gmsh.Mesh.CreateGeometry();
-                    Gmsh.GetEntities(out outDimTags, 2);
-                    int[] surfaceIds = new int[outDimTags.Length];
-                    for (int i = 0; i < outDimTags.Length; i++) surfaceIds[i] = outDimTags[i].Item2;
-                    int volumeId = Gmsh.Geo.AddSurfaceLoop(surfaceIds);
-                    Gmsh.Geo.AddVolume(new int[] { volumeId });
+                    Tuple<int, int>[] outDimTags;
+                    if (_isOCC) Gmsh.OCC.ImportShapes(geometryFileName, out outDimTags, false, "");
+                    else
+                    {
+                        double angleDeg = 30;
+                        Gmsh.Merge(geometryFileName);
+                        Gmsh.Mesh.RemoveDuplicateNodes();
+                        Gmsh.Mesh.ClassifySurfaces(angleDeg * Math.PI / 180, true, false, angleDeg * Math.PI / 180, true);
+                        Gmsh.Mesh.CreateGeometry();
+                        Gmsh.GetEntities(out outDimTags, 2);
+                        int[] surfaceIds = new int[outDimTags.Length];
+                        for (int i = 0; i < outDimTags.Length; i++) surfaceIds[i] = outDimTags[i].Item2;
+                        int volumeId = Gmsh.Geo.AddSurfaceLoop(surfaceIds);
+                        Gmsh.Geo.AddVolume(new int[] { volumeId });
+                    }
+                    //
+                    Synchronize(); // must be here
+                                   // Mesh size
+                                   //Tuple<int, int>[] surfaceDimTags;
+                                   //Gmsh.GetEntities(out surfaceDimTags, 2);
+                                   //foreach (var surfaceDimTag in surfaceDimTags) Gmsh.Mesh.SetSizeFromBoundary(2, surfaceDimTag.Item2, 0);
+                                   //
+                    double scaleFactor = 1;
+                    //
+                    Gmsh.SetNumber("Mesh.MeshSizeMin", partMeshingParameters.MinH * scaleFactor);
+                    Gmsh.SetNumber("Mesh.MeshSizeMax", partMeshingParameters.MaxH * scaleFactor);
+                    Gmsh.SetNumber("Mesh.MeshSizeFromCurvature", 2 * Math.PI * partMeshingParameters.ElementsPerCurve);
+                    // Local mesh size
+                    outDimTags = new Tuple<int, int>[1];
+                    foreach (var entry in vertexIdMeshSize)
+                    {
+                        outDimTags[0] = new Tuple<int, int>(0, entry.Key);
+                        Gmsh.OCC.SetSize(outDimTags, entry.Value);
+                    }
+                    Synchronize(); // must be here for mesh refinement
+                                   // 2D meshing algorithm
+                    Gmsh.SetNumber("Mesh.Algorithm", (int)gsi.AlgorithmMesh2D);
+                    // 3D meshing algorithm
+                    Gmsh.SetNumber("Mesh.Algorithm3D", (int)gsi.AlgorithmMesh3D);
+                    // Recombine
+                    bool recombine = gsi.AlgorithmRecombine != GmshAlgorithmRecombineEnum.None;
+                    if (recombine)
+                    {
+                        Gmsh.SetNumber("Mesh.RecombinationAlgorithm", (int)gsi.AlgorithmRecombine);
+                        Gmsh.SetNumber("Mesh.RecombineMinimumQuality", gsi.RecombineMinQuality);
+                    }
+                    // Transfinite
+                    bool transfiniteVolume = gsi is TransfiniteMesh && gsi.TransfiniteThreeSided && gsi.TransfiniteFourSided;
+                    if (_isOCC && (gsi.TransfiniteThreeSided || gsi.TransfiniteFourSided))
+                        //Gmsh.Mesh.SetTransfiniteAutomatic(gsi.TransfiniteAngleRad, recombine);
+                        SetTransfiniteSurfaces(gsi.TransfiniteThreeSided, gsi.TransfiniteFourSided, transfiniteVolume, recombine);
+                    //
+                    if (gsi is ShellGmsh)
+                        ShellGmsh(gsi, partMeshingParameters, preview);
+                    else if (gsi is TetrahedralGmsh)
+                        TetrahedralGmsh(gsi, partMeshingParameters, preview);
+                    else if (gsi is TransfiniteMesh)
+                        TransfiniteMesh(gsi, partMeshingParameters, preview);
+                    else if (gsi is ExtrudeMesh || gsi is RevolveMesh)
+                        ExtrudeRevolveMesh(gsi, partMeshingParameters, preview);
+                    else throw new NotSupportedException("MeshSetupItemTypeException");
                 }
-                //
-                Synchronize(); // must be here
-                // Mesh size
-                //Tuple<int, int>[] surfaceDimTags;
-                //Gmsh.GetEntities(out surfaceDimTags, 2);
-                //foreach (var surfaceDimTag in surfaceDimTags) Gmsh.Mesh.SetSizeFromBoundary(2, surfaceDimTag.Item2, 0);
-                //
-                double scaleFactor = 1;
-                //
-                Gmsh.SetNumber("Mesh.MeshSizeMin", partMeshingParameters.MinH * scaleFactor);
-                Gmsh.SetNumber("Mesh.MeshSizeMax", partMeshingParameters.MaxH * scaleFactor);
-                Gmsh.SetNumber("Mesh.MeshSizeFromCurvature", 2 * Math.PI * partMeshingParameters.ElementsPerCurve);
-                // Local mesh size
-                outDimTags = new Tuple<int, int>[1];
-                foreach (var entry in vertexIdMeshSize)
-                {
-                    outDimTags[0] = new Tuple<int, int>(0, entry.Key);
-                    Gmsh.OCC.SetSize(outDimTags, entry.Value);
-                }
-                Synchronize(); // must be here for mesh refinement
-                // 2D meshing algorithm
-                Gmsh.SetNumber("Mesh.Algorithm", (int)gsi.AlgorithmMesh2D);
-                // 3D meshing algorithm
-                Gmsh.SetNumber("Mesh.Algorithm3D", (int)gsi.AlgorithmMesh3D);
-                // Recombine
-                bool recombine = gsi.AlgorithmRecombine != GmshAlgorithmRecombineEnum.None;
-                if (recombine)
-                {
-                    Gmsh.SetNumber("Mesh.RecombinationAlgorithm", (int)gsi.AlgorithmRecombine);
-                    Gmsh.SetNumber("Mesh.RecombineMinimumQuality", gsi.RecombineMinQuality);
-                }
-                // Transfinite
-                bool transfiniteVolume = gsi is TransfiniteMesh && gsi.TransfiniteThreeSided && gsi.TransfiniteFourSided;
-                if (_isOCC && (gsi.TransfiniteThreeSided || gsi.TransfiniteFourSided))
-                    //Gmsh.Mesh.SetTransfiniteAutomatic(gsi.TransfiniteAngleRad, recombine);
-                    SetTransfiniteSurfaces(gsi.TransfiniteThreeSided, gsi.TransfiniteFourSided, transfiniteVolume, recombine);
-                //
-                if (gsi is ShellGmsh)
-                    ShellGmsh(gsi, partMeshingParameters, preview);
-                else if (gsi is TetrahedralGmsh)
-                    TetrahedralGmsh(gsi, partMeshingParameters, preview);
-                else if (gsi is TransfiniteMesh)
-                    TransfiniteMesh(gsi, partMeshingParameters, preview);
-                else if (gsi is ExtrudeMesh || gsi is RevolveMesh)
-                    ExtrudeRevolveMesh(gsi, partMeshingParameters, preview);
                 else throw new NotSupportedException("MeshSetupItemTypeException");
+                // Element order
+                if (!preview && partMeshingParameters.SecondOrder)
+                {
+                    if (!partMeshingParameters.MidsideNodesOnGeometry) Gmsh.SetNumber("Mesh.SecondOrderLinear", 1); // first
+                    Gmsh.SetNumber("Mesh.HighOrderOptimize", 1);                                                    // second
+                    Gmsh.SetNumber("Mesh.SecondOrderIncomplete", 1);                                                // second
+                    Gmsh.Mesh.SetOrder(2);                                                                          // third
+                }
+                // Output
+                Gmsh.Write(inpFileName);
+                //
+                writeOutput?.Invoke("Meshing done.");
+                writeOutput?.Invoke("");
+                double elapsedTime = Gmsh.GetNumber("Mesh.CpuTime");
+                writeOutput?.Invoke("Elapsed time [s]: " + Math.Round(elapsedTime, 5));
+                writeOutput?.Invoke("");
+                //
+                _error = null;
             }
-            else throw new NotSupportedException("MeshSetupItemTypeException");
-            // Element order
-            if (!preview && partMeshingParameters.SecondOrder)
+            catch (Exception ex)
             {
-                if (!partMeshingParameters.MidsideNodesOnGeometry) Gmsh.SetNumber("Mesh.SecondOrderLinear", 1); // first
-                Gmsh.SetNumber("Mesh.HighOrderOptimize", 1);                                                    // second
-                Gmsh.SetNumber("Mesh.SecondOrderIncomplete", 1);                                                // second
-                Gmsh.Mesh.SetOrder(2);                                                                          // third
+                _error = ex.Message;
             }
-            // Output
-            Gmsh.Write(inpFileName);
-            //
-            writeOutput?.Invoke("Meshing done.");
-            writeOutput?.Invoke("");
-            double elapsedTime = Gmsh.GetNumber("Mesh.CpuTime");
-            writeOutput?.Invoke("Elapsed time [s]: " + Math.Round(elapsedTime, 5));
-            writeOutput?.Invoke("");
-            //
-            _error = null;
         }
         //
-        private static void ShellGmsh(GmshSetupItem gmshSetupItem, MeshingParameters meshingParameters, bool preview)
+        private void ShellGmsh(GmshSetupItem gmshSetupItem, MeshingParameters meshingParameters, bool preview)
         {
             bool recombine = gmshSetupItem.AlgorithmRecombine != GmshAlgorithmRecombineEnum.None;
             // Recombine all
@@ -200,17 +207,17 @@ namespace CaeMesh
                 Gmsh.Generate(2);
             }
         }
-        private static void TetrahedralGmsh(GmshSetupItem gmshSetupItem, MeshingParameters meshingParameters, bool preview)
+        private void TetrahedralGmsh(GmshSetupItem gmshSetupItem, MeshingParameters meshingParameters, bool preview)
         {
             if (preview) Gmsh.Generate(1);
             else Gmsh.Generate(3);
         }
-        private static void TransfiniteMesh(GmshSetupItem gmshSetupItem, MeshingParameters meshingParameters, bool preview)
+        private void TransfiniteMesh(GmshSetupItem gmshSetupItem, MeshingParameters meshingParameters, bool preview)
         {
             if (preview) Gmsh.Generate(1);
             else Gmsh.Generate(3);
         }
-        private static void ExtrudeRevolveMesh(GmshSetupItem gmshSetupItem, MeshingParameters meshingParameters, bool preview)
+        private void ExtrudeRevolveMesh(GmshSetupItem gmshSetupItem, MeshingParameters meshingParameters, bool preview)
         {
             ExtrudeMesh extrudeMesh = null;
             RevolveMesh revolveMesh = null;
@@ -330,7 +337,7 @@ namespace CaeMesh
             }
         }
         //
-        public static bool CheckMeshVolume(Tuple<int, int>[] outDimTags)
+        public bool CheckMeshVolume(Tuple<int, int>[] outDimTags)
         {
             double volumeOut;
             double initialVolume;
@@ -352,7 +359,7 @@ namespace CaeMesh
             return true;
                 
         }
-        public static bool CheckMeshVolume(GeometryPart part, ExtrudeMesh extrudeMesh, 
+        public bool CheckMeshVolume(GeometryPart part, ExtrudeMesh extrudeMesh, 
                                            Func<GeometryPart, string> ExportCADPartGeometryToDefaultFile)
         {
             int surfaceId;

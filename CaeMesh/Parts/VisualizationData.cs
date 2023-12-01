@@ -200,8 +200,14 @@ namespace CaeMesh
             }
             //
             _faceAreas = visualization.FaceAreas != null ? visualization.FaceAreas.ToArray() : null;
-            //
-            _faceTypes = visualization.FaceTypes != null ? visualization.FaceTypes.ToArray() : null;
+            // Bug fix - visualization.FaceTypes can become an array of integers that cannot be directly copied using ToArray
+            // Probable reason is a PrePoMax crash and model rebuild
+            if (visualization.FaceTypes != null && visualization.FaceTypes.Length > 0)
+            {
+                _faceTypes = new GeomFaceType[visualization.FaceTypes.Length];
+                for (int i = 0; i < _faceTypes.Length; i++) _faceTypes[i] = visualization.FaceTypes[i];
+            }
+            else _faceTypes = null;
             //
             if (visualization.FaceEdgeIds != null)
             {
@@ -251,7 +257,14 @@ namespace CaeMesh
             //
             _edgeLengths = visualization.EdgeLengths != null ? visualization.EdgeLengths.ToArray() : null;
             //
-            _edgeTypes = visualization.EdgeTypes != null ? visualization.EdgeTypes.ToArray() : null;
+            // Bug fix - visualization.EdgeTypes can become an array of integers that cannot be directly copied using ToArray
+            // Probable reason is a PrePoMax crash and model rebuild
+            if (visualization.EdgeTypes != null && visualization.EdgeTypes.Length > 0)
+            {
+                _edgeTypes = new GeomCurveType[visualization.EdgeTypes.Length];
+                for (int i = 0; i < _edgeTypes.Length; i++) _edgeTypes[i] = visualization.EdgeTypes[i];
+            }
+            else _edgeTypes = null;
             //
             _vertexNodeIds = visualization.VertexNodeIds != null ? visualization.VertexNodeIds.ToArray() : null;
             // Reference exchange - for speed and memory - might be a problem
