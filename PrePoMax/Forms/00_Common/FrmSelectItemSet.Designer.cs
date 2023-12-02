@@ -48,6 +48,7 @@
             this.btnInvertSelection = new System.Windows.Forms.Button();
             this.btnSelectAll = new System.Windows.Forms.Button();
             this.gbGeometry = new System.Windows.Forms.GroupBox();
+            this.rbGeometryPart = new System.Windows.Forms.RadioButton();
             this.tbGeometrySurfaceAngle = new UserControls.UnitAwareTextBox();
             this.rbGeometrySurfaceAngle = new System.Windows.Forms.RadioButton();
             this.tbGeometryEdgeAngle = new UserControls.UnitAwareTextBox();
@@ -56,7 +57,6 @@
             this.btnOK = new System.Windows.Forms.Button();
             this.btnMoreLess = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.rbGeometryPart = new System.Windows.Forms.RadioButton();
             this.gbFEMesh.SuspendLayout();
             this.gbGeometry.SuspendLayout();
             this.SuspendLayout();
@@ -177,6 +177,7 @@
             this.tbId.Enabled = false;
             this.tbId.Location = new System.Drawing.Point(96, 185);
             this.tbId.Name = "tbId";
+            this.tbId.NumericType = UserControls.NumericTextBoxEnum.Real;
             this.tbId.Size = new System.Drawing.Size(58, 23);
             this.tbId.TabIndex = 1;
             this.tbId.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
@@ -298,6 +299,17 @@
             this.gbGeometry.TabStop = false;
             this.gbGeometry.Text = "Geometry based selection";
             // 
+            // rbGeometryPart
+            // 
+            this.rbGeometryPart.AutoSize = true;
+            this.rbGeometryPart.Location = new System.Drawing.Point(6, 42);
+            this.rbGeometryPart.Name = "rbGeometryPart";
+            this.rbGeometryPart.Size = new System.Drawing.Size(46, 19);
+            this.rbGeometryPart.TabIndex = 18;
+            this.rbGeometryPart.Text = "Part";
+            this.rbGeometryPart.UseVisualStyleBackColor = true;
+            this.rbGeometryPart.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
+            // 
             // tbGeometrySurfaceAngle
             // 
             this.tbGeometrySurfaceAngle.Enabled = false;
@@ -385,17 +397,6 @@
             this.label1.TabIndex = 15;
             this.label1.Text = "SHIFT - add items\r\nCTRL - remove items\r\n";
             // 
-            // rbGeometryPart
-            // 
-            this.rbGeometryPart.AutoSize = true;
-            this.rbGeometryPart.Location = new System.Drawing.Point(6, 42);
-            this.rbGeometryPart.Name = "rbGeometryPart";
-            this.rbGeometryPart.Size = new System.Drawing.Size(46, 19);
-            this.rbGeometryPart.TabIndex = 18;
-            this.rbGeometryPart.Text = "Part";
-            this.rbGeometryPart.UseVisualStyleBackColor = true;
-            this.rbGeometryPart.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
-            // 
             // FrmSelectItemSet
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -418,7 +419,7 @@
             this.Name = "FrmSelectItemSet";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "Set selection";
+            this.Text = "Set Selection";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSelectItemSet_FormClosing);
             this.VisibleChanged += new System.EventHandler(this.FrmSelectItemSet_VisibleChanged);
             this.Move += new System.EventHandler(this.FrmSelectItemSet_Move);
