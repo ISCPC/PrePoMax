@@ -19,12 +19,14 @@ namespace CaeMesh
         private GmshAlgorithmMesh3DEnum _algorithmMesh3D;               // ISerializable
         private GmshAlgorithmRecombineEnum _algorithmRecombine;         // ISerializable
         private double _recombineMinQuality;                            // ISerializable
-        private bool _transfiniteThreeSided;                             // ISerializable
+        private bool _transfiniteThreeSided;                            // ISerializable
         private bool _transfiniteFourSided;                             // ISerializable
         private double _transfiniteAngleDeg;                            // ISerializable
         private ElementSizeTypeEnum _elementSizeType;                   // ISerializable
-        private int _numberOfLayers;                                    // ISerializable
         private double _elementScaleFactor;                             // ISerializable
+        private int _numberOfElements;                                  // ISerializable
+        private double[] _normalizedLayerSizes;                         // ISerializable
+        private int[] _numOfElementsPerLayer;                           // ISerializable
         private int _numberOfThreads;                                   // ISerializable
 
 
@@ -46,15 +48,6 @@ namespace CaeMesh
             get { return _elementSizeType; }
             set { _elementSizeType = value; }
         }
-        public int NumberOfLayers
-        {
-            get { return _numberOfLayers; }
-            set
-            {
-                _numberOfLayers = value;
-                if (_numberOfLayers < 1) _numberOfLayers = 1;
-            }
-        }
         public double ElementScaleFactor
         {
             get { return _elementScaleFactor; }
@@ -63,6 +56,25 @@ namespace CaeMesh
                 _elementScaleFactor = value;
                 if (_elementScaleFactor < 0) _elementScaleFactor = 1;
             }
+        }
+        public int NumberOfElements
+        {
+            get { return _numberOfElements; }
+            set
+            {
+                _numberOfElements = value;
+                if (_numberOfElements < 1) _numberOfElements = 1;
+            }
+        }
+        public double[] NormalizedLayerSizes
+        {
+            get { return _normalizedLayerSizes; }
+            set { _normalizedLayerSizes = value; }
+        }
+        public int[] NumOfElementsPerLayer
+        {
+            get { return _numOfElementsPerLayer; }
+            set { _numOfElementsPerLayer = value; }
         }
         public int NumberOfThreads
         {
@@ -110,16 +122,24 @@ namespace CaeMesh
                         _transfiniteAngleDeg = (double)entry.Value; break;
                     case "_elementSizeType":
                         _elementSizeType = (ElementSizeTypeEnum)entry.Value; break;
-                    case "_numberOfLayers":
-                        _numberOfLayers = (int)entry.Value; break;
                     case "_elementScaleFactor":
                         _elementScaleFactor = (double)entry.Value; break;
+                    case "_numberOfLayers":     // Compatibility for version v1.5.7
+                    case "_numberOfElements":
+                        _numberOfElements = (int)entry.Value; break;
+                    case "_normalizedLayerSizes":
+                        _normalizedLayerSizes = (double[])entry.Value; break;
+                    case "_numOfElementsPerLayer":
+                        _numOfElementsPerLayer = (int[])entry.Value; break;
                     case "_numberOfThreads":
                         _numberOfThreads = (int)entry.Value; break;
                     default:
                         break;
                 }
             }
+            // Compatibility for version v1.5.7
+            if (_normalizedLayerSizes == null) _normalizedLayerSizes = new double[] { 1 };
+            if (_numOfElementsPerLayer == null) _numOfElementsPerLayer = new int[] { 1 };
         }
 
 
@@ -136,8 +156,10 @@ namespace CaeMesh
             _transfiniteFourSided = true;
             _transfiniteAngleDeg = 135;
             _elementSizeType = ElementSizeTypeEnum.ScaleFactor;
-            _numberOfLayers = 1;
             _elementScaleFactor = 1;
+            _numberOfElements = 1;
+            _normalizedLayerSizes = new double[] { 1 };
+            _numOfElementsPerLayer = new int[] { 1 };
             _numberOfThreads = 1;
         }
         public void CopyFrom(GmshSetupItem gmshSetupItem)
@@ -152,8 +174,12 @@ namespace CaeMesh
             _transfiniteFourSided = gmshSetupItem._transfiniteFourSided;
             _transfiniteAngleDeg = gmshSetupItem._transfiniteAngleDeg;
             _elementSizeType = gmshSetupItem._elementSizeType;
-            _numberOfLayers = gmshSetupItem._numberOfLayers;
             _elementScaleFactor = gmshSetupItem._elementScaleFactor;
+            _numberOfElements = gmshSetupItem._numberOfElements;
+            if (gmshSetupItem._normalizedLayerSizes != null) _normalizedLayerSizes = gmshSetupItem._normalizedLayerSizes.ToArray();
+            else _normalizedLayerSizes = null;
+            if (gmshSetupItem._numOfElementsPerLayer != null) _numOfElementsPerLayer = gmshSetupItem._numOfElementsPerLayer.ToArray();
+            else _numOfElementsPerLayer = null;
             _numberOfThreads = gmshSetupItem._numberOfThreads;
         }
         // ISerialization
@@ -169,8 +195,10 @@ namespace CaeMesh
             info.AddValue("_transfiniteFourSided", _transfiniteFourSided, typeof(bool));
             info.AddValue("_transfiniteAngleDeg", _transfiniteAngleDeg, typeof(double));
             info.AddValue("_elementSizeType", _elementSizeType, typeof(ElementSizeTypeEnum));
-            info.AddValue("_numberOfLayers", _numberOfLayers, typeof(int));
             info.AddValue("_elementScaleFactor", _elementScaleFactor, typeof(double));
+            info.AddValue("_numberOfElements", _numberOfElements, typeof(int));
+            info.AddValue("_normalizedLayerSizes", _normalizedLayerSizes, typeof(double[]));
+            info.AddValue("_numOfElementsPerLayer", _numOfElementsPerLayer, typeof(int[]));
             info.AddValue("_numberOfThreads", _numberOfThreads, typeof(int));
         }
     }

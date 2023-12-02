@@ -252,6 +252,8 @@ namespace CaeMesh
             }
             // Layers - size
             int numEl;
+            int[] numElements;
+            double[] height;
             if (gmshSetupItem.ElementSizeType == ElementSizeTypeEnum.ScaleFactor)
             {
                 double edgeLength;
@@ -260,7 +262,7 @@ namespace CaeMesh
                     edgeLength = Math.Sqrt(Math.Pow(extrudeMesh.Direction[0], 2) +
                                            Math.Pow(extrudeMesh.Direction[1], 2) +
                                            Math.Pow(extrudeMesh.Direction[2], 2));
-                    
+
                 }
                 else if (revolveMesh != null)
                 {
@@ -269,15 +271,29 @@ namespace CaeMesh
                 else throw new NotSupportedException();
                 //
                 numEl = (int)Math.Round(edgeLength / meshingParameters.MaxH / gmshSetupItem.ElementScaleFactor, 0);
+                if (numEl < 1) numEl = 1;
+                numElements = new int[] { numEl };
+                height = new double[] { 1 };
             }
-            else if (gmshSetupItem.ElementSizeType == ElementSizeTypeEnum.NumberOfLayers)
-                numEl = gmshSetupItem.NumberOfLayers;
+            else if (gmshSetupItem.ElementSizeType == ElementSizeTypeEnum.NumberOfElements)
+            {
+                numEl = gmshSetupItem.NumberOfElements;
+                if (numEl < 1) numEl = 1;
+                numElements = new int[] { numEl };
+                height = new double[] { 1 };
+            }
+            else if (gmshSetupItem.ElementSizeType == ElementSizeTypeEnum.MultiLayerd)
+            {
+                numElements = gmshSetupItem.NumOfElementsPerLayer;
+                double sum = 0;
+                height = new double[gmshSetupItem.NormalizedLayerSizes.Length];
+                for (int i = 0; i < height.Length; i++)
+                {
+                    sum += gmshSetupItem.NormalizedLayerSizes[i];
+                    height[i] = sum;
+                }
+            }
             else throw new NotSupportedException("ExtrudedElementSizeTypeEnumException");
-            //
-            if (numEl < 1) numEl = 1;
-            //
-            int[] numElements = new int[] { numEl };
-            double[] height = new double[] { 1 };
             //
             if (preview)
             {

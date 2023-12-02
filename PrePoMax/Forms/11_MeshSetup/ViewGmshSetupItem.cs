@@ -8,6 +8,8 @@ using CaeGlobals;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
 using CaeMesh.Meshing;
+using System.ComponentModel.Design;
+using System.Diagnostics;
 
 namespace PrePoMax.Forms
 {
@@ -88,7 +90,7 @@ namespace PrePoMax.Forms
             set { _gmshSetupItem.TransfiniteAngleDeg = value; }
         }
         //
-        [CategoryAttribute("Element size")]
+        [CategoryAttribute("Element size in feature direction")]
         [OrderedDisplayName(0, 10, "Defined by")]
         [DescriptionAttribute("Select how the element size is defined.")]
         public ElementSizeTypeEnum ElementSizeType
@@ -97,18 +99,95 @@ namespace PrePoMax.Forms
             set { _gmshSetupItem.ElementSizeType = value; UpdateVisibility(); }
         }
         //
-        [CategoryAttribute("Element size")]
-        [OrderedDisplayName(1, 10, "Number of layers")]
-        [DescriptionAttribute("Enter the number of layers for the mesh construction.")]
-        public int NumberOfLayers { get { return _gmshSetupItem.NumberOfLayers; } set { _gmshSetupItem.NumberOfLayers = value; } }
-        //
-        [CategoryAttribute("Element size")]
-        [OrderedDisplayName(2, 10, "Scale factor")]
+        [CategoryAttribute("Element size in feature direction")]
+        [OrderedDisplayName(1, 10, "Scale factor")]
         [DescriptionAttribute("Enter the scale factor for the finite element size in the mesh construction direction.")]
         public double ElementScaleFactor
         {
             get { return _gmshSetupItem.ElementScaleFactor; }
             set { _gmshSetupItem.ElementScaleFactor = value; }
+        }
+        //
+        [CategoryAttribute("Element size in feature direction")]
+        [OrderedDisplayName(2, 10, "Number of elements")]
+        [DescriptionAttribute("Enter the number of elements for the mesh construction.")]
+        public int NumberOfElements
+        {
+            get { return _gmshSetupItem.NumberOfElements; }
+            set { _gmshSetupItem.NumberOfElements = value; }
+        }
+        //
+        [CategoryAttribute("Element size in feature direction")]
+        [OrderedDisplayName(3, 10, "Normalized layer sizes")]
+        [DescriptionAttribute("Enter the normalized layer sizes separated by the semicolon ';' character as 0.2; 0.6; 0.2;")]
+        //[TypeConverter(typeof(StringDoubleArrayConverter))]
+        public string NormalizedLayerSizes
+        {
+            get
+            {
+                string layerSizes = "";
+                for (int i = 0; i < _gmshSetupItem.NormalizedLayerSizes.Length; i++)
+                {
+                    if (i != 0) layerSizes += " ";
+                    layerSizes += _gmshSetupItem.NormalizedLayerSizes[i] + ";";
+                }
+                return layerSizes;
+            }
+            set
+            {
+                double size;
+                List<double> sizes = new List<double>();
+                string[] tmp = value.Split(new string[] { ";", " " }, StringSplitOptions.RemoveEmptyEntries);
+                double sum = 0;
+                for (int i = 0; i < tmp.Length; i++)
+                {
+                    if (double.TryParse(tmp[i], out size))
+                    {
+                        if (size <= 0) throw new CaeException("Each normalized layer size must by positive.");
+                        sum += size;
+                        sizes.Add(size);
+                    }
+                    else throw new CaeException("Not all layer sizes can be converted to a numberic value.");
+                }
+                //
+                if (Math.Abs(sum - 1) > 1E6) throw new CaeException("Normalized layer sizes must add up to 1.");
+                //
+                _gmshSetupItem.NormalizedLayerSizes = sizes.ToArray();
+            }
+        }
+        //
+        [CategoryAttribute("Element size in feature direction")]
+        [OrderedDisplayName(4, 10, "Elements per layer")]
+        [DescriptionAttribute("Enter the number of elements per layer separated by the semicolon ';' character as 2; 4; 2;")]
+        public string NumOfElementsPerLayer
+        {
+            get
+            {
+                string numElements = "";
+                for (int i = 0; i < _gmshSetupItem.NumOfElementsPerLayer.Length; i++)
+                {
+                    if (i != 0) numElements += " ";
+                    numElements += _gmshSetupItem.NumOfElementsPerLayer[i] + ";";
+                }
+                return numElements;
+            }
+            set
+            {
+                int number;
+                List<int> numbers = new List<int>();
+                string[] tmp = value.Split(new string[] { ";", " " }, StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 0; i < tmp.Length; i++)
+                {
+                    if (int.TryParse(tmp[i], out number))
+                    {
+                        if (number < 1) number = 1;
+                        numbers.Add(number);
+                    }
+                    else throw new CaeException("Not all numbers of elements can be converted to a numberic value.");
+                }
+                //
+                _gmshSetupItem.NumOfElementsPerLayer = numbers.ToArray();
+            }
         }
 
 
@@ -155,19 +234,31 @@ namespace PrePoMax.Forms
             // Element size
             if (_dctd.GetProperty(nameof(ElementSizeType)).IsBrowsable)
             {
-                if (_gmshSetupItem.ElementSizeType == ElementSizeTypeEnum.NumberOfLayers)
+                if (_gmshSetupItem.ElementSizeType == ElementSizeTypeEnum.NumberOfElements)
                 {
-                    _dctd.GetProperty(nameof(NumberOfLayers)).SetIsBrowsable(true);
                     _dctd.GetProperty(nameof(ElementScaleFactor)).SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(NumberOfElements)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(NormalizedLayerSizes)).SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(NumOfElementsPerLayer)).SetIsBrowsable(false);
                 }
                 else if (_gmshSetupItem.ElementSizeType == ElementSizeTypeEnum.ScaleFactor)
                 {
-                    _dctd.GetProperty(nameof(NumberOfLayers)).SetIsBrowsable(false);
                     _dctd.GetProperty(nameof(ElementScaleFactor)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(NumberOfElements)).SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(NormalizedLayerSizes)).SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(NumOfElementsPerLayer)).SetIsBrowsable(false);
+                }
+                else if (_gmshSetupItem.ElementSizeType == ElementSizeTypeEnum.MultiLayerd)
+                {
+                    _dctd.GetProperty(nameof(ElementScaleFactor)).SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(NumberOfElements)).SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(NormalizedLayerSizes)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(NumOfElementsPerLayer)).SetIsBrowsable(true);
                 }
                 else throw new NotImplementedException("ExtrudedElementSizeTypeEnumException");
             }
         }
     }
 }
+
 

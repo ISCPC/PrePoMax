@@ -10,9 +10,11 @@ namespace CaeMesh.Meshing
     [Serializable]
     public enum ElementSizeTypeEnum
     {
-        [StandardValue("NumberOfLayers", DisplayName = "Number of layers")]
-        NumberOfLayers,
         [StandardValue("ScaleFactor", DisplayName = "Scale factor")]
-        ScaleFactor
+        ScaleFactor,
+        [StandardValue("NumberOfElements", DisplayName = "Number of elements")]
+        NumberOfElements,
+        [StandardValue("MultiLayerd", DisplayName = "Multi-layered")]
+        MultiLayerd,
     }
 }
