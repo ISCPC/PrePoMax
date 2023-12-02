@@ -20,6 +20,7 @@ using vtkControl;
 using System.Threading;
 using System.Runtime.InteropServices;
 using PrePoMax.Commands;
+using System.Timers;
 
 namespace PrePoMax
 {
@@ -195,10 +196,19 @@ namespace PrePoMax
                 return;
             }
             //
+            //SettingsContainer settings = new SettingsContainer();
+            //settings.LoadFromFile();
+            //if (settings.General.Maximized)
+            //{
+            //    Rectangle resolution = Screen.FromControl(this).Bounds;
+            //    this.Location = new Point(0, 0);
+            //    this.Size = new Size(resolution.Width, resolution.Height);
+            //    this.WindowState = FormWindowState.Maximized;
+            //}
             Text = Globals.ProgramName;
             this.TopMost = true;
             splash = new FrmSplash { TopMost = true };
-            var task = Task.Run(() => splash.ShowDialog());            
+            var task = Task.Run(() => splash.ShowDialog());
             //
             try
             {
@@ -429,8 +439,6 @@ namespace PrePoMax
                 _frmTransformation = new FrmTransformation(_controller);
                 AddFormToAllForms(_frmTransformation);
                 //
-                _vtk.Hide();
-                _vtk.Enabled = false;
                 // Deformation toolstrip
                 InitializeDeformationComboBoxes();
                 InitializeComplexComboBoxes();
@@ -465,118 +473,111 @@ namespace PrePoMax
             }
         }
         //
-        private void FrmMain_Shown(object sender, EventArgs e)
+        private async void FrmMain_Shown(object sender, EventArgs e)
         {
             // Set vtk control size
             UpdateVtkControlSize();
+            Application.DoEvents(); // draws the menus
             //
             _vtk.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
             // Set pass through control for the mouse wheel event
             this.PassThroughControl = _vtk;
-            // Timer to delay the rendering of the vtk so that menus get rendered first
-            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-            timer.Interval = 50;
-            timer.Tick += new EventHandler(async (object s, EventArgs ea) =>
+            // Vtk
+            // Reduce flicker
+            _vtk.Visible = true;
+            _vtk.ResetScaleBarPosition();   // start after the vtk size is set
+            _vtk.SetZoomFactor(1000);       // set starting zoom larger that the object
+            _controller.Redraw();
+            // Move _vtk to the edge of the screen to hide the black background
+            int left = _vtk.Left;
+            _vtk.Left = _vtk.Width + 4;
+            Application.DoEvents(); // draws the vtk
+            _vtk.Visible = false;
+            _vtk.Left = left;
+            // Close splash 
+            splash.BeginInvoke((MethodInvoker)delegate () { splash.Close(); });
+            // At the end when vtk is loaded open the file
+            string fileName = null;
+            UnitSystemType unitSystemType = UnitSystemType.Undefined;
+            //
+            try
             {
-                timer.Stop();
-                // Vtk
-                _vtk.Enabled = true;
-                // Reduce flicker
-                int offset = 2 * _vtk.Width;
-                _vtk.Left += offset;
-                _vtk.Visible = true;
-                _vtk.ResetScaleBarPosition();   // start after the vtk size is set
-                _controller.Redraw();
-                _vtk.SetZoomFactor(1000);    // set starting zoom larger that the object
-                Application.DoEvents();
-                _vtk.Left -= offset;
-                _vtk.Visible = false;
-                // Close splash 
-                splash.BeginInvoke((MethodInvoker)delegate () { splash.Close(); });
-                // At the end when vtk is loaded open the file
-                string fileName = null;
-                UnitSystemType unitSystemType = UnitSystemType.Undefined;
+                // Try to recover unsaved progress due to crushed PrePoMax
+                if (File.Exists(_controller.GetHistoryFileNameBin()))
+                {
+                    if (MessageBoxes.ShowWarningQuestion("A recovery file from a previous PrePoMax session exists. " +
+                                                         "Would you like to try to recover it?") == DialogResult.OK)
+                    {
+                        fileName = _controller.GetHistoryFileNameBin();
+                    }
+                }
+                if (fileName == null)
+                {
+                    // Open file from exe arguments
+                    if (_args != null && _args.Length >= 1)
+                    {
+                        fileName = _args[0];
+                        unitSystemType = _controller.Settings.General.UnitSystemType;
+                        for (int i = 1; i < _args.Length; i++)
+                        {
+                            if (_args[i].ToUpper() == "-US" && i + 1 < _args.Length)
+                            {
+                                if (!Enum.TryParse(_args[i + 1].ToUpper(), out unitSystemType))
+                                    throw new CaeException("The unit system type " + _args[i + 1] + " is not supported.");
+                            }
+                        }
+                    }
+                    // Check for open last file
+                    else if (_controller.Settings.General.OpenLastFile) fileName = _controller.OpenedFileName;
+                }
                 //
-                try
+                if (File.Exists(fileName))
                 {
-                    // Try to recover unsaved progress due to crushed PrePoMax
-                    if (File.Exists(_controller.GetHistoryFileNameBin()))
-                    {
-                        if (MessageBoxes.ShowWarningQuestion("A recovery file from a previous PrePoMax session exists. " +
-                                                             "Would you like to try to recover it?") == DialogResult.OK)
-                        {
-                            fileName = _controller.GetHistoryFileNameBin();
-                        }
-                    }
-                    if (fileName == null)
-                    {
-                        // Open file from exe arguments
-                        if (_args != null && _args.Length >= 1)
-                        {
-                            fileName = _args[0];
-                            unitSystemType = _controller.Settings.General.UnitSystemType;
-                            for (int i = 1; i < _args.Length; i++)
-                            {
-                                if (_args[i].ToUpper() == "-US" && i + 1 < _args.Length)
-                                {
-                                    if (!Enum.TryParse(_args[i + 1].ToUpper(), out unitSystemType))
-                                        throw new CaeException("The unit system type " + _args[i + 1] + " is not supported.");
-                                }
-                            }
-                        }
-                        // Check for open last file
-                        else if (_controller.Settings.General.OpenLastFile) fileName = _controller.OpenedFileName;
-                    }
+                    fileName = Path.GetFullPath(fileName);  // change local file name to global
+                    string extension = Path.GetExtension(fileName).ToLower();
+                    HashSet<string> importExtensions = GetFileImportExtensions();
                     //
-                    if (File.Exists(fileName))
+                    New(ModelSpaceEnum.ThreeD, UnitSystemType.MM_TON_S_C);
+                    SetStateWorking("Rendering...");
+                    SetStateReady("Rendering...");
+                    //SetMenuAndToolStripVisibility();
+                    //_controller.DrawGeometry(true);
+
+                    //SetMenuAndToolStripVisibility();
+
+                    if (extension == ".pmx" || extension == ".pmh" || extension == ".frd")
+                        await Task.Run(() => OpenAsync(fileName, _controller.Open));
+                    else if (importExtensions.Contains(extension))
                     {
-                        fileName = Path.GetFullPath(fileName);  // change local file name to global
-                        string extension = Path.GetExtension(fileName).ToLower();
-                        HashSet<string> importExtensions = GetFileImportExtensions();
-                        //
-                        New(ModelSpaceEnum.ThreeD, UnitSystemType.MM_TON_S_C);
-                        SetStateWorking("Rendering...");
-                        SetStateReady("Rendering...");
-                        //SetMenuAndToolStripVisibility();
-                        //_controller.DrawGeometry(true);
-
-                        //SetMenuAndToolStripVisibility();
-
-                        if (extension == ".pmx" || extension == ".pmh" || extension == ".frd")
-                            await Task.Run(() => OpenAsync(fileName, _controller.Open));
-                        else if (importExtensions.Contains(extension))
+                        // Create new model
+                        if (New(ModelSpaceEnum.ThreeD, unitSystemType))
                         {
-                            // Create new model
-                            if (New(ModelSpaceEnum.ThreeD, unitSystemType))
-                            {
-                                // Import
-                                await _controller.ImportFileAsync(fileName, false);
-                                // Set to null, otherwise the previous OpenedFileName gets overwritten on Save
-                                _controller.OpenedFileName = null; 
-                            }
+                            // Import
+                            await _controller.ImportFileAsync(fileName, false);
+                            // Set to null, otherwise the previous OpenedFileName gets overwritten on Save
+                            _controller.OpenedFileName = null;
                         }
-                        else MessageBoxes.ShowError("The file name extension is not supported.");
-                        //
-                        _vtk.SetFrontBackView(false, true);
                     }
-                    else
-                    {
-                        _controller.CurrentView = ViewGeometryModelResults.Geometry;
-                        //
-                        UpdateRecentFilesThreadSafe(_controller.Settings.General.GetRecentFiles());
-                    }
+                    else MessageBoxes.ShowError("The file name extension is not supported.");
+                    //
+                    _vtk.SetFrontBackView(false, true);
                 }
-                catch (Exception ex)
+                else
                 {
-                    ExceptionTools.Show(this, ex);
-                    _controller.ModelChanged = false;   // hide messageBox
-                    tsmiNew_Click(null, null);
+                    _controller.CurrentView = ViewGeometryModelResults.Geometry;
+                    //
+                    UpdateRecentFilesThreadSafe(_controller.Settings.General.GetRecentFiles());
                 }
-                finally
-                {                    
-                }
-            });
-            timer.Start();
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+                _controller.ModelChanged = false;   // hide messageBox
+                tsmiNew_Click(null, null);
+            }
+            finally
+            {
+            }
         }
         private void FrmMain_Resize(object sender, EventArgs e)
         {
