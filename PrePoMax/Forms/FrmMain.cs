@@ -537,14 +537,6 @@ namespace PrePoMax
                     string extension = Path.GetExtension(fileName).ToLower();
                     HashSet<string> importExtensions = GetFileImportExtensions();
                     //
-                    New(ModelSpaceEnum.ThreeD, UnitSystemType.MM_TON_S_C);
-                    SetStateWorking("Rendering...");
-                    SetStateReady("Rendering...");
-                    //SetMenuAndToolStripVisibility();
-                    //_controller.DrawGeometry(true);
-
-                    //SetMenuAndToolStripVisibility();
-
                     if (extension == ".pmx" || extension == ".pmh" || extension == ".frd")
                         await Task.Run(() => OpenAsync(fileName, _controller.Open));
                     else if (importExtensions.Contains(extension))
