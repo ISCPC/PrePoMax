@@ -22,7 +22,10 @@ namespace PrePoMax.Forms
         private UnitSystem _libraryUnitSystem;
         private FrmMaterial _frmMaterial;
         private int _yPadding;
+        private object _previousControl;
+        private bool _prevClickDouble;
         static bool _collapsed = true;
+
 
         // Properties                                                                                                               
 
@@ -34,6 +37,7 @@ namespace PrePoMax.Forms
             //
             _controller = controller;
             _modelChanged = false;
+            _previousControl = null;
             //
             _libraryUnitSystem = new UnitSystem(UnitSystemType.MM_TON_S_C);
             _controller.Model.UnitSystem.SetConverterUnits();
@@ -54,7 +58,11 @@ namespace PrePoMax.Forms
                         item.Name = entry.Value.Name;
                         item.Tag = entry.Value; // do not clone, to determine if the material changed
                     }
-                    if (lvModelMaterials.Items.Count > 0) lvModelMaterials.Items[0].Selected = true;
+                    if (lvModelMaterials.Items.Count > 0)
+                    {
+                        lvModelMaterials.Items[0].Selected = true;
+                        _previousControl = lvModelMaterials;
+                    }
                 }
                 // Load material libraries
                 string fileName = Path.Combine(Application.StartupPath, Globals.MaterialLibraryFileName);
@@ -69,13 +77,12 @@ namespace PrePoMax.Forms
                 GetNodeContainingFirstMaterial(cltvLibrary.Nodes[0], out materialNode);
                 if (materialNode != null) cltvLibrary.SelectedNode = materialNode;
                 else cltvLibrary.SelectedNode = cltvLibrary.Nodes[0];
+                if (_previousControl == null) _previousControl = cltvLibrary;
                 //
                 _frmMaterial = new FrmMaterial(_controller);
                 _frmMaterial.Text = "Preview Material Properties";
                 _frmMaterial.VisibleChanged += _frmMaterial_VisibleChanged;
                 _frmMaterial.PrepareFormForPreview();
-                //
-                cltvLibrary_AfterSelect(null, null);
                 //
                 _yPadding = gbLibraries.Bottom - gbLibraryMaterials.Top;
                 //
@@ -105,6 +112,8 @@ namespace PrePoMax.Forms
                 gbModelMaterials.Top += delta;
                 btnCopyToModel.Top += delta;
                 btnCopyToLibrary.Top += delta;
+                btnMoveUp.Top += delta;
+                btnMoveDown.Top += delta;
                 //
                 gbLibraryMaterials.Height -= delta;
                 gbModelMaterials.Height -= delta;
@@ -176,8 +185,6 @@ namespace PrePoMax.Forms
                     MaterialLibraryItem mli = (MaterialLibraryItem)lvLibraries.SelectedItems[0].Tag;
                     ClearTree();
                     FillTree(mli, cltvLibrary.Nodes[0]);
-                    //
-                    cltvLibrary_AfterSelect(null, null);
                 }
             }
             catch { }
@@ -223,28 +230,6 @@ namespace PrePoMax.Forms
             cltvLibrary.EndUpdate();
         }
         //
-        private void cltvLibrary_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            //try
-            //{
-            //    if (cltvLibrary.SelectedNode != null)
-            //    {
-            //        cltvLibrary.SelectedNode.EnsureVisible();
-            //        tbCategoryName.Text = cltvLibrary.SelectedNode.Text;
-            //        //
-            //        if (cltvLibrary.SelectedNode.Tag != null)
-            //        {
-            //            if (_frmMaterial != null) _frmMaterial.Material = (Material)cltvLibrary.SelectedNode.Tag;
-            //        }
-            //    }
-            //}
-            //catch
-            //{ }
-        }
-        private void cltvLibrary_MouseDown(object sender, MouseEventArgs e)
-        {
-            
-        }
         private void cltvLibrary_MouseUp(object sender, MouseEventArgs e)
         {
             try
@@ -261,9 +246,10 @@ namespace PrePoMax.Forms
                             Material previewMaterial = (Material)cltvLibrary.SelectedNode.Tag.DeepClone();
                             _frmMaterial.Material = previewMaterial;
                         }
-                        
                     }
                 }
+                if (!_prevClickDouble) _previousControl = cltvLibrary;
+                _prevClickDouble = false;
             }
             catch
             { }
@@ -274,49 +260,27 @@ namespace PrePoMax.Forms
             {
                 btnCopyToModel_Click(null, null);
             }
-                
+            _prevClickDouble = true;
         }
         //
-        private void lvModelMaterials_MouseDown(object sender, MouseEventArgs e)
-        {
-            //try
-            //{
-            //    if (lvModelMaterials.HitTest(e.Location).Item == null)
-            //    {
-            //        //lvModelMaterials.SelectedItems.Clear();
-            //    }
-            //}
-            //catch
-            //{ }
-        }
         private void lvModelMaterials_MouseUp(object sender, MouseEventArgs e)
         {
             try
             {
+                _previousControl = lvModelMaterials;
+                //
                 if (lvModelMaterials.SelectedItems != null && lvModelMaterials.SelectedItems.Count == 1 &&
                    lvModelMaterials.SelectedItems[0].Tag != null)
                 {
-                    if (_frmMaterial.Material != null) _frmMaterial.Material = (Material)lvModelMaterials.SelectedItems[0].Tag;
+                    if (_frmMaterial.Material != null)
+                    {
+                        Material previewMaterial = (Material)lvModelMaterials.SelectedItems[0].Tag.DeepClone();
+                        _frmMaterial.Material = previewMaterial;
+                    }
                 }
             }
             catch
             { }
-        }
-        private void lvModelMaterials_Leave(object sender, EventArgs e)
-        {
-            //if (lvModelMaterials.SelectedItems.Count == 1)
-            //{
-            //    lvModelMaterials.SelectedItems[0].BackColor = SystemColors.Highlight;
-            //    lvModelMaterials.SelectedItems[0].ForeColor = Color.White;
-            //}
-        }
-        private void lvModelMaterials_Enter(object sender, EventArgs e)
-        {
-            //if (lvModelMaterials.SelectedItems.Count == 1)
-            //{
-            //    lvModelMaterials.SelectedItems[0].BackColor = Color.White;
-            //    lvModelMaterials.SelectedItems[0].ForeColor = Color.Black;
-            //}
         }
         //
         private void tbCategoryName_KeyDown(object sender, KeyEventArgs e)
@@ -455,6 +419,7 @@ namespace PrePoMax.Forms
                     //
                     categoryNode.Expand();
                     cltvLibrary.SelectedNode = newMaterialNode;
+                    _previousControl = cltvLibrary;
                     //
                     LibraryChanged();
                 }
@@ -487,15 +452,14 @@ namespace PrePoMax.Forms
                     Material modelMaterial = (Material)cltvLibrary.SelectedNode.Tag.DeepClone();
                     modelMaterial.Name = modelMaterialItem.Name;
                     modelMaterialItem.Tag = modelMaterial;
-                    //
-                    lvModelMaterials_Enter(null, null);
                     // Deselect
                     modelMaterialItem.Selected = true;
-                    lvModelMaterials_Leave(null, null);
                     //
                     lvModelMaterials.Focus();
+                    _previousControl = lvModelMaterials;
                     //
                     _modelChanged = true;
+                    
                 }
                 else throw new CaeException("Please select the material in the library materials " +
                                             "to be copied to the model materials.");
@@ -540,28 +504,10 @@ namespace PrePoMax.Forms
             {
                 if (_controller.Model != null && _modelChanged)
                 {
-                    List<Material> newMaterials = new List<Material>();
-                    List<Material> changedMaterials = new List<Material>();
-                    List<string> deletedMaterials = new List<string>();
-                    Material material;
+                    string[] materialsToDelete = _controller.Model.Materials.Keys.ToArray();
+                    if (materialsToDelete.Length > 0) _controller.RemoveMaterialsCommand(materialsToDelete);
                     //
-                    foreach (ListViewItem item in lvModelMaterials.Items)
-                    {
-                        if (_controller.Model.Materials.TryGetValue(item.Name, out material))
-                        {
-                            if ((Material)item.Tag != material) changedMaterials.Add((Material)item.Tag);
-                        }
-                        else newMaterials.Add((Material)item.Tag);
-                    }
-                    //
-                    foreach (var entry in _controller.Model.Materials)
-                    {
-                        if (!lvModelMaterials.Items.ContainsKey(entry.Key)) deletedMaterials.Add(entry.Key);
-                    }
-                    //
-                    if (deletedMaterials.Count > 0) _controller.RemoveMaterialsCommand(deletedMaterials.ToArray());
-                    foreach (Material changedMaterial in changedMaterials) _controller.ReplaceMaterialCommand(changedMaterial.Name, changedMaterial);
-                    foreach (Material newMaterial in newMaterials) _controller.AddMaterialCommand(newMaterial);
+                    foreach (ListViewItem item in lvModelMaterials.Items) _controller.AddMaterialCommand((Material)item.Tag);
                 }
                 Close();
             }
@@ -690,6 +636,84 @@ namespace PrePoMax.Forms
             }
         }
 
-        
+        private void btnMoveUp_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_previousControl == cltvLibrary)
+                {
+                    if (cltvLibrary.SelectedNode != null && cltvLibrary.SelectedNode.Tag != null)
+                    {
+                        TreeNode parent = cltvLibrary.SelectedNode.Parent;
+                        int currentIndex = cltvLibrary.SelectedNode.Index;
+                        TreeNode node = cltvLibrary.SelectedNode;
+                        if (currentIndex > 0)
+                        {
+                            parent.Nodes.RemoveAt(currentIndex);
+                            parent.Nodes.Insert(currentIndex - 1, node);
+                        }
+                        LibraryChanged();
+                        cltvLibrary.Focus();
+                    }
+                }
+                else if (_previousControl == lvModelMaterials)
+                {
+                    if (lvModelMaterials.SelectedItems != null && lvModelMaterials.SelectedItems[0].Tag != null)
+                    {
+                        int currentIndex = lvModelMaterials.SelectedItems[0].Index;
+                        ListViewItem item = lvModelMaterials.Items[currentIndex];
+                        if (currentIndex > 0)
+                        {
+                            lvModelMaterials.Items.RemoveAt(currentIndex);
+                            lvModelMaterials.Items.Insert(currentIndex - 1, item);
+                        }
+                    }
+                    _modelChanged = true;
+                    lvModelMaterials.Focus();
+                }
+            }
+            catch
+            { }
+        }
+
+        private void btnMoveDown_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_previousControl == cltvLibrary)
+                {
+                    if (cltvLibrary.SelectedNode != null && cltvLibrary.SelectedNode.Tag != null)
+                    {
+                        TreeNode parent = cltvLibrary.SelectedNode.Parent;
+                        int currentIndex = cltvLibrary.SelectedNode.Index;
+                        TreeNode node = cltvLibrary.SelectedNode;
+                        if (currentIndex < parent.Nodes.Count - 1)
+                        {
+                            parent.Nodes.RemoveAt(currentIndex);
+                            parent.Nodes.Insert(currentIndex + 1, node);
+                        }
+                        LibraryChanged();
+                        cltvLibrary.Focus();
+                    }
+                }
+                else if (_previousControl == lvModelMaterials)
+                {
+                    if (lvModelMaterials.SelectedItems != null && lvModelMaterials.SelectedItems[0].Tag != null)
+                    {
+                        int currentIndex = lvModelMaterials.SelectedItems[0].Index;
+                        ListViewItem item = lvModelMaterials.Items[currentIndex];
+                        if (currentIndex < lvModelMaterials.Items.Count - 1)
+                        {
+                            lvModelMaterials.Items.RemoveAt(currentIndex);
+                            lvModelMaterials.Items.Insert(currentIndex + 1, item);
+                        }
+                    }
+                    _modelChanged = true;
+                    lvModelMaterials.Focus();
+                }
+            }
+            catch
+            { }
+        }
     }
 }

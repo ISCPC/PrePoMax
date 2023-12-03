@@ -52,6 +52,8 @@
             this.btnNew = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.lvLibraries = new UserControls.ListViewWithSelection();
+            this.btnMoveDown = new System.Windows.Forms.Button();
+            this.btnMoveUp = new System.Windows.Forms.Button();
             this.gbModelMaterials.SuspendLayout();
             this.gbLibraryMaterials.SuspendLayout();
             this.gbLibraries.SuspendLayout();
@@ -100,9 +102,6 @@
             this.lvModelMaterials.TabIndex = 1;
             this.lvModelMaterials.UseCompatibleStateImageBehavior = false;
             this.lvModelMaterials.View = System.Windows.Forms.View.List;
-            this.lvModelMaterials.Enter += new System.EventHandler(this.lvModelMaterials_Enter);
-            this.lvModelMaterials.Leave += new System.EventHandler(this.lvModelMaterials_Leave);
-            this.lvModelMaterials.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lvModelMaterials_MouseDown);
             this.lvModelMaterials.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lvModelMaterials_MouseUp);
             // 
             // btnRename
@@ -181,9 +180,7 @@
             this.cltvLibrary.SelectionMode = UserControls.TreeViewSelectionMode.SingleSelect;
             this.cltvLibrary.Size = new System.Drawing.Size(268, 302);
             this.cltvLibrary.TabIndex = 4;
-            this.cltvLibrary.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.cltvLibrary_AfterSelect);
             this.cltvLibrary.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltvLibrary_MouseDoubleClick);
-            this.cltvLibrary.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltvLibrary_MouseDown);
             this.cltvLibrary.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltvLibrary_MouseUp);
             // 
             // btnOK
@@ -324,12 +321,34 @@
             this.lvLibraries.View = System.Windows.Forms.View.List;
             this.lvLibraries.SelectedIndexChanged += new System.EventHandler(this.lvLibraries_SelectedIndexChanged);
             // 
+            // btnMoveDown
+            // 
+            this.btnMoveDown.Image = global::PrePoMax.Properties.Resources.Down_arrow;
+            this.btnMoveDown.Location = new System.Drawing.Point(296, 298);
+            this.btnMoveDown.Name = "btnMoveDown";
+            this.btnMoveDown.Size = new System.Drawing.Size(24, 24);
+            this.btnMoveDown.TabIndex = 17;
+            this.btnMoveDown.UseVisualStyleBackColor = true;
+            this.btnMoveDown.Click += new System.EventHandler(this.btnMoveDown_Click);
+            // 
+            // btnMoveUp
+            // 
+            this.btnMoveUp.Image = global::PrePoMax.Properties.Resources.Up_arrow;
+            this.btnMoveUp.Location = new System.Drawing.Point(296, 268);
+            this.btnMoveUp.Name = "btnMoveUp";
+            this.btnMoveUp.Size = new System.Drawing.Size(24, 24);
+            this.btnMoveUp.TabIndex = 16;
+            this.btnMoveUp.UseVisualStyleBackColor = true;
+            this.btnMoveUp.Click += new System.EventHandler(this.btnMoveUp_Click);
+            // 
             // FrmMaterialLibrary
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(599, 586);
+            this.Controls.Add(this.btnMoveDown);
+            this.Controls.Add(this.btnMoveUp);
             this.Controls.Add(this.gbLibraries);
             this.Controls.Add(this.cbPreview);
             this.Controls.Add(this.btnOK);
@@ -381,5 +400,7 @@
         private System.Windows.Forms.Button btnNew;
         private UserControls.ListViewWithSelection lvLibraries;
         private System.Windows.Forms.Button btnRemove;
+        private System.Windows.Forms.Button btnMoveDown;
+        private System.Windows.Forms.Button btnMoveUp;
     }
 }

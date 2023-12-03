@@ -66,6 +66,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace UserControls
 {
@@ -180,6 +181,17 @@ namespace UserControls
 				//
 				if (m.Msg == 277 || m.Msg == 276) OnAfterScroll();
 			}
+        }
+        // Scrolling
+        private const int ScrollBarHorizontal = 0x0;
+        private const int ScrollBarVertical = 0x1;
+        [DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+        public static extern int GetScrollPos(int hWnd, int nBar);
+        private Point ScrollPosition()
+        {
+            return new Point(
+                GetScrollPos((int)this.Handle, ScrollBarHorizontal),
+                GetScrollPos((int)this.Handle, ScrollBarVertical));
         }
 
 
@@ -676,6 +688,8 @@ namespace UserControls
 					htblSelectedNodes.Add(tn.GetHashCode(), tn);
 					blnSelected = true;
 					blnSelectionChanged = true;
+                    //
+                    tn.EnsureVisible();
 					//
 					base.OnAfterSelect(new TreeViewEventArgs(tn, tva));
 				}
@@ -1076,9 +1090,10 @@ namespace UserControls
 
 		private bool IsPlusMinusClicked(TreeNode tn, MouseEventArgs e)
 		{
-			int intNodeLevel = GetNodeLevel(tn);
+            Point offset = ScrollPosition();
+            int intNodeLevel = GetNodeLevel(tn);
 			bool blnPlusMinusClicked = false;
-			if (e.X < 20 + (intNodeLevel * 20))
+			if (e.X + offset.X < 20 + (intNodeLevel * 20))
             {
 				blnPlusMinusClicked = true;
 				blnNodeProcessedOnMouseDown = true;
@@ -1132,7 +1147,7 @@ namespace UserControls
 
 					//System.Diagnostics.Debug.WriteLine("*** " + tn.BackColor);
 					ProcessNodeRange(tnMostRecentSelectedNode, tn, e, Control.ModifierKeys, TreeViewAction.ByMouse, true);
-				}
+                }
 			}
 
 			base.OnMouseDown(e);
@@ -1662,12 +1677,12 @@ namespace UserControls
 				{
 					case Keys.Down:
 					case Keys.Right:
-						tnToMakeVisible = GetNextTreeNode(tnMostRecentSelectedNode, true, 5);
+                        tnToMakeVisible = tnMostRecentSelectedNode; // GetNextTreeNode(tnMostRecentSelectedNode, true, 1);
 						break;
 
 					case Keys.Up:
 					case Keys.Left:
-						tnToMakeVisible = GetNextTreeNode(tnMostRecentSelectedNode, false, 5);
+                        tnToMakeVisible = tnMostRecentSelectedNode; // GetNextTreeNode(tnMostRecentSelectedNode, false, 1);
 						break;
 
 					case Keys.Home:
