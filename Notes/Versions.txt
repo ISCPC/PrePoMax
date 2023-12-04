@@ -225,14 +225,18 @@ Axysymetric line?
 2D Fixed not working for rotations?
 Select similar in size?
 VtkMeshQuality
-Add color for slave constraint and contact items
-Load, Bc, duplicate?
 Save as: Krilo 	... if a file Krilo with no extension exist it will ask for overwrite !!! Windows problem
 
 
 DONE
-Version 1.5.0
+Version 2.0.0
 Added GmshCommon project
+Added support for Gmsh shell meshing
+Added support for Gmsh extruded solid meshing (multilayerd)
+Added support for Gmsh revolved solid meshing (multilayerd)
+Added support for Gmsh transinite solid meshing
+Added compression-only constraint
+Added support for reading and displaying gap elements in the Results module
 
 Version 1.4.1
 Added support for hydrostatic pressure cutoff
@@ -679,3 +683,4 @@ Added Normal view
 Added support for linear quadrilateral and linear wedge elements
 Added support for parabolic quadrilateral and parabolic wedge elements
 Added support for linear hexahedral elements
+

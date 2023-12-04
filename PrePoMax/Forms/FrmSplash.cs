@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PrePoMax.Properties;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -18,6 +19,12 @@ namespace PrePoMax.Forms
             //
             ShowHelp = false;
             labProgramName.Text = Globals.ProgramName;
+            //
+            Random rand = new Random(DateTime.Now.Millisecond);
+            int splashId = rand.Next(2) + 1;
+            //
+            if (splashId == 1) BackgroundImage = Resources.Splash_01;
+            else if (splashId == 2) BackgroundImage = Resources.Splash_02;
         }
 
         public bool ShowHelp

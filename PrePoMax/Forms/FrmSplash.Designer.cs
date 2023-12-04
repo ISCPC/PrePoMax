@@ -94,6 +94,7 @@
             // 
             // labHelp
             // 
+            this.labHelp.BackColor = System.Drawing.Color.Transparent;
             this.labHelp.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labHelp.Location = new System.Drawing.Point(3, 182);
             this.labHelp.Name = "labHelp";
@@ -107,7 +108,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            this.BackgroundImage = global::PrePoMax.Properties.Resources.Splash_02;
             this.CancelButton = this.labClose;
             this.ClientSize = new System.Drawing.Size(600, 280);
             this.Controls.Add(this.labHelp);

@@ -883,6 +883,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Splash_02.png" />
+    <None Include="Resources\Splash_01.png" />
     <None Include="Icons\Common\Hide.ico" />
     <None Include="Icons\Common\Show.ico" />
     <None Include="Icons\Common\Up_arrow.ico" />
