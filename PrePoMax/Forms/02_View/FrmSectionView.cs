@@ -88,6 +88,8 @@ namespace PrePoMax.Forms
                     }
                     //
                     _controller.ApplySectionView(_sectionViewParameters.Point, _sectionViewParameters.Normal);
+                    //
+                    this.Enabled = true;
                 }
                 else
                 {

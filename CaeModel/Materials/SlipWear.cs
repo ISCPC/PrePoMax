@@ -26,7 +26,7 @@ namespace CaeModel
         {
             // The constructor must wotk with H = 0; K = 0
             SetHardness(new EquationContainer(typeof(StringPressureConverter), hardness), false);
-            SetHardness(new EquationContainer(typeof(StringDoubleConverter), wearCoefficient), false);
+            SetWearCoefficient(new EquationContainer(typeof(StringDoubleConverter), wearCoefficient), false);
         }
         public SlipWear(SerializationInfo info, StreamingContext context)
             : base(info, context)
