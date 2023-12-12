@@ -57,23 +57,14 @@ namespace PrePoMax.Forms
             this.cmsPropertyGrid.SuspendLayout();
             this.SuspendLayout();
             // 
-            // gbType
-            // 
-            this.gbType.Size = new System.Drawing.Size(310, 100);
-            // 
-            // lvTypes
-            // 
-            this.lvTypes.Size = new System.Drawing.Size(298, 72);
-            // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 118);
-            this.gbProperties.Size = new System.Drawing.Size(310, 352);
+            this.gbProperties.Size = new System.Drawing.Size(310, 353);
             // 
             // propertyGrid
             // 
             this.propertyGrid.ContextMenuStrip = this.cmsPropertyGrid;
-            this.propertyGrid.Size = new System.Drawing.Size(298, 324);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 325);
             // 
             // btnOK
             // 

@@ -79,32 +79,32 @@ namespace PrePoMax.Forms
             // 
             // gbType
             // 
-            this.gbType.Size = new System.Drawing.Size(340, 90);
+            this.gbType.Size = new System.Drawing.Size(340, 101);
             // 
             // lvTypes
             // 
-            this.lvTypes.Size = new System.Drawing.Size(328, 62);
+            this.lvTypes.Size = new System.Drawing.Size(328, 73);
             // 
             // gbProperties
             // 
-            this.gbProperties.Size = new System.Drawing.Size(340, 312);
+            this.gbProperties.Size = new System.Drawing.Size(340, 310);
             // 
             // propertyGrid
             // 
             this.propertyGrid.ContextMenuStrip = this.cmsPropertyGrid;
-            this.propertyGrid.Size = new System.Drawing.Size(328, 284);
+            this.propertyGrid.Size = new System.Drawing.Size(328, 282);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(190, 426);
+            this.btnOK.Location = new System.Drawing.Point(190, 436);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(271, 426);
+            this.btnCancel.Location = new System.Drawing.Point(271, 436);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(109, 426);
+            this.btnOkAddNew.Location = new System.Drawing.Point(109, 436);
             // 
             // cmsPropertyGrid
             // 
@@ -124,7 +124,7 @@ namespace PrePoMax.Forms
             // 
             this.btnPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnPreview.Image = global::PrePoMax.Properties.Resources.Show;
-            this.btnPreview.Location = new System.Drawing.Point(75, 426);
+            this.btnPreview.Location = new System.Drawing.Point(75, 436);
             this.btnPreview.Name = "btnPreview";
             this.btnPreview.Size = new System.Drawing.Size(28, 23);
             this.btnPreview.TabIndex = 17;
@@ -135,9 +135,9 @@ namespace PrePoMax.Forms
             // FrmMeshSetupItem
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(364, 461);
+            this.ClientSize = new System.Drawing.Size(364, 471);
             this.Controls.Add(this.btnPreview);
-            this.MinimumSize = new System.Drawing.Size(380, 500);
+            this.MinimumSize = new System.Drawing.Size(380, 510);
             this.Name = "FrmMeshSetupItem";
             this.Text = "Edit Mesh Setup Item";
             this.VisibleChanged += new System.EventHandler(this.FrmMeshSetupItem_VisibleChanged);

@@ -47,6 +47,40 @@ namespace UserControls
 
 
         // Event handlers                                                                                                           
+        private void FrmPropertyListView_Resize(object sender, EventArgs e)
+        {
+            if (!_firstTime)
+            {
+                int delta = Height - _initialFormHeight;
+                int deltaTop = delta;
+                if (_initialTopLvHeight + deltaTop > _maxTopLvHeight) deltaTop = _maxTopLvHeight - _initialTopLvHeight;
+                if (_initialTopLvHeight + deltaTop < _minTopLvHeight) deltaTop = _minTopLvHeight - _initialTopLvHeight;
+                int deltaBottom = delta - deltaTop;
+                //
+                gbType.Height = _initialTopGbHeight + deltaTop;
+                gbProperties.Top = gbType.Bottom + _initialBetweenHeight;
+                gbProperties.Height = _initialBottomGbHeight + deltaBottom;
+            }
+        }
+        private void FrmPropertyListView_Shown(object sender, EventArgs e)
+        {
+            if (_firstTime)
+            {
+                _maxTopLvHeight = 0;
+                foreach (ListViewItem item in lvTypes.Items) _maxTopLvHeight += item.Bounds.Height;
+                _minTopLvHeight = _maxTopLvHeight / lvTypes.Items.Count * 3;        // show at least three items
+                _maxTopLvHeight += 4;
+                _minTopLvHeight += 4;
+                //
+                _initialFormHeight = Height;
+                _initialTopGbHeight = gbType.Height;
+                _initialTopLvHeight = lvTypes.Height;
+                _initialBetweenHeight = gbProperties.Top - gbType.Bottom;
+                _initialBottomGbHeight = gbProperties.Height;
+                //
+                _firstTime = false;
+            }
+        }
         private void FrmPropertyListView_VisibleChanged(object sender, EventArgs e)
         {
             if (Visible)
@@ -103,42 +137,6 @@ namespace UserControls
                 lvTypes.Items[_preselectIndex].Selected = true;
                 lvTypes.Enabled = false;
                 _preselectIndex = -1;
-            }
-        }
-
-        private void FrmPropertyListView_Resize(object sender, EventArgs e)
-        {
-            if (!_firstTime)
-            {
-                int delta = Height - _initialFormHeight;
-                int deltaTop = delta;
-                if (_initialTopLvHeight + deltaTop > _maxTopLvHeight) deltaTop = _maxTopLvHeight - _initialTopLvHeight;
-                if (_initialTopLvHeight + deltaTop < _minTopLvHeight) deltaTop = _minTopLvHeight - _initialTopLvHeight;
-                int deltaBottom = delta - deltaTop;
-                //
-                gbType.Height = _initialTopGbHeight + deltaTop;
-                gbProperties.Top = gbType.Bottom + _initialBetweenHeight;
-                gbProperties.Height = _initialBottomGbHeight + deltaBottom;
-            }
-        }
-
-        private void FrmPropertyListView_Shown(object sender, EventArgs e)
-        {
-            if (_firstTime)
-            {
-                _maxTopLvHeight = 0;
-                foreach (ListViewItem item in lvTypes.Items) _maxTopLvHeight += item.Bounds.Height;
-                _minTopLvHeight = _maxTopLvHeight / lvTypes.Items.Count * 3;        // show at least three items
-                _maxTopLvHeight += 4;
-                _minTopLvHeight += 4;
-                //
-                _initialFormHeight = Height;
-                _initialTopGbHeight = gbType.Height;
-                _initialTopLvHeight = lvTypes.Height;
-                _initialBetweenHeight = gbProperties.Top - gbType.Bottom;
-                _initialBottomGbHeight = gbProperties.Height;
-                //
-                _firstTime = false;
             }
         }
     }

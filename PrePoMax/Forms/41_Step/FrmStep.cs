@@ -65,40 +65,38 @@ namespace PrePoMax.Forms
         private void InitializeComponent()
         {
             this.gbType.SuspendLayout();
+            this.gbProperties.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // gbType
-            // 
-            this.gbType.Size = new System.Drawing.Size(310, 108);
-            // 
-            // lvTypes
-            // 
-            this.lvTypes.Size = new System.Drawing.Size(298, 80);
             // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 126);
-            this.gbProperties.Size = new System.Drawing.Size(310, 354);
+            this.gbProperties.Size = new System.Drawing.Size(310, 353);
+            // 
+            // propertyGrid
+            // 
+            this.propertyGrid.Size = new System.Drawing.Size(298, 325);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(160, 486);
+            this.btnOK.Location = new System.Drawing.Point(160, 476);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 486);
+            this.btnCancel.Location = new System.Drawing.Point(241, 476);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(79, 486);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 476);
             // 
             // FrmStep
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 521);
+            this.ClientSize = new System.Drawing.Size(334, 511);
+            this.MinimumSize = new System.Drawing.Size(350, 550);
             this.Name = "FrmStep";
             this.Text = "Edit Step";
             this.gbType.ResumeLayout(false);
+            this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }

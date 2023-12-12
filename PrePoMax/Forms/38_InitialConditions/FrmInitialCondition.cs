@@ -46,23 +46,6 @@ namespace PrePoMax.Forms
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
             // 
-            // gbType
-            // 
-            this.gbType.Size = new System.Drawing.Size(310, 88);
-            // 
-            // lvTypes
-            // 
-            this.lvTypes.Size = new System.Drawing.Size(298, 60);
-            // 
-            // gbProperties
-            // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 106);
-            this.gbProperties.Size = new System.Drawing.Size(310, 314);
-            // 
-            // propertyGrid
-            // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 286);
-            // 
             // FrmInitialCondition
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
