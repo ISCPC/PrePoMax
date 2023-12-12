@@ -20,6 +20,8 @@ namespace CaeMesh
         //
         protected FeElementTypeLinearTetra _linearTetraType;
         protected FeElementTypeParabolicTetra _parabolicTetraType;
+        protected FeElementTypeLinearPyramid _linearPyramidType;
+        protected FeElementTypeParabolicPyramid _parabolicPyramidType;
         protected FeElementTypeLinearWedge _linearWedgeType;
         protected FeElementTypeParabolicWedge _parabolicWedgeType;
         protected FeElementTypeLinearHexa _linearHexaType;
@@ -30,19 +32,51 @@ namespace CaeMesh
 
         // Properties                                                                                                               
         public FeElementTypeLinearBeam LinearBeamType { get { return _linearBeamType; } set { _linearBeamType = value; } }
-        public FeElementTypeParabolicBeam ParabolicBeamType { get { return _parabolicBeamType; } set { _parabolicBeamType = value; } }
+        public FeElementTypeParabolicBeam ParabolicBeamType
+        {
+            get { return _parabolicBeamType; }
+            set { _parabolicBeamType = value; }
+        }
         //
         public FeElementTypeLinearTria LinearTriaType { get { return _linearTriaType; } set { _linearTriaType = value; } }
-        public FeElementTypeParabolicTria ParabolicTriaType { get { return _parabolicTriaType; } set { _parabolicTriaType = value; } }
+        public FeElementTypeParabolicTria ParabolicTriaType
+        {
+            get { return _parabolicTriaType; }
+            set { _parabolicTriaType = value; }
+        }
         public FeElementTypeLinearQuad LinearQuadType { get { return _linearQuadType; } set { _linearQuadType = value; } }
-        public FeElementTypeParabolicQuad ParabolicQuadType { get { return _parabolicQuadType; } set { _parabolicQuadType = value; } }
+        public FeElementTypeParabolicQuad ParabolicQuadType
+        {
+            get { return _parabolicQuadType; }
+            set { _parabolicQuadType = value; }
+        }
         //
         public FeElementTypeLinearTetra LinearTetraType { get { return _linearTetraType; } set { _linearTetraType = value; } }
-        public FeElementTypeParabolicTetra ParabolicTetraType { get { return _parabolicTetraType; } set { _parabolicTetraType = value; } }
+        public FeElementTypeParabolicTetra ParabolicTetraType
+        {
+            get { return _parabolicTetraType; }
+            set { _parabolicTetraType = value; }
+        }
+
+        public FeElementTypeLinearPyramid LinearPyramidType { get { return _linearPyramidType; } set { _linearPyramidType = value; } }
+        public FeElementTypeParabolicPyramid ParabolicPyramidType
+        {
+            get { return _parabolicPyramidType; }
+            set { _parabolicPyramidType = value; }
+        }
+
         public FeElementTypeLinearWedge LinearWedgeType { get { return _linearWedgeType; } set { _linearWedgeType = value; } }
-        public FeElementTypeParabolicWedge ParabolicWedgeType { get { return _parabolicWedgeType; } set { _parabolicWedgeType = value; } }
+        public FeElementTypeParabolicWedge ParabolicWedgeType
+        {
+            get { return _parabolicWedgeType; }
+            set { _parabolicWedgeType = value; }
+        }
         public FeElementTypeLinearHexa LinearHexaType { get { return _linearHexaType; } set { _linearHexaType = value; } }
-        public FeElementTypeParabolicHexa ParabolicHexaType { get { return _parabolicHexaType; } set { _parabolicHexaType = value; } }
+        public FeElementTypeParabolicHexa ParabolicHexaType
+        {
+            get { return _parabolicHexaType; }
+            set { _parabolicHexaType = value; }
+        }
         //
         public bool CreatedFromBasePart { get { return _createdFromBasePart; } }
 
@@ -75,6 +109,8 @@ namespace CaeMesh
             //
             _linearTetraType = part.LinearTetraType;
             _parabolicTetraType = part.ParabolicTetraType;
+            _linearPyramidType = part.LinearPyramidType;
+            _parabolicPyramidType = part.ParabolicPyramidType;
             _linearWedgeType = part.LinearWedgeType;
             _parabolicWedgeType = part.ParabolicWedgeType;
             _linearHexaType = part.LinearHexaType;
@@ -97,6 +133,8 @@ namespace CaeMesh
             //
             _linearTetraType = FeElementTypeLinearTetra.None;
             _parabolicTetraType = FeElementTypeParabolicTetra.None;
+            _linearPyramidType = FeElementTypeLinearPyramid.None;
+            _parabolicPyramidType = FeElementTypeParabolicPyramid.None;
             _linearWedgeType = FeElementTypeLinearWedge.None;
             _parabolicWedgeType = FeElementTypeParabolicWedge.None;
             _linearHexaType = FeElementTypeLinearHexa.None;
@@ -114,6 +152,8 @@ namespace CaeMesh
             //
             if (types.Contains(typeof(LinearTetraElement))) _linearTetraType = FeElementTypeLinearTetra.C3D4;
             if (types.Contains(typeof(ParabolicTetraElement))) _parabolicTetraType = FeElementTypeParabolicTetra.C3D10;
+            if (types.Contains(typeof(LinearPyramidElement))) _linearPyramidType = FeElementTypeLinearPyramid.C3D5;
+            if (types.Contains(typeof(ParabolicPyramidElement))) _parabolicPyramidType = FeElementTypeParabolicPyramid.C3D13;
             if (types.Contains(typeof(LinearWedgeElement))) _linearWedgeType = FeElementTypeLinearWedge.C3D6;
             if (types.Contains(typeof(ParabolicWedgeElement))) _parabolicWedgeType = FeElementTypeParabolicWedge.C3D15;
             if (types.Contains(typeof(LinearHexaElement))) _linearHexaType = FeElementTypeLinearHexa.C3D8;
@@ -141,6 +181,10 @@ namespace CaeMesh
                 _linearTetraType = FeElementTypeLinearTetra.C3D4;
             if (types.Contains(typeof(ParabolicTetraElement)) && _parabolicTetraType == FeElementTypeParabolicTetra.None)
                 _parabolicTetraType = FeElementTypeParabolicTetra.C3D10;
+            if (types.Contains(typeof(LinearPyramidElement)) && _linearPyramidType == FeElementTypeLinearPyramid.None)
+                _linearPyramidType = FeElementTypeLinearPyramid.C3D5;
+            if (types.Contains(typeof(ParabolicPyramidElement)) && _parabolicPyramidType == FeElementTypeParabolicPyramid.None)
+                _parabolicPyramidType = FeElementTypeParabolicPyramid.C3D13;
             if (types.Contains(typeof(LinearWedgeElement)) && _linearWedgeType == FeElementTypeLinearWedge.None)
                 _linearWedgeType = FeElementTypeLinearWedge.C3D6;
             if (types.Contains(typeof(ParabolicWedgeElement)) && _parabolicWedgeType == FeElementTypeParabolicWedge.None)
@@ -168,6 +212,8 @@ namespace CaeMesh
             //
             if (_linearTetraType != FeElementTypeLinearTetra.None) _linearTetraType = part.LinearTetraType;
             if (_parabolicTetraType != FeElementTypeParabolicTetra.None) _parabolicTetraType = part.ParabolicTetraType;
+            if (_linearPyramidType != FeElementTypeLinearPyramid.None) _linearPyramidType = part.LinearPyramidType;
+            if (_parabolicPyramidType != FeElementTypeParabolicPyramid.None) _parabolicPyramidType = part.ParabolicPyramidType;
             if (_linearWedgeType != FeElementTypeLinearWedge.None) _linearWedgeType = part.LinearWedgeType;
             if (_parabolicWedgeType != FeElementTypeParabolicWedge.None) _parabolicWedgeType = part.ParabolicWedgeType;
             if (_linearHexaType != FeElementTypeLinearHexa.None) _linearHexaType = part.LinearHexaType;
@@ -181,115 +227,171 @@ namespace CaeMesh
                 {
                     // Beam
                     case "T3D2":
-                        _linearBeamType = FeElementTypeLinearBeam.T3D2; break;
+                        if (_linearBeamType != FeElementTypeLinearBeam.None)
+                            _linearBeamType = FeElementTypeLinearBeam.T3D2; break;
                     case "B31":
-                        _linearBeamType = FeElementTypeLinearBeam.B31; break;
+                        if (_linearBeamType != FeElementTypeLinearBeam.None)
+                            _linearBeamType = FeElementTypeLinearBeam.B31; break;
                     case "B31R":
-                        _linearBeamType = FeElementTypeLinearBeam.B31R; break;
+                        if (_linearBeamType != FeElementTypeLinearBeam.None)
+                            _linearBeamType = FeElementTypeLinearBeam.B31R; break;
                     case "T2D2":
-                        _linearBeamType = FeElementTypeLinearBeam.T2D2; break;
+                        if (_linearBeamType != FeElementTypeLinearBeam.None)
+                            _linearBeamType = FeElementTypeLinearBeam.T2D2; break;
                     case "B21":
-                        _linearBeamType = FeElementTypeLinearBeam.B21; break;
+                        if (_linearBeamType != FeElementTypeLinearBeam.None)
+                            _linearBeamType = FeElementTypeLinearBeam.B21; break;
                     //
                     case "T2D3":
                     case "T3D3":    // Abaqus
-                        _parabolicBeamType = FeElementTypeParabolicBeam.T2D3; break;
+                        if (_parabolicBeamType != FeElementTypeParabolicBeam.None)
+                            _parabolicBeamType = FeElementTypeParabolicBeam.T2D3; break;
                     case "B32":
-                        _parabolicBeamType = FeElementTypeParabolicBeam.B32; break;
+                        if (_parabolicBeamType != FeElementTypeParabolicBeam.None)
+                            _parabolicBeamType = FeElementTypeParabolicBeam.B32; break;
                     case "B32R":
-                        _parabolicBeamType = FeElementTypeParabolicBeam.B32R; break;
+                        if (_parabolicBeamType != FeElementTypeParabolicBeam.None)
+                            _parabolicBeamType = FeElementTypeParabolicBeam.B32R; break;
                     // Triangular
                     case "S3":
                     case "S3R":
-                        _linearTriaType = FeElementTypeLinearTria.S3; break;
+                        if (_linearTriaType != FeElementTypeLinearTria.None)
+                            _linearTriaType = FeElementTypeLinearTria.S3; break;
                     case "M3D3":
-                        _linearTriaType = FeElementTypeLinearTria.M3D3; break;
+                        if (_linearTriaType != FeElementTypeLinearTria.None)
+                            _linearTriaType = FeElementTypeLinearTria.M3D3; break;
                     case "CPS3":
-                        _linearTriaType = FeElementTypeLinearTria.CPS3; break;
+                        if (_linearTriaType != FeElementTypeLinearTria.None)
+                            _linearTriaType = FeElementTypeLinearTria.CPS3; break;
                     case "CPE3":
-                        _linearTriaType = FeElementTypeLinearTria.CPE3; break;
+                        if (_linearTriaType != FeElementTypeLinearTria.None)
+                            _linearTriaType = FeElementTypeLinearTria.CPE3; break;
                     case "CAX3":
-                        _linearTriaType = FeElementTypeLinearTria.CAX3; break;
+                        if (_linearTriaType != FeElementTypeLinearTria.None)
+                            _linearTriaType = FeElementTypeLinearTria.CAX3; break;
                     //
                     case "S6":
                     case "STRI65":  // Abaqus
-                        _parabolicTriaType = FeElementTypeParabolicTria.S6; break;
+                        if (_parabolicTriaType != FeElementTypeParabolicTria.None)
+                            _parabolicTriaType = FeElementTypeParabolicTria.S6; break;
                     case "M3D6":
-                        _parabolicTriaType = FeElementTypeParabolicTria.M3D6; break;
+                        if (_parabolicTriaType != FeElementTypeParabolicTria.None)
+                            _parabolicTriaType = FeElementTypeParabolicTria.M3D6; break;
                     case "CPS6":
-                        _parabolicTriaType = FeElementTypeParabolicTria.CPS6; break;
+                        if (_parabolicTriaType != FeElementTypeParabolicTria.None)
+                            _parabolicTriaType = FeElementTypeParabolicTria.CPS6; break;
                     case "CPE6":
-                        _parabolicTriaType = FeElementTypeParabolicTria.CPE6; break;
+                        if (_parabolicTriaType != FeElementTypeParabolicTria.None)
+                            _parabolicTriaType = FeElementTypeParabolicTria.CPE6; break;
                     case "CAX6":
-                        _parabolicTriaType = FeElementTypeParabolicTria.CAX6; break;
+                        if (_parabolicTriaType != FeElementTypeParabolicTria.None)
+                            _parabolicTriaType = FeElementTypeParabolicTria.CAX6; break;
                     // Quadrilateral
                     case "S4":
-                        _linearQuadType = FeElementTypeLinearQuad.S4; break;
+                        if (_linearQuadType != FeElementTypeLinearQuad.None)
+                            _linearQuadType = FeElementTypeLinearQuad.S4; break;
                     case "S4R":
-                        _linearQuadType = FeElementTypeLinearQuad.S4R; break;
+                        if (_linearQuadType != FeElementTypeLinearQuad.None)
+                            _linearQuadType = FeElementTypeLinearQuad.S4R; break;
                     case "M3D4":
-                        _linearQuadType = FeElementTypeLinearQuad.M3D4; break;
+                        if (_linearQuadType != FeElementTypeLinearQuad.None)
+                            _linearQuadType = FeElementTypeLinearQuad.M3D4; break;
                     case "M3D4R":
-                        _linearQuadType = FeElementTypeLinearQuad.M3D4R; break;
+                        if (_linearQuadType != FeElementTypeLinearQuad.None)
+                            _linearQuadType = FeElementTypeLinearQuad.M3D4R; break;
                     case "CPS4":
-                        _linearQuadType = FeElementTypeLinearQuad.CPS4; break;
+                        if (_linearQuadType != FeElementTypeLinearQuad.None)
+                            _linearQuadType = FeElementTypeLinearQuad.CPS4; break;
                     case "CPS4R":
-                        _linearQuadType = FeElementTypeLinearQuad.CPS4R; break;
+                        if (_linearQuadType != FeElementTypeLinearQuad.None)
+                            _linearQuadType = FeElementTypeLinearQuad.CPS4R; break;
                     case "CPE4":
-                        _linearQuadType = FeElementTypeLinearQuad.CPE4; break;
+                        if (_linearQuadType != FeElementTypeLinearQuad.None)
+                            _linearQuadType = FeElementTypeLinearQuad.CPE4; break;
                     case "CPE4R":
-                        _linearQuadType = FeElementTypeLinearQuad.CPE4R; break;
+                        if (_linearQuadType != FeElementTypeLinearQuad.None)
+                            _linearQuadType = FeElementTypeLinearQuad.CPE4R; break;
                     case "CAX4":
-                        _linearQuadType = FeElementTypeLinearQuad.CAX4; break;
+                        if (_linearQuadType != FeElementTypeLinearQuad.None)
+                            _linearQuadType = FeElementTypeLinearQuad.CAX4; break;
                     case "CAX4R":
-                        _linearQuadType = FeElementTypeLinearQuad.CAX4R; break;
+                        if (_linearQuadType != FeElementTypeLinearQuad.None)
+                            _linearQuadType = FeElementTypeLinearQuad.CAX4R; break;
                     //
                     case "S8":
-                        _parabolicQuadType = FeElementTypeParabolicQuad.S8; break;
+                        if (_parabolicQuadType != FeElementTypeParabolicQuad.None)
+                            _parabolicQuadType = FeElementTypeParabolicQuad.S8; break;
                     case "S8R":
-                        _parabolicQuadType = FeElementTypeParabolicQuad.S8R; break;
+                        if (_parabolicQuadType != FeElementTypeParabolicQuad.None)
+                            _parabolicQuadType = FeElementTypeParabolicQuad.S8R; break;
                     case "M3D8":
-                        _parabolicQuadType = FeElementTypeParabolicQuad.M3D8; break;
+                        if (_parabolicQuadType != FeElementTypeParabolicQuad.None)
+                            _parabolicQuadType = FeElementTypeParabolicQuad.M3D8; break;
                     case "M3D8R":
-                        _parabolicQuadType = FeElementTypeParabolicQuad.M3D8R; break;
+                        if (_parabolicQuadType != FeElementTypeParabolicQuad.None)
+                            _parabolicQuadType = FeElementTypeParabolicQuad.M3D8R; break;
                     case "CPS8":
-                        _parabolicQuadType = FeElementTypeParabolicQuad.CPS8; break;
+                        if (_parabolicQuadType != FeElementTypeParabolicQuad.None)
+                            _parabolicQuadType = FeElementTypeParabolicQuad.CPS8; break;
                     case "CPS8R":
-                        _parabolicQuadType = FeElementTypeParabolicQuad.CPS8R; break;
+                        if (_parabolicQuadType != FeElementTypeParabolicQuad.None)
+                            _parabolicQuadType = FeElementTypeParabolicQuad.CPS8R; break;
                     case "CPE8":
-                        _parabolicQuadType = FeElementTypeParabolicQuad.CPE8; break;
+                        if (_parabolicQuadType != FeElementTypeParabolicQuad.None)
+                            _parabolicQuadType = FeElementTypeParabolicQuad.CPE8; break;
                     case "CPE8R":
-                        _parabolicQuadType = FeElementTypeParabolicQuad.CPE8R; break;
+                        if (_parabolicQuadType != FeElementTypeParabolicQuad.None)
+                            _parabolicQuadType = FeElementTypeParabolicQuad.CPE8R; break;
                     case "CAX8":
-                        _parabolicQuadType = FeElementTypeParabolicQuad.CAX8; break;
+                        if (_parabolicQuadType != FeElementTypeParabolicQuad.None)
+                            _parabolicQuadType = FeElementTypeParabolicQuad.CAX8; break;
                     case "CAX8R":
-                        _parabolicQuadType = FeElementTypeParabolicQuad.CAX8R; break;
+                        if (_parabolicQuadType != FeElementTypeParabolicQuad.None)
+                            _parabolicQuadType = FeElementTypeParabolicQuad.CAX8R; break;
                     // Tetrahedral
                     case "C3D4":
-                        _linearTetraType = FeElementTypeLinearTetra.C3D4; break;
+                        if (_linearTetraType != FeElementTypeLinearTetra.None)
+                            _linearTetraType = FeElementTypeLinearTetra.C3D4; break;
                     //
                     case "C3D10":
-                        _parabolicTetraType = FeElementTypeParabolicTetra.C3D10; break;
+                        if (_parabolicTetraType != FeElementTypeParabolicTetra.None)
+                            _parabolicTetraType = FeElementTypeParabolicTetra.C3D10; break;
                     case "C3D10T":
-                        _parabolicTetraType = FeElementTypeParabolicTetra.C3D10T; break;
+                        if (_parabolicTetraType != FeElementTypeParabolicTetra.None)
+                            _parabolicTetraType = FeElementTypeParabolicTetra.C3D10T; break;
+                    // Pyramid
+                    case "C3D5":
+                        if (_linearPyramidType != FeElementTypeLinearPyramid.None)
+                            _linearPyramidType = FeElementTypeLinearPyramid.C3D5; break;
+                    //
+                    case "C3D13":
+                        if (_parabolicPyramidType != FeElementTypeParabolicPyramid.None)
+                            _parabolicPyramidType = FeElementTypeParabolicPyramid.C3D13; break;
                     // Wedge
                     case "C3D6":
-                        _linearWedgeType = FeElementTypeLinearWedge.C3D6; break;
+                        if (_linearWedgeType != FeElementTypeLinearWedge.None)
+                            _linearWedgeType = FeElementTypeLinearWedge.C3D6; break;
                     //
                     case "C3D15":
-                        _parabolicWedgeType = FeElementTypeParabolicWedge.C3D15; break;
+                        if (_parabolicWedgeType != FeElementTypeParabolicWedge.None)
+                            _parabolicWedgeType = FeElementTypeParabolicWedge.C3D15; break;
                     // Hexahedral
                     case "C3D8":
-                        _linearHexaType = FeElementTypeLinearHexa.C3D8; break;
+                        if (_linearHexaType != FeElementTypeLinearHexa.None)
+                            _linearHexaType = FeElementTypeLinearHexa.C3D8; break;
                     case "C3D8R":
-                        _linearHexaType = FeElementTypeLinearHexa.C3D8R; break;
+                        if (_linearHexaType != FeElementTypeLinearHexa.None)
+                            _linearHexaType = FeElementTypeLinearHexa.C3D8R; break;
                     case "C3D8I":
-                        _linearHexaType = FeElementTypeLinearHexa.C3D8I; break;
+                        if (_linearHexaType != FeElementTypeLinearHexa.None)
+                            _linearHexaType = FeElementTypeLinearHexa.C3D8I; break;
                     //
                     case "C3D20":
-                        _parabolicHexaType = FeElementTypeParabolicHexa.C3D20; break;
+                        if (_parabolicHexaType != FeElementTypeParabolicHexa.None)
+                            _parabolicHexaType = FeElementTypeParabolicHexa.C3D20; break;
                     case "C3D20R":
-                        _parabolicHexaType = FeElementTypeParabolicHexa.C3D20R; break;
+                        if (_parabolicHexaType != FeElementTypeParabolicHexa.None)
+                            _parabolicHexaType = FeElementTypeParabolicHexa.C3D20R; break;
                     default:
                         throw new CaeGlobals.CaeException("The inp element type '" + inpElementTypeName + "' is not supported.");
                 }
@@ -313,6 +415,8 @@ namespace CaeMesh
             //
             properties.LinearTetraType = _linearTetraType;
             properties.ParabolicTetraType = _parabolicTetraType;
+            properties.LinearPyramidType = _linearPyramidType;
+            properties.ParabolicPyramidType = _parabolicPyramidType;
             properties.LinearWedgeType = _linearWedgeType;
             properties.ParabolicWedgeType = _parabolicWedgeType;
             properties.LinearHexaType = _linearHexaType;
@@ -325,31 +429,51 @@ namespace CaeMesh
             base.SetProperties(properties);
             //
             if (_linearBeamType != FeElementTypeLinearBeam.None &&
-                properties.LinearBeamType != FeElementTypeLinearBeam.None) _linearBeamType = properties.LinearBeamType;
+                properties.LinearBeamType != FeElementTypeLinearBeam.None)
+                _linearBeamType = properties.LinearBeamType;
             if (_parabolicBeamType != FeElementTypeParabolicBeam.None &&
-                properties.ParabolicBeamType != FeElementTypeParabolicBeam.None) _parabolicBeamType = properties.ParabolicBeamType;
+                properties.ParabolicBeamType != FeElementTypeParabolicBeam.None)
+                _parabolicBeamType = properties.ParabolicBeamType;
             //
             if (_linearTriaType != FeElementTypeLinearTria.None &&
-                properties.LinearTriaType != FeElementTypeLinearTria.None) _linearTriaType = properties.LinearTriaType;
+                properties.LinearTriaType != FeElementTypeLinearTria.None)
+                _linearTriaType = properties.LinearTriaType;
             if (_parabolicTriaType != FeElementTypeParabolicTria.None &&
-                properties.ParabolicTriaType != FeElementTypeParabolicTria.None) _parabolicTriaType = properties.ParabolicTriaType;
+                properties.ParabolicTriaType != FeElementTypeParabolicTria.None)
+                _parabolicTriaType = properties.ParabolicTriaType;
             if (_linearQuadType != FeElementTypeLinearQuad.None &&
-                properties.LinearQuadType != FeElementTypeLinearQuad.None) _linearQuadType = properties.LinearQuadType;
+                properties.LinearQuadType != FeElementTypeLinearQuad.None)
+                _linearQuadType = properties.LinearQuadType;
             if (_parabolicQuadType != FeElementTypeParabolicQuad.None &&
-                properties.ParabolicQuadType != FeElementTypeParabolicQuad.None) _parabolicQuadType = properties.ParabolicQuadType;
+                properties.ParabolicQuadType != FeElementTypeParabolicQuad.None)
+                _parabolicQuadType = properties.ParabolicQuadType;
             //
             if (_linearTetraType != FeElementTypeLinearTetra.None &&
-                properties.LinearTetraType != FeElementTypeLinearTetra.None) _linearTetraType = properties.LinearTetraType;
+                properties.LinearTetraType != FeElementTypeLinearTetra.None)
+                _linearTetraType = properties.LinearTetraType;
             if (_parabolicTetraType != FeElementTypeParabolicTetra.None &&
-                properties.ParabolicTetraType != FeElementTypeParabolicTetra.None) _parabolicTetraType = properties.ParabolicTetraType;
+                properties.ParabolicTetraType != FeElementTypeParabolicTetra.None)
+                _parabolicTetraType = properties.ParabolicTetraType;
+
+            if (_linearPyramidType != FeElementTypeLinearPyramid.None &&
+                properties.LinearPyramidType != FeElementTypeLinearPyramid.None)
+                _linearPyramidType = properties.LinearPyramidType;
+            if (_parabolicPyramidType != FeElementTypeParabolicPyramid.None &&
+                properties.ParabolicPyramidType != FeElementTypeParabolicPyramid.None)
+                _parabolicPyramidType = properties.ParabolicPyramidType;
+
             if (_linearWedgeType != FeElementTypeLinearWedge.None &&
-                properties.LinearWedgeType != FeElementTypeLinearWedge.None) _linearWedgeType = properties.LinearWedgeType;
+                properties.LinearWedgeType != FeElementTypeLinearWedge.None)
+                _linearWedgeType = properties.LinearWedgeType;
             if (_parabolicWedgeType != FeElementTypeParabolicWedge.None &&
-                properties.ParabolicWedgeType != FeElementTypeParabolicWedge.None) _parabolicWedgeType = properties.ParabolicWedgeType;
+                properties.ParabolicWedgeType != FeElementTypeParabolicWedge.None)
+                _parabolicWedgeType = properties.ParabolicWedgeType;
             if (_linearHexaType != FeElementTypeLinearHexa.None &&
-                properties.LinearHexaType != FeElementTypeLinearHexa.None) _linearHexaType = properties.LinearHexaType;
+                properties.LinearHexaType != FeElementTypeLinearHexa.None)
+                _linearHexaType = properties.LinearHexaType;
             if (_parabolicHexaType != FeElementTypeParabolicHexa.None &&
-                properties.ParabolicHexaType != FeElementTypeParabolicHexa.None) _parabolicHexaType = properties.ParabolicHexaType;
+                properties.ParabolicHexaType != FeElementTypeParabolicHexa.None)
+                _parabolicHexaType = properties.ParabolicHexaType;
         }
         //
         public List<Enum> GetElementTypeEnums()
@@ -366,6 +490,8 @@ namespace CaeMesh
             //
             if (_linearTetraType != FeElementTypeLinearTetra.None) elementTypeEnums.Add(_linearTetraType);
             if (_parabolicTetraType != FeElementTypeParabolicTetra.None) elementTypeEnums.Add(_parabolicTetraType);
+            if (_linearPyramidType != FeElementTypeLinearPyramid.None) elementTypeEnums.Add(_linearPyramidType);
+            if (_parabolicPyramidType != FeElementTypeParabolicPyramid.None) elementTypeEnums.Add(_parabolicPyramidType);
             if (_linearWedgeType != FeElementTypeLinearWedge.None) elementTypeEnums.Add(_linearWedgeType);
             if (_parabolicWedgeType != FeElementTypeParabolicWedge.None) elementTypeEnums.Add(_parabolicWedgeType);
             if (_linearHexaType != FeElementTypeLinearHexa.None) elementTypeEnums.Add(_linearHexaType);
@@ -379,31 +505,49 @@ namespace CaeMesh
             {
                 foreach (var elementEnum in elementTypeEnums)
                 {
-                    if (elementEnum is FeElementTypeLinearBeam lb && _linearBeamType != FeElementTypeLinearBeam.None)
+                    if (elementEnum is FeElementTypeLinearBeam lb &&
+                        _linearBeamType != FeElementTypeLinearBeam.None)
                         _linearBeamType = lb;
-                    if (elementEnum is FeElementTypeParabolicBeam pb && _parabolicBeamType != FeElementTypeParabolicBeam.None)
+                    if (elementEnum is FeElementTypeParabolicBeam pb &&
+                        _parabolicBeamType != FeElementTypeParabolicBeam.None)
                         _parabolicBeamType = pb;
                     //
-                    if (elementEnum is FeElementTypeLinearTria lt && _linearTriaType != FeElementTypeLinearTria.None)
+                    if (elementEnum is FeElementTypeLinearTria lt &&
+                        _linearTriaType != FeElementTypeLinearTria.None)
                         _linearTriaType = lt;
-                    else if (elementEnum is FeElementTypeParabolicTria pt && _parabolicTriaType != FeElementTypeParabolicTria.None)
+                    else if (elementEnum is FeElementTypeParabolicTria pt &&
+                        _parabolicTriaType != FeElementTypeParabolicTria.None)
                         _parabolicTriaType = pt;
-                    else if (elementEnum is FeElementTypeLinearQuad lq && _linearQuadType != FeElementTypeLinearQuad.None)
+                    else if (elementEnum is FeElementTypeLinearQuad lq &&
+                        _linearQuadType != FeElementTypeLinearQuad.None)
                         _linearQuadType = lq;
-                    else if (elementEnum is FeElementTypeParabolicQuad pq && _parabolicQuadType != FeElementTypeParabolicQuad.None)
+                    else if (elementEnum is FeElementTypeParabolicQuad pq &&
+                        _parabolicQuadType != FeElementTypeParabolicQuad.None)
                         _parabolicQuadType = pq;
                     //
-                    else if (elementEnum is FeElementTypeLinearTetra lte && _linearTetraType != FeElementTypeLinearTetra.None)
+                    else if (elementEnum is FeElementTypeLinearTetra lte &&
+                        _linearTetraType != FeElementTypeLinearTetra.None)
                         _linearTetraType = lte;
-                    else if (elementEnum is FeElementTypeParabolicTetra pte && _parabolicTetraType != FeElementTypeParabolicTetra.None)
+                    else if (elementEnum is FeElementTypeParabolicTetra pte &&
+                        _parabolicTetraType != FeElementTypeParabolicTetra.None)
                         _parabolicTetraType = pte;
-                    else if (elementEnum is FeElementTypeLinearWedge lw && _linearWedgeType != FeElementTypeLinearWedge.None)
+                    else if (elementEnum is FeElementTypeLinearPyramid lpe &&
+                        _linearPyramidType != FeElementTypeLinearPyramid.None)
+                        _linearPyramidType = lpe;
+                    else if (elementEnum is FeElementTypeParabolicPyramid ppe &&
+                        _parabolicPyramidType != FeElementTypeParabolicPyramid.None)
+                        _parabolicPyramidType = ppe;
+                    else if (elementEnum is FeElementTypeLinearWedge lw &&
+                        _linearWedgeType != FeElementTypeLinearWedge.None)
                         _linearWedgeType = lw;
-                    else if (elementEnum is FeElementTypeParabolicWedge pw && _parabolicWedgeType != FeElementTypeParabolicWedge.None)
+                    else if (elementEnum is FeElementTypeParabolicWedge pw &&
+                        _parabolicWedgeType != FeElementTypeParabolicWedge.None)
                         _parabolicWedgeType = pw;
-                    else if (elementEnum is FeElementTypeLinearHexa lh && _linearHexaType != FeElementTypeLinearHexa.None)
+                    else if (elementEnum is FeElementTypeLinearHexa lh &&
+                        _linearHexaType != FeElementTypeLinearHexa.None)
                         _linearHexaType = lh;
-                    else if (elementEnum is FeElementTypeParabolicHexa ph && _parabolicHexaType != FeElementTypeParabolicHexa.None)
+                    else if (elementEnum is FeElementTypeParabolicHexa ph &&
+                        _parabolicHexaType != FeElementTypeParabolicHexa.None)
                         _parabolicHexaType = ph;
                 }
             }
@@ -449,6 +593,14 @@ namespace CaeMesh
                     elementTypeEnums.TryGetValue(typeof(FeElementTypeParabolicTetra), out elementEnums) &&
                     !elementEnums.Contains(_parabolicTetraType))
                     _parabolicTetraType = (FeElementTypeParabolicTetra)elementEnums.First();
+                if (_linearPyramidType != FeElementTypeLinearPyramid.None &&
+                   elementTypeEnums.TryGetValue(typeof(FeElementTypeLinearPyramid), out elementEnums) &&
+                   !elementEnums.Contains(_linearPyramidType))
+                    _linearPyramidType = (FeElementTypeLinearPyramid)elementEnums.First();
+                if (_parabolicPyramidType != FeElementTypeParabolicPyramid.None &&
+                    elementTypeEnums.TryGetValue(typeof(FeElementTypeParabolicPyramid), out elementEnums) &&
+                    !elementEnums.Contains(_parabolicPyramidType))
+                    _parabolicPyramidType = (FeElementTypeParabolicPyramid)elementEnums.First();
                 if (_linearWedgeType != FeElementTypeLinearWedge.None &&
                     elementTypeEnums.TryGetValue(typeof(FeElementTypeLinearWedge), out elementEnums) &&
                     !elementEnums.Contains(_linearWedgeType))
@@ -479,6 +631,8 @@ namespace CaeMesh
             //
             else if (element is LinearTetraElement) return _linearTetraType.ToString();
             else if (element is ParabolicTetraElement) return _parabolicTetraType.ToString();
+            else if (element is LinearPyramidElement) return _linearPyramidType.ToString();
+            else if (element is ParabolicPyramidElement) return _parabolicPyramidType.ToString();
             else if (element is LinearWedgeElement) return _linearWedgeType.ToString();
             else if (element is ParabolicWedgeElement) return _parabolicWedgeType.ToString();
             else if (element is LinearHexaElement) return _linearHexaType.ToString();

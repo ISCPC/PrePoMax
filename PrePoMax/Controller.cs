@@ -3374,8 +3374,10 @@ namespace PrePoMax
             else return defaultMeshingParameters;
         }
         //
-        public Dictionary<int, double> GetVertexIdMeshSize(string partName,
-                                                           OrderedDictionary<string, MeshSetupItem> meshSetupItems = null)
+        public void GetVertexIdMeshSize(string partName,
+                                        out Dictionary<int, double> vertexIdMeshSize,
+                                        out Dictionary<int, int> edgeIdNumElements,
+                                        OrderedDictionary<string, MeshSetupItem> meshSetupItems = null)
         {
             HashSet<int> selectedPartIds;
             string[] meshAblePartNames = GetMeshablePartNames(new string[] { partName });
@@ -3392,8 +3394,7 @@ namespace PrePoMax
                     {
                         selectedPartIds = new HashSet<int>(FeMesh.GetPartIdsFromGeometryIds(mr.CreationIds));
                         //
-                        if (selectedPartIds.Intersect(meshAblePartIds).Count() == meshAblePartIds.Length)
-                            meshRefinements.Add(mr.DeepCopy());
+                        if (selectedPartIds.Intersect(meshAblePartIds).Count() > 0) meshRefinements.Add(mr.DeepCopy());
                     }
                 }
             }
@@ -3403,9 +3404,13 @@ namespace PrePoMax
             GeometryType geometryType;
             int partId;
             BasePart part;
+            int edgeId;
+            double length;
+            int numElements;
             HashSet<int> vertexNodeIds = new HashSet<int>();
             HashSet<int> vertexIds = new HashSet<int>();
-            Dictionary<int, double> vertexIdMeshSize = new Dictionary<int, double>();
+            vertexIdMeshSize = new Dictionary<int, double>();
+            edgeIdNumElements = new Dictionary<int, int>();
             foreach (var meshRefinement in meshRefinements)
             {
                 vertexIds.Clear();
@@ -3428,19 +3433,35 @@ namespace PrePoMax
                     {
                         vertexNodeIds = part.Visualization.GetVerticesForEdgeIds(new int[] { itemId });
                         vertexIds.UnionWith(part.Visualization.GetVertexIdsForNodeIds(vertexNodeIds.ToArray()));
+                        //
+                        length = part.Visualization.EdgeLengths[itemId];
+                        numElements = (int)Math.Round(length / meshRefinement.MeshSize, 0, MidpointRounding.AwayFromZero);
+                        if (numElements < 1) numElements = 1;
+                        //if (edgeIdNumElements.ContainsKey(itemId)) edgeIdNumElements[itemId] = numElements;
+                        //else edgeIdNumElements.Add(itemId, numElements);
+                        edgeIdNumElements[itemId + 1] = numElements;
                     }
                     else if (geometryType.IsSurface())
                     {
                         vertexNodeIds = part.Visualization.GetVerticesForSurfaceIds(new int[] { itemId });
                         vertexIds.UnionWith(part.Visualization.GetVertexIdsForNodeIds(vertexNodeIds.ToArray()));
+                        //
+                        for (int i = 0; i < part.Visualization.FaceEdgeIds[itemId].Length; i++)
+                        {
+                            edgeId = part.Visualization.FaceEdgeIds[itemId][i];
+                            length = part.Visualization.EdgeLengths[edgeId];
+                            numElements = (int)Math.Round(length / meshRefinement.MeshSize, 0, MidpointRounding.AwayFromZero);
+                            if (numElements < 1) numElements = 1;
+                            //if (edgeIdNumElements.ContainsKey(edgeId)) edgeIdNumElements[edgeId] = numElements;
+                            //else edgeIdNumElements.Add(edgeId, numElements);
+                            edgeIdNumElements[edgeId + 1] = numElements;
+                        }
                     }
                     else throw new NotSupportedException();
                 }
                 // Add sizes
                 foreach (var vertexId in vertexIds) vertexIdMeshSize.Add(vertexId, meshRefinement.MeshSize);
             }
-            //
-            return vertexIdMeshSize;
         }
         //
         public bool PreviewEdgeMesh(string partName, MeshSetupItem meshSetupItem)
@@ -3584,9 +3605,11 @@ namespace PrePoMax
             SuppressExplodedView(new string[] { part.Name });
             File.WriteAllText(brepFileName, part.CADFileData);
             MeshingParameters partMeshingParameters = GetPartMeshingParameters(part.Name, meshSetupItems);
-            Dictionary<int, double> vertexIdMeshSize = GetVertexIdMeshSize(part.Name, meshSetupItems);
+            Dictionary<int, double> vertexIdMeshSize;
+            Dictionary<int, int> edgeIdNumElements;
+            GetVertexIdMeshSize(part.Name, out vertexIdMeshSize, out edgeIdNumElements, meshSetupItems);
             GmshData gmshData = new GmshData(brepFileName, inpFileName, partMeshingParameters, vertexIdMeshSize,
-                                             gmshSetupItems, true);
+                                             edgeIdNumElements, gmshSetupItems, true);
             gmshData.WriteToFile(gmshDataFileName);
             ResumeExplodedViews(false);
             //
@@ -3743,9 +3766,11 @@ namespace PrePoMax
             SuppressExplodedView(partNames);
             FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, partNames);
             MeshingParameters partMeshingParameters = GetPartMeshingParameters(part.Name);
-            Dictionary<int, double> vertexIdMeshSize = GetVertexIdMeshSize(part.Name);
+            Dictionary<int, double> vertexIdMeshSize;
+            Dictionary<int, int> edgeIdNumElements;
+            GetVertexIdMeshSize(part.Name, out vertexIdMeshSize, out edgeIdNumElements);
             GmshData gmshData = new GmshData(stlFileName, inpFileName, partMeshingParameters, vertexIdMeshSize,
-                                             meshSetupItems, false);
+                                             edgeIdNumElements, meshSetupItems, false);
             gmshData.WriteToFile(gmshDataFileName);
             ResumeExplodedViews(false);
             //
@@ -3976,9 +4001,11 @@ namespace PrePoMax
             SuppressExplodedView(new string[] { part.Name });
             File.WriteAllText(brepFileName, part.CADFileData);
             MeshingParameters partMeshingParameters = GetPartMeshingParameters(part.Name);
-            Dictionary<int, double> vertexIdMeshSize = GetVertexIdMeshSize(part.Name);
+            Dictionary<int, double> vertexIdMeshSize;
+            Dictionary<int, int> edgeIdNumElements;
+            GetVertexIdMeshSize(part.Name, out vertexIdMeshSize, out edgeIdNumElements);
             GmshData gmshData = new GmshData(brepFileName, inpFileName, partMeshingParameters, vertexIdMeshSize,
-                                             meshSetupItems, false);
+                                             edgeIdNumElements, meshSetupItems, false);
             gmshData.WriteToFile(gmshDataFileName);
             ResumeExplodedViews(false);
             //

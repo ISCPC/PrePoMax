@@ -14,6 +14,7 @@ using System.Security.Cryptography;
 using System.Runtime.InteropServices;
 using static System.Collections.Specialized.BitVector32;
 using System.Net.NetworkInformation;
+using System.Xml.Linq;
 
 namespace CaeModel
 {
@@ -1284,28 +1285,32 @@ namespace CaeModel
                 if (part.PartType != PartType.Solid && part.PartType != PartType.SolidAsShell)
                     return "The transfinite gmsh setup item can only be defined on solid parts.";
                 //
-                if (part.Visualization.FaceCount == 5 || part.Visualization.FaceCount == 6)
+                if (System.Diagnostics.Debugger.IsAttached) return null;
+                else
                 {
-                    numTri = 0;
-                    numQuad = 0;
-                    triSurfaceEdgeIds.Clear();
-                    for (int i = 0; i < part.Visualization.FaceCount; i++)
+                    if (part.Visualization.FaceCount == 5 || part.Visualization.FaceCount == 6)
                     {
-                        if (part.Visualization.FaceEdgeIds[i].Length == 3)
+                        numTri = 0;
+                        numQuad = 0;
+                        triSurfaceEdgeIds.Clear();
+                        for (int i = 0; i < part.Visualization.FaceCount; i++)
                         {
-                            numTri++;
-                            triSurfaceEdgeIds.UnionWith(part.Visualization.FaceEdgeIds[i]);
+                            if (part.Visualization.FaceEdgeIds[i].Length == 3)
+                            {
+                                numTri++;
+                                triSurfaceEdgeIds.UnionWith(part.Visualization.FaceEdgeIds[i]);
+                            }
+                            else if (part.Visualization.FaceEdgeIds[i].Length == 4) numQuad++;
                         }
-                        else if (part.Visualization.FaceEdgeIds[i].Length == 4) numQuad++;
+                        if (!(numQuad == 6 || (numQuad == 3 && numTri == 2)))
+                            return "The transfinite gmsh setup item can only be defined on solid parts with triangular and " +
+                                   "quadrangular faces.";
+                        if (numQuad == 3 && numTri == 2 && triSurfaceEdgeIds.Count != 6)
+                            return "The transfinite gmsh setup item can only be defined on solid parts with non touching " +
+                                   "triangular faces.";
                     }
-                    if (!(numQuad == 6 || (numQuad == 3 && numTri == 2)))
-                        return "The transfinite gmsh setup item can only be defined on solid parts with triangular and " +
-                               "quadrangular faces.";
-                    if (numQuad == 3 && numTri == 2 && triSurfaceEdgeIds.Count != 6)
-                        return "The transfinite gmsh setup item can only be defined on solid parts with non touching " +
-                               "triangular faces.";
+                    else return "The transfinite gmsh setup item can only be defined on solid parts with 5 or 6 faces.";
                 }
-                else return "The transfinite gmsh setup item can only be defined on solid parts with 5 or 6 faces.";
             }
             return null;
         }

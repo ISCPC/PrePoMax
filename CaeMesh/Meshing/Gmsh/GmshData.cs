@@ -18,11 +18,13 @@ namespace CaeMesh
         public string InpFileName;
         public MeshingParameters PartMeshingParameters;
         public Dictionary<int, double> VertexIdMeshSize;
+        public Dictionary<int, int> EdgeIdNumElements;
         public MeshSetupItem[] GmshSetupItems;
         public bool Preview;
 
         public GmshData(string geometryFileName, string inpFileName, MeshingParameters partMeshingParameters,
-                        Dictionary<int, double> vertexIdMeshSize, MeshSetupItem[] gmshSetupItems, bool preview)
+                        Dictionary<int, double> vertexIdMeshSize, Dictionary<int, int> edgeIdNumElements,
+                        MeshSetupItem[] gmshSetupItems, bool preview)
         {
             if (gmshSetupItems.Length != 1)
                 throw new CaeException("Currently, for a single part, only one active mesh setup item of the type: " +
@@ -32,6 +34,7 @@ namespace CaeMesh
             InpFileName = inpFileName;
             PartMeshingParameters = partMeshingParameters;
             VertexIdMeshSize = vertexIdMeshSize;
+            EdgeIdNumElements = edgeIdNumElements;
             GmshSetupItems = gmshSetupItems;
             Preview = preview;
         }

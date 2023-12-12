@@ -95,8 +95,9 @@ namespace CaeMesh
             //
             foreach (var type in _elementTypes)
             {
-                if (type != typeof(LinearTetraElement) && type != typeof(LinearWedgeElement) && 
-                    type != typeof(LinearHexaElement) && type != typeof(ParabolicTetraElement) &&
+                if (type != typeof(LinearTetraElement) && type != typeof(LinearPyramidElement) &&
+                    type != typeof(LinearWedgeElement) && type != typeof(LinearHexaElement) &&
+                    type != typeof(ParabolicTetraElement) && type != typeof(ParabolicPyramidElement) &&
                     type != typeof(ParabolicWedgeElement) && type != typeof(ParabolicHexaElement)) return false;
             }
             return true;

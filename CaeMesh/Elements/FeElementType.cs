@@ -124,6 +124,22 @@ namespace CaeMesh
     }
     //
     [Serializable]
+    public enum FeElementTypeLinearPyramid
+    {
+        [StandardValue("None", Visible = false)]
+        None = 0,
+        C3D5 = 10
+    }
+    //
+    [Serializable]
+    public enum FeElementTypeParabolicPyramid
+    {
+        [StandardValue("None", Visible = false)]
+        None = 0,
+        C3D13 = 10
+    }
+    //
+    [Serializable]
     public enum FeElementTypeLinearWedge
     {
         [StandardValue("None", Visible = false)]

@@ -31,13 +31,6 @@
             System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("1");
             System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("2");
             System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("3");
-            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("4");
-            System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem("5");
-            System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem("6");
-            System.Windows.Forms.ListViewItem listViewItem7 = new System.Windows.Forms.ListViewItem("7");
-            System.Windows.Forms.ListViewItem listViewItem8 = new System.Windows.Forms.ListViewItem("8");
-            System.Windows.Forms.ListViewItem listViewItem9 = new System.Windows.Forms.ListViewItem("9");
-            System.Windows.Forms.ListViewItem listViewItem10 = new System.Windows.Forms.ListViewItem("10");
             this.gbType = new System.Windows.Forms.GroupBox();
             this.lvTypes = new UserControls.ListViewWithSelection();
             this.colName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -47,12 +40,12 @@
             // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 108);
-            this.gbProperties.Size = new System.Drawing.Size(310, 312);
+            this.gbProperties.Location = new System.Drawing.Point(12, 107);
+            this.gbProperties.Size = new System.Drawing.Size(310, 313);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 284);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 285);
             // 
             // btnOK
             // 
@@ -73,7 +66,7 @@
             this.gbType.Controls.Add(this.lvTypes);
             this.gbType.Location = new System.Drawing.Point(12, 12);
             this.gbType.Name = "gbType";
-            this.gbType.Size = new System.Drawing.Size(310, 90);
+            this.gbType.Size = new System.Drawing.Size(310, 89);
             this.gbType.TabIndex = 15;
             this.gbType.TabStop = false;
             this.gbType.Text = "Type";
@@ -93,24 +86,21 @@
             this.lvTypes.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
             listViewItem1,
             listViewItem2,
-            listViewItem3,
-            listViewItem4,
-            listViewItem5,
-            listViewItem6,
-            listViewItem7,
-            listViewItem8,
-            listViewItem9,
-            listViewItem10});
+            listViewItem3});
             this.lvTypes.Location = new System.Drawing.Point(6, 22);
             this.lvTypes.MultiSelect = false;
             this.lvTypes.Name = "lvTypes";
             this.lvTypes.ShowGroups = false;
-            this.lvTypes.Size = new System.Drawing.Size(298, 62);
+            this.lvTypes.Size = new System.Drawing.Size(298, 61);
             this.lvTypes.TabIndex = 0;
             this.lvTypes.UseCompatibleStateImageBehavior = false;
             this.lvTypes.View = System.Windows.Forms.View.Details;
             this.lvTypes.SelectedIndexChanged += new System.EventHandler(this.lvTypes_SelectedIndexChanged);
             this.lvTypes.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lvTypes_MouseUp);
+            // 
+            // colName
+            // 
+            this.colName.Width = 27;
             // 
             // FrmPropertyListView
             // 
@@ -121,7 +111,9 @@
             this.MinimumSize = new System.Drawing.Size(350, 500);
             this.Name = "FrmPropertyListView";
             this.Text = "FrmPropertyListView";
+            this.Shown += new System.EventHandler(this.FrmPropertyListView_Shown);
             this.VisibleChanged += new System.EventHandler(this.FrmPropertyListView_VisibleChanged);
+            this.Resize += new System.EventHandler(this.FrmPropertyListView_Resize);
             this.Controls.SetChildIndex(this.gbProperties, 0);
             this.Controls.SetChildIndex(this.btnCancel, 0);
             this.Controls.SetChildIndex(this.btnOK, 0);

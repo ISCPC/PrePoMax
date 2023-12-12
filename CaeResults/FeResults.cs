@@ -4665,6 +4665,15 @@ namespace CaeResults
         // Superposition
         public void TestSuperposition()
         {
+            FeNodeSet nodeSet;
+            int[] nodeIds = null;
+            if (_mesh.NodeSets.TryGetValue("Node_Set-1", out nodeSet))
+            {
+                nodeIds = new int[nodeSet.Labels.Length];
+                for (int i = 0; i < nodeSet.Labels.Length; i++) nodeIds[i] = _nodeIdsLookUp[nodeSet.Labels[i]];
+                Array.Sort(nodeIds);
+            }
+            //
             string[] componentNames = new string[] { FOComponentNames.S11,
                                                      FOComponentNames.S22,
                                                      FOComponentNames.S33,
@@ -4675,6 +4684,8 @@ namespace CaeResults
             FieldData fieldData;
             Field field;
             int[] stepIds = GetAllStepIds();
+            float[] componentValues;
+            float[] filteredValues;
             float[][][] scv = new float[stepIds.Length][][];
             for (int i = 0; i < stepIds.Length; i++)
             {
@@ -4682,30 +4693,25 @@ namespace CaeResults
                 field = GetField(fieldData);
                 scv[i] = new float[componentNames.Length][];
                 //
-                for (int j = 0; j < componentNames.Length; j++) scv[i][j] = field.GetComponentValues(componentNames[j]);
+                for (int j = 0; j < componentNames.Length; j++)
+                {
+                    componentValues = field.GetComponentValues(componentNames[j]);
+                    // Filter to node set
+                    if (nodeIds != null)
+                    {
+                        filteredValues = new float[nodeIds.Length];
+                        for (int k = 0; k < nodeIds.Length; k++)
+                        {
+                            filteredValues[k] = componentValues[nodeIds[k]];
+                        }
+                        componentValues = filteredValues;
+                    }
+                    //
+                    scv[i][j] = componentValues;
+                }
             }
             //
-            float[][] weights = new float[stepIds.Length][];
-            weights[0] = new float[] { 1.1f };                  // pressure
-            weights[1] = new float[] { 37000000 };                 // MAy
-            weights[2] = new float[] { 10000, -10000 };         // FAx
-            weights[3] = new float[] { 20000, -20000 };         // FAy
-            weights[4] = new float[] { 43000, -43000 };         // FAz
-            weights[5] = new float[] { 3000000, -3000000};            // MAx
-            weights[6] = new float[] { 21000000, -21000000 };         // MAz
-            weights[7] = new float[] { 10000, -10000 };         // FCx
-            weights[8] = new float[] { 5000, -5000 };           // FCy
-            weights[9] = new float[] { 9000, -9000 };           // FCz
-            weights[10] = new float[] { 3000000, - 3000000 };         // MCx
-            weights[11] = new float[] { 3100000, -3100000 };          // MCy
-            weights[12] = new float[] { 1000000, -1000000 };          // MCz
-            weights[13] = new float[] { 2000, -2000 };          // FDx
-            weights[14] = new float[] { 1400, -1400 };          // FDy
-            weights[15] = new float[] { 1400, -1400 };          // FDz
-            weights[16] = new float[] { 700000, -700000 };            // MDx
-            weights[17] = new float[] { 700000, -700000 };            // MDy
-            weights[18] = new float[] { 500000, -500000 };            // MDz
-
+            float[][] weights = GetWeightsLC2(stepIds.Length);
             // Generate all possible combinations using efficient list manipulation
             List<List<float>> combinations = new List<List<float>>();
             combinations.Add(new List<float>());
@@ -4735,7 +4741,6 @@ namespace CaeResults
             float[] maxMisses = new float[combinationsArray.Length];
             int[] indices = new int[combinationsArray.Length];
             Parallel.For(0, combinationsArray.Length, new ParallelOptions { MaxDegreeOfParallelism = 16 }, combNum =>
-            //Parallel.ForEach(combinations, combination =>
             //foreach (var combination in combinations)
             {
                 float mises = 0;
@@ -4774,31 +4779,15 @@ namespace CaeResults
                     mises = (float)Math.Sqrt(0.5f * (a * a + b * b + c * c +
                         6 * (values[3][i] * values[3][i] + values[4][i] * values[4][i] + values[5][i] * values[5][i])));
                     //
-                    //lock (myLock)
                     {
                         if (mises > maxMises)
                         {
                             maxMises = mises;
-                            //maxCombination = combinationsArray[combNum];
                         }
                     }
                 }
                 indices[combNum] = combNum;
                 maxMisses[combNum] = maxMises;
-                //
-                //resultField = new Field(FOFieldNames.Stress);
-                //for (int i = 0; i < componentNames.Length; i++)
-                //    resultField.AddComponent(new FieldComponent(componentNames[i], values[i]));
-                ////
-                //resultField.ComputeInvariants();
-                //
-                //mises = resultField.GetComponentMax(FOComponentNames.Mises);
-                //
-                //if (mises > maxMises)
-                //{
-                //    maxMises = mises;
-                //    maxCombination = combination;
-                //}
                 //
                 count++;
                 if (count % 1000 == 0) { System.Diagnostics.Debug.WriteLine(count); }
@@ -4825,8 +4814,67 @@ namespace CaeResults
             maxMisesAll = maxMisses.Last();
         }
 
+        private float[][] GetWeightsLC1(int numSteps)
+        {
+            float[][] weights = new float[numSteps][];
+            //
+            weights[0] = new float[] { 1.1f };                  // pressure
+            weights[1] = new float[] { 37000000 };                 // MAy
+            weights[2] = new float[] { 10000, -10000 };         // FAx
+            weights[3] = new float[] { 20000, -20000 };         // FAy
+            weights[4] = new float[] { 43000, -43000 };         // FAz
+            weights[5] = new float[] { 3000000, -3000000 };            // MAx
+            weights[6] = new float[] { 21000000, -21000000 };         // MAz
+            weights[7] = new float[] { 10000, -10000 };         // FCx
+            weights[8] = new float[] { 5000, -5000 };           // FCy
+            weights[9] = new float[] { 9000, -9000 };           // FCz
+            weights[10] = new float[] { 3000000, -3000000 };         // MCx
+            weights[11] = new float[] { 3100000, -3100000 };          // MCy
+            weights[12] = new float[] { 1000000, -1000000 };          // MCz
+            weights[13] = new float[] { 2000, -2000 };          // FDx
+            weights[14] = new float[] { 1400, -1400 };          // FDy
+            weights[15] = new float[] { 1400, -1400 };          // FDz
+            weights[16] = new float[] { 700000, -700000 };            // MDx
+            weights[17] = new float[] { 700000, -700000 };            // MDy
+            weights[18] = new float[] { 500000, -500000 };            // MDz
+            //
+            return weights;
+        }
+        private float[][] GetWeightsLC2(int numSteps)
+        {
+            float[][] weights = new float[numSteps][];
+            //
+            weights[0] = new float[] { 1.1f };                  // pressure
+            weights[1] = new float[] { 10000, -10000 };         // FCx
+            weights[2] = new float[] { 5000, -5000 };           // FCy
+            weights[3] = new float[] { 9000, -9000 };           // FCz
+            weights[4] = new float[] { 2000, -2000 };          // FDx
+            weights[5] = new float[] { 1400, -1400 };          // FDy
+            weights[6] = new float[] { 1400, -1400 };          // FDz
+            weights[7] = new float[] { 103000 };               // FEz
+            weights[8] = new float[] { 3000000, -3000000 };         // MCx
+            weights[9] = new float[] { 3100000, -3100000 };          // MCy
+            weights[10] = new float[] { 1000000, -1000000 };          // MCz
+            weights[11] = new float[] { 700000, -700000 };            // MDx
+            weights[12] = new float[] { 700000, -700000 };            // MDy
+            weights[13] = new float[] { 500000, -500000 };            // MDz
+            //
+            return weights;
+        }
 
-        int i = 1;
+        public void TestLineProbe(int stepId, int incrementId)
+        {
+            FieldData fieldData;
+            fieldData = new FieldData(FOFieldNames.Stress, FOComponentNames.S11, stepId, incrementId);
+            FeElementSet allElements = new FeElementSet("all", _mesh.Elements.Keys.ToArray());
+            PartExchangeData s11 = GetSetNodesCellsAndValues(allElements, fieldData);
+            //
+
+
+            
+
+
+        }
     }
 
     public static class ListExtensions

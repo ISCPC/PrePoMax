@@ -74,6 +74,8 @@
     <Compile Include="Elements\0D\FeElement0D.cs" />
     <Compile Include="Elements\1D\LinearGapElement.cs" />
     <Compile Include="Elements\1D\LinearSpringElement.cs" />
+    <Compile Include="Elements\3D\LinearPyramidElement.cs" />
+    <Compile Include="Elements\3D\ParabolicPyramidElement.cs" />
     <Compile Include="Elements\VtkCellType.cs" />
     <Compile Include="Enums\GeomCurveType.cs" />
     <Compile Include="Enums\GeomFaceType.cs" />

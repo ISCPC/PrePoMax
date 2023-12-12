@@ -35,6 +35,8 @@ namespace CaeMesh
         //
         public FeElementTypeLinearTetra LinearTetraType;
         public FeElementTypeParabolicTetra ParabolicTetraType;
+        public FeElementTypeLinearPyramid LinearPyramidType;
+        public FeElementTypeParabolicPyramid ParabolicPyramidType;
         public FeElementTypeLinearWedge LinearWedgeType;
         public FeElementTypeParabolicWedge ParabolicWedgeType;
         public FeElementTypeLinearHexa LinearHexaType;

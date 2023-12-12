@@ -720,10 +720,17 @@ namespace FileInOut.Input
                         case "DC3D4":
                             element = GetLinearTetraElement(ref i, lines, _splitter);
                             break;
+                        // Linear pyramid element
+                        case "C3D5":
+                            element = GetLinearPyramidElement(ref i, lines, _splitter);
+                            break;
                         // Linear wedge element
                         case "C3D6":
                         case "DC3D6":
-                            element = GetLinearWedgeElement(ref i, lines, _splitter);
+                            if (System.Diagnostics.Debugger.IsAttached)
+                                element = GetLinearWedgeElement(ref i, lines, _splitter);
+                            else
+                                throw new Exception("The element type '" + elementType + "' is not supported.");
                             break;
                         // Linear hexahedron element
                         case "C3D8":
@@ -2574,6 +2581,15 @@ namespace FileInOut.Input
             GetElementIdAndNodeIds(4, ref lineId, lines, splitter, out id, out nodeIds);
             //
             return new LinearTetraElement(id, nodeIds);
+        }
+        private static LinearPyramidElement GetLinearPyramidElement(ref int lineId, string[] lines, string[] splitter)
+        {
+            // 1, 598, 1368, 1306, 1291, 3
+            int id;
+            int[] nodeIds;
+            GetElementIdAndNodeIds(5, ref lineId, lines, splitter, out id, out nodeIds);
+            //
+            return new LinearPyramidElement(id, nodeIds);
         }
         private static LinearWedgeElement GetLinearWedgeElement(ref int lineId, string[] lines, string[] splitter)
         {

@@ -1306,7 +1306,7 @@ namespace PrePoMax
         {
             try
             {
-                //this.TopMost = true;
+                TopMost = true;    // fix the problem with Solidworks opened in the background
                 //
                 if ((_controller.ModelChanged || _controller.ModelInitialized || _controller.ResultsInitialized) &&
                     MessageBoxes.ShowWarningQuestion("OK to close the current model?") != DialogResult.OK) return false;
@@ -1345,7 +1345,7 @@ namespace PrePoMax
             }
             finally
             {
-                //this.TopMost = false;
+                TopMost = false;
             }
             return true;
         }

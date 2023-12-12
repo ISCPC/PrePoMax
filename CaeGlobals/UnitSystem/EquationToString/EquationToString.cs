@@ -41,7 +41,10 @@ namespace CaeGlobals
         {
             if (value is string valueString)
             {
-                string equation = valueString.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries)[0];
+                string equation;
+                if (valueString.Length > 0)
+                    equation = valueString.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries)[0];
+                else equation = valueString;
                 // Test the conversion
                 ConvertFrom(context, culture, equation);
                 // Return the equation

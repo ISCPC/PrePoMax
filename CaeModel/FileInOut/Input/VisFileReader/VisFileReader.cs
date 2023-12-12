@@ -34,8 +34,10 @@ namespace FileInOut.Input
                 int offsetNodeId = 0;
                 int offsetElementId = 0;
                 // Read the vertices first - later the merging of nodes is done
-                string[] vertexSplitData = data.Split(new string[] { "Number of vertices: " }, StringSplitOptions.RemoveEmptyEntries);
-                if (vertexSplitData.Length == 2)
+                string[] vertexSplitData = data.Split(new string[] { "Number of vertices: " },
+                                                      StringSplitOptions.RemoveEmptyEntries);
+                // A compound shell contains multiple shells - vertices are printed for each of them
+                if (vertexSplitData.Length >= 2)
                 {
                     string vertexData = vertexSplitData[1];
                     int endVertexData = vertexData.IndexOf("****");

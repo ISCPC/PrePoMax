@@ -819,8 +819,8 @@ namespace vtkControl
             AddNodeAndCellDataToGrid(data, out uGridActor, out _, false, false);
         }
         private void AddNodeAndCellDataToGrid(PartExchangeData data, out vtkUnstructuredGrid uGridActor,
-                                              out vtkUnstructuredGrid uGridEdges, 
-                                              bool extractEdges, bool addBackFace)
+                                                     out vtkUnstructuredGrid uGridEdges, 
+                                                     bool extractEdges, bool addBackFace)
         {
             // Unstructured grid
             uGridActor = vtkUnstructuredGrid.New();

@@ -45,7 +45,7 @@ namespace PrePoMax.Forms
         public int NumberOfNodes { get { return _partProperties.NumberOfNodes; } }
         //
         [Category("Element type")]
-        [OrderedDisplayName(0, 10, "Linear tria type")]
+        [OrderedDisplayName(0, 20, "Linear tria type")]
         [Description("Select the type of the linear triangular elements.")]
         [Id(1, 3)]
         public FeElementTypeLinearTria LinearTriaType
@@ -55,7 +55,7 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Element type")]
-        [OrderedDisplayName(1, 10, "Parabolic tria type")]
+        [OrderedDisplayName(1, 20, "Parabolic tria type")]
         [Description("Select the type of the parabolic triangular elements.")]
         [Id(2, 3)]
         public FeElementTypeParabolicTria ParabolicTriaType
@@ -65,7 +65,7 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Element type")]
-        [OrderedDisplayName(2, 10, "Linear quad type")]
+        [OrderedDisplayName(2, 20, "Linear quad type")]
         [Description("Select the type of the linear quadrilateral elements.")]
         [Id(3, 3)]
         public FeElementTypeLinearQuad LinearQuadType
@@ -75,7 +75,7 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Element type")]
-        [OrderedDisplayName(3, 10, "Parabolic quad type")]
+        [OrderedDisplayName(3, 20, "Parabolic quad type")]
         [Description("Select the type of the parabolic quadrilateral elements.")]
         [Id(4, 3)]
         public FeElementTypeParabolicQuad ParabolicQuadType
@@ -85,7 +85,7 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Element type")]
-        [OrderedDisplayName(4, 10, "Linear tetra type")]
+        [OrderedDisplayName(4, 20, "Linear tetra type")]
         [Description("Select the type of the linear tetrahedron elements.")]
         [Id(5, 3)]
         public FeElementTypeLinearTetra LinearTetraType 
@@ -95,7 +95,7 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Element type")]
-        [OrderedDisplayName(5, 10, "Parabolic tetra type")]
+        [OrderedDisplayName(5, 20, "Parabolic tetra type")]
         [Description("Select the type of the parabolic tetrahedron elements.")]
         [Id(6, 3)]
         public FeElementTypeParabolicTetra ParabolicTetraType
@@ -105,9 +105,29 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Element type")]
-        [OrderedDisplayName(6, 10, "Linear wedge type")]
-        [Description("Select the type of the linear wedge elements.")]
+        [OrderedDisplayName(6, 20, "Linear pyramid type")]
+        [Description("Select the type of the linear pyramid elements.")]
         [Id(7, 3)]
+        public FeElementTypeLinearPyramid LinearPyramidType
+        {
+            get { return _partProperties.LinearPyramidType; }
+            set { _partProperties.LinearPyramidType = value; }
+        }
+        //
+        [Category("Element type")]
+        [OrderedDisplayName(7, 20, "Parabolic pyramid type")]
+        [Description("Select the type of the parabolic pyramid elements.")]
+        [Id(8, 3)]
+        public FeElementTypeParabolicPyramid ParabolicPyramidType
+        {
+            get { return _partProperties.ParabolicPyramidType; }
+            set { _partProperties.ParabolicPyramidType = value; }
+        }
+        //
+        [Category("Element type")]
+        [OrderedDisplayName(8, 20, "Linear wedge type")]
+        [Description("Select the type of the linear wedge elements.")]
+        [Id(9, 3)]
         public FeElementTypeLinearWedge LinearWedgeType
         {
             get { return _partProperties.LinearWedgeType; }
@@ -115,9 +135,9 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Element type")]
-        [OrderedDisplayName(7, 10, "Parabolic wedge type")]
+        [OrderedDisplayName(9, 20, "Parabolic wedge type")]
         [Description("Select the type of the parabolic wedge elements.")]
-        [Id(8, 3)]
+        [Id(10, 3)]
         public FeElementTypeParabolicWedge ParabolicWedgeType
         {
             get { return _partProperties.ParabolicWedgeType; }
@@ -125,9 +145,9 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Element type")]
-        [OrderedDisplayName(8, 10, "Linear hexa type")]
+        [OrderedDisplayName(10, 20, "Linear hexa type")]
         [Description("Select the type of the linear hexahedron elements.")]
-        [Id(9, 3)]
+        [Id(11, 3)]
         public FeElementTypeLinearHexa LinearHexaType
         {
             get { return _partProperties.LinearHexaType; }
@@ -135,9 +155,9 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Element type")]
-        [OrderedDisplayName(9, 10, "Parabolic hexa type")]
+        [OrderedDisplayName(11, 20, "Parabolic hexa type")]
         [Description("Select the type of the parabolic hexahedron elements.")]
-        [Id(10, 3)]
+        [Id(12, 3)]
         public FeElementTypeParabolicHexa ParabolicHexaType
         {
             get { return _partProperties.ParabolicHexaType; }
@@ -180,6 +200,8 @@ namespace PrePoMax.Forms
                 //
                 _dctd.GetProperty(nameof(LinearTetraType)).SetIsBrowsable(false);
                 _dctd.GetProperty(nameof(ParabolicTetraType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(LinearPyramidType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ParabolicPyramidType)).SetIsBrowsable(false);
                 _dctd.GetProperty(nameof(LinearWedgeType)).SetIsBrowsable(false);
                 _dctd.GetProperty(nameof(ParabolicWedgeType)).SetIsBrowsable(false);
                 _dctd.GetProperty(nameof(LinearHexaType)).SetIsBrowsable(false);
@@ -200,6 +222,8 @@ namespace PrePoMax.Forms
                 // Solid
                 ShowHide((int)pp.LinearTetraType, nameof(LinearTetraType), typeof(FeElementTypeLinearTetra), er);
                 ShowHide((int)pp.ParabolicTetraType, nameof(ParabolicTetraType), typeof(FeElementTypeParabolicTetra), er);
+                ShowHide((int)pp.LinearPyramidType, nameof(LinearPyramidType), typeof(FeElementTypeLinearPyramid), er);
+                ShowHide((int)pp.ParabolicPyramidType, nameof(ParabolicPyramidType), typeof(FeElementTypeParabolicPyramid), er);
                 ShowHide((int)pp.LinearWedgeType, nameof(LinearWedgeType), typeof(FeElementTypeLinearWedge), er);
                 ShowHide((int)pp.ParabolicWedgeType, nameof(ParabolicWedgeType), typeof(FeElementTypeParabolicWedge), er);
                 ShowHide((int)pp.LinearHexaType, nameof(LinearHexaType), typeof(FeElementTypeLinearHexa), er);
@@ -217,6 +241,8 @@ namespace PrePoMax.Forms
                 //
                 _dctd.GetProperty(nameof(LinearTetraType)).SetIsBrowsable(false);
                 _dctd.GetProperty(nameof(ParabolicTetraType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(LinearPyramidType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ParabolicPyramidType)).SetIsBrowsable(false);
                 _dctd.GetProperty(nameof(LinearWedgeType)).SetIsBrowsable(false);
                 _dctd.GetProperty(nameof(ParabolicWedgeType)).SetIsBrowsable(false);
                 _dctd.GetProperty(nameof(LinearHexaType)).SetIsBrowsable(false);

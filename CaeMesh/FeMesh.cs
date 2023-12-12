@@ -1031,7 +1031,7 @@ namespace CaeMesh
                     //
                     partElementTypes.Clear();
                     partElementTypes.Add(element.GetType());
-                    // find inp element type set
+                    // Find inp element type set
                     if (inpElementTypeSets != null)
                     {
                         foreach (var elementTypeEntry in inpElementTypeSets)
@@ -1202,6 +1202,8 @@ namespace CaeMesh
                             neighbours.Enqueue(currEl);
                             partNodeIds.UnionWith(currEl.NodeIds);
                             partElementIds.Add(currEl.Id);
+                            if (currEl is LinearPyramidElement lpa)
+                                el = el;
                             partElementTypes.Add(currEl.GetType());
                         }
                     }
@@ -5052,23 +5054,23 @@ namespace CaeMesh
                         minNumberOfNodesToContain = 4;
                     else if (element is ParabolicQuadrilateralElement || element is ParabolicHexaElement)
                         minNumberOfNodesToContain = 8;
+                    else if (element is LinearPyramidElement lpe) vtkCells = lpe.GetAllVtkCells();
+                    else if (element is ParabolicPyramidElement ppe) vtkCells = ppe.GetAllVtkCells();
                     else if (element is LinearWedgeElement lwe) vtkCells = lwe.GetAllVtkCells();
                     else if (element is ParabolicWedgeElement pwe) vtkCells = pwe.GetAllVtkCells();
                     else throw new NotSupportedException();
                     //
                     if (vtkCells != null)
                     {
-                        added = false;
                         for (int i = 0; i < vtkCells.Length; i++)
                         {
                             if (allNodeIds.Intersect(vtkCells[i]).Count() == vtkCells[i].Length)
                             {
                                 allElementIds.Add(entry.Key);
-                                added = true;
                                 break;
                             }
                         }
-                        if (added) continue;  // for each element
+                        continue;  // for each element
                     }
                 }
                 else if (containsElement) minNumberOfNodesToContain = element.NodeIds.Length;
