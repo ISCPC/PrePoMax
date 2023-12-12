@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -110,8 +110,8 @@ namespace PrePoMax.Settings
         }
         //
         [CategoryAttribute("Edge/Surface annotation")]
-        [OrderedDisplayName(4, 10, "Show minumum value")]
-        [DescriptionAttribute("Show minumum value in the annotation.")]
+        [OrderedDisplayName(4, 10, "Show minimum value")]
+        [DescriptionAttribute("Show minimum value in the annotation.")]
         public bool ShowEdgeMin
         {
             get { return _annotationSettings.ShowEdgeSurMin; }
