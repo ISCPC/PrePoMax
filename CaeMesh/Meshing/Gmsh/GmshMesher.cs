@@ -8,47 +8,29 @@ using CaeMesh.Meshing;
 using GmshCommon;
 using CaeMesh;
 using System.IO;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using CaeGlobals;
 
 namespace CaeMesh
 {
     public class GmshMesher
     {
         // Variables                                                                                                                
-        private string _geometryFileName;
-        private bool _isOCC;
-        private string _inpFileName;
-        private MeshingParameters _partMeshingParameters;
-        private Dictionary<int, double> _vertexIdMeshSize;
-        Dictionary<int, int> _edgeIdNumElements;
-        private MeshSetupItem[] _gmshSetupItems;
+        private GmshData _gmshData;
         private Action<string> _writeOutput;
-        private bool _preview;
+        private bool _isOCC;
         private string _error;
         private Thread _thread;
         private int _currentLogLine;
 
 
         public GmshMesher(GmshData gmshData, Action<string> writeOutput)
-            : this(gmshData.GeometryFileName, gmshData.InpFileName, gmshData.PartMeshingParameters,
-                   gmshData.VertexIdMeshSize, gmshData.EdgeIdNumElements, gmshData.GmshSetupItems, writeOutput, gmshData.Preview)
         {
-            
-        }
-        public GmshMesher(string geometryFileName, string inpFileName, MeshingParameters partMeshingParameters,
-                          Dictionary<int, double> vertexIdMeshSize, Dictionary<int, int> edgeIdNumElements,
-                          MeshSetupItem[] gmshSetupItems, Action<string> writeOutput, bool preview)
-        {
-            _geometryFileName = geometryFileName;
-            _inpFileName = inpFileName;
-            _partMeshingParameters = partMeshingParameters;
-            _vertexIdMeshSize = vertexIdMeshSize;
-            _edgeIdNumElements = edgeIdNumElements;
-            _gmshSetupItems = gmshSetupItems;
+            _gmshData = gmshData;
             _writeOutput = writeOutput;
-            _preview = preview;
             //
-            if (geometryFileName.EndsWith("brep")) _isOCC = true;
-            else if (geometryFileName.EndsWith("stl")) _isOCC = false;
+            if (_gmshData.GeometryFileName.EndsWith("brep")) _isOCC = true;
+            else if (_gmshData.GeometryFileName.EndsWith("stl")) _isOCC = false;
             else throw new NotSupportedException();
         }
         public string CreateMesh()
@@ -62,9 +44,7 @@ namespace CaeMesh
                 // Common options
                 Gmsh.SetNumber("Geometry.OCCScaling", 1);
                 //
-                _thread = new Thread(new ThreadStart(() => CreateMesh(_geometryFileName, _inpFileName, _partMeshingParameters,
-                                                                      _vertexIdMeshSize, _edgeIdNumElements, _gmshSetupItems,
-                                                                      _writeOutput, _preview)));
+                _thread = new Thread(new ThreadStart(() => CreateMeshInternal()));
                 _thread.Start();
                 //
                 int count = 0;
@@ -93,26 +73,24 @@ namespace CaeMesh
                 Gmsh.Logger.Stop();
                 Gmsh.FinalizeGmsh();
                 // Check if the thread was not aborted on error
-                if (_error != null) File.Delete(_inpFileName);
+                if (_error != null) File.Delete(_gmshData.InpFileName);
             }
         }
         //
-        private void CreateMesh(string geometryFileName, string inpFileName, MeshingParameters partMeshingParameters,
-                                Dictionary<int, double> vertexIdMeshSize, Dictionary<int, int> edgeIdNumElements,
-                                MeshSetupItem[] gmshSetupItems, Action<string> writeOutput, bool preview)
+        private void CreateMeshInternal()
         {
             try
             {
-                MeshSetupItem meshSetupItem = gmshSetupItems[0];
+                MeshSetupItem meshSetupItem = _gmshData.GmshSetupItems[0];
                 //
                 if (meshSetupItem is GmshSetupItem gsi)
                 {
                     Tuple<int, int>[] outDimTags;
-                    if (_isOCC) Gmsh.OCC.ImportShapes(geometryFileName, out outDimTags, false, "");
+                    if (_isOCC) Gmsh.OCC.ImportShapes(_gmshData.GeometryFileName, out outDimTags, false, "");
                     else
                     {
                         double angleDeg = 30;
-                        Gmsh.Merge(geometryFileName);
+                        Gmsh.Merge(_gmshData.GeometryFileName);
                         Gmsh.Mesh.RemoveDuplicateNodes();
                         Gmsh.Mesh.ClassifySurfaces(angleDeg * Math.PI / 180, true, false, angleDeg * Math.PI / 180, true);
                         Gmsh.Mesh.CreateGeometry();
@@ -124,6 +102,10 @@ namespace CaeMesh
                     }
                     //
                     Synchronize(); // must be here
+                    //
+                    RenumberVertices();
+
+
                     // Mesh size
                     //Tuple<int, int>[] surfaceDimTags;
                     //Gmsh.GetEntities(out surfaceDimTags, 2);
@@ -131,22 +113,17 @@ namespace CaeMesh
                     //
                     double scaleFactor = 1;
                     //
-                    Gmsh.SetNumber("Mesh.MeshSizeMin", partMeshingParameters.MinH * scaleFactor);
-                    Gmsh.SetNumber("Mesh.MeshSizeMax", partMeshingParameters.MaxH * scaleFactor);
-                    Gmsh.SetNumber("Mesh.MeshSizeFromCurvature", 2 * Math.PI * partMeshingParameters.ElementsPerCurve);
+                    Gmsh.SetNumber("Mesh.MeshSizeMin", _gmshData.PartMeshingParameters.MinH * scaleFactor);
+                    Gmsh.SetNumber("Mesh.MeshSizeMax", _gmshData.PartMeshingParameters.MaxH * scaleFactor);
+                    Gmsh.SetNumber("Mesh.MeshSizeFromCurvature", 2 * Math.PI * _gmshData.PartMeshingParameters.ElementsPerCurve);
                     // Local mesh size
                     outDimTags = new Tuple<int, int>[1];
-                    foreach (var entry in vertexIdMeshSize)
+                    foreach (var entry in _gmshData.VertexNodeIdMeshSize)
                     {
                         outDimTags[0] = new Tuple<int, int>(0, entry.Key);
                         Gmsh.OCC.SetSize(outDimTags, entry.Value);
                     }
-                    foreach (var entry in edgeIdNumElements)
-                    {
-
-                    }
-
-
+                    //
                     Synchronize(); // must be here for mesh refinement
                                    // 2D meshing algorithm
                     Gmsh.SetNumber("Mesh.Algorithm", (int)gsi.AlgorithmMesh2D);
@@ -166,32 +143,33 @@ namespace CaeMesh
                         SetTransfiniteSurfaces(gsi.TransfiniteThreeSided, gsi.TransfiniteFourSided, transfiniteVolume, recombine);
                     //
                     if (gsi is ShellGmsh)
-                        ShellGmsh(gsi, partMeshingParameters, preview);
+                        ShellGmsh(gsi, _gmshData.PartMeshingParameters, _gmshData.Preview);
                     else if (gsi is TetrahedralGmsh)
-                        TetrahedralGmsh(gsi, partMeshingParameters, preview);
+                        TetrahedralGmsh(gsi, _gmshData.PartMeshingParameters, _gmshData.Preview);
                     else if (gsi is TransfiniteMesh)
-                        TransfiniteMesh(gsi, partMeshingParameters, preview);
+                        TransfiniteMesh(gsi, _gmshData.PartMeshingParameters, _gmshData.Preview);
                     else if (gsi is ExtrudeMesh || gsi is RevolveMesh)
-                        ExtrudeRevolveMesh(gsi, partMeshingParameters, preview);
+                        ExtrudeRevolveMesh(gsi, _gmshData.PartMeshingParameters, _gmshData.Preview);
                     else throw new NotSupportedException("MeshSetupItemTypeException");
                 }
                 else throw new NotSupportedException("MeshSetupItemTypeException");
                 // Element order
-                if (!preview && partMeshingParameters.SecondOrder)
+                if (!_gmshData.Preview && _gmshData.PartMeshingParameters.SecondOrder)
                 {
-                    if (!partMeshingParameters.MidsideNodesOnGeometry) Gmsh.SetNumber("Mesh.SecondOrderLinear", 1); // first
-                    Gmsh.SetNumber("Mesh.HighOrderOptimize", 1);                                                    // second
-                    Gmsh.SetNumber("Mesh.SecondOrderIncomplete", 1);                                                // second
-                    Gmsh.Mesh.SetOrder(2);                                                                          // third
+                    if (!_gmshData.PartMeshingParameters.MidsideNodesOnGeometry) 
+                        Gmsh.SetNumber("Mesh.SecondOrderLinear", 1);    // first
+                    Gmsh.SetNumber("Mesh.HighOrderOptimize", 1);        // second
+                    Gmsh.SetNumber("Mesh.SecondOrderIncomplete", 1);    // third
+                    Gmsh.Mesh.SetOrder(2);                              // fourth
                 }
                 // Output
-                Gmsh.Write(inpFileName);
+                Gmsh.Write(_gmshData.InpFileName);
                 //
-                writeOutput?.Invoke("Meshing done.");
-                writeOutput?.Invoke("");
+                _writeOutput?.Invoke("Meshing done.");
+                _writeOutput?.Invoke("");
                 double elapsedTime = Gmsh.GetNumber("Mesh.CpuTime");
-                writeOutput?.Invoke("Elapsed time [s]: " + Math.Round(elapsedTime, 5));
-                writeOutput?.Invoke("");
+                _writeOutput?.Invoke("Elapsed time [s]: " + Math.Round(elapsedTime, 5));
+                _writeOutput?.Invoke("");
                 //
                 _error = null;
             }
@@ -199,6 +177,68 @@ namespace CaeMesh
             {
                 _error = ex.Message;
             }
+        }
+        private void RenumberVertices()
+        {
+            double[] coor;
+            Tuple<int, int>[] pointDimTags;
+            Gmsh.GetEntities(out pointDimTags, 0);
+            Dictionary<int, double[]> pointIdCoor = new Dictionary<int, double[]>();
+            foreach (var item in pointDimTags)
+            {
+                Gmsh.GetValue(item.Item1, item.Item2, new double[3], out coor);
+                pointIdCoor.Add(item.Item2, coor);
+            }
+            int minId;
+            double minDistance;
+            double dx;
+            double dy;
+            double dz;
+            double[] coorN;
+            double[] coorG;
+            Dictionary<int, int> netGenIdGmshId = new Dictionary<int, int>();
+            foreach (var netGenEntry in _gmshData.VertexNodes)
+            {
+                minId = -1;
+                minDistance = double.MaxValue;
+                coorN = netGenEntry.Value.Coor;
+                foreach (var gmshEntry in pointIdCoor)
+                {
+                    coorG = gmshEntry.Value;
+                    dx = Math.Abs(coorN[0] - coorG[0]);
+                    if (dx <= minDistance)
+                    {
+                        dy = Math.Abs(coorN[1] - coorG[1]);
+                        if (dy <= minDistance)
+                        {
+                            dz = Math.Abs(coorN[2] - coorG[2]);
+                            if (dz <= minDistance)
+                            {
+                                minDistance = Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2) + Math.Pow(dz, 2));
+                                minId = gmshEntry.Key;
+                                if (minDistance == 0) break;
+                            }
+                        }
+                    }
+                }
+                //
+                netGenIdGmshId.Add(netGenEntry.Key, minId);
+            }
+            // Renumber vertex node ids
+            Dictionary<int, double> vertexIdMeshSize = new Dictionary<int, double>();
+            foreach (var entry in _gmshData.VertexNodeIdMeshSize) vertexIdMeshSize[netGenIdGmshId[entry.Key]] = entry.Value;
+            _gmshData.VertexNodeIdMeshSize = vertexIdMeshSize;
+            // Renumber edge vertex node ids
+            int[] nodeIds;
+            CompareIntArray comparer = new CompareIntArray();
+            Dictionary<int[], int> edgeVertexNodeIdsNumElements = new Dictionary<int[], int>(comparer);
+            foreach (var entry in _gmshData.EdgeVertexNodeIdsNumElements)
+            {
+                nodeIds = new int[] { netGenIdGmshId[entry.Key[0]], netGenIdGmshId[entry.Key[1]] };
+                Array.Sort(nodeIds);
+                edgeVertexNodeIdsNumElements[nodeIds] = entry.Value;
+            }
+            _gmshData.EdgeVertexNodeIdsNumElements = edgeVertexNodeIdsNumElements;
         }
         //
         private void ShellGmsh(GmshSetupItem gmshSetupItem, MeshingParameters meshingParameters, bool preview)
@@ -435,6 +475,7 @@ namespace CaeMesh
             int[] vertexIds;
             HashSet<int> surfaceVertexIds = new HashSet<int>();
             //
+            //bool invertEdge;
             int edgeDim = 1;
             int edgeId;
             int surfaceDim = 2;
@@ -469,9 +510,8 @@ namespace CaeMesh
                 //
                 Gmsh.GetAdjacencies(surfaceDim, surfaceId, out volumeIds, out edgeIds);
                 // Get edge orientations
-                //
-                //Gmsh.GetBoundary(new Tuple<int, int>[] { new Tuple<int, int>(3, 1) }, out edgeDimTags, false, true, false);
-                //
+                //Gmsh.GetBoundary(new Tuple<int, int>[] { new Tuple<int, int>(surfaceDim, surfaceId) },
+                //                 out edgeDimTags, false, true, false);
                 // Surface
                 surfaceVertexIds.Clear();
                 edgeVertexIds = new int[edgeIds.Length][];
@@ -479,7 +519,11 @@ namespace CaeMesh
                 for (int j = 0; j < edgeIds.Length; j++)
                 {
                     edgeId = edgeIds[j];
+                    //
                     Gmsh.GetAdjacencies(edgeDim, edgeId, out _, out vertexIds);
+                    //
+                    Array.Sort(vertexIds);
+                    //
                     if (_isOCC) Gmsh.OCC.GetMass(edgeDim, edgeId, out edgeLength);
                     else edgeLength = 1;
                     edge = new Edge(edgeId, vertexIds, surfaceId, edgeLength);
@@ -625,7 +669,7 @@ namespace CaeMesh
                 groupEdgeIds = new HashSet<int>();
                 foreach (var edgeNodeFromGroup in edgeGroup.Nodes)
                 {
-                    if (_edgeIdNumElements.TryGetValue(edgeNodeFromGroup.Value.Id, out numOfElements))
+                    if (_gmshData.EdgeVertexNodeIdsNumElements.TryGetValue(edgeNodeFromGroup.Value.VertexIds, out numOfElements))
                         overriddenNumElements = numOfElements;
                     else
                     {

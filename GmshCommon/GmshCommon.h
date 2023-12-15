@@ -165,6 +165,19 @@ namespace GmshCommon {
                 Marshal::Copy(IntPtr(downward_native.data()), downward, 0, downward->Length);
         }
 
+        static void GetValue(int dim, int tag, array<double>^ parametricCoord,
+                             [System::Runtime::InteropServices::Out] array<double>^% coord)
+        {
+            std::vector<double> parametricCoord_native(parametricCoord->Length);
+            Marshal::Copy(parametricCoord, 0, IntPtr(&parametricCoord_native[0]), parametricCoord->Length);
+            //
+            std::vector<double> coord_native;
+            //
+            gmsh::model::getValue(dim, tag, parametricCoord_native, coord_native);
+            //
+            coord = gcnew array<double>(coord_native.size());
+            Marshal::Copy(IntPtr(coord_native.data()), coord, 0, coord_native.size());
+        }
 		static void GetBoundary(array<System::Tuple<int, int>^>^ tags, [System::Runtime::InteropServices::Out] array<System::Tuple<int, int>^>^% outDimTags, System::Boolean combined, System::Boolean oriented, System::Boolean recursive)
 		{
 			gmsh::vectorpair dimTags, nOutDimTags;
@@ -392,7 +405,8 @@ namespace GmshCommon {
 				[System::Runtime::InteropServices::Out] array<double>^% weights)
 			{
 				std::vector<double> nLocalCoord, nWeights;
-				gmsh::model::mesh::getIntegrationPoints(elementType, msclr::interop::marshal_as<std::string>(integrationType), nLocalCoord, nWeights);
+				gmsh::model::mesh::getIntegrationPoints(elementType, msclr::interop::marshal_as<std::string>(integrationType),
+                                                        nLocalCoord, nWeights);
 
 
 				localCoord = gcnew array<double>(nLocalCoord.size());

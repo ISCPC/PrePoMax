@@ -1351,7 +1351,7 @@ namespace CaeModel
                 if (vis.AreSurfacesConnected(surfaceIds.ToArray()))
                 {
                     Dictionary<int, HashSet<int>> vertexIdEdgeId = vis.GetVertexIdEdgeIds();
-                    HashSet<int> surfaceVertices = vis.GetVerticesForSurfaceIds(surfaceIds.ToArray());
+                    HashSet<int> surfaceVertices = vis.GetVertexNodeIdsForSurfaceIds(surfaceIds.ToArray());
                     HashSet<int> surfaceEdgeIds = vis.GetEdgeIdsForSurfaceIds(surfaceIds.ToArray());
                     //
                     HashSet<int> directionEdgeIds = new HashSet<int>();
@@ -1476,7 +1476,7 @@ namespace CaeModel
                 if (vis.AreSurfacesConnected(surfaceIds.ToArray()))
                 {
                     Dictionary<int, HashSet<int>> vertexIdEdgeId = vis.GetVertexIdEdgeIds();
-                    HashSet<int> surfaceVertices = vis.GetVerticesForSurfaceIds(surfaceIds.ToArray());
+                    HashSet<int> surfaceVertices = vis.GetVertexNodeIdsForSurfaceIds(surfaceIds.ToArray());
                     HashSet<int> surfaceEdgeIds = vis.GetEdgeIdsForSurfaceIds(surfaceIds.ToArray());
                     //
                     HashSet<int> directionEdgeIds = new HashSet<int>();

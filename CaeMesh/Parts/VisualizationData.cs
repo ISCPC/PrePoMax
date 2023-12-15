@@ -772,13 +772,13 @@ namespace CaeMesh
             }
             return vertexNodeIds;
         }
-        public HashSet<int> GetVerticesForEdgeIds(int[] edgeIds)
+        public HashSet<int> GetVertexNodeIdsForEdgeIds(int[] edgeIds)
         {
             HashSet<int> edgeNodeIds = new HashSet<int>();
             foreach (int edgeId in edgeIds) edgeNodeIds.UnionWith(GetNodeIdsForEdgeId(edgeId));
             return edgeNodeIds.Intersect(_vertexNodeIds).ToHashSet();
         }
-        public HashSet<int> GetVerticesForSurfaceIds(int[] surfaceIds)
+        public HashSet<int> GetVertexNodeIdsForSurfaceIds(int[] surfaceIds)
         {
             HashSet<int> surfaceNodeIds = new HashSet<int>();
             foreach (int surfaceId in surfaceIds) surfaceNodeIds.UnionWith(GetNodeIdsForSurfaceId(surfaceId));

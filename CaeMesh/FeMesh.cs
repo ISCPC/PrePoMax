@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.IO.Ports;
 using System.Security.AccessControl;
+using System.Runtime.InteropServices;
 
 namespace CaeMesh
 {
@@ -3419,6 +3420,40 @@ namespace CaeMesh
             else throw new NotSupportedException();
             //
             return parts;
+        }
+        public string[] GetMeshablePartNames(string[] partNames)
+        {
+            if (partNames == null) return null;
+            //
+            GeometryPart part;
+            List<string> allPartNames = new List<string>();
+            foreach (var partName in partNames)
+            {
+                part = (GeometryPart)_parts[partName];
+                //
+                if (part is CompoundGeometryPart cp) allPartNames.AddRange(cp.SubPartNames);
+                else allPartNames.Add(partName);
+            }
+            //
+            return allPartNames.ToArray();
+        }
+        public Dictionary<int, FeNode> GetPartVertexNodes(string partName)
+        {
+            FeNode node;
+            int[] vertexNodeIds;
+            Dictionary<int, FeNode> vertices = new Dictionary<int, FeNode>();
+            string[] partNames = GetMeshablePartNames(new string[] { partName });
+            //
+            for (int i = 0; i < partNames.Length; i++)
+            {
+                vertexNodeIds = _parts[partNames[i]].Visualization.VertexNodeIds;
+                for (int j = 0; j < vertexNodeIds.Length; j++)
+                {
+                    node = _nodes[vertexNodeIds[j]];
+                    vertices.Add(node.Id, node);
+                }
+            }
+            return vertices;
         }
         // 3D - 2D
         public void UpdatePartsElementTypes(Dictionary<Type, HashSet<Enum>> elementTypeEnums)
