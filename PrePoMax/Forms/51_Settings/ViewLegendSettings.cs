@@ -19,6 +19,9 @@ namespace PrePoMax.Settings
         [StandardValue("Rainbow", DisplayName = "Rainbow", Description = "Rainbow")]
         Rainbow,
         //
+        [StandardValue("RainbowDesaturated", DisplayName = "Rainbow desaturated", Description = "Rainbow desaturated")]
+        RainbowDesaturated,
+        //
         [StandardValue("Warm", DisplayName = "Warm", Description = "Warm")]
         Warm,
         //
@@ -63,32 +66,58 @@ namespace PrePoMax.Settings
         { 
             get
             {
-                if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.CoolWarm) return ColorSpectrum.CoolWarm;
-                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Rainbow) return ColorSpectrum.Rainbow;
-                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Warm) return ColorSpectrum.Warm;
-                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Cool) return ColorSpectrum.Cool;
-                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Cividis) return ColorSpectrum.Cividis;
-                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Viridis) return ColorSpectrum.Viridis;
-                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Plasma) return ColorSpectrum.Plasma;
-                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.BlackBody) return ColorSpectrum.BlackBody;
-                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Inferno) return ColorSpectrum.Inferno;
-                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Kindlmann) return ColorSpectrum.Kindlmann;
-                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Grayscale) return ColorSpectrum.Grayscale;
+                if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.CoolWarm)
+                    return ColorSpectrum.CoolWarm;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Rainbow)
+                    return ColorSpectrum.Rainbow;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.RainbowDesaturated)
+                    return ColorSpectrum.RainbowDesaturated;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Warm)
+                    return ColorSpectrum.Warm;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Cool)
+                    return ColorSpectrum.Cool;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Cividis)
+                    return ColorSpectrum.Cividis;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Viridis)
+                    return ColorSpectrum.Viridis;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Plasma)
+                    return ColorSpectrum.Plasma;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.BlackBody)
+                    return ColorSpectrum.BlackBody;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Inferno)
+                    return ColorSpectrum.Inferno;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Kindlmann)
+                    return ColorSpectrum.Kindlmann;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Grayscale)
+                    return ColorSpectrum.Grayscale;
                 else throw new NotSupportedException();
             }
             set
             {
-                if (value == ColorSpectrum.CoolWarm) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.CoolWarm;
-                else if (value == ColorSpectrum.Rainbow) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Rainbow;
-                else if (value == ColorSpectrum.Warm) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Warm;
-                else if (value == ColorSpectrum.Cool) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Cool;
-                else if (value == ColorSpectrum.Cividis) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Cividis;
-                else if (value == ColorSpectrum.Viridis) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Viridis;
-                else if (value == ColorSpectrum.Plasma) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Plasma;
-                else if (value == ColorSpectrum.BlackBody) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.BlackBody;
-                else if (value == ColorSpectrum.Inferno) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Inferno;
-                else if (value == ColorSpectrum.Kindlmann) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Kindlmann;
-                else if (value == ColorSpectrum.Grayscale) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Grayscale;
+                if (value == ColorSpectrum.CoolWarm)
+                    _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.CoolWarm;
+                else if (value == ColorSpectrum.Rainbow)
+                    _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Rainbow;
+                else if (value == ColorSpectrum.RainbowDesaturated)
+                    _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.RainbowDesaturated;
+                else if (value == ColorSpectrum.Warm)
+                    _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Warm;
+                else if (value == ColorSpectrum.Cool)
+                    _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Cool;
+                else if (value == ColorSpectrum.Cividis)
+                    _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Cividis;
+                else if (value == ColorSpectrum.Viridis)
+                    _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Viridis;
+                else if (value == ColorSpectrum.Plasma)
+                    _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Plasma;
+                else if (value == ColorSpectrum.BlackBody)
+                    _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.BlackBody;
+                else if (value == ColorSpectrum.Inferno)
+                    _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Inferno;
+                else if (value == ColorSpectrum.Kindlmann)
+                    _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Kindlmann;
+                else if (value == ColorSpectrum.Grayscale)
+                    _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Grayscale;
                 else throw new NotSupportedException();
             } 
         }

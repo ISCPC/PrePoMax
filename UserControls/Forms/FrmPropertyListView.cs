@@ -71,6 +71,7 @@ namespace UserControls
                 _minTopLvHeight = _maxTopLvHeight / lvTypes.Items.Count * 3;        // show at least three items
                 _maxTopLvHeight += 4;
                 _minTopLvHeight += 4;
+                _maxTopLvHeight = Math.Max(_maxTopLvHeight, lvTypes.Height);
                 //
                 _initialFormHeight = Height;
                 _initialTopGbHeight = gbType.Height;

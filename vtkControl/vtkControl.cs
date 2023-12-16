@@ -2031,6 +2031,18 @@ namespace vtkControl
                 rgbPoints.Add(new double[] { 0.750, 1, 1, b });
                 rgbPoints.Add(new double[] { 1.000, 1, b, b });
             }
+            else if (_colorSpectrum.Type == vtkColorSpectrumType.RainbowDesaturated)
+            {
+                ctf.SetColorSpaceToRGB();
+                rgbPoints.Add(new double[] { 0, 0.278, 0.278, 0.788 });
+                rgbPoints.Add(new double[] { 0.143, 0.02, 0.02, 0.396 });
+                rgbPoints.Add(new double[] { 0.286, 0, 0.871, 0.918 });
+                rgbPoints.Add(new double[] { 0.429, 0, 0.604, 0.2 });
+                rgbPoints.Add(new double[] { 0.571, 1, 0.875, 0 });
+                rgbPoints.Add(new double[] { 0.714, 1, 0.329, 0 });
+                rgbPoints.Add(new double[] { 0.857, 0.451, 0.02, 0.02 });
+                rgbPoints.Add(new double[] { 1, 0.878, 0.302, 0.302 });
+            }
             else if (_colorSpectrum.Type == vtkColorSpectrumType.Warm)
             {
                 ctf.SetColorSpaceToRGB();
