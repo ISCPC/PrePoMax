@@ -104,8 +104,6 @@ namespace CaeMesh
                     Synchronize(); // must be here
                     //
                     RenumberVertices();
-
-
                     // Mesh size
                     //Tuple<int, int>[] surfaceDimTags;
                     //Gmsh.GetEntities(out surfaceDimTags, 2);
@@ -125,7 +123,7 @@ namespace CaeMesh
                     }
                     //
                     Synchronize(); // must be here for mesh refinement
-                                   // 2D meshing algorithm
+                    // 2D meshing algorithm
                     Gmsh.SetNumber("Mesh.Algorithm", (int)gsi.AlgorithmMesh2D);
                     // 3D meshing algorithm
                     Gmsh.SetNumber("Mesh.Algorithm3D", (int)gsi.AlgorithmMesh3D);

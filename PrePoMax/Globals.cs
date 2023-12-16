@@ -11,7 +11,7 @@ namespace PrePoMax
     {
         public static string HomePage = "https://prepomax.fs.um.si/";
         //
-        public static string ProgramName = "PrePoMax v2.0.1";
+        public static string ProgramName = "PrePoMax v2.0.2";
         //
         public static string ReadyText = "Ready";
         public static string OpeningText = "Opening...";
