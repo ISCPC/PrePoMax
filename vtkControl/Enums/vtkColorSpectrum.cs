@@ -12,6 +12,7 @@ namespace vtkControl
     {
         CoolWarm,
         Rainbow,
+        RainbowDesaturated,
         Warm,
         Cool,
         Cividis,
