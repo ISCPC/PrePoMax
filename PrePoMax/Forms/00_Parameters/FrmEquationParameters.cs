@@ -78,14 +78,16 @@ namespace PrePoMax.Forms
         }
         private void dgvData_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
+            // This is executed before the actual value of the cell is modified
             try
             {
                 if (e.RowIndex == _cellRow && e.ColumnIndex == _cellCol)
                 {
                     HashSet<string> existingNames = new HashSet<string>(MyNCalc.ExistingParameters.Keys);
-                    existingNames.Remove(_parameters[e.RowIndex].Name);
+                    // If an existing parameter is renamed (if a new parameter is added _parameters contains mode items)
+                    if (existingNames.Count == _parameters.Count()) existingNames.Remove(_parameters[e.RowIndex].Name);
                     //
-                    UpdateNCalcParameters(e.RowIndex);
+                    UpdateNCalcParameters(e.RowIndex, false);
                     //
                     string value = e.FormattedValue.ToString();
                     EquationParameter ep = new EquationParameter();
@@ -110,16 +112,15 @@ namespace PrePoMax.Forms
                 MessageBoxes.ShowError(ex.Message);
                 e.Cancel = true;
             }
-            finally
-            {
-                if (e.RowIndex == _cellRow && e.ColumnIndex == _cellCol)
-                {
-                    UpdateNCalcParameters();
-                }
-            }
         }
         private void dgvData_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
+            if (e.RowIndex == _cellRow && e.ColumnIndex == _cellCol)
+            {
+                // At CellEndEdit the value of the cell actually changed
+                UpdateNCalcParameters();
+            }
+            //
             _cellRow = -1;
             _cellCol = -1;
         }
@@ -211,12 +212,13 @@ namespace PrePoMax.Forms
         private void Binding_ListChanged(object sender, ListChangedEventArgs e)
         {
         }
-        private void UpdateNCalcParameters(int upToRow = int.MaxValue)
+        private void UpdateNCalcParameters(int upToRow = int.MaxValue, bool refresh = true)
         {
             int rowCount = 0;
             MyNCalc.ExistingParameters.Clear();
             foreach (var parameter in _parameters)
             {
+                // Add parameters up to this row
                 if (rowCount < upToRow)
                 {
                     try { MyNCalc.ExistingParameters.Add(parameter.Name, parameter.Value); }
@@ -224,7 +226,7 @@ namespace PrePoMax.Forms
                 }
                 rowCount++;
             }
-            dgvData.Refresh();
+            if (refresh) dgvData.Refresh();
         }
 
         

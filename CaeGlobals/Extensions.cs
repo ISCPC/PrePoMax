@@ -115,26 +115,28 @@ namespace CaeGlobals
             }
                 
         }
-        public static string GetNextNumberedKey<T>(this IDictionary<string, T> dictionary, string key, string postFix = "")
+        public static string GetNextNumberedKey<T>(this IDictionary<string, T> dictionary, string key,
+                                                   string postFix = "", string separator = "-")
         {
             int n = 0;
             string newKey;
             while (true)
             {
                 n++;
-                newKey = key + "-" + n + postFix;
+                newKey = key + separator + n + postFix;
                 if (!dictionary.ContainsKey(newKey)) break;
             }
             return newKey;
         }
-        public static string GetNextNumberedKey(this HashSet<string> hashSet, string key, string postFix = "")
+        public static string GetNextNumberedKey(this HashSet<string> hashSet, string key,
+                                                string postFix = "", string separator = "-")
         {
             int n = 0;
             string newKey;
             while (true)
             {
                 n++;
-                newKey = key + "-" + n + postFix;
+                newKey = key + separator + n + postFix;
                 if (!hashSet.Contains(newKey)) break;
             }
             return newKey;

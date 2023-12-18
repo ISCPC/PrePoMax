@@ -25,6 +25,8 @@ namespace CaeModel
             get { return _name; }
             set
             {
+                if (value.Contains('-'))
+                    throw new CaeException("The hyphen (minus) character cannot be used in the parameter name.");
                 base.Name = value;
                 if (_equation != null) CheckSelfReference(value, _equation.Equation.Equation);
             }
@@ -53,9 +55,9 @@ namespace CaeModel
         // Constructors                                                                                                             
         public EquationParameter()
         {
-            _name = "Name";
+            // The hyphen (minus) character cannot be used in the parameter name
+            _name = MyNCalc.ExistingParameters.GetNextNumberedKey("Name", "", "");
             _equation = new EquationContainer(typeof(StringDoubleConverter), 0);
-            //_equation.SetEquation("=");
         }
 
 
