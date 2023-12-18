@@ -84,7 +84,8 @@ namespace PrePoMax.Forms
                 if (e.RowIndex == _cellRow && e.ColumnIndex == _cellCol)
                 {
                     HashSet<string> existingNames = new HashSet<string>(MyNCalc.ExistingParameters.Keys);
-                    // If an existing parameter is renamed (if a new parameter is added _parameters contains mode items)
+                    // If an existing parameter is renamed remove it from a list
+                    // If a new parameter is added no need to remove it
                     if (existingNames.Count == _parameters.Count()) existingNames.Remove(_parameters[e.RowIndex].Name);
                     //
                     UpdateNCalcParameters(e.RowIndex, false);
