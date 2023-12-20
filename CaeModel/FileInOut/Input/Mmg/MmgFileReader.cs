@@ -17,8 +17,8 @@ namespace FileInOut.Input
                                   Dictionary<int, FeNode> existingNodes = null,
                                   Dictionary<int[], FeNode> existingMidNodes = null,
                                   double epsilon = 1E-6,
-                                  Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = null,
-                                  Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = null)
+                                  Dictionary<string, Dictionary<int, int>> partNameNewSurfIdOldSurfId = null,
+                                  Dictionary<string, Dictionary<int, int>> partNameNewEdgeIdOldEdgeId = null)
         {
             if (File.Exists(fileName))
             {
@@ -49,7 +49,7 @@ namespace FileInOut.Input
                 string[] lines = CaeGlobals.Tools.ReadAllLines(fileName);
                 int surfaceId;
                 int edgeId;
-                //
+                // Read
                 for (int i = 0; i < lines.Length; i++)
                 {
                     if (lines[i].ToUpper().StartsWith("VERTICES"))
@@ -167,7 +167,8 @@ namespace FileInOut.Input
                     if (entry.Value > 1) vertexNodeIds.Add(entry.Key);
                 }
                 //
-                if (convertToSecondOrder) FeMesh.LinearToParabolic(ref nodes, ref elements, existingMidNodes);
+
+                if (convertToSecondOrder) FeMesh.LinearToParabolic(ref nodes, ref elements, firstNodeId, existingMidNodes);
                 // Surface node ids
                 foreach (var entry in surfaceIdElementIds)
                 {
@@ -205,7 +206,7 @@ namespace FileInOut.Input
                     allPartsSurfaceIdNodeIds.Add(partEntry.Key, partSurfaceIdNodeIds);
                 }
                 // Renumber surfaces                                                                        
-                mesh.RenumberVisualizationSurfaces(allPartsSurfaceIdNodeIds, null, partIdNewSurfIdOldSurfId);
+                mesh.RenumberVisualizationSurfaces(allPartsSurfaceIdNodeIds, null, partNameNewSurfIdOldSurfId);
                 // Collect edgeIdNodeIds for each part
                 var allPartsEdgeIdNodeIds = new Dictionary<string, Dictionary<int, HashSet<int>>>();
                 Dictionary<int, HashSet<int>> partEdgeIdNodeIds;
@@ -223,7 +224,7 @@ namespace FileInOut.Input
                     allPartsEdgeIdNodeIds.Add(partEntry.Key, partEdgeIdNodeIds);
                 }
                 // Renumber edges                                                                        
-                mesh.RenumberVisualizationEdges(allPartsEdgeIdNodeIds, partIdNewEdgeIdOldEdgeId);
+                mesh.RenumberVisualizationEdges(allPartsEdgeIdNodeIds, partNameNewEdgeIdOldEdgeId);
                 //
                 mesh.RemoveElementsByType<FeElement1D>();
                 //

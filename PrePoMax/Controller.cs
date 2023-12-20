@@ -4560,7 +4560,7 @@ namespace PrePoMax
             bool result;
             // Create an element set to reselect the selection based items
             string name = GetAllElementSetNames().GetNextNumberedKey(CaeMesh.Globals.InternalName + "_Remeshing");
-
+            //
             FeElementSet elementSet;
             if (remeshingParameters.RegionType == RegionTypeEnum.ElementSetName)
             {

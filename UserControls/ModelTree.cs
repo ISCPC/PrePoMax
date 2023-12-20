@@ -2264,6 +2264,7 @@ namespace UserControls
             else baseNode = tree.Nodes[0];
             // Find parent
             TreeNode[] tmp;
+            int count;
             if (parentName != null)
             {
                 if (view == ViewType.Model) tmp = _steps.Nodes.Find(parentName, true, true);
@@ -2287,12 +2288,24 @@ namespace UserControls
                 }
                 else throw new NotSupportedException();
                 //
-                if (tmp.Length > 1) throw new Exception("Tree update failed. More than one parent named: " + parentName);
+                if (tmp.Length > 1)
+                {
+                    count = 0;
+                    for (int i = 0; i < tmp.Length; i++)
+                    {
+                        if (tmp[i].Nodes.Find(nodeName, true).Length > 0)
+                        {
+                            tmp[0] = tmp[i];
+                            count++;
+                        }
+                    }
+                    if (count > 1) throw new Exception("Tree update failed. More than one parent named: " + parentName);
+                }
                 baseNode = tmp[0];
             }
             //
             tmp = baseNode.Nodes.Find(nodeName, true, true);
-            int count = 0;
+            count = 0;
             //
             for (int i = 0; i < tmp.Length; i++)
             {

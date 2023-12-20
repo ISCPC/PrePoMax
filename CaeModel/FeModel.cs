@@ -1014,13 +1014,13 @@ namespace CaeModel
             // Read the mmg file and renumber nodes and elements
             double epsilon = 1E-6;
             double max = part.BoundingBox.GetDiagonal();
-            Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = new Dictionary<string, Dictionary<int, int>>();
-            Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = new Dictionary<string, Dictionary<int, int>>();
+            Dictionary<string, Dictionary<int, int>> partNameNewSurfIdOldSurfId = new Dictionary<string, Dictionary<int, int>>();
+            Dictionary<string, Dictionary<int, int>> partNameNewEdgeIdOldEdgeId = new Dictionary<string, Dictionary<int, int>>();
             FeMesh mmgMesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh, convertToSecondOrder,
                                                                 _mesh.MaxNodeId + 1, _mesh.MaxElementId + 1,
                                                                 borderNodes, midNodes,
                                                                 epsilon * max,
-                                                                partIdNewSurfIdOldSurfId, partIdNewEdgeIdOldEdgeId);
+                                                                partNameNewSurfIdOldSurfId, partNameNewEdgeIdOldEdgeId);
             // Get surface nodes before modification
             Dictionary<int, HashSet<int>> surfaceIdNodeIds = part.Visualization.GetSurfaceIdNodeIds();
             foreach (var entry in surfaceIdNodeIds) entry.Value.ExceptWith(removedNodeIds);
@@ -1106,7 +1106,7 @@ namespace CaeModel
             // Renumber surfaces                                                                                        
             BasePart mmgPart;
             Dictionary<int, HashSet<int>> itemIdNodeIds;
-            foreach (var partNewSurfIdOldSurfId in partIdNewSurfIdOldSurfId)
+            foreach (var partNewSurfIdOldSurfId in partNameNewSurfIdOldSurfId)
             {
                 mmgPart = mmgMesh.Parts[partNewSurfIdOldSurfId.Key];
                 itemIdNodeIds = mmgPart.Visualization.GetSurfaceIdNodeIds();
@@ -1119,15 +1119,17 @@ namespace CaeModel
             }
             _mesh.RenumberVisualizationSurfaces(part, surfaceIdNodeIds);
             // Renumber edges                                                                                           
-            foreach (var partNewEdgeIdOldEdgeId in partIdNewEdgeIdOldEdgeId)
+            foreach (var partNewEdgeIdOldEdgeId in partNameNewEdgeIdOldEdgeId)
             {
-                mmgPart = mmgMesh.Parts[partNewEdgeIdOldEdgeId.Key];
-                itemIdNodeIds = mmgPart.Visualization.GetEdgeIdNodeIds();
-                //
-                foreach (var newEdgeIdOldEdgeId in partNewEdgeIdOldEdgeId.Value)
+                if (mmgMesh.Parts.TryGetValue(partNewEdgeIdOldEdgeId.Key, out mmgPart))
                 {
-                    edgeIdNodeIds[newEdgeIdOldEdgeId.Value].UnionWith(itemIdNodeIds[newEdgeIdOldEdgeId.Key]);
-                    edgeIdNodeIds[newEdgeIdOldEdgeId.Value].IntersectWith(part.NodeLabels);
+                    itemIdNodeIds = mmgPart.Visualization.GetEdgeIdNodeIds();
+                    //
+                    foreach (var newEdgeIdOldEdgeId in partNewEdgeIdOldEdgeId.Value)
+                    {
+                        edgeIdNodeIds[newEdgeIdOldEdgeId.Value].UnionWith(itemIdNodeIds[newEdgeIdOldEdgeId.Key]);
+                        edgeIdNodeIds[newEdgeIdOldEdgeId.Value].IntersectWith(part.NodeLabels);
+                    }
                 }
             }
             _mesh.RenumberPartVisualizationEdges(part, edgeIdNodeIds);

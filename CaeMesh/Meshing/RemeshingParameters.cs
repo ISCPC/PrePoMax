@@ -25,7 +25,7 @@ namespace CaeMesh
         public RemeshingParameters(string regionName, RegionTypeEnum regionType, MeshingParameters meshingParameters)
             : base(meshingParameters)
         {
-            Reset();
+            UseMmg = true;
             //
             _regionName = regionName;
             _regionType = regionType;

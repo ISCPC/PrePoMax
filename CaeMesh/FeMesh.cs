@@ -846,7 +846,7 @@ namespace CaeMesh
 
         // Convert to parabolic
         public static void LinearToParabolic(ref Dictionary<int, FeNode> nodes, ref Dictionary<int, FeElement> elements,
-                                             Dictionary<int[], FeNode> midNodes = null)
+                                             int firstNodeId = -1, Dictionary<int[], FeNode> midNodes = null)
         {
             CompareIntArray comparer = new CompareIntArray();
             if (midNodes == null) midNodes = new Dictionary<int[], FeNode>(comparer);
@@ -855,6 +855,7 @@ namespace CaeMesh
             //
             int maxNodeId = int.MinValue;
             foreach (var entry in nodes) if (entry.Key > maxNodeId) maxNodeId = entry.Key;
+            maxNodeId = Math.Max(maxNodeId, firstNodeId);
             //
             int[] nodeIds;
             FeNode[] elNodes;
