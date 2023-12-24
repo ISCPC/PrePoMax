@@ -109,20 +109,20 @@
     <Compile Include="Geometry\GeomSurface.cs" />
     <Compile Include="Geometry\GeometryItem.cs" />
     <Compile Include="Meshing\Gmsh\Enums\GmshAlgorithmMesh3DEnum.cs" />
-    <Compile Include="Meshing\Gmsh\GmshData.cs" />
-    <Compile Include="Meshing\Gmsh\GmshMesher.cs" />
-    <Compile Include="Meshing\Gmsh\ShellGmsh.cs" />
-    <Compile Include="Meshing\Gmsh\TransfiniteMesh.cs" />
-    <Compile Include="Meshing\Gmsh\TetrahedralGmsh.cs" />
-    <Compile Include="Meshing\Gmsh\RevolveMesh.cs" />
-    <Compile Include="Meshing\Gmsh\GmshSetupItem.cs" />
-    <Compile Include="Meshing\Gmsh\ExtrudeMesh.cs" />
+    <Compile Include="Meshing\Gmsh\Mesher\GmshData.cs" />
+    <Compile Include="Meshing\Gmsh\Mesher\GmshMesher.cs" />
+    <Compile Include="Meshing\Gmsh\SetupItems\ShellGmsh.cs" />
+    <Compile Include="Meshing\Gmsh\SetupItems\TransfiniteMesh.cs" />
+    <Compile Include="Meshing\Gmsh\SetupItems\TetrahedralGmsh.cs" />
+    <Compile Include="Meshing\Gmsh\SetupItems\RevolveMesh.cs" />
+    <Compile Include="Meshing\Gmsh\SetupItems\GmshSetupItem.cs" />
+    <Compile Include="Meshing\Gmsh\SetupItems\ExtrudeMesh.cs" />
     <Compile Include="Meshing\Gmsh\Enums\ElementSizeTypeEnum.cs" />
     <Compile Include="Meshing\Gmsh\Enums\GmshAlgorithmRecombinationEnum.cs" />
     <Compile Include="Meshing\Gmsh\Enums\GmshAlgorithmMesh2DEnum.cs" />
-    <Compile Include="Meshing\MeshSetupItem.cs" />
+    <Compile Include="Meshing\Common\MeshSetupItem.cs" />
     <Compile Include="Parts\NodalDataStructures.cs" />
-    <Compile Include="Meshing\FeMeshRefinement.cs" />
+    <Compile Include="Meshing\Common\FeMeshRefinement.cs" />
     <Compile Include="Parts\CellNeighbour.cs" />
     <Compile Include="InpElementSet.cs" />
     <Compile Include="Nodes\CompareFeNodeByX.cs" />
@@ -141,12 +141,12 @@
     <Compile Include="Elements\2D\LinearTriangleElement.cs" />
     <Compile Include="GeometryTools.cs" />
     <Compile Include="Globals.cs" />
-    <Compile Include="Meshing\MeshingParameters.cs" />
+    <Compile Include="Meshing\Common\MeshingParameters.cs" />
     <Compile Include="Parts\PartType.cs" />
     <Compile Include="Parts\PartProperties.cs" />
     <Compile Include="Parts\VisualizationData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Meshing\RemeshingParameters.cs" />
+    <Compile Include="Meshing\Common\RemeshingParameters.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CaeGlobals\CaeGlobals.csproj">

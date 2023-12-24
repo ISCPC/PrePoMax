@@ -157,8 +157,26 @@ namespace CaeMesh
                     if (!_gmshData.PartMeshingParameters.MidsideNodesOnGeometry) 
                         Gmsh.SetNumber("Mesh.SecondOrderLinear", 1);    // first
                     Gmsh.SetNumber("Mesh.HighOrderOptimize", 1);        // second
+                    // Create incomplete second order elements: 8-node quads, 20-node hexas, etc.
                     Gmsh.SetNumber("Mesh.SecondOrderIncomplete", 1);    // third
                     Gmsh.Mesh.SetOrder(2);                              // fourth
+                    //
+
+                    //Netgen
+                    //HighOrder
+                    //HighOrderElastic
+                    //HighOrderFastCurving
+                    //Laplace2D
+                    //Relocate2D
+                    //Relocate3D
+                    //QuadQuasiStructured
+                    //UntangleMeshGeometry
+                    Tuple<int, int>[] dimTags = new Tuple<int, int>[0];
+                    //Gmsh.Optimize("Netgen", true, 100, dimTags);
+                    //Gmsh.Optimize("Laplace2D", true, 10, dimTags);
+                    //Gmsh.Optimize("Netgen", true, 10, dimTags);
+                    //Gmsh.Optimize("Laplace2D", true, 10, dimTags);
+
                 }
                 // Output
                 Gmsh.Write(_gmshData.InpFileName);

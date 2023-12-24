@@ -7,6 +7,13 @@
 using System::IntPtr; 
 using System::Runtime::InteropServices::Marshal;
 
+
+/* Instructions for adding functions
+const std::vector<int> &        ->  array<int>^
+const std::vector<double> &     ->  array<double>^
+const gmsh::vectorpair &        ->  array<System::Tuple<int, int>^>^
+const std::string &             ->  System::String^
+*/
 namespace GmshCommon {
 	public ref class Gmsh
 	{
@@ -112,6 +119,21 @@ namespace GmshCommon {
 		{
 			gmsh::model::mesh::generate(dim);
 		}
+
+        static void Optimize(System::String^ method, bool force, int niter, array<System::Tuple<int, int>^>^ dimTags)
+        {
+            std::string method_native = msclr::interop::marshal_as<std::string>(method);
+            //
+            gmsh::vectorpair dimTags_native;
+            //
+            for (int i = 0; i < dimTags->Length; ++i)
+            {
+                dimTags_native.push_back(std::pair<int, int>(dimTags[i]->Item1, dimTags[i]->Item2));
+            }
+            //
+            gmsh::model::mesh::optimize(method_native, force, niter, dimTags_native);
+        }
+
 
 		static void AffineTransform(array<double>^ affineTransform, array<array<int>^>^ dimTags)
 		{
