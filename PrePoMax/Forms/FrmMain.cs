@@ -5783,7 +5783,18 @@ namespace PrePoMax
         //
         private void ShowColorBarSettings()
         {
-            _frmSettings.SetSettingsToShow(Globals.PreSettingsName);
+            if (_controller.AnnotateWithColor == AnnotateWithColorEnum.FaceOrientation ||
+                _controller.AnnotateWithColor == AnnotateWithColorEnum.Parts ||
+                _controller.AnnotateWithColor == AnnotateWithColorEnum.Materials ||
+                _controller.AnnotateWithColor == AnnotateWithColorEnum.Sections ||
+                _controller.AnnotateWithColor == AnnotateWithColorEnum.SectionThicknesses)
+            {
+                _frmSettings.SetSettingsToShow(Globals.ColorSettingsName);
+            }
+            else
+            {
+                _frmSettings.SetSettingsToShow(Globals.PreSettingsName);
+            }
             tsmiSettings_Click(null, null);
         }
         private void ShowAnnotationSettings()
