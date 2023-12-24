@@ -173,10 +173,12 @@ namespace PrePoMax.Forms
                 MeshingParameters meshingParameters =
                     _controller.GetPartDefaultMeshingParameters(_controller.Model.Mesh.Parts.Keys.ToArray(), false);
                 RemeshingParameters = new RemeshingParameters("", RegionTypeEnum.Selection, meshingParameters);
+                //
+                RemeshingParameters.CreationData = new Selection();
+                RemeshingParameters.CreationData.SelectItem = vtkSelectItem.Element;
             }
             else RemeshingParameters = _prevRemeshingParameters;
             //
-            RemeshingParameters.CreationData.SelectItem = vtkSelectItem.Element;
             _controller.Selection.Clear();                
             //
             _viewRemeshingParameters.PopulateDropDownLists(elementSetNames);
