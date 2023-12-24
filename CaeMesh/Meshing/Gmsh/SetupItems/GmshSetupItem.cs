@@ -15,19 +15,21 @@ namespace CaeMesh
     public class GmshSetupItem : MeshSetupItem, ISerializable
     {
         // Variables                                                                                                                
-        private GmshAlgorithmMesh2DEnum _algorithmMesh2D;               // ISerializable
-        private GmshAlgorithmMesh3DEnum _algorithmMesh3D;               // ISerializable
-        private GmshAlgorithmRecombineEnum _algorithmRecombine;         // ISerializable
-        private double _recombineMinQuality;                            // ISerializable
-        private bool _transfiniteThreeSided;                            // ISerializable
-        private bool _transfiniteFourSided;                             // ISerializable
-        private double _transfiniteAngleDeg;                            // ISerializable
-        private ElementSizeTypeEnum _elementSizeType;                   // ISerializable
-        private double _elementScaleFactor;                             // ISerializable
-        private int _numberOfElements;                                  // ISerializable
-        private double[] _normalizedLayerSizes;                         // ISerializable
-        private int[] _numOfElementsPerLayer;                           // ISerializable
-        private int _numberOfThreads;                                   // ISerializable
+        private GmshAlgorithmMesh2DEnum _algorithmMesh2D;                   // ISerializable
+        private GmshAlgorithmMesh3DEnum _algorithmMesh3D;                   // ISerializable
+        private GmshAlgorithmRecombineEnum _algorithmRecombine;             // ISerializable
+        private double _recombineMinQuality;                                // ISerializable
+        private bool _transfiniteThreeSided;                                // ISerializable
+        private bool _transfiniteFourSided;                                 // ISerializable
+        private double _transfiniteAngleDeg;                                // ISerializable
+        private GmshOptimizeFirstOrderSolidEnum _optimizeFirstOrderSolid;   // ISerializable
+        private GmshOptimizeHighOrderEnum _optimizeHighOrder;               // ISerializable
+        private ElementSizeTypeEnum _elementSizeType;                       // ISerializable
+        private double _elementScaleFactor;                                 // ISerializable
+        private int _numberOfElements;                                      // ISerializable
+        private double[] _normalizedLayerSizes;                             // ISerializable
+        private int[] _numOfElementsPerLayer;                               // ISerializable
+        private int _numberOfThreads;                                       // ISerializable
 
 
         // Properties                                                                                                               
@@ -43,6 +45,16 @@ namespace CaeMesh
         public bool TransfiniteFourSided { get { return _transfiniteFourSided; } set { _transfiniteFourSided = value; } }
         public double TransfiniteAngleDeg { get { return _transfiniteAngleDeg; } set { _transfiniteAngleDeg = value; } }
         public double TransfiniteAngleRad { get { return _transfiniteAngleDeg * Math.PI / 180; } }
+        public GmshOptimizeFirstOrderSolidEnum OptimizeFirstOrderSolid
+        {
+            get { return _optimizeFirstOrderSolid; }
+            set { _optimizeFirstOrderSolid = value; }
+        }
+        public GmshOptimizeHighOrderEnum OptimizeHighOrder
+        {
+            get { return _optimizeHighOrder; }
+            set { _optimizeHighOrder = value; }
+        }
         public ElementSizeTypeEnum ElementSizeType
         {
             get { return _elementSizeType; }
@@ -120,6 +132,10 @@ namespace CaeMesh
                         _transfiniteFourSided = (bool)entry.Value; break;
                     case "_transfiniteAngleDeg":
                         _transfiniteAngleDeg = (double)entry.Value; break;
+                    case "_optimizeFirstOrderSolid":
+                        _optimizeFirstOrderSolid = (GmshOptimizeFirstOrderSolidEnum)entry.Value; break;
+                    case "_optimizeHighOrder":
+                        _optimizeHighOrder = (GmshOptimizeHighOrderEnum)entry.Value; break;
                     case "_elementSizeType":
                         _elementSizeType = (ElementSizeTypeEnum)entry.Value; break;
                     case "_elementScaleFactor":
@@ -155,6 +171,8 @@ namespace CaeMesh
             _transfiniteThreeSided = true;
             _transfiniteFourSided = true;
             _transfiniteAngleDeg = 135;
+            _optimizeFirstOrderSolid = GmshOptimizeFirstOrderSolidEnum.None;
+            _optimizeHighOrder = GmshOptimizeHighOrderEnum.None;
             _elementSizeType = ElementSizeTypeEnum.ScaleFactor;
             _elementScaleFactor = 1;
             _numberOfElements = 1;
@@ -173,6 +191,8 @@ namespace CaeMesh
             _transfiniteThreeSided = gmshSetupItem._transfiniteThreeSided;
             _transfiniteFourSided = gmshSetupItem._transfiniteFourSided;
             _transfiniteAngleDeg = gmshSetupItem._transfiniteAngleDeg;
+            _optimizeFirstOrderSolid = gmshSetupItem.OptimizeFirstOrderSolid;
+            _optimizeHighOrder = gmshSetupItem.OptimizeHighOrder;
             _elementSizeType = gmshSetupItem._elementSizeType;
             _elementScaleFactor = gmshSetupItem._elementScaleFactor;
             _numberOfElements = gmshSetupItem._numberOfElements;
@@ -194,6 +214,8 @@ namespace CaeMesh
             info.AddValue("_transfiniteThreeSided", _transfiniteThreeSided, typeof(bool));
             info.AddValue("_transfiniteFourSided", _transfiniteFourSided, typeof(bool));
             info.AddValue("_transfiniteAngleDeg", _transfiniteAngleDeg, typeof(double));
+            info.AddValue("_optimizeFirstOrderSolid", _optimizeFirstOrderSolid, typeof(GmshOptimizeFirstOrderSolidEnum));
+            info.AddValue("_optimizeHighOrder", _optimizeHighOrder, typeof(GmshOptimizeHighOrderEnum));
             info.AddValue("_elementSizeType", _elementSizeType, typeof(ElementSizeTypeEnum));
             info.AddValue("_elementScaleFactor", _elementScaleFactor, typeof(double));
             info.AddValue("_numberOfElements", _numberOfElements, typeof(int));

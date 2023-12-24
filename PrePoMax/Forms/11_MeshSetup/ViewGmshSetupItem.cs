@@ -90,6 +90,24 @@ namespace PrePoMax.Forms
             set { _gmshSetupItem.TransfiniteAngleDeg = value; }
         }
         //
+        [CategoryAttribute("Mesh optimization")]
+        [OrderedDisplayName(0, 10, "First order elements")]
+        [DescriptionAttribute("Select the optimization algorithm for the first order elements.")]
+        public GmshOptimizeFirstOrderSolidEnum OptimizeFirstOrderSolid
+        {
+            get { return _gmshSetupItem.OptimizeFirstOrderSolid; }
+            set { _gmshSetupItem.OptimizeFirstOrderSolid = value; }
+        }
+        //
+        [CategoryAttribute("Mesh optimization")]
+        [OrderedDisplayName(1, 10, "Second order elements")]
+        [DescriptionAttribute("Select the optimization algorithm for the second order elements.")]
+        public GmshOptimizeHighOrderEnum OptimizeHighOrder
+        {
+            get { return _gmshSetupItem.OptimizeHighOrder; }
+            set { _gmshSetupItem.OptimizeHighOrder = value; }
+        }
+        //
         [CategoryAttribute("Element size in feature direction")]
         [OrderedDisplayName(0, 10, "Defined by")]
         [DescriptionAttribute("Select how the element size is defined.")]

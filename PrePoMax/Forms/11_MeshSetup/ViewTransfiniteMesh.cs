@@ -49,6 +49,9 @@ namespace PrePoMax.Forms
             _dctd.GetProperty(nameof(TransfiniteThreeSided)).SetIsBrowsable(false);
             _dctd.GetProperty(nameof(TransfiniteFourSided)).SetIsBrowsable(false);
             //
+            _dctd.GetProperty(nameof(OptimizeFirstOrderSolid)).SetIsBrowsable(false);
+            _dctd.GetProperty(nameof(OptimizeHighOrder)).SetIsBrowsable(false);
+            //
             _dctd.GetProperty(nameof(ElementSizeType)).SetIsBrowsable(false);
             _dctd.GetProperty(nameof(ElementScaleFactor)).SetIsBrowsable(false);
             _dctd.GetProperty(nameof(NumberOfElements)).SetIsBrowsable(false);
