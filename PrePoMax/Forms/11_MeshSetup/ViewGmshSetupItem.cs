@@ -93,6 +93,15 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Mesh optimization")]
         [OrderedDisplayName(0, 10, "First order elements")]
         [DescriptionAttribute("Select the optimization algorithm for the first order elements.")]
+        public GmshOptimizeFirstOrderShellEnum OptimizeFirstOrderShell
+        {
+            get { return _gmshSetupItem.OptimizeFirstOrderShell; }
+            set { _gmshSetupItem.OptimizeFirstOrderShell = value; }
+        }
+        //
+        [CategoryAttribute("Mesh optimization")]
+        [OrderedDisplayName(1, 10, "First order elements")]
+        [DescriptionAttribute("Select the optimization algorithm for the first order elements.")]
         public GmshOptimizeFirstOrderSolidEnum OptimizeFirstOrderSolid
         {
             get { return _gmshSetupItem.OptimizeFirstOrderSolid; }
@@ -100,7 +109,7 @@ namespace PrePoMax.Forms
         }
         //
         [CategoryAttribute("Mesh optimization")]
-        [OrderedDisplayName(1, 10, "Second order elements")]
+        [OrderedDisplayName(2, 10, "Second order elements")]
         [DescriptionAttribute("Select the optimization algorithm for the second order elements.")]
         public GmshOptimizeHighOrderEnum OptimizeHighOrder
         {

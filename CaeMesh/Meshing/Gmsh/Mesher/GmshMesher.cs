@@ -92,7 +92,7 @@ namespace CaeMesh
                         double angleDeg = 30;
                         Gmsh.Merge(_gmshData.GeometryFileName);
                         Gmsh.Mesh.RemoveDuplicateNodes();
-                        Gmsh.Mesh.ClassifySurfaces(angleDeg * Math.PI / 180, true, false, angleDeg * Math.PI / 180, true);
+                        Gmsh.Mesh.ClassifySurfaces(angleDeg * Math.PI / 180, true, true, angleDeg * Math.PI / 180, true);
                         Gmsh.Mesh.CreateGeometry();
                         Gmsh.GetEntities(out outDimTags, 2);
                         int[] surfaceIds = new int[outDimTags.Length];
@@ -253,6 +253,12 @@ namespace CaeMesh
             //
             if (preview) Gmsh.Generate(2);
             else Gmsh.Generate(2);
+            // Optimize first order
+            if (gmshSetupItem.OptimizeFirstOrderShell != GmshOptimizeFirstOrderShellEnum.None)
+            {
+                Tuple<int, int>[] dimTags = new Tuple<int, int>[0];
+                Gmsh.Optimize(gmshSetupItem.OptimizeFirstOrderShell.ToString(), false, 10, dimTags);
+            }
         }
         private void TetrahedralGmsh(GmshSetupItem gmshSetupItem, MeshingParameters meshingParameters, bool preview)
         {
@@ -262,7 +268,7 @@ namespace CaeMesh
             if (gmshSetupItem.OptimizeFirstOrderSolid != GmshOptimizeFirstOrderSolidEnum.None)
             {
                 Tuple<int, int>[] dimTags = new Tuple<int, int>[0];
-                Gmsh.Optimize(gmshSetupItem.OptimizeFirstOrderSolid.ToString(), false, 1, dimTags);
+                Gmsh.Optimize(gmshSetupItem.OptimizeFirstOrderSolid.ToString(), false, 10, dimTags);
             }
         }
         private void TransfiniteMesh(GmshSetupItem gmshSetupItem, MeshingParameters meshingParameters, bool preview)

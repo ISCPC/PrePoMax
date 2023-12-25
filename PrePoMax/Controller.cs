@@ -1156,6 +1156,8 @@ namespace PrePoMax
                 _errors = _model.ImportModelFromInpFile(fileName, _form.WriteDataToOutput);
             else if (extension == ".unv")
                 _model.ImportMeshFromUnvFile(fileName);
+            else if (extension == ".obj")
+                _model.ImportMeshFromObjFile(fileName);
             else throw new NotSupportedException();
             //
             UpdateAfterImport(extension);
@@ -1172,7 +1174,8 @@ namespace PrePoMax
                 _form.SetCurrentView(_currentView);
                 DrawGeometry(false);
             }
-            else if (extension == ".unv" || extension == ".vol" || extension == ".inp" || extension == ".mesh")
+            else if (extension == ".unv" || extension == ".vol" || extension == ".inp" || extension == ".mesh" ||
+                     extension == ".obj")
             {
                 // Element types
                 _model.UpdateMeshPartsElementTypes(true);

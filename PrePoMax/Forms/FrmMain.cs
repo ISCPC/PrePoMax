@@ -7794,7 +7794,7 @@ namespace PrePoMax
         {
             if (onlyMaterials) return "Abaqus/Calculix inp files|*.inp";
             //
-            string filter = "All supported files|*.stp;*.step;*.igs;*.iges;*.brep;*.stl;*.unv;*.vol;*.inp;*.mesh"
+            string filter = "All supported files|*.stp;*.step;*.igs;*.iges;*.brep;*.stl;*.unv;*.vol;*.inp;*.mesh;*.obj"
                             + "|Step files|*.stp;*.step"
                             + "|Iges files|*.igs;*.iges"
                             + "|Brep files|*.brep"
@@ -7802,7 +7802,8 @@ namespace PrePoMax
                             + "|Universal files|*.unv"
                             + "|Netgen files|*.vol"
                             + "|Abaqus/Calculix inp files|*.inp"
-                            + "|Mmg mesh files|*.mesh";
+                            + "|Mmg mesh files|*.mesh"
+                            + "|Obj wavefront files|*.obj";
             return filter;
         }
         private HashSet<string> GetFileImportExtensions()

@@ -22,6 +22,7 @@ namespace CaeMesh
         private bool _transfiniteThreeSided;                                // ISerializable
         private bool _transfiniteFourSided;                                 // ISerializable
         private double _transfiniteAngleDeg;                                // ISerializable
+        private GmshOptimizeFirstOrderShellEnum _optimizeFirstOrderShell;   // ISerializable
         private GmshOptimizeFirstOrderSolidEnum _optimizeFirstOrderSolid;   // ISerializable
         private GmshOptimizeHighOrderEnum _optimizeHighOrder;               // ISerializable
         private ElementSizeTypeEnum _elementSizeType;                       // ISerializable
@@ -45,6 +46,11 @@ namespace CaeMesh
         public bool TransfiniteFourSided { get { return _transfiniteFourSided; } set { _transfiniteFourSided = value; } }
         public double TransfiniteAngleDeg { get { return _transfiniteAngleDeg; } set { _transfiniteAngleDeg = value; } }
         public double TransfiniteAngleRad { get { return _transfiniteAngleDeg * Math.PI / 180; } }
+        public GmshOptimizeFirstOrderShellEnum OptimizeFirstOrderShell
+        {
+            get { return _optimizeFirstOrderShell; }
+            set { _optimizeFirstOrderShell = value; }
+        }
         public GmshOptimizeFirstOrderSolidEnum OptimizeFirstOrderSolid
         {
             get { return _optimizeFirstOrderSolid; }
@@ -132,6 +138,8 @@ namespace CaeMesh
                         _transfiniteFourSided = (bool)entry.Value; break;
                     case "_transfiniteAngleDeg":
                         _transfiniteAngleDeg = (double)entry.Value; break;
+                    case "_optimizeFirstOrderShell":
+                        _optimizeFirstOrderShell = (GmshOptimizeFirstOrderShellEnum)entry.Value; break;
                     case "_optimizeFirstOrderSolid":
                         _optimizeFirstOrderSolid = (GmshOptimizeFirstOrderSolidEnum)entry.Value; break;
                     case "_optimizeHighOrder":
@@ -171,6 +179,7 @@ namespace CaeMesh
             _transfiniteThreeSided = true;
             _transfiniteFourSided = true;
             _transfiniteAngleDeg = 135;
+            _optimizeFirstOrderShell = GmshOptimizeFirstOrderShellEnum.None;
             _optimizeFirstOrderSolid = GmshOptimizeFirstOrderSolidEnum.None;
             _optimizeHighOrder = GmshOptimizeHighOrderEnum.None;
             _elementSizeType = ElementSizeTypeEnum.ScaleFactor;
@@ -191,6 +200,7 @@ namespace CaeMesh
             _transfiniteThreeSided = gmshSetupItem._transfiniteThreeSided;
             _transfiniteFourSided = gmshSetupItem._transfiniteFourSided;
             _transfiniteAngleDeg = gmshSetupItem._transfiniteAngleDeg;
+            _optimizeFirstOrderShell = gmshSetupItem.OptimizeFirstOrderShell;
             _optimizeFirstOrderSolid = gmshSetupItem.OptimizeFirstOrderSolid;
             _optimizeHighOrder = gmshSetupItem.OptimizeHighOrder;
             _elementSizeType = gmshSetupItem._elementSizeType;
@@ -214,6 +224,7 @@ namespace CaeMesh
             info.AddValue("_transfiniteThreeSided", _transfiniteThreeSided, typeof(bool));
             info.AddValue("_transfiniteFourSided", _transfiniteFourSided, typeof(bool));
             info.AddValue("_transfiniteAngleDeg", _transfiniteAngleDeg, typeof(double));
+            info.AddValue("_optimizeFirstOrderShell", _optimizeFirstOrderShell, typeof(GmshOptimizeFirstOrderShellEnum));
             info.AddValue("_optimizeFirstOrderSolid", _optimizeFirstOrderSolid, typeof(GmshOptimizeFirstOrderSolidEnum));
             info.AddValue("_optimizeHighOrder", _optimizeHighOrder, typeof(GmshOptimizeHighOrderEnum));
             info.AddValue("_elementSizeType", _elementSizeType, typeof(ElementSizeTypeEnum));

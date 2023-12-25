@@ -889,6 +889,7 @@ namespace CaeModel
             //
             return noErrors;
         }
+        
         public void ImportGeneratedMeshFromMeshFile(string fileName, BasePart part, bool convertToSecondOrder,
                                                     bool splitCompoundMesh, bool mergeCompoundParts)
         {
@@ -1183,6 +1184,12 @@ namespace CaeModel
         {
             FeMesh mesh = FileInOut.Input.UnvFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Shell |
                                                                        FileInOut.Input.ElementsToImport.Solid);
+            //
+            ImportMesh(mesh, GetReservedPartNames(), true, false);
+        }
+        public void ImportMeshFromObjFile(string fileName)
+        {
+            FeMesh mesh = FileInOut.Input.ObjFileReader.Read(fileName);
             //
             ImportMesh(mesh, GetReservedPartNames(), true, false);
         }

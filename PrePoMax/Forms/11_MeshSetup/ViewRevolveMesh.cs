@@ -29,6 +29,7 @@ namespace PrePoMax.Forms
             //
             _dctd.GetProperty(nameof(AlgorithmMesh3D)).SetIsBrowsable(false);
             //
+            _dctd.GetProperty(nameof(OptimizeFirstOrderShell)).SetIsBrowsable(false);
             _dctd.GetProperty(nameof(OptimizeFirstOrderSolid)).SetIsBrowsable(false);
             _dctd.GetProperty(nameof(OptimizeHighOrder)).SetIsBrowsable(false);
             //

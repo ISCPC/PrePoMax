@@ -19,15 +19,15 @@ namespace CaeMesh.Meshing
     UntangleMeshGeometry
     */
     [Serializable]
-    public enum GmshOptimizeFirstOrderSolidEnum
+    public enum GmshOptimizeFirstOrderShellEnum
     {
         [StandardValue("None", DisplayName = "None")]
         None,
-        [StandardValue("Gmsh", DisplayName = "Gmsh")]
-        Gmsh,
-        [StandardValue("Netgen", DisplayName = "Netgen")]
-        Netgen,
-        [StandardValue("Relocate3D", DisplayName = "Relocate 3D")]
-        Relocate3D,
+        [StandardValue("Laplace2D", DisplayName = "Laplace 2D")]
+        Laplace2D,
+        [StandardValue("Relocate2D", DisplayName = "Relocate 2D")]
+        Relocate2D,
+        [StandardValue("QuadQuasiStructured", DisplayName = "Quasi-structured quad")]
+        QuadQuasiStructured,
     }
 }

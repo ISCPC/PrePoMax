@@ -30,6 +30,8 @@ namespace PrePoMax.Forms
             _dctd.GetProperty(nameof(AlgorithmRecombine)).SetIsBrowsable(false);
             _dctd.GetProperty(nameof(TransfiniteAngleDeg)).SetIsBrowsable(false);
             //
+            _dctd.GetProperty(nameof(OptimizeFirstOrderShell)).SetIsBrowsable(false);
+            //
             _dctd.GetProperty(nameof(ElementSizeType)).SetIsBrowsable(false);
             _dctd.GetProperty(nameof(ElementScaleFactor)).SetIsBrowsable(false);
             _dctd.GetProperty(nameof(NumberOfElements)).SetIsBrowsable(false);
