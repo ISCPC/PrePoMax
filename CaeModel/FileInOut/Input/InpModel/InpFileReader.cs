@@ -722,7 +722,10 @@ namespace FileInOut.Input
                             break;
                         // Linear pyramid element
                         case "C3D5":
-                            element = GetLinearPyramidElement(ref i, lines, _splitter);
+                            if (System.Diagnostics.Debugger.IsAttached)
+                                element = GetLinearPyramidElement(ref i, lines, _splitter);
+                            else
+                                throw new Exception("The element type '" + elementType + "' is not supported.");
                             break;
                         // Linear wedge element
                         case "C3D6":
