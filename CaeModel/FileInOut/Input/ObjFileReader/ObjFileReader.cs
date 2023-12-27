@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using CaeMesh;
 using CaeGlobals;
+using System.Collections;
 
 namespace FileInOut.Input
 {
@@ -38,7 +39,7 @@ namespace FileInOut.Input
                 // Read nodes
                 ReadNodes(vertexLines, nodes, ref bBox);
                 // Read elements
-                ReadFaces(faceLines, elements);
+                ReadFaces(faceLines, nodes, elements);
                 //
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, false, ImportOptions.DetectEdges);
                 //
@@ -67,39 +68,81 @@ namespace FileInOut.Input
                 nodes.Add(node.Id, node);
             }
         }
-        private static void ReadFaces(List<string> lines, Dictionary<int, FeElement> elements)
+        private static void ReadFaces(List<string> lines, Dictionary<int, FeNode> nodes, Dictionary<int, FeElement> elements)
         {
             int id = 1;
+            int loopId = -1;
+            int firstId;
+            int maxId;
             int[] nodeIds;
+            double min;
+            double minAngle;
+            double maxAngle;
             string[] tmp;
             string[] data;
             string[] splitter = new string[] { "/" };
+            FeElement element;
+            LinearTriangleElement lte;
+            List<FeElement>[] loopElements;
             //
             foreach (var line in lines)
             {
                 data = line.Split(spaceSplitter, StringSplitOptions.RemoveEmptyEntries);
                 //
-                if (data.Length == 4)
+                nodeIds = new int[data.Length - 1];
+                for (int i = 0; i < nodeIds.Length; i++)
                 {
-                    nodeIds = new int[3];
-                    for (int i = 0; i < 3; i++)
-                    {
-                        tmp = data[i + 1].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-                        nodeIds[i] = int.Parse(tmp[0]);
-                    }
-                    LinearTriangleElement element = new LinearTriangleElement(id++, nodeIds);
+                    tmp = data[i + 1].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                    nodeIds[i] = int.Parse(tmp[0]);
+                }
+                // Triangles
+                if (nodeIds.Length == 3)
+                {
+                    element = new LinearTriangleElement(id++, nodeIds);
                     elements.Add(element.Id, element);
                 }
-                else if (data.Length == 5)
+                // Quads
+                else if (nodeIds.Length == 4)
                 {
-                    nodeIds = new int[4];
-                    for (int i = 0; i < 4; i++)
-                    {
-                        tmp = data[i + 1].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-                        nodeIds[i] = int.Parse(tmp[0]);
-                    }
-                    LinearQuadrilateralElement element = new LinearQuadrilateralElement(id++, nodeIds);
+                    element = new LinearQuadrilateralElement(id++, nodeIds);
                     elements.Add(element.Id, element);
+                }
+                // Split multi-polygons to triangles
+                else if (nodeIds.Length > 4)
+                {
+                    maxId = -1;
+                    maxAngle = 0;
+                    loopElements = new List<FeElement>[nodeIds.Length];
+                    // Find max min angle
+                    for (int i = 0; i < nodeIds.Length; i++)
+                    {
+                        loopId = id;
+                        minAngle = double.MaxValue;
+                        loopElements[i] = new List<FeElement>();
+                        //
+                        for (int j = 0; j < nodeIds.Length - 2; j++)
+                        {
+                            lte = new LinearTriangleElement(loopId++, new int[] { nodeIds[0], nodeIds[j + 1], nodeIds[j + 2] });
+                            //
+                            min = lte.GetMinAngleDeg(nodes);
+                            if (min < minAngle) minAngle = min;
+                            //
+                            loopElements[i].Add(lte);
+                        }
+                        //
+                        if (minAngle > maxAngle)
+                        {
+                            maxAngle = minAngle;
+                            maxId = i;
+                        }
+                        // Loop nodes
+                        firstId = nodeIds[0];
+                        Array.Copy(nodeIds, 1, nodeIds, 0, nodeIds.Length - 1);
+                        nodeIds[nodeIds.Length - 1] = firstId;
+                    }
+                    //
+                    id += loopElements[maxId].Count;
+                    foreach (var loopElement in loopElements[maxId]) elements.Add(loopElement.Id, loopElement);
                 }
             }
         }

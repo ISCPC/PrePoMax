@@ -183,6 +183,24 @@ namespace CaeGlobals
             return (u.X * v.X + u.Y * v.Y + u.Z * v.Z);
         }
 
+        // Angle
+        public static double GetAngleAtP2Deg(Vec3D p1, Vec3D p2, Vec3D p3)
+        {
+            Vec3D v1 = p1 - p2;
+            Vec3D v2 = p3 - p2;
+            v1.Normalize();
+            v2.Normalize();
+            //
+            double dot = Vec3D.DotProduct(v1, v2);
+            if (dot > 1) dot = 1;
+            else if (dot < -1) dot = -1;
+            double angle = Math.Acos(dot);
+            // Convert the angle from radians to degrees
+            angle *= (180.0 / Math.PI);
+            //
+            return angle;
+        }
+
         // Circle
         public static void GetCircle(Vec3D baseV1, Vec3D baseV2, Vec3D baseV3, out double r, out Vec3D center, out Vec3D axis)
         {
@@ -247,6 +265,8 @@ namespace CaeGlobals
             //
             r = (n12.Len * n23.Len * n31.Len) / (2 * n12xn23.Len);
         }
+
+
 
         #endregion
 

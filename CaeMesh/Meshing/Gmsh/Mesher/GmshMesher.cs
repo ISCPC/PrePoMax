@@ -168,6 +168,7 @@ namespace CaeMesh
                 }
                 // Output
                 Gmsh.Write(_gmshData.InpFileName);
+                //Gmsh.Write(@"C:\Temp\mesh.msh");
                 //
                 _writeOutput?.Invoke("Meshing done.");
                 _writeOutput?.Invoke("");

@@ -1632,6 +1632,23 @@ namespace PrePoMax
                 SetStateReady(Globals.ExportingText);
             }
         }
+        private void tsmiExportToGmshMesh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _controller.CurrentView = ViewGeometryModelResults.Model;
+                //
+                if (_controller.Model.Mesh != null && _controller.Model.Mesh.Parts != null)
+                {
+                    SavePartsAsGmshMesh();
+                }
+                else throw new CaeException("No mesh to export.");
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiExportToMmgMesh_Click(object sender, EventArgs e)
         {
             try
@@ -1799,6 +1816,34 @@ namespace PrePoMax
                         SetStateWorking(Globals.ExportingText);
                         //
                         await Task.Run(() => _controller.ExportToStl(partNames, saveFileDialog.FileName));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.ExportingText);
+            }
+        }
+        private async void SavePartsAsGmshMesh()
+        {
+            try
+            {
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                {
+                    saveFileDialog.Filter = "Gmsh mesh files | *.msh";
+                    if (_controller.OpenedFileName != null)
+                        saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".msh";
+                    //
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        // The filter adds the extension to the file name
+                        SetStateWorking(Globals.ExportingText);
+                        //
+                        await Task.Run(() => _controller.ExportGeometryPartsAsGmshMesh(saveFileDialog.FileName));
                     }
                 }
             }

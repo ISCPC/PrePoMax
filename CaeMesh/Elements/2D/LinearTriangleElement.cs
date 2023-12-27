@@ -1,8 +1,10 @@
-﻿using System;
+﻿using CaeGlobals;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace CaeMesh
 {
@@ -179,6 +181,21 @@ namespace CaeMesh
         public override FeElement DeepCopy()
         {
             return new LinearTriangleElement(Id, PartId, NodeIds.ToArray());
+        }
+        //
+        public double GetMinAngleDeg(Dictionary<int, FeNode> nodes)
+        {
+            Vec3D n1 = new Vec3D(nodes[NodeIds[0]].Coor);
+            Vec3D n2 = new Vec3D(nodes[NodeIds[1]].Coor);
+            Vec3D n3 = new Vec3D(nodes[NodeIds[2]].Coor);
+            // Calculate the angle between each pair of points
+            double angle1 = Vec3D.GetAngleAtP2Deg(n3, n1, n2);
+            double angle2 = Vec3D.GetAngleAtP2Deg(n1, n2, n3);
+            double angle3 = Vec3D.GetAngleAtP2Deg(n2, n3, n1);
+            // Find the smallest angle
+            double minAngle = Math.Min(Math.Min(angle1, angle2), angle3);
+            //
+            return minAngle;
         }
         //
         public void FlipNormal()

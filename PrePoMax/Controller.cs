@@ -1790,6 +1790,15 @@ namespace PrePoMax
                 _form.WriteDataToOutput("Part " + part.Name + " exported to file: " + stepFileName);
             else return;
         }
+        public void ExportGeometryPartsAsGmshMesh(string fileName)
+        {
+            SuppressExplodedView();
+            //
+            FileInOut.Output.GmshMshFileWriter.Write(fileName, _model.Mesh);
+            _form.WriteDataToOutput("Mesh exported to file: " + fileName);
+            //
+            ResumeExplodedViews(false);
+        }
         public void ExportGeometryPartsAsMmgMesh(string[] partNames, string fileName)
         {
             string mmgFileName;
