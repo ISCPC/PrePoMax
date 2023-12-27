@@ -727,10 +727,7 @@ namespace FileInOut.Input
                         // Linear wedge element
                         case "C3D6":
                         case "DC3D6":
-                            if (System.Diagnostics.Debugger.IsAttached)
-                                element = GetLinearWedgeElement(ref i, lines, _splitter);
-                            else
-                                throw new Exception("The element type '" + elementType + "' is not supported.");
+                            element = GetLinearWedgeElement(ref i, lines, _splitter);
                             break;
                         // Linear hexahedron element
                         case "C3D8":
