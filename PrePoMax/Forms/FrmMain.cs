@@ -467,6 +467,7 @@ namespace PrePoMax
             //
             if (!System.Diagnostics.Debugger.IsAttached)
             {
+                tsmiExportToGmshMesh.Visible = false;
                 tsmiTest.Visible = false;
                 tsmiCropWithCylinder.Visible = false;
                 tsmiCropWithCube.Visible = false;
@@ -1375,7 +1376,6 @@ namespace PrePoMax
                                                 "|Calculix result files|*.frd" +
                                                 "|OpenFoam files|*.foam";
                     }
-
                     //
                     openFileDialog.FileName = "";
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -7838,17 +7838,35 @@ namespace PrePoMax
         private string GetFileImportFilter(bool onlyMaterials)
         {
             if (onlyMaterials) return "Abaqus/Calculix inp files|*.inp";
-            //
-            string filter = "All supported files|*.stp;*.step;*.igs;*.iges;*.brep;*.stl;*.unv;*.vol;*.inp;*.mesh;*.obj"
-                            + "|Step files|*.stp;*.step"
-                            + "|Iges files|*.igs;*.iges"
-                            + "|Brep files|*.brep"
-                            + "|Stereolithography files|*.stl"
-                            + "|Universal files|*.unv"
-                            + "|Netgen files|*.vol"
-                            + "|Abaqus/Calculix inp files|*.inp"
-                            + "|Mmg mesh files|*.mesh"
-                            + "|Obj wavefront files|*.obj";
+            // Debugger attached
+            string filter;
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                filter = "All supported files|*.stp;*.step;*.igs;*.iges;*.brep;*.stl;*.unv;*.vol;*.inp;*.mesh;*.obj" + 
+                         "|Step files|*.stp;*.step" +
+                         "|Iges files|*.igs;*.iges" +
+                         "|Brep files|*.brep" +
+                         "|Stereolithography files|*.stl" +
+                         "|Universal files|*.unv" +
+                         "|Netgen files|*.vol" +
+                         "|Abaqus/Calculix inp files|*.inp" +
+                         "|Mmg mesh files|*.mesh" +
+                         "|Wavefront obj files|*.obj";              // obj mesh reader added
+
+            }
+            // No debugger
+            else
+            {
+                filter = "All supported files|*.stp;*.step;*.igs;*.iges;*.brep;*.stl;*.unv;*.vol;*.inp;*.mesh" +
+                         "|Step files|*.stp;*.step" +
+                         "|Iges files|*.igs;*.iges" +
+                         "|Brep files|*.brep" +
+                         "|Stereolithography files|*.stl" +
+                         "|Universal files|*.unv" +
+                         "|Netgen files|*.vol" +
+                         "|Abaqus/Calculix inp files|*.inp" +
+                         "|Mmg mesh files|*.mesh";
+            }
             return filter;
         }
         private HashSet<string> GetFileImportExtensions()
