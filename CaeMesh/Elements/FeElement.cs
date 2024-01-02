@@ -91,6 +91,7 @@ namespace CaeMesh
 
         // Abstract methods                                                                                                         
         abstract public int[] GetVtkNodeIds();
+        abstract public int[] GetGmshNodeIds();
         abstract public int GetVtkCellType();
         abstract public FeFaceName GetFaceNameFromSortedNodeIds(int[] nodeIds);
         abstract public int[] GetNodeIdsFromFaceName(FeFaceName faceName);

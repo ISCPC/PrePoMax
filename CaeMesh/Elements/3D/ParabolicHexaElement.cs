@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,6 +35,28 @@ namespace CaeMesh
         {
             // return a copy -> ToArray
             return NodeIds.ToArray();
+        }
+        public override int[] GetGmshNodeIds()
+        {
+            int[] nodeIds = new int[NodeIds.Length];
+            Array.Copy(NodeIds, nodeIds, 8);
+            //
+            nodeIds[8] = NodeIds[8];
+            nodeIds[9] = NodeIds[11];
+            nodeIds[10] = NodeIds[16];
+            nodeIds[11] = NodeIds[9];
+            //
+            nodeIds[12] = NodeIds[17];
+            nodeIds[13] = NodeIds[10];
+            nodeIds[14] = NodeIds[18];
+            nodeIds[15] = NodeIds[19];
+            //
+            nodeIds[16] = NodeIds[12];
+            nodeIds[17] = NodeIds[15];
+            nodeIds[18] = NodeIds[13];
+            nodeIds[19] = NodeIds[14];
+            //
+            return nodeIds;
         }
         public override int GetVtkCellType()
         {
@@ -210,3 +233,4 @@ namespace CaeMesh
         }
     }
 }
+

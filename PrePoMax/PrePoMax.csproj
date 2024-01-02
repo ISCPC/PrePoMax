@@ -164,6 +164,7 @@
     <Compile Include="Command\0050_Model\16_ReferencePoint\CRemoveReferencePoints.cs" />
     <Compile Include="Command\0050_Model\16_ReferencePoint\CReplaceReferencePoint.cs" />
     <Compile Include="Command\0050_Model\16_ReferencePoint\CShowReferencePoints.cs" />
+    <Compile Include="Command\0050_Model\CThickenShellMesh.cs" />
     <Compile Include="Command\0050_Model\CUpdateNodalCoordinatesFromFile.cs" />
     <Compile Include="Command\0050_Model\CRemeshElements.cs" />
     <Compile Include="Command\0050_Model\CFindEdgesByAngleForModelPartsCommand.cs" />
@@ -290,6 +291,10 @@
     <Compile Include="Forms\11_MeshSetup\ViewGmshSetupItem.cs" />
     <Compile Include="Forms\11_MeshSetup\ViewExtrudeMesh.cs" />
     <Compile Include="Forms\11_MeshSetup\ViewMeshSetupItem.cs" />
+    <Compile Include="Forms\21_FEModel\FrmThickenShellMesh.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\21_FEModel\ViewThickenShellMesh.cs" />
     <Compile Include="Forms\31_Material\ViewSlipWear.cs" />
     <Compile Include="Forms\32_Section\ViewMembraneSection.cs" />
     <Compile Include="Forms\33_Constraint\ViewCompressionOnly.cs" />
@@ -686,6 +691,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\11_MeshSetup\FrmMeshSetupItem.resx">
       <DependentUpon>FrmMeshSetupItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\21_FEModel\FrmThickenShellMesh.resx">
+      <DependentUpon>FrmThickenShellMesh.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\36_SearchContactPairs\FrmSearchContactPairs.resx">
       <DependentUpon>FrmSearchContactPairs.cs</DependentUpon>

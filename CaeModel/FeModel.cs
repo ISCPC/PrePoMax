@@ -1030,10 +1030,12 @@ namespace CaeModel
             foreach (var entry in edgeIdNodeIds) entry.Value.ExceptWith(removedNodeIds);
             // Add elements to mesh                                                                                     
             FeElement element;
+            HashSet<Type> elementTypes = new HashSet<Type>();
             foreach (var entry in mmgMesh.Elements)
             {
                 element = entry.Value;
                 element.PartId = part.PartId;
+                elementTypes.Add(element.GetType());
                 _mesh.Elements.Add(entry.Key, element);
             }
             // Add elements to part
@@ -1041,6 +1043,8 @@ namespace CaeModel
             newPartElementIds.UnionWith(mmgMesh.Elements.Keys);
             part.Labels = newPartElementIds.ToArray();
             Array.Sort(part.Labels);
+            // Add element types to part
+            if (part is MeshPart mp) mp.AddElementTypes(elementTypes.ToArray());
             // Add nodes to mesh                                                                                        
             foreach (var entry in mmgMesh.Nodes)
             {
@@ -2024,8 +2028,8 @@ namespace CaeModel
                 //for (int i = 0; i < _mesh.ElementSets[entry.Value].Labels.Length; i++)
                 {
                     int elementId = _mesh.ElementSets[entry.Value].Labels[i];
-                    _mesh.GetElementFaceCenterAndNormal(elementId, entry.Key, out double[] faceCenter, out double[] faceNormal,
-                                                        out bool shellElement);
+                    double[] faceCenter;
+                    _mesh.GetElementFaceCenterAndNormal(elementId, entry.Key, out faceCenter, out _, out _);
                     // Pressure
                     double pressure = load.GetPressureForPoint(faceCenter);
                     // Pressure loads

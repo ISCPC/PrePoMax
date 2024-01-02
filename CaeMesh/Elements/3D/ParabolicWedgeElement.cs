@@ -37,6 +37,25 @@ namespace CaeMesh
                                NodeIds[8], NodeIds[7], NodeIds[6], NodeIds[11], NodeIds[10], NodeIds[9],
                                NodeIds[12], NodeIds[14], NodeIds[13]};
         }
+        public override int[] GetGmshNodeIds()
+        {
+            int[] nodeIds = new int[NodeIds.Length];
+            Array.Copy(NodeIds, nodeIds, 6);
+            //
+            nodeIds[6] = NodeIds[6];
+            nodeIds[7] = NodeIds[8];
+            nodeIds[8] = NodeIds[12];
+            //
+            nodeIds[9] = NodeIds[7];
+            nodeIds[10] = NodeIds[13];
+            nodeIds[11] = NodeIds[14];
+            //
+            nodeIds[12] = NodeIds[9];
+            nodeIds[13] = NodeIds[11];
+            nodeIds[14] = NodeIds[10];
+            //
+            return nodeIds;
+        }
         public override int GetVtkCellType()
         {
             return vtkCellTypeInt;

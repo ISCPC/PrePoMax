@@ -37,6 +37,11 @@ namespace CaeMesh
             // return a copy -> ToArray
             return NodeIds.ToArray();
         }
+        public override int[] GetGmshNodeIds()
+        {
+            // return a copy -> ToArray
+            return NodeIds.ToArray();
+        }
         public override int GetVtkCellType()
         {
             return vtkCellTypeInt;

@@ -4454,29 +4454,33 @@ namespace PrePoMax
         // COMMANDS ********************************************************************************
         public void ReplaceModelPropertiesCommand(string newModelName, ModelProperties newModelProperties)
         {
-            Commands.CReplaceModelProperties comm = new Commands.CReplaceModelProperties(newModelName, newModelProperties);
+            CReplaceModelProperties comm = new CReplaceModelProperties(newModelName, newModelProperties);
             _commands.AddAndExecute(comm);
         }
         // Tools
-        public void CreateBoundaryLayerCommand(int[] geometryIds, double thickness)
-        {
-            Commands.CCreateBoundaryLayer comm = new Commands.CCreateBoundaryLayer(geometryIds, thickness);
-            _commands.AddAndExecute(comm);
-        }
         public void FindEdgesByAngleForModelPartsCommand(string[] partNames, double edgeAngle)
         {
-            Commands.CFindEdgesByAngleForModelPartsCommand comm =
-                new Commands.CFindEdgesByAngleForModelPartsCommand(partNames, edgeAngle);
+            CFindEdgesByAngleForModelPartsCommand comm = new CFindEdgesByAngleForModelPartsCommand(partNames, edgeAngle);
+            _commands.AddAndExecute(comm);
+        }
+        public void CreateBoundaryLayerCommand(int[] geometryIds, double thickness)
+        {
+            CCreateBoundaryLayer comm = new CCreateBoundaryLayer(geometryIds, thickness);
             _commands.AddAndExecute(comm);
         }
         public void RemeshElementsCommand(RemeshingParameters remeshingParameters)
         {
-            Commands.CRemeshElements comm = new Commands.CRemeshElements(remeshingParameters);
+            CRemeshElements comm = new CRemeshElements(remeshingParameters);
+            _commands.AddAndExecute(comm);
+        }
+        public void ThickenShellMeshCommand(int[] partIds, double thickness, int numberOfLayers, double offset)
+        {
+            CThickenShellMesh comm = new CThickenShellMesh(partIds, thickness, numberOfLayers, offset);
             _commands.AddAndExecute(comm);
         }
         public void UpdateNodalCoordinatesFromFileCommand(string fileName)
         {
-            Commands.CUpdateNodalCoordinatesFromFile comm = new Commands.CUpdateNodalCoordinatesFromFile(fileName);
+            CUpdateNodalCoordinatesFromFile comm = new CUpdateNodalCoordinatesFromFile(fileName);
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
@@ -4501,6 +4505,24 @@ namespace PrePoMax
             }
         }
         // Tools
+        public void FindEdgesByAngleForModelParts(string[] partNames, double edgeAngle)
+        {
+            MeshPart meshPart;
+            foreach (var partName in partNames)
+            {
+                meshPart = (MeshPart)_model.Mesh.Parts[partName];
+                if (meshPart.PartType == PartType.Solid)
+                    _model.Mesh.ExtractSolidPartVisualization(meshPart, edgeAngle);
+                else if (meshPart.PartType == PartType.Shell)
+                    _model.Mesh.ExtractShellPartVisualization(meshPart, false, edgeAngle);
+                // Update
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, meshPart.Name, meshPart, null);
+            }
+            // Update
+            FeModelUpdate(UpdateType.DrawModel);
+            UpdateGeometryBasedItems(false);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
         public void CreateBoundaryLayer(int[] geometryIds, double thickness)
         {
             try
@@ -4548,24 +4570,6 @@ namespace PrePoMax
                 }
                 HighlightNodes(nodeCoor);
             }
-        }
-        public void FindEdgesByAngleForModelParts(string[] partNames, double edgeAngle)
-        {
-            MeshPart meshPart;
-            foreach (var partName in partNames)
-            {
-                meshPart = (MeshPart)_model.Mesh.Parts[partName];
-                if (meshPart.PartType == PartType.Solid)
-                    _model.Mesh.ExtractSolidPartVisualization(meshPart, edgeAngle);
-                else if (meshPart.PartType == PartType.Shell)
-                    _model.Mesh.ExtractShellPartVisualization(meshPart, false, edgeAngle);
-                // Update
-                _form.UpdateTreeNode(ViewGeometryModelResults.Model, meshPart.Name, meshPart, null);
-            }
-            // Update
-            FeModelUpdate(UpdateType.DrawModel);
-            UpdateGeometryBasedItems(false);
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public bool RemeshElements(RemeshingParameters remeshingParameters, bool preview = false)
         {
@@ -4680,48 +4684,52 @@ namespace PrePoMax
             }
             else throw new CaeException("Mesh generation failed.");
         }
-        private bool RemeshShellElementsFromPart(BasePart part)
+        public void ThickenShellMesh(int[] partIds, double thickness, int numberOfLayers, double offset)
         {
-            CalculixSettings settings = _settings.Calculix;
-            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+            try
             {
-                MessageBoxes.ShowWorkDirectoryError();
-                return false;
+                _form.SetStateWorking("Creating...");
+                //
+                string[] errors = null;
+                if (_model != null)
+                    errors = _model.Mesh.ThickenShellMesh(partIds, thickness, numberOfLayers, offset, false, out _);
+                // Update element type icon
+                string[] partNames = _model.Mesh.GetPartNamesFromPartIds(partIds);
+                foreach (var partName in partNames)
+                {
+                    _form.UpdateTreeNode(ViewGeometryModelResults.Model, partName, _model.Mesh.Parts[partName], null);
+                }
+                // Redraw the geometry for update of the selection based sets
+                FeModelUpdate(UpdateType.DrawModel);
+                // Update sets - must be called with rendering off - SetStateWorking
+                UpdateNodeSetsBasedOnGeometry(false);
+                UpdateElementSetsBasedOnGeometry(false);
+                UpdateSurfacesBasedOnGeometry(false);
+                // Update the sets and symbols
+                FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+                //
+                if (errors.Length > 0) throw new CaeException(errors[0]);
             }
-            //
-            string executable = Application.StartupPath + Globals.MmgsMesher;
-            string mmgInFileName = Path.Combine(settings.WorkDirectory, Globals.MmgMeshFileName);
-            string mmgOutFileName = Path.Combine(settings.WorkDirectory, Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) +
-                                                 ".o" + Path.GetExtension(Globals.MmgMeshFileName));
-            string mmgSolFileName = Path.Combine(settings.WorkDirectory,
-                                                 Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) +
-                                                 ".sol");
-            //
-            if (File.Exists(mmgInFileName)) File.Delete(mmgInFileName);
-            if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
-            if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
-            //
-            FileInOut.Output.MmgFileWriter.Write(mmgInFileName, part, _model.Mesh, true, false);
-            //
-            string argument = "-ar 360 " + "-m 10000 " + //"-ar 180 " // "-nr " +
-                              "-hmax " + 4 + " " +
-                              "-hmin " + 0.5 + " " +
-                              "-hausd " + 0.02 * part.BoundingBox.GetDiagonal() + " " +
-                              "-in \"" + mmgInFileName + "\" " +
-                              "-out \"" + mmgOutFileName + "\" ";
-            //
-            _executableJob = new ExecutableJob(part.Name, executable, argument, settings.WorkDirectory);
-            _executableJob.AppendOutput += executableJobMeshing_AppendOutput;
-            _executableJob.Submit();
-            // Job completed
-            if (_executableJob.JobStatus == JobStatus.OK)
+            catch (Exception ex)
             {
-                ImportGeneratedMesh(mmgOutFileName, part, false);
-                return true;
+                throw new CaeException(ex.Message);
             }
-            else return false;
+            finally
+            {
+                _form.SetStateReady("Creating...");
+            }
         }
-
+        public void PreviewThickenShellMesh(int[] partIds, double thickness, int numberOfLayers, double offset)
+        {
+            string[] errors = null;
+            double[][][] connectedEdges = null;
+            if (_model != null)
+                errors = _model.Mesh.ThickenShellMesh(partIds, thickness, numberOfLayers, offset, true, out connectedEdges);
+            //
+            if (errors.Length > 0) throw new CaeException(errors[0]);
+            //
+            if (connectedEdges != null && connectedEdges.Length > 0) HighlightConnectedEdges(connectedEdges, false);
+        }
         public void UpdateNodalCoordinatesFromFile(string fileName)
         {
             FeModel newModel = new FeModel("Deformed");
@@ -4738,50 +4746,50 @@ namespace PrePoMax
         // COMMANDS ********************************************************************************
         public void HideModelPartsCommand(string[] partNames)
         {
-            Commands.CHideModelParts comm = new Commands.CHideModelParts(partNames);
+            CHideModelParts comm = new CHideModelParts(partNames);
             _commands.AddAndExecute(comm);
         }
         public void ShowModelPartsCommand(string[] partNames)
         {
-            Commands.CShowModelParts comm = new Commands.CShowModelParts(partNames);
+            CShowModelParts comm = new CShowModelParts(partNames);
             _commands.AddAndExecute(comm);
         }
         public void SetTransparencyForModelPartsCommand(string[] partNames, byte alpha)
         {
-            Commands.CSetTransparencyForModelParts comm = new Commands.CSetTransparencyForModelParts(partNames, alpha);
+            CSetTransparencyForModelParts comm = new CSetTransparencyForModelParts(partNames, alpha);
             _commands.AddAndExecute(comm);
         }
         // Edit
         public void ReplaceModelPartPropertiesCommand(string oldPartName, PartProperties newPartProperties)
         {
-            Commands.CReplaceModelPart comm = new Commands.CReplaceModelPart(oldPartName, newPartProperties);
+            CReplaceModelPart comm = new CReplaceModelPart(oldPartName, newPartProperties);
             _commands.AddAndExecute(comm);
         }
         // Transform
         public void TranslateModelPartsCommand(string[] partNames, double[] translateVector, bool copy)
         {
-            Commands.CTranslateModelParts comm = new Commands.CTranslateModelParts(partNames, translateVector, copy);
+            CTranslateModelParts comm = new CTranslateModelParts(partNames, translateVector, copy);
             _commands.AddAndExecute(comm);
         }
         public void ScaleModelPartsCommand(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
         {
-            Commands.CScaleModelParts comm = new Commands.CScaleModelParts(partNames, scaleCenter, scaleFactors, copy);
+            CScaleModelParts comm = new CScaleModelParts(partNames, scaleCenter, scaleFactors, copy);
             _commands.AddAndExecute(comm);
         }
         public void RotateModelPartsCommand(string[] partNames, double[] rotateCenter, double[] rotateAxis, double rotateAngle, bool copy)
         {
-            Commands.CRotateModelParts comm = new Commands.CRotateModelParts(partNames, rotateCenter, rotateAxis, rotateAngle, copy);
+            CRotateModelParts comm = new CRotateModelParts(partNames, rotateCenter, rotateAxis, rotateAngle, copy);
             _commands.AddAndExecute(comm);
         }
         //
         public void MergeModelPartsCommand(string[] partNames)
         {
-            Commands.CMergeModelParts comm = new Commands.CMergeModelParts(partNames);
+            CMergeModelParts comm = new CMergeModelParts(partNames);
             _commands.AddAndExecute(comm);
         }
         public void RemoveModelPartsCommand(string[] partNames)
         {
-            Commands.CRemoveModelParts comm = new Commands.CRemoveModelParts(partNames);
+            CRemoveModelParts comm = new CRemoveModelParts(partNames);
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
@@ -14583,17 +14591,10 @@ namespace PrePoMax
             //
             //DrawNodes("short_edges", nodeCoor, color, layer, nodeSize);
         }
-        
-        public void HighlightConnectedEdges(double[][][] lineNodeCoor)
+        public void HighlightConnectedEdges(double[][][] lineNodeCoor, bool drawNodes = true)
         {
-            int nodeSize = _settings.Pre.NodeSymbolSize;
-            HighlightConnectedEdges(lineNodeCoor, nodeSize);
-        }
-        public void HighlightConnectedEdges(double[][][] lineNodeCoor, int nodeSize)
-        {
-            // using HighlightConnectedLines is slow since invalidate is called each time
-
-            // create wire elements
+            // Using HighlightConnectedLines is slow since invalidate is called each time
+            // Create wire elements
             vtkRendererLayer layer = vtkRendererLayer.Selection;
             //
             int elementVtkCellType = new LinearBeamElement(0, new int[] { 0, 1 }).GetVtkCellType();
@@ -14633,12 +14634,15 @@ namespace PrePoMax
             //
             nodeCoor.Clear();
             //
-            for (int i = 0; i < lineNodeCoor.Length; i++)                       // lines
+            if (drawNodes)
             {
-                nodeCoor.Add(lineNodeCoor[i][0]);
-                nodeCoor.Add(lineNodeCoor[i][lineNodeCoor[i].Length - 1]);
+                for (int i = 0; i < lineNodeCoor.Length; i++)                   // lines
+                {
+                    nodeCoor.Add(lineNodeCoor[i][0]);
+                    nodeCoor.Add(lineNodeCoor[i][lineNodeCoor[i].Length - 1]);
+                }
+                HighlightNodes(nodeCoor.ToArray());
             }
-            HighlightNodes(nodeCoor.ToArray());
         }
         //
         public void HighlightSelection(bool clear = true, bool backfaceCulling = true, bool useSecondaryHighlightColor = false)

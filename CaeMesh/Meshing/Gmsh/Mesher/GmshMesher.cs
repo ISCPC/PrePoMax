@@ -92,7 +92,7 @@ namespace CaeMesh
                         double angleDeg = 30;
                         Gmsh.Merge(_gmshData.GeometryFileName);
                         Gmsh.Mesh.RemoveDuplicateNodes();
-                        Gmsh.Mesh.ClassifySurfaces(angleDeg * Math.PI / 180, true, true, angleDeg * Math.PI / 180, true);
+                        Gmsh.Mesh.ClassifySurfaces(angleDeg * Math.PI / 180, true, true, 3 * angleDeg * Math.PI / 180, true);
                         Gmsh.Mesh.CreateGeometry();
                         Gmsh.GetEntities(out outDimTags, 2);
                         int[] surfaceIds = new int[outDimTags.Length];

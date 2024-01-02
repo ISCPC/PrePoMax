@@ -53,6 +53,7 @@ namespace PrePoMax
         private FrmCalculixKeywordEditor _frmCalculixKeywordEditor;
         private FrmPartProperties _frmPartProperties;
         private FrmBoundaryLayer _frmBoundaryLayer;
+        private FrmThickenShellMesh _frmThickenShellMesh;
         private FrmRemeshingParameters _frmRemeshingParameters;
         private FrmTranslate _frmTranslate;
         private FrmScale _frmScale;
@@ -334,6 +335,9 @@ namespace PrePoMax
                 //
                 _frmBoundaryLayer = new FrmBoundaryLayer(_controller);
                 AddFormToAllForms(_frmBoundaryLayer);
+                //
+                _frmThickenShellMesh = new FrmThickenShellMesh(_controller);
+                AddFormToAllForms(_frmThickenShellMesh);
                 //
                 _frmRemeshingParameters = new FrmRemeshingParameters(_controller);
                 AddFormToAllForms(_frmRemeshingParameters);
@@ -3376,17 +3380,6 @@ namespace PrePoMax
             }
         }
         // Tools
-        private void tsmiCreateBoundaryLayer_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                CreateBoundaryLayer();
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
         private void tsmiFindEdgesByAngleForModelParts_Click(object sender, EventArgs e)
         {
             try
@@ -3398,11 +3391,33 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiCreateBoundaryLayer_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CreateBoundaryLayer();
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiRemeshElements_Click(object sender, EventArgs e)
         {
             try
             {
                 RemeshElements();
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiThickenShellMesh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ThickenShellMesh();
             }
             catch (Exception ex)
             {
@@ -3463,14 +3478,6 @@ namespace PrePoMax
             }
         }
         // Tools
-        private void CreateBoundaryLayer()
-        {
-            // Data editor
-            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
-            ItemSetDataEditor.ParentForm = _frmBoundaryLayer;
-            _frmSelectItemSet.SetOnlyGeometrySelection(true);
-            ShowForm(_frmBoundaryLayer, "Create Boundary Layer", null);
-        }
         private void FindEdgesByAngleForModelParts(string[] partNames)
         {
             using (FrmGetValue frmGetValue = new FrmGetValue())
@@ -3483,6 +3490,22 @@ namespace PrePoMax
                 }
                 SaveFormLocation(frmGetValue);
             }
+        }
+        private void CreateBoundaryLayer()
+        {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmBoundaryLayer;
+            _frmSelectItemSet.SetOnlyGeometrySelection(true);
+            ShowForm(_frmBoundaryLayer, "Create Boundary Layer", null);
+        }
+        private void ThickenShellMesh()
+        {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmThickenShellMesh;
+            _frmSelectItemSet.SetOnlyGeometrySelection(true);
+            ShowForm(_frmThickenShellMesh, "Thicken Shell Mesh", null);
         }
         private void RemeshElements()
         {
@@ -6876,7 +6899,8 @@ namespace PrePoMax
             if (_frmSelectGeometry != null && _frmSelectGeometry.Visible) _frmSelectGeometry.SelectionChanged(ids);
             //
             if (_frmBoundaryLayer != null && _frmBoundaryLayer.Visible) _frmBoundaryLayer.SelectionChanged(ids);
-            if (_frmRemeshingParameters != null && _frmRemeshingParameters.Visible) _frmRemeshingParameters.SelectionChanged(ids);            
+            if (_frmRemeshingParameters != null && _frmRemeshingParameters.Visible) _frmRemeshingParameters.SelectionChanged(ids);
+            if (_frmThickenShellMesh != null && _frmThickenShellMesh.Visible) _frmThickenShellMesh.SelectionChanged(ids);
             if (_frmNodeSet != null && _frmNodeSet.Visible) _frmNodeSet.SelectionChanged(ids);
             if (_frmElementSet != null && _frmElementSet.Visible) _frmElementSet.SelectionChanged(ids);
             if (_frmSurface != null && _frmSurface.Visible) _frmSurface.SelectionChanged(ids);

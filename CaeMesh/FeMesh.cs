@@ -1204,8 +1204,6 @@ namespace CaeMesh
                             neighbours.Enqueue(currEl);
                             partNodeIds.UnionWith(currEl.NodeIds);
                             partElementIds.Add(currEl.Id);
-                            if (currEl is LinearPyramidElement lpa)
-                                el = el;
                             partElementTypes.Add(currEl.GetType());
                         }
                     }
@@ -1226,6 +1224,29 @@ namespace CaeMesh
         public void ExtractShellPartVisualization(BasePart part, bool isCADPart, double edgeAngle)
         {
             part.Visualization.ExtractVisualizationCellsFromElements2D(_elements, part.Labels);
+            //
+            //ExtractEdgesFromShellByAngle(part, 0.01);  // extracts free and error elements
+            //HashSet<int> vertexNodeIds = ExtractVerticesFromEdgesByAngle(part, edgeAngle);
+            //SplitVisualizationEdgesAndFaces(part, vertexNodeIds);
+            ////
+            //int edgeId;
+            //int edgeCellId;
+            //List<int[]> flatFaceEdgeNodes = new List<int[]>();
+            //for (int i = 0; i < part.Visualization.FaceCount; i++)
+            //{
+            //    if (part.Visualization.CellIdsByFace[i].Length > 2)
+            //    {
+            //        for (int j = 0; j < part.Visualization.FaceEdgeIds[i].Length; j++)
+            //        {
+            //            edgeId = part.Visualization.FaceEdgeIds[i][j];
+            //            for (int k = 0; k < part.Visualization.EdgeCellIdsByEdge[edgeId].Length; k++)
+            //            {
+            //                edgeCellId = part.Visualization.EdgeCellIdsByEdge[edgeId][k];
+            //                flatFaceEdgeNodes.Add(part.Visualization.EdgeCells[edgeCellId]);
+            //            }
+            //        }
+            //    }
+            //}
             //
             ExtractEdgesFromShellByAngle(part, edgeAngle);  // extracts free and error elements
             //
@@ -1273,7 +1294,7 @@ namespace CaeMesh
             // Overwrite edges
             //part.Visualization.EdgeCells = modelPoints;
         }
-        private void ExtractEdgesFromShellByAngle(BasePart part, double angle)
+        private void ExtractEdgesFromShellByAngle(BasePart part, double angle, List<int[]> flatFaceEdgeNodes = null)
         {
             // Find shared nodes with neighbouring parts
             HashSet<int> sharedNodes = new HashSet<int>();
@@ -1371,6 +1392,9 @@ namespace CaeMesh
                     }
                 }                
             }
+            //
+            if (flatFaceEdgeNodes != null) edgeCells.AddRange(flatFaceEdgeNodes);
+            //
             part.Visualization.EdgeCells = edgeCells.ToArray();
             if (geometryPart != null)
             {
@@ -4047,7 +4071,7 @@ namespace CaeMesh
                 part.RenumberVisualizationElements(oldIdNewId);
             }
         }
-        public void RenumberParts(int startId = 0)
+        public void RenumberParts(int startId = 1)
         {
             Dictionary<int, int> newId = new Dictionary<int, int>();
             foreach (var part in _parts)
@@ -4055,6 +4079,25 @@ namespace CaeMesh
                 newId.Add(part.Value.PartId, startId);
                 part.Value.PartId = startId;
                 startId++;
+            }
+            //
+            foreach (var entry in _elements) entry.Value.PartId = newId[entry.Value.PartId];
+        }
+        public void RenumberParts(HashSet<int> reservedIds)
+        {
+            int id;
+            Dictionary<int, int> newId = new Dictionary<int, int>();
+            foreach (var part in _parts)
+            {
+                if (reservedIds.Contains(part.Value.PartId))
+                {
+                    id = 1;
+                    while (reservedIds.Contains(id)) id++;
+                }
+                else id = part.Value.PartId;
+                //
+                newId.Add(part.Value.PartId, id);
+                part.Value.PartId = id;
             }
             //
             foreach (var entry in _elements) entry.Value.PartId = newId[entry.Value.PartId];
@@ -6841,12 +6884,12 @@ namespace CaeMesh
                 _surfaces.Add(entry.Value.Name, entry.Value);
             }
             // Renumber parts
-            int maxPartID = 0;
+            int maxPartId = 0;
             foreach (var entry in _parts)
             {
-                if (entry.Value.PartId > maxPartID) maxPartID = entry.Value.PartId;
+                if (entry.Value.PartId > maxPartId) maxPartId = entry.Value.PartId;
             }
-            mesh.RenumberParts(maxPartID + 1);
+            mesh.RenumberParts(maxPartId + 1);
             // Add and rename parts
             List<string> addedPartNames = new List<string>();
             HashSet<string> allNames = new HashSet<string>(_parts.Keys);
@@ -7513,9 +7556,14 @@ namespace CaeMesh
         public void GetElementFaceCenterAndNormal(int elementId, FeFaceName faceName, out double[] faceCenter,
                                                   out double[] faceNormal, out bool shellElement)
         {
-            FeNode[] nodes;
             FeElement element = _elements[elementId];
+            GetElementFaceCenterAndNormal(element, faceName, out faceCenter, out faceNormal, out shellElement);
+        }
+        public void GetElementFaceCenterAndNormal(FeElement element, FeFaceName faceName, out double[] faceCenter,
+                                                  out double[] faceNormal, out bool shellElement)
+        {
             int[] nodeIds;
+            FeNode[] nodes;
             faceCenter = null;
             faceNormal = null;
             //
@@ -8712,7 +8760,6 @@ namespace CaeMesh
             if (copy) return rotatedPartNames;
             else return null;
         }
-
         private double[][] RotationMatrix(double[] rotateAxis, double rotateAngle)
         {
             //https://stackoverflow.com/questions/6721544/circular-rotation-around-an-arbitrary-axis
@@ -8743,7 +8790,8 @@ namespace CaeMesh
 
             return m;
         }
-
+        
+        // Tools
         public string[] CreatePrismaticBoundaryLayer(int[] geometrySurfaceIds, double thickness, bool preview,
                                                      out FeNode[] inPressedNodes)
         {
@@ -8769,7 +8817,8 @@ namespace CaeMesh
                 // Use only solid geometry surface ids
                 if (itemTypePartIds[1] == (int)GeometryType.SolidSurface)
                 {
-                    if (partIdSelectedSurfaceIds.TryGetValue(itemTypePartIds[2], out surfaceIds)) surfaceIds.Add(itemTypePartIds[0]);
+                    if (partIdSelectedSurfaceIds.TryGetValue(itemTypePartIds[2], out surfaceIds))
+                        surfaceIds.Add(itemTypePartIds[0]);
                     else partIdSelectedSurfaceIds.Add(itemTypePartIds[2], new HashSet<int>() { itemTypePartIds[0] });
                 }
             }
@@ -8794,7 +8843,7 @@ namespace CaeMesh
                     vis = part.Visualization;
                     edgeIdNodeIds = vis.GetEdgeIdNodeIds();
                     surfaceIdNodeIds = vis.GetSurfaceIdNodeIds();
-                    // Check that all selected surfaces are connected over edge                                                         
+                    // Check that all selected surfaces are connected over edge                                                     
                     if (partIdSelectedSurfaceIdEntry.Value.Count > 1)
                     {
                         bool connected = vis.AreSurfacesConnected(partIdSelectedSurfaceIdEntry.Value.ToArray());
@@ -8807,7 +8856,7 @@ namespace CaeMesh
                             continue;
                         }
                     }                    
-                    // Collect all node normals                                                                                         
+                    // Collect all node normals                                                                                     
                     foreach (var surfaceId in partIdSelectedSurfaceIdEntry.Value)
                     {
                         surfaceCellIds = vis.CellIdsByFace[surfaceId];
@@ -8816,19 +8865,20 @@ namespace CaeMesh
                             cell = vis.Cells[surfaceCellId];
                             cellId = vis.CellIds[surfaceCellId];
                             modifiedCells.Add(cell);
-                            normal = -1 * new Vec3D(ComputeNormalFromFaceCellIndices(cell).Coor);  // only first three nodes are used
+                            normal = -1 * new Vec3D(ComputeNormalFromFaceCellIndices(cell).Coor);// only first three nodes are used
                             //
                             foreach (var nodeId in cell)
                             {
                                 if (nodeIdNormals.TryGetValue(nodeId, out normalsList)) normalsList.Add(normal);
                                 else nodeIdNormals.Add(nodeId, new List<Vec3D>() { normal });
                                 // Save surface id for each node - edge and vertex nodes can have multiple surface ids
-                                if (nodeIdSelectedSurfaceIds.TryGetValue(nodeId, out nodeSurfaceIds)) nodeSurfaceIds.Add(surfaceId);
+                                if (nodeIdSelectedSurfaceIds.TryGetValue(nodeId, out nodeSurfaceIds))
+                                    nodeSurfaceIds.Add(surfaceId);
                                 else nodeIdSelectedSurfaceIds.Add(nodeId, new HashSet<int>() { surfaceId });
                             }
                         }
                     }
-                    // Collect nodeIds and compute their average normals                                                                
+                    // Collect nodeIds and compute their average normals                                                            
                     int count = 0;
                     int[] nodeIds = new int[nodeIdNormals.Count];
                     Vec3D[] normals = new Vec3D[nodeIdNormals.Count];
@@ -8862,7 +8912,7 @@ namespace CaeMesh
                         normals[count] = normal * factor;
                         count++;
                     }
-                    // Add new nodes pressed-into the part                                                                              
+                    // Add new nodes pressed-into the part                                                                          
                     int oldNodeId;
                     FeNode node;
                     Vec3D newPosition;
@@ -8884,7 +8934,7 @@ namespace CaeMesh
                     {
                         _nodes.Add(inPressedNode.Id, inPressedNode);
                     }
-                    // Replace old element nodes for the nodes pressed-into the part                                                    
+                    // Replace old element nodes for the nodes pressed-into the part                                                
                     HashSet<int> modifiedElementNodeIds = new HashSet<int>();
                     int newNodeId;
                     FeElement element;
@@ -8908,7 +8958,7 @@ namespace CaeMesh
                             }
                         }
                     }
-                    // Create and add new wedge elements                                                                                
+                    // Create and add new wedge elements                                                                            
                     FeElement3D element3D;
                     Dictionary<int, FeElement> newElements = new Dictionary<int, FeElement>();
                     List<int[]> newElementCells = new List<int[]>();
@@ -8962,11 +9012,14 @@ namespace CaeMesh
                             elNodeIds[9] = modifiedCell[3];
                             elNodeIds[10] = modifiedCell[4];
                             elNodeIds[11] = modifiedCell[5];
-                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[0]], _nodes[elNodeIds[3]], ref midNodes, ref _maxNodeId);
+                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[0]], _nodes[elNodeIds[3]],
+                                                         ref midNodes, ref _maxNodeId);
                             elNodeIds[12] = midNode.Id;
-                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[1]], _nodes[elNodeIds[4]], ref midNodes, ref _maxNodeId);
+                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[1]], _nodes[elNodeIds[4]],
+                                                         ref midNodes, ref _maxNodeId);
                             elNodeIds[13] = midNode.Id;
-                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[2]], _nodes[elNodeIds[5]], ref midNodes, ref _maxNodeId);
+                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[2]], _nodes[elNodeIds[5]],
+                                                         ref midNodes, ref _maxNodeId);
                             elNodeIds[14] = midNode.Id;
                             //
                             element3D = new ParabolicWedgeElement(_maxElementId, partId, elNodeIds);
@@ -8994,13 +9047,17 @@ namespace CaeMesh
                             elNodeIds[14] = modifiedCell[6];
                             elNodeIds[15] = modifiedCell[7];
 
-                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[0]], _nodes[elNodeIds[4]], ref midNodes, ref _maxNodeId);
+                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[0]], _nodes[elNodeIds[4]],
+                                                         ref midNodes, ref _maxNodeId);
                             elNodeIds[16] = midNode.Id;
-                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[1]], _nodes[elNodeIds[5]], ref midNodes, ref _maxNodeId);
+                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[1]], _nodes[elNodeIds[5]],
+                                                         ref midNodes, ref _maxNodeId);
                             elNodeIds[17] = midNode.Id;
-                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[2]], _nodes[elNodeIds[6]], ref midNodes, ref _maxNodeId);
+                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[2]], _nodes[elNodeIds[6]],
+                                                         ref midNodes, ref _maxNodeId);
                             elNodeIds[18] = midNode.Id;
-                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[3]], _nodes[elNodeIds[7]], ref midNodes, ref _maxNodeId);
+                            midNode = GetOrCreateMidNode(_nodes[elNodeIds[3]], _nodes[elNodeIds[7]],
+                                                         ref midNodes, ref _maxNodeId);
                             elNodeIds[19] = midNode.Id;
                             //
                             element3D = new ParabolicHexaElement(_maxElementId, partId, elNodeIds);
@@ -9017,7 +9074,7 @@ namespace CaeMesh
                     //
 
 
-                    // Find outside node ids of all selected surfaces                                                                   
+                    // Find outside node ids of all selected surfaces                                                               
                     Dictionary<int, int[]> edgeIdEdgeCount = new Dictionary<int, int[]>();
                     int[] edgeCount;
                     HashSet<int> selectedEdgeIds = new HashSet<int>();
@@ -9043,7 +9100,8 @@ namespace CaeMesh
                     //
                     int[] neighbouringNodeIds;
                     List<Tuple<int, int>> neighSurfIdsCount;
-                    Dictionary<int, List<Tuple<int, int>>> outsideNodeIdNeighSurfId = new Dictionary<int, List<Tuple<int, int>>>();
+                    Dictionary<int, List<Tuple<int, int>>> outsideNodeIdNeighSurfId = 
+                        new Dictionary<int, List<Tuple<int, int>>>();
                     for (int i = 0; i < vis.CellIdsByFace.Length; i++)
                     {
                         // Skip selected surfaces
@@ -9064,7 +9122,7 @@ namespace CaeMesh
                             }
                         }
                     }
-                    // Modify the existing edge and surface node ids for the visualization extraction                                   
+                    // Modify the existing edge and surface node ids for the visualization extraction                               
                     // Add new node ids or remove old id from appropriate surfaces and edges
                     HashSet<int> allVertexNodes = new HashSet<int>(vis.VertexNodeIds);
                     int[] sortedNodeIds;
@@ -9101,7 +9159,8 @@ namespace CaeMesh
                                     // Add midside node
                                     if (midNodes.Count > 0) entry.Value.Add(midNodes[new int[] { nodeId, newNodeId }].Id);
                                 }
-                                // More than only one not selected edge is connected to the vertex - create new vertex and new edge
+                                // More than only one not selected edge is connected to the vertex
+                                // -> create new vertex and new edge
                                 else if (neighEdgeNodeIds.Count > 1)
                                 {
                                     // Add node
@@ -9190,48 +9249,327 @@ namespace CaeMesh
             }
             return errors.ToArray();
         }
-
         private void RepositionMidNodes(FeElement element, HashSet<int> modifiedElNodeIds)
         {
             if (modifiedElNodeIds == null) modifiedElNodeIds = new HashSet<int>();
             int[] n = element.NodeIds;
             if (element is ParabolicTetraElement)
             {
-                if (!modifiedElNodeIds.Contains(n[4])) _nodes[n[4]] = new FeNode(n[4], GetMidNodeCoor(_nodes[n[0]], _nodes[n[1]]));
-                if (!modifiedElNodeIds.Contains(n[5])) _nodes[n[5]] = new FeNode(n[5], GetMidNodeCoor(_nodes[n[1]], _nodes[n[2]]));
-                if (!modifiedElNodeIds.Contains(n[6])) _nodes[n[6]] = new FeNode(n[6], GetMidNodeCoor(_nodes[n[2]], _nodes[n[0]]));
-                if (!modifiedElNodeIds.Contains(n[7])) _nodes[n[7]] = new FeNode(n[7], GetMidNodeCoor(_nodes[n[0]], _nodes[n[3]]));
-                if (!modifiedElNodeIds.Contains(n[8])) _nodes[n[8]] = new FeNode(n[8], GetMidNodeCoor(_nodes[n[1]], _nodes[n[3]]));
-                if (!modifiedElNodeIds.Contains(n[9])) _nodes[n[9]] = new FeNode(n[9], GetMidNodeCoor(_nodes[n[2]], _nodes[n[3]]));
+                if (!modifiedElNodeIds.Contains(n[4]))
+                    _nodes[n[4]] = new FeNode(n[4], GetMidNodeCoor(_nodes[n[0]], _nodes[n[1]]));
+                if (!modifiedElNodeIds.Contains(n[5]))
+                    _nodes[n[5]] = new FeNode(n[5], GetMidNodeCoor(_nodes[n[1]], _nodes[n[2]]));
+                if (!modifiedElNodeIds.Contains(n[6]))
+                    _nodes[n[6]] = new FeNode(n[6], GetMidNodeCoor(_nodes[n[2]], _nodes[n[0]]));
+                if (!modifiedElNodeIds.Contains(n[7]))
+                    _nodes[n[7]] = new FeNode(n[7], GetMidNodeCoor(_nodes[n[0]], _nodes[n[3]]));
+                if (!modifiedElNodeIds.Contains(n[8]))
+                    _nodes[n[8]] = new FeNode(n[8], GetMidNodeCoor(_nodes[n[1]], _nodes[n[3]]));
+                if (!modifiedElNodeIds.Contains(n[9]))
+                    _nodes[n[9]] = new FeNode(n[9], GetMidNodeCoor(_nodes[n[2]], _nodes[n[3]]));
             }
             else if (element is ParabolicWedgeElement)
             {
-                if (!modifiedElNodeIds.Contains(n[6])) _nodes[n[6]] = new FeNode(n[6], GetMidNodeCoor(_nodes[n[0]], _nodes[n[1]]));
-                if (!modifiedElNodeIds.Contains(n[7])) _nodes[n[7]] = new FeNode(n[7], GetMidNodeCoor(_nodes[n[1]], _nodes[n[2]]));
-                if (!modifiedElNodeIds.Contains(n[8])) _nodes[n[8]] = new FeNode(n[8], GetMidNodeCoor(_nodes[n[2]], _nodes[n[0]]));
-                if (!modifiedElNodeIds.Contains(n[9])) _nodes[n[9]] = new FeNode(n[9], GetMidNodeCoor(_nodes[n[3]], _nodes[n[4]]));
-                if (!modifiedElNodeIds.Contains(n[10])) _nodes[n[10]] = new FeNode(n[10], GetMidNodeCoor(_nodes[n[4]], _nodes[n[5]]));
-                if (!modifiedElNodeIds.Contains(n[11])) _nodes[n[11]] = new FeNode(n[11], GetMidNodeCoor(_nodes[n[5]], _nodes[n[3]]));
-                if (!modifiedElNodeIds.Contains(n[12])) _nodes[n[12]] = new FeNode(n[12], GetMidNodeCoor(_nodes[n[0]], _nodes[n[3]]));
-                if (!modifiedElNodeIds.Contains(n[13])) _nodes[n[13]] = new FeNode(n[13], GetMidNodeCoor(_nodes[n[1]], _nodes[n[4]]));
-                if (!modifiedElNodeIds.Contains(n[14])) _nodes[n[14]] = new FeNode(n[14], GetMidNodeCoor(_nodes[n[2]], _nodes[n[5]]));
+                if (!modifiedElNodeIds.Contains(n[6]))
+                    _nodes[n[6]] = new FeNode(n[6], GetMidNodeCoor(_nodes[n[0]], _nodes[n[1]]));
+                if (!modifiedElNodeIds.Contains(n[7]))
+                    _nodes[n[7]] = new FeNode(n[7], GetMidNodeCoor(_nodes[n[1]], _nodes[n[2]]));
+                if (!modifiedElNodeIds.Contains(n[8]))
+                    _nodes[n[8]] = new FeNode(n[8], GetMidNodeCoor(_nodes[n[2]], _nodes[n[0]]));
+                if (!modifiedElNodeIds.Contains(n[9]))
+                    _nodes[n[9]] = new FeNode(n[9], GetMidNodeCoor(_nodes[n[3]], _nodes[n[4]]));
+                if (!modifiedElNodeIds.Contains(n[10]))
+                    _nodes[n[10]] = new FeNode(n[10], GetMidNodeCoor(_nodes[n[4]], _nodes[n[5]]));
+                if (!modifiedElNodeIds.Contains(n[11]))
+                    _nodes[n[11]] = new FeNode(n[11], GetMidNodeCoor(_nodes[n[5]], _nodes[n[3]]));
+                if (!modifiedElNodeIds.Contains(n[12]))
+                    _nodes[n[12]] = new FeNode(n[12], GetMidNodeCoor(_nodes[n[0]], _nodes[n[3]]));
+                if (!modifiedElNodeIds.Contains(n[13]))
+                    _nodes[n[13]] = new FeNode(n[13], GetMidNodeCoor(_nodes[n[1]], _nodes[n[4]]));
+                if (!modifiedElNodeIds.Contains(n[14]))
+                    _nodes[n[14]] = new FeNode(n[14], GetMidNodeCoor(_nodes[n[2]], _nodes[n[5]]));
             }
             else if (element is ParabolicHexaElement)
             {
-                if (!modifiedElNodeIds.Contains(n[8])) _nodes[n[8]] = new FeNode(n[8], GetMidNodeCoor(_nodes[n[0]], _nodes[n[1]]));
-                if (!modifiedElNodeIds.Contains(n[9])) _nodes[n[9]] = new FeNode(n[9], GetMidNodeCoor(_nodes[n[1]], _nodes[n[2]]));
-                if (!modifiedElNodeIds.Contains(n[10])) _nodes[n[10]] = new FeNode(n[10], GetMidNodeCoor(_nodes[n[2]], _nodes[n[3]]));
-                if (!modifiedElNodeIds.Contains(n[11])) _nodes[n[11]] = new FeNode(n[11], GetMidNodeCoor(_nodes[n[3]], _nodes[n[0]]));
-                if (!modifiedElNodeIds.Contains(n[12])) _nodes[n[12]] = new FeNode(n[12], GetMidNodeCoor(_nodes[n[4]], _nodes[n[5]]));
-                if (!modifiedElNodeIds.Contains(n[13])) _nodes[n[13]] = new FeNode(n[13], GetMidNodeCoor(_nodes[n[5]], _nodes[n[6]]));
-                if (!modifiedElNodeIds.Contains(n[14])) _nodes[n[14]] = new FeNode(n[14], GetMidNodeCoor(_nodes[n[6]], _nodes[n[7]]));
-                if (!modifiedElNodeIds.Contains(n[15])) _nodes[n[15]] = new FeNode(n[15], GetMidNodeCoor(_nodes[n[7]], _nodes[n[4]]));
-                if (!modifiedElNodeIds.Contains(n[16])) _nodes[n[16]] = new FeNode(n[16], GetMidNodeCoor(_nodes[n[0]], _nodes[n[4]]));
-                if (!modifiedElNodeIds.Contains(n[17])) _nodes[n[17]] = new FeNode(n[17], GetMidNodeCoor(_nodes[n[1]], _nodes[n[5]]));
-                if (!modifiedElNodeIds.Contains(n[18])) _nodes[n[18]] = new FeNode(n[18], GetMidNodeCoor(_nodes[n[2]], _nodes[n[6]]));
-                if (!modifiedElNodeIds.Contains(n[19])) _nodes[n[19]] = new FeNode(n[19], GetMidNodeCoor(_nodes[n[3]], _nodes[n[7]]));
+                if (!modifiedElNodeIds.Contains(n[8]))
+                    _nodes[n[8]] = new FeNode(n[8], GetMidNodeCoor(_nodes[n[0]], _nodes[n[1]]));
+                if (!modifiedElNodeIds.Contains(n[9]))
+                    _nodes[n[9]] = new FeNode(n[9], GetMidNodeCoor(_nodes[n[1]], _nodes[n[2]]));
+                if (!modifiedElNodeIds.Contains(n[10]))
+                    _nodes[n[10]] = new FeNode(n[10], GetMidNodeCoor(_nodes[n[2]], _nodes[n[3]]));
+                if (!modifiedElNodeIds.Contains(n[11]))
+                    _nodes[n[11]] = new FeNode(n[11], GetMidNodeCoor(_nodes[n[3]], _nodes[n[0]]));
+                if (!modifiedElNodeIds.Contains(n[12]))
+                    _nodes[n[12]] = new FeNode(n[12], GetMidNodeCoor(_nodes[n[4]], _nodes[n[5]]));
+                if (!modifiedElNodeIds.Contains(n[13]))
+                    _nodes[n[13]] = new FeNode(n[13], GetMidNodeCoor(_nodes[n[5]], _nodes[n[6]]));
+                if (!modifiedElNodeIds.Contains(n[14]))
+                    _nodes[n[14]] = new FeNode(n[14], GetMidNodeCoor(_nodes[n[6]], _nodes[n[7]]));
+                if (!modifiedElNodeIds.Contains(n[15]))
+                    _nodes[n[15]] = new FeNode(n[15], GetMidNodeCoor(_nodes[n[7]], _nodes[n[4]]));
+                if (!modifiedElNodeIds.Contains(n[16]))
+                    _nodes[n[16]] = new FeNode(n[16], GetMidNodeCoor(_nodes[n[0]], _nodes[n[4]]));
+                if (!modifiedElNodeIds.Contains(n[17]))
+                    _nodes[n[17]] = new FeNode(n[17], GetMidNodeCoor(_nodes[n[1]], _nodes[n[5]]));
+                if (!modifiedElNodeIds.Contains(n[18]))
+                    _nodes[n[18]] = new FeNode(n[18], GetMidNodeCoor(_nodes[n[2]], _nodes[n[6]]));
+                if (!modifiedElNodeIds.Contains(n[19]))
+                    _nodes[n[19]] = new FeNode(n[19], GetMidNodeCoor(_nodes[n[3]], _nodes[n[7]]));
             }
             else throw new NotSupportedException();
+        }
+        public string[] ThickenShellMesh(int[] partIds, double thickness, int numberOfLayers, double offset, bool preview,
+                                         out double[][][] connectedEdges)
+        {
+            List<string> errors = new List<string>();
+            //
+            int elementId;
+            int numberOfLayers2 = numberOfLayers * 2;
+            int[] nodeIds;
+            int[] edgeNodeIds;
+            double[] faceNormal;
+            FeElement element;
+            MeshPart shellPart;
+            MeshPart solidPart;
+            string solidPartName;
+            Vec3D tmp;
+            Vec3D averageNormal;
+            List<Vec3D> nodeNormals;
+            List<double[][]> connectedEdgesList = new List<double[][]>();
+            CompareIntArray comparer = new CompareIntArray();
+            HashSet<int[]> edgeKeys = new HashSet<int[]>(comparer);
+            HashSet<int> newNodeIds = new HashSet<int>();
+            Dictionary<int, List<Vec3D>> nodeIdAllNodeNormals = new Dictionary<int, List<Vec3D>>();
+            //
+            int nodeId;
+            int elementCount;
+            int delta = _maxNodeId + 1;
+            int delta2 = 2 * delta;
+            FeNode node;
+            Dictionary<int, FeNode> newNodes = new Dictionary<int, FeNode>();
+            Dictionary<int, FeElement> newElements = new Dictionary<int, FeElement>();
+            FeMesh mesh;
+            //
+            foreach (int partId in partIds)
+            {
+                shellPart = (MeshPart)GetPartFromId(partId);
+                if (shellPart.PartType != PartType.Shell) continue;
+                //
+                elementCount = 1;
+                newNodeIds.Clear();
+                nodeIdAllNodeNormals.Clear();
+                newNodes.Clear();
+                newElements.Clear();
+                edgeKeys.Clear();
+                // Create solid elements
+                for (int i = 0; i < shellPart.Labels.Length; i++)
+                {
+                    elementId = shellPart.Labels[i];
+                    element = _elements[elementId];
+                    GetElementFaceCenterAndNormal(element, FeFaceName.S2, out _, out faceNormal, out _);
+                    // Collect all node normals
+                    for (int j = 0; j < element.NodeIds.Length; j++)
+                    {
+                        if (nodeIdAllNodeNormals.TryGetValue(element.NodeIds[j], out nodeNormals))
+                            nodeNormals.Add(new Vec3D(faceNormal));
+                        else
+                            nodeIdAllNodeNormals.Add(element.NodeIds[j], new List<Vec3D>() { new Vec3D(faceNormal) });
+                    }
+                    // Create solid elements
+                    for (int j = 0; j < numberOfLayers; j++)
+                    {
+                        if (element is LinearTriangleElement)
+                        {
+                            nodeIds = new int[] { element.NodeIds[0] + j * delta2,
+                                                  element.NodeIds[1] + j * delta2,
+                                                  element.NodeIds[2] + j * delta2,
+                                                  //
+                                                  element.NodeIds[0] + (j + 1) * delta2,
+                                                  element.NodeIds[1] + (j + 1) * delta2,
+                                                  element.NodeIds[2] + (j + 1) * delta2};
+                            newNodeIds.UnionWith(nodeIds);
+                            newElements.Add(elementCount, new LinearWedgeElement(elementCount, nodeIds));
+                        }
+                        else if (element is ParabolicTriangleElement)
+                        {
+                            nodeIds = new int[] { element.NodeIds[0] + j * delta2,
+                                                  element.NodeIds[1] + j * delta2,
+                                                  element.NodeIds[2] + j * delta2,
+                                                  //
+                                                  element.NodeIds[0] + (j + 1) * delta2,
+                                                  element.NodeIds[1] + (j + 1) * delta2,
+                                                  element.NodeIds[2] + (j + 1) * delta2,
+                                                  //
+                                                  element.NodeIds[3] + j * delta2,
+                                                  element.NodeIds[4] + j * delta2,
+                                                  element.NodeIds[5] + j * delta2,
+                                                  //
+                                                  element.NodeIds[3] + (j + 1) * delta2,
+                                                  element.NodeIds[4] + (j + 1) * delta2,
+                                                  element.NodeIds[5] + (j + 1) * delta2,
+                                                  // Mid nodes
+                                                  element.NodeIds[0] + j * delta2 + delta,
+                                                  element.NodeIds[1] + j * delta2 + delta,
+                                                  element.NodeIds[2] + j * delta2 + delta};
+                            newNodeIds.UnionWith(nodeIds);
+                            newElements.Add(elementCount, new ParabolicWedgeElement(elementCount, nodeIds));
+                        }
+                        else if (element is LinearQuadrilateralElement)
+                        {
+                            nodeIds = new int[] { element.NodeIds[0] + j * delta2,
+                                                  element.NodeIds[1] + j * delta2,
+                                                  element.NodeIds[2] + j * delta2,
+                                                  element.NodeIds[3] + j * delta2,
+                                                  //
+                                                  element.NodeIds[0] + (j + 1) * delta2,
+                                                  element.NodeIds[1] + (j + 1) * delta2,
+                                                  element.NodeIds[2] + (j + 1) * delta2,
+                                                  element.NodeIds[3] + (j + 1) * delta2};
+                            newNodeIds.UnionWith(nodeIds);
+                            newElements.Add(elementCount, new LinearHexaElement(elementCount, nodeIds));
+                        }
+                        else if (element is ParabolicQuadrilateralElement)
+                        {
+                            nodeIds = new int[] { element.NodeIds[0] + j * delta2,
+                                                  element.NodeIds[1] + j * delta2,
+                                                  element.NodeIds[2] + j * delta2,
+                                                  element.NodeIds[3] + j * delta2,
+                                                  //
+                                                  element.NodeIds[0] + (j + 1) * delta2,
+                                                  element.NodeIds[1] + (j + 1) * delta2,
+                                                  element.NodeIds[2] + (j + 1) * delta2,
+                                                  element.NodeIds[3] + (j + 1) * delta2,
+                                                  //
+                                                  element.NodeIds[4] + j * delta2,
+                                                  element.NodeIds[5] + j * delta2,
+                                                  element.NodeIds[6] + j * delta2,
+                                                  element.NodeIds[7] + j * delta2,
+                                                  //
+                                                  element.NodeIds[4] + (j + 1) * delta2,
+                                                  element.NodeIds[5] + (j + 1) * delta2,
+                                                  element.NodeIds[6] + (j + 1) * delta2,
+                                                  element.NodeIds[7] + (j + 1) * delta2,
+                                                  //
+                                                  element.NodeIds[0] + j * delta2 + delta,
+                                                  element.NodeIds[1] + j * delta2 + delta,
+                                                  element.NodeIds[2] + j * delta2 + delta,
+                                                  element.NodeIds[3] + j * delta2 + delta};
+                            newNodeIds.UnionWith(nodeIds);
+                            newElements.Add(elementCount, new ParabolicHexaElement(elementCount, nodeIds));
+                        }
+                        else throw new NotSupportedException();
+                        //
+                        elementCount++;
+                    }
+                }
+                // Create line elements from vertices
+                foreach (var vertexNodeId in shellPart.Visualization.VertexNodeIds)
+                {
+                    for (int i = 0; i < numberOfLayers; i++)
+                    {
+                        nodeId = vertexNodeId + i * delta2;
+                        if (newNodeIds.Contains(nodeId + delta))
+                        {
+                            // Parabolic mesh
+                            nodeIds = new int[] { nodeId, nodeId + delta };
+                            newElements.Add(elementCount, new LinearBeamElement(elementCount, nodeIds));
+                            edgeKeys.Add(nodeIds);
+                            elementCount++;
+                            //
+                            nodeIds = new int[] { nodeId + delta, nodeId + delta2 };
+                            newElements.Add(elementCount, new LinearBeamElement(elementCount, nodeIds));
+                            edgeKeys.Add(nodeIds);
+                            elementCount++;
+                        }
+                        else
+                        {
+                            // Linear mesh
+                            nodeIds = new int[] { nodeId, nodeId + delta2 };
+                            newElements.Add(elementCount, new LinearBeamElement(elementCount, nodeIds));
+                            edgeKeys.Add(nodeIds);
+                            elementCount++;
+                        }
+                    }
+                }
+                // Create line elements from edges
+                foreach (var edgeCell in shellPart.Visualization.EdgeCells)
+                {
+                    if (edgeCell.Length == 2) edgeNodeIds = edgeCell;
+                    else edgeNodeIds = new int[] { edgeCell[0], edgeCell[2], edgeCell[1] };
+                    //
+                    for (int i = 0; i < edgeNodeIds.Length - 1; i++)
+                    {
+                        // Bottom layer
+                        nodeIds = new int[] { edgeNodeIds[i], edgeNodeIds[i + 1] };
+                        newElements.Add(elementCount, new LinearBeamElement(elementCount, nodeIds));
+                        edgeKeys.Add(nodeIds);
+                        elementCount++;
+                        // Top layer
+                        nodeIds = new int[] { edgeNodeIds[i] + numberOfLayers * delta2,
+                                              edgeNodeIds[i + 1] + numberOfLayers * delta2 };
+                        newElements.Add(elementCount, new LinearBeamElement(elementCount, nodeIds));
+                        edgeKeys.Add(nodeIds);
+                        elementCount++;
+                    }
+                }
+                //
+                foreach (var entry in nodeIdAllNodeNormals)
+                {
+                    // Average all node normals
+                    averageNormal = new Vec3D();
+                    nodeNormals = entry.Value;
+                    foreach (var nodeNormal in nodeNormals) averageNormal += nodeNormal;
+                    averageNormal *= 1.0 / nodeNormals.Count();
+                    averageNormal.Normalize();
+                    // Create new nodes
+                    for (int i = 0; i < numberOfLayers2 + 1; i++)
+                    {
+                        nodeId = entry.Key + i * delta;
+                        if (newNodeIds.Contains(nodeId))
+                        {
+                            tmp = new Vec3D(_nodes[entry.Key].Coor) +
+                                (offset - thickness / 2 + i * (thickness / numberOfLayers2)) * averageNormal;
+                            //
+                            node = new FeNode(entry.Key + i * delta, tmp.Coor);
+                            newNodes.Add(node.Id, node);
+                        }
+                    }
+                }
+                if (preview)
+                {
+                    foreach (var edgeKey in edgeKeys)
+                    {
+                        connectedEdgesList.Add(new double[][] { newNodes[edgeKey[0]].Coor,
+                                                                newNodes[edgeKey[1]].Coor });
+                    }
+                }
+                else
+                {
+                    RemoveParts(new string[] { shellPart.Name }, out string[] removedParts, false);
+                    //
+                    mesh = new FeMesh(newNodes, newElements, _meshRepresentation, ImportOptions.DetectEdges);
+                    mesh.ConvertLineFeElementsToEdges();
+                    mesh.RemoveElementsByType<FeElement1D>();
+                    //
+                    solidPart = (MeshPart)mesh.Parts.First().Value;
+                    solidPartName = solidPart.Name;
+                    //
+                    AddMesh(mesh, _parts.Keys);
+                    //
+                    solidPart.Name = shellPart.Name;
+                    solidPart.PartId = shellPart.PartId;
+                    solidPart.Color = shellPart.Color;
+                    solidPart.Offset = shellPart.Offset;
+                    solidPart.SmoothShaded = shellPart.SmoothShaded;
+                    _parts.Replace(solidPartName, solidPart.Name, solidPart);
+                    //
+                    foreach (var solidElementId in solidPart.Labels) _elements[solidElementId].PartId = solidPart.PartId;
+                }
+            }
+            //
+            connectedEdges = connectedEdgesList.ToArray();
+            //
+            return errors.ToArray();
         }
 
         // Clone
