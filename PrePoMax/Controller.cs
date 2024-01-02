@@ -3241,7 +3241,7 @@ namespace PrePoMax
         public void ShowShortEdges(double minEdgeLen, string[] partNames)
         {
             double[][][] edgeNodeCoor = DisplayedMesh.GetShortEdges(minEdgeLen, partNames);
-            HighlightConnectedEdges(edgeNodeCoor, 7);
+            HighlightConnectedEdges(edgeNodeCoor);
         }
         public double GetClosestUnConnectedEdgesDistance(string[] partNames)
         {
@@ -3250,7 +3250,7 @@ namespace PrePoMax
         public void ShowCloseUnConnectedEdges(double minDistance, string[] partNames)
         {
             double[][][] edgeNodeCoor = DisplayedMesh.ShowCloseUnConnectedEdges(minDistance, partNames);
-            HighlightConnectedEdges(edgeNodeCoor, 7);
+            HighlightConnectedEdges(edgeNodeCoor);
         }
         public double GetSmallestFace(string[] partNames)
         {
