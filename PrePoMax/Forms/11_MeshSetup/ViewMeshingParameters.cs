@@ -20,7 +20,7 @@ namespace PrePoMax.Forms
         // Properties                                                                                                               
         [Category("Data")]
         [OrderedDisplayName(0, 10, "Name")]
-        [Description("Name of the meshing parameters.")]
+        [Description("Name of the mesh setup item.")]
         [Id(1, 1)]
         public override string Name { get { return _parameters.Name; } set { _parameters.Name = value; } }
         //

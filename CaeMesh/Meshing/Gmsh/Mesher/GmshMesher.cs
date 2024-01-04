@@ -10,6 +10,8 @@ using CaeMesh;
 using System.IO;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using CaeGlobals;
+using System.Drawing.Printing;
+using System.Windows.Forms.VisualStyles;
 
 namespace CaeMesh
 {
@@ -102,27 +104,8 @@ namespace CaeMesh
                     }
                     //
                     Synchronize(); // must be here
-                    //
-                    RenumberVertices();
                     // Mesh size
-                    //Tuple<int, int>[] surfaceDimTags;
-                    //Gmsh.GetEntities(out surfaceDimTags, 2);
-                    //foreach (var surfaceDimTag in surfaceDimTags) Gmsh.Mesh.SetSizeFromBoundary(2, surfaceDimTag.Item2, 0);
-                    //
-                    double scaleFactor = 1;
-                    //
-                    Gmsh.SetNumber("Mesh.MeshSizeMin", _gmshData.PartMeshingParameters.MinH * scaleFactor);
-                    Gmsh.SetNumber("Mesh.MeshSizeMax", _gmshData.PartMeshingParameters.MaxH * scaleFactor);
-                    Gmsh.SetNumber("Mesh.MeshSizeFromCurvature", 2 * Math.PI * _gmshData.PartMeshingParameters.ElementsPerCurve);
-                    // Local mesh size
-                    outDimTags = new Tuple<int, int>[1];
-                    foreach (var entry in _gmshData.VertexNodeIdMeshSize)
-                    {
-                        outDimTags[0] = new Tuple<int, int>(0, entry.Key);
-                        Gmsh.OCC.SetSize(outDimTags, entry.Value);
-                    }
-                    //
-                    Synchronize(); // must be here for mesh refinement
+                    SetMeshSizes();
                     // 2D meshing algorithm
                     Gmsh.SetNumber("Mesh.Algorithm", (int)gsi.AlgorithmMesh2D);
                     // 3D meshing algorithm
@@ -183,7 +166,51 @@ namespace CaeMesh
                 _error = ex.Message;
             }
         }
-        private void RenumberVertices()
+        private void SetMeshSizes()
+        {
+            RenumberGmshDataVerticesByCoor();
+            // Mesh size
+            //Tuple<int, int>[] surfaceDimTags;
+            //Gmsh.GetEntities(out surfaceDimTags, 2);
+            //foreach (var surfaceDimTag in surfaceDimTags) Gmsh.Mesh.SetSizeFromBoundary(2, surfaceDimTag.Item2, 0);
+            //
+            double scaleFactor = 1;
+            //
+            Gmsh.SetNumber("Mesh.MeshSizeMin", _gmshData.PartMeshingParameters.MinH * scaleFactor);
+            Gmsh.SetNumber("Mesh.MeshSizeMax", _gmshData.PartMeshingParameters.MaxH * scaleFactor);
+            Gmsh.SetNumber("Mesh.MeshSizeFromCurvature", 2 * Math.PI * _gmshData.PartMeshingParameters.ElementsPerCurve);
+            // Local vertex mesh size
+            Tuple<int, int>[] dimTags = new Tuple<int, int>[1];
+            foreach (var entry in _gmshData.VertexNodeIdMeshSize)
+            {
+                dimTags[0] = new Tuple<int, int>(0, entry.Key);
+                Gmsh.OCC.SetSize(dimTags, entry.Value);
+            }
+            // Local edge mesh size
+            int edgeDim = 1;
+            int edgeId;
+            int numOfElements;
+            int numOfNodes;
+            int[] vertexIds;
+            int[] surfaceIds;
+            //
+            Gmsh.GetEntities(out dimTags, edgeDim);
+            //
+            foreach (var entry in dimTags)
+            {
+                edgeId = entry.Item2;
+                Gmsh.GetAdjacencies(edgeDim, edgeId, out surfaceIds, out vertexIds);
+
+                if (_gmshData.EdgeVertexNodeIdsNumElements.TryGetValue(vertexIds, out numOfElements))
+                {
+                    numOfNodes = numOfElements + 1;
+                    Gmsh.Mesh.SetTransfiniteCurve(edgeId, numOfNodes);
+                }
+            }
+            //
+            Synchronize(); // must be here for mesh refinement
+        }
+        private void RenumberGmshDataVerticesByCoor()
         {
             double[] coor;
             Tuple<int, int>[] pointDimTags;
@@ -562,7 +589,6 @@ namespace CaeMesh
                 surfaceIdSurface.Add(surface.Id, surface);
             }
             // Check if a volume is a transfinite volume                                                                            
-            //List<int>
             foreach (var entry in volumeIdVolume)
             {
                 volumeId = entry.Key;
@@ -680,9 +706,9 @@ namespace CaeMesh
                 groupEdgeIds = new HashSet<int>();
                 foreach (var edgeNodeFromGroup in edgeGroup.Nodes)
                 {
-                    if (_gmshData.EdgeVertexNodeIdsNumElements.TryGetValue(edgeNodeFromGroup.Value.VertexIds, out numOfElements))
-                        overriddenNumElements = numOfElements;
-                    else
+                    //if (_gmshData.EdgeVertexNodeIdsNumElements.TryGetValue(edgeNodeFromGroup.Value.VertexIds, out numOfElements))
+                    //    overriddenNumElements = numOfElements;
+                    //else
                     {
                         Gmsh.Mesh.GetNodes(out nodeTagsIntPtr, out coor, 1, edgeNodeFromGroup.Value.Id, true, false);
                         //
@@ -712,9 +738,9 @@ namespace CaeMesh
                 {
                     // "Left", "Right", "AlternateLeft" and "AlternateRight"
                     if (surface.Triangular && transfiniteThreeSided)
-                        Gmsh.Mesh.SetTransfiniteSurface(surface.Id, "Left", surface.VertexIds);
+                        Gmsh.Mesh.SetTransfiniteSurface(surface.Id, "AlternateLeft", surface.VertexIds);
                     else if (surface.Quadrangular && transfiniteFourSided)
-                        Gmsh.Mesh.SetTransfiniteSurface(surface.Id, "Left");
+                        Gmsh.Mesh.SetTransfiniteSurface(surface.Id, "AlternateLeft");
                     //
                     if (recombine && surface.Recombine) Gmsh.Mesh.SetRecombine(2, surface.Id);
                     Gmsh.Mesh.SetSmoothing(2, surface.Id, 100);

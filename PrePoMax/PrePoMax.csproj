@@ -294,7 +294,7 @@
     <Compile Include="Forms\21_FEModel\FrmThickenShellMesh.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\21_FEModel\ViewThickenShellMesh.cs" />
+    <Compile Include="Forms\11_MeshSetup\ViewThickenShellMesh.cs" />
     <Compile Include="Forms\31_Material\ViewSlipWear.cs" />
     <Compile Include="Forms\32_Section\ViewMembraneSection.cs" />
     <Compile Include="Forms\33_Constraint\ViewCompressionOnly.cs" />

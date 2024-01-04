@@ -57,11 +57,11 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)\GmshCommon\GmshLib\deps\gmsh-4.11.1-Windows64-sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\GmshCommon\GmshLib\deps\gmsh-4.12.0-Windows64-sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>gmsh.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\GmshCommon\GmshLib\deps\gmsh-4.11.1-Windows64-sdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\GmshCommon\GmshLib\deps\gmsh-4.12.0-Windows64-sdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -70,11 +70,11 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)\GmshCommon\GmshLib\deps\gmsh-4.11.1-Windows64-sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\GmshCommon\GmshLib\deps\gmsh-4.12.0-Windows64-sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>gmsh.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\GmshCommon\GmshLib\deps\gmsh-4.11.1-Windows64-sdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\GmshCommon\GmshLib\deps\gmsh-4.12.0-Windows64-sdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

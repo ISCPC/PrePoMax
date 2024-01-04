@@ -3458,7 +3458,7 @@ namespace PrePoMax
                     else throw new NotSupportedException();
                 }
                 // Add sizes
-                foreach (var nodeId in nodeIds) vertexNodeIdMeshSize.Add(nodeId, meshRefinement.MeshSize);
+                foreach (var nodeId in nodeIds) vertexNodeIdMeshSize[nodeId] = meshRefinement.MeshSize;
             }
         }
         //
@@ -3466,19 +3466,31 @@ namespace PrePoMax
         {
             GeometryPart part = (GeometryPart)_model.Geometry.Parts[partName];
             //
-            OrderedDictionary<string, MeshSetupItem> meshSetupItems = _model.Geometry.MeshSetupItems.DeepClone();
-            // If edit mode, overwrite the item
+            OrderedDictionary<string, MeshSetupItem> meshSetupItemsDict = _model.Geometry.MeshSetupItems.DeepClone();
+            // If the form to edit mesh setup item is open, overwrite the item
             if (meshSetupItem != null)
             {
                 string error = IsMeshSetupItemProperlyDefined(meshSetupItem);
                 if (error != null) throw new CaeException(error + " The preview of the mesh failed.");
                 //
-                if (meshSetupItems.ContainsKey(meshSetupItem.Name)) meshSetupItems[meshSetupItem.Name] = meshSetupItem;
-                else meshSetupItems.Add(meshSetupItem.Name, meshSetupItem);
+                if (meshSetupItemsDict.ContainsKey(meshSetupItem.Name)) meshSetupItemsDict[meshSetupItem.Name] = meshSetupItem;
+                else meshSetupItemsDict.Add(meshSetupItem.Name, meshSetupItem);
             }
             //
-            if (part.IsCADPart) return PreviewEdgeMeshFromBrep(part, meshSetupItems);
-            else return PreviewEdgeMeshFromStl(part, meshSetupItems);
+            bool result;
+            if (part.IsCADPart) result = PreviewEdgeMeshFromBrep(part, meshSetupItemsDict);
+            else result = PreviewEdgeMeshFromStl(part, meshSetupItemsDict);
+            // Thicken shell mesh
+            if (result)
+            {
+                MeshSetupItem[] meshSetupItems = GetActiveValidMeshSetupItems<ThickenShellMesh>(part.Name, meshSetupItemsDict);
+                if (meshSetupItems != null && meshSetupItems.Length > 0)
+                {
+                    ThickenShellMesh tsm = (ThickenShellMesh)meshSetupItems[meshSetupItems.Length - 1];
+                    result &= PreviewThickenShellMesh(new string[] { partName }, tsm.Thickness, tsm.NumberOfLayers, tsm.Offset);
+                }
+            }
+            return result;
         }
         public bool PreviewEdgeMeshFromStl(GeometryPart part, OrderedDictionary<string, MeshSetupItem> meshSetupItems)
         {
@@ -3532,7 +3544,7 @@ namespace PrePoMax
         }
         public bool PreviewEdgeMeshFromBrep(GeometryPart part, OrderedDictionary<string, MeshSetupItem> meshSetupItems)
         {
-            MeshSetupItem[] gmshSetupItems = GetActiveValidGmshSetupItems(part.Name, meshSetupItems);
+            MeshSetupItem[] gmshSetupItems = GetActiveValidMeshSetupItems<GmshSetupItem>(part.Name, meshSetupItems);
             //
             if (gmshSetupItems.Length > 0) return PreviewEdgeMeshFromBrepGmsh(part, gmshSetupItems, meshSetupItems);
             else return PreviewEdgeMeshFromBrepNetgen(part, meshSetupItems);
@@ -3726,12 +3738,24 @@ namespace PrePoMax
         {
             GeometryPart part = (GeometryPart)_model.Geometry.Parts[partName];
             //
-            if (part.IsCADPart) return CreateMeshFromBrep(part);
-            else return CreateMeshFromStl(part);
+            bool result;
+            if (part.IsCADPart) result = CreateMeshFromBrep(part);
+            else result = CreateMeshFromStl(part);
+            // Thicken shell mesh
+            if (result)
+            {
+                MeshSetupItem[] meshSetupItems = GetActiveValidMeshSetupItems<ThickenShellMesh>(part.Name);
+                if (meshSetupItems != null && meshSetupItems.Length > 0)
+                {
+                    ThickenShellMesh tsm = (ThickenShellMesh)meshSetupItems[meshSetupItems.Length - 1];
+                    result &= ThickenShellMesh(new string[] { partName }, tsm.Thickness, tsm.NumberOfLayers, tsm.Offset);
+                }
+            }
+            return result;
         }
         private bool CreateMeshFromStl(GeometryPart part)
         {
-            MeshSetupItem[] meshSetupItems = GetActiveValidGmshSetupItems(part.Name);
+            MeshSetupItem[] meshSetupItems = GetActiveValidMeshSetupItems<GmshSetupItem>(part.Name);
             //
             if (meshSetupItems.Length > 0) return CreateMeshFromStlGmsh(part, meshSetupItems);
             else
@@ -3928,7 +3952,7 @@ namespace PrePoMax
         }
         private bool CreateMeshFromBrep(GeometryPart part)
         {
-            MeshSetupItem[] meshSetupItems = GetActiveValidGmshSetupItems(part.Name);
+            MeshSetupItem[] meshSetupItems = GetActiveValidMeshSetupItems<GmshSetupItem>(part.Name);
             //
             if (meshSetupItems.Length > 0) return CreateMeshFromBrepGmsh(part, meshSetupItems);
             else return CreateMeshFromBrepNetgen(part);
@@ -4216,31 +4240,32 @@ namespace PrePoMax
             }
             else return null;
         }
-        private MeshSetupItem[] GetActiveValidGmshSetupItems(string partName,
-                                                             OrderedDictionary<string, MeshSetupItem> meshSetupItems = null)
+        private MeshSetupItem[] GetActiveValidMeshSetupItems<T>(string partName,
+                                                                  OrderedDictionary<string, MeshSetupItem> meshSetupItems = null)
+                                                                  where T : MeshSetupItem
         {
             HashSet<int> selectedPartIds;
             string[] meshablePartNames = GetMeshablePartNames(new string[] { partName });
             int[] meshablePartIds = _model.Geometry.GetPartIdsFomPartNames(meshablePartNames);
-            List<MeshSetupItem> gmshSetupItems = new List<MeshSetupItem>();
+            List<MeshSetupItem> meshSetupItemsToCheck = new List<MeshSetupItem>();
             //
             if (meshSetupItems == null) meshSetupItems = _model.Geometry.MeshSetupItems;
             //
             foreach (var entry in meshSetupItems)
             {
-                if (entry.Value is GmshSetupItem gsi && gsi.Active && gsi.Valid)
+                if (entry.Value is T msi && msi.Active && msi.Valid)
                 {
-                    if (gsi.CreationIds != null && gsi.CreationIds.Length > 0)
+                    if (msi.CreationIds != null && msi.CreationIds.Length > 0)
                     {
-                        selectedPartIds = new HashSet<int>(FeMesh.GetPartIdsFromGeometryIds(gsi.CreationIds));
+                        selectedPartIds = new HashSet<int>(FeMesh.GetPartIdsFromGeometryIds(msi.CreationIds));
                         //
                         if (selectedPartIds.Intersect(meshablePartIds).Count() == meshablePartIds.Length)
-                            gmshSetupItems.Add(gsi);
+                            meshSetupItemsToCheck.Add(msi);
                     }
                 }
             }
             //
-            return gmshSetupItems.ToArray();
+            return meshSetupItemsToCheck.ToArray();
         }
         public void ActivateDeactivateMeshSetupItem(string meshSetupItemName, bool active)
         {
@@ -4473,9 +4498,9 @@ namespace PrePoMax
             CRemeshElements comm = new CRemeshElements(remeshingParameters);
             _commands.AddAndExecute(comm);
         }
-        public void ThickenShellMeshCommand(int[] partIds, double thickness, int numberOfLayers, double offset)
+        public void ThickenShellMeshCommand(string[] partNames, double thickness, int numberOfLayers, double offset)
         {
-            CThickenShellMesh comm = new CThickenShellMesh(partIds, thickness, numberOfLayers, offset);
+            CThickenShellMesh comm = new CThickenShellMesh(partNames, thickness, numberOfLayers, offset);
             _commands.AddAndExecute(comm);
         }
         public void UpdateNodalCoordinatesFromFileCommand(string fileName)
@@ -4684,7 +4709,7 @@ namespace PrePoMax
             }
             else throw new CaeException("Mesh generation failed.");
         }
-        public void ThickenShellMesh(int[] partIds, double thickness, int numberOfLayers, double offset)
+        public bool ThickenShellMesh(string[] partNames, double thickness, int numberOfLayers, double offset)
         {
             try
             {
@@ -4692,9 +4717,8 @@ namespace PrePoMax
                 //
                 string[] errors = null;
                 if (_model != null)
-                    errors = _model.Mesh.ThickenShellMesh(partIds, thickness, numberOfLayers, offset, false, out _);
+                    errors = _model.Mesh.ThickenShellMesh(partNames, thickness, numberOfLayers, offset, false, out _);
                 // Update element type icon
-                string[] partNames = _model.Mesh.GetPartNamesFromPartIds(partIds);
                 foreach (var partName in partNames)
                 {
                     _form.UpdateTreeNode(ViewGeometryModelResults.Model, partName, _model.Mesh.Parts[partName], null);
@@ -4709,6 +4733,8 @@ namespace PrePoMax
                 FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
                 //
                 if (errors.Length > 0) throw new CaeException(errors[0]);
+                //
+                return true;
             }
             catch (Exception ex)
             {
@@ -4719,16 +4745,18 @@ namespace PrePoMax
                 _form.SetStateReady("Creating...");
             }
         }
-        public void PreviewThickenShellMesh(int[] partIds, double thickness, int numberOfLayers, double offset)
+        public bool PreviewThickenShellMesh(string[] partNames, double thickness, int numberOfLayers, double offset)
         {
             string[] errors = null;
             double[][][] connectedEdges = null;
             if (_model != null)
-                errors = _model.Mesh.ThickenShellMesh(partIds, thickness, numberOfLayers, offset, true, out connectedEdges);
+                errors = DisplayedMesh.ThickenShellMesh(partNames, thickness, numberOfLayers, offset, true, out connectedEdges);
             //
             if (errors.Length > 0) throw new CaeException(errors[0]);
             //
             if (connectedEdges != null && connectedEdges.Length > 0) HighlightConnectedEdges(connectedEdges, false);
+            //
+            return true;
         }
         public void UpdateNodalCoordinatesFromFile(string fileName)
         {
@@ -14303,8 +14331,9 @@ namespace PrePoMax
         public void HighlightMeshSetupItem(MeshSetupItem meshSetupItem, bool highlightNodes = true,
                                            bool useSecondaryHighlightColor = false)
         {
-            if (meshSetupItem is MeshingParameters || meshSetupItem is ShellGmsh || meshSetupItem is TetrahedralGmsh ||
-                meshSetupItem is TransfiniteMesh) HighlightMeshSetupItemParts(meshSetupItem, useSecondaryHighlightColor);
+            if (meshSetupItem is MeshingParameters || meshSetupItem is ShellGmsh || meshSetupItem is ThickenShellMesh ||
+                meshSetupItem is TetrahedralGmsh || meshSetupItem is TransfiniteMesh)
+                HighlightMeshSetupItemParts(meshSetupItem, useSecondaryHighlightColor);
             else if (meshSetupItem is FeMeshRefinement mr) HighlightMeshRefinement(mr, highlightNodes, useSecondaryHighlightColor);
             else if (meshSetupItem is ExtrudeMesh em) HighlightExtrudeMesh(em, useSecondaryHighlightColor);
             else if (meshSetupItem is RevolveMesh rm) HighlightRevolveMesh(rm, useSecondaryHighlightColor);

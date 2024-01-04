@@ -17,6 +17,14 @@ namespace PrePoMax.Forms
         private Controller _controller;
 
 
+        // Properties                                                                                                               
+        public ThickenShellMesh ThickenShellMesh
+        {
+            get { return _viewThickenShellMesh != null ? (ThickenShellMesh)_viewThickenShellMesh.GetBase() : null; }
+            set { _viewThickenShellMesh = new ViewThickenShellMesh(value.DeepClone()); }
+        }
+
+
         // Constructors                                                                                                             
         public FrmThickenShellMesh(Controller controller) 
         {
@@ -67,13 +75,13 @@ namespace PrePoMax.Forms
         {
             try
             {
-                _viewThickenShellMesh = (ViewThickenShellMesh)propertyGrid.SelectedObject;
+                ThickenShellMesh thickenShellMesh = ThickenShellMesh;
                 //
-                if (_viewThickenShellMesh.GeometryIds != null && _viewThickenShellMesh.GeometryIds.Length > 0)
+                if (thickenShellMesh.CreationIds != null && thickenShellMesh.CreationIds.Length > 0)
                 {
                     HighlightSelection();
-                    _controller.PreviewThickenShellMesh(_viewThickenShellMesh.GeometryIds, _viewThickenShellMesh.Thickness,
-                                                        _viewThickenShellMesh.NumberOfLayers, _viewThickenShellMesh.Offset);
+                    _controller.PreviewThickenShellMesh(thickenShellMesh.PartNames, thickenShellMesh.Thickness,
+                                                        thickenShellMesh.NumberOfLayers, thickenShellMesh.Offset);
                 }
             }
             catch (Exception ex)
@@ -85,23 +93,16 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnApply(bool onOkAddNew)
         {
-            _viewThickenShellMesh = (ViewThickenShellMesh)propertyGrid.SelectedObject;
+            ThickenShellMesh thickenShellMesh = ThickenShellMesh;
             //
-            if (_viewThickenShellMesh.GeometryIds == null || _viewThickenShellMesh.GeometryIds.Length == 0)
+            if (thickenShellMesh.CreationIds == null || thickenShellMesh.CreationIds.Length == 0)
                 throw new CaeException("The thicken shell selection must contain at least one item.");
-            else
-            {
-                BasePart part;
-                foreach (var geometryId in _viewThickenShellMesh.GeometryIds)
-                {
-                    part = _controller.Model.Mesh.GetPartFromId(geometryId);
-                    if (part.PartType != PartType.Shell)
-                        throw new CaeException("The thicken shell feature can only be used on shell parts.");
-                }
-            }
+            //
+            string error = _controller.IsMeshSetupItemProperlyDefined(thickenShellMesh);
+            if (error != null) throw new CaeException(error);
             // Create
-            _controller.ThickenShellMeshCommand(_viewThickenShellMesh.GeometryIds, _viewThickenShellMesh.Thickness,
-                                                _viewThickenShellMesh.NumberOfLayers, _viewThickenShellMesh.Offset);
+            _controller.ThickenShellMeshCommand(thickenShellMesh.PartNames, thickenShellMesh.Thickness,
+                                                thickenShellMesh.NumberOfLayers, thickenShellMesh.Offset);
             //
             _controller.ClearSelectionHistoryAndCallSelectionChanged();
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
@@ -123,7 +124,7 @@ namespace PrePoMax.Forms
             _viewThickenShellMesh = null;
             propertyGrid.SelectedObject = null;
             //
-            _viewThickenShellMesh = new ViewThickenShellMesh();
+            _viewThickenShellMesh = new ViewThickenShellMesh(new ThickenShellMesh("ThickenShellMesh"));
             _controller.Selection.Clear();
             //
             propertyGrid.SelectedObject = _viewThickenShellMesh;
@@ -146,11 +147,12 @@ namespace PrePoMax.Forms
             {
                 if (_controller != null)
                 {
+                    ThickenShellMesh thickenShellMesh = ThickenShellMesh;
                     _controller.ClearSelectionHistory();
-                    // Surface.CreationData is set to null when the CreatedFrom is changed
-                    if (_viewThickenShellMesh.CreationData != null)
+                    // ThickenShellMesh.CreationData is set to null when the CreatedFrom is changed
+                    if (thickenShellMesh.CreationData != null)
                     {
-                        _controller.Selection = _viewThickenShellMesh.CreationData.DeepClone(); // Deep copy to not clear
+                        _controller.Selection = thickenShellMesh.CreationData.DeepClone(); // Deep copy to not clear
                         _controller.HighlightSelection();
                     }
                 }
@@ -167,10 +169,11 @@ namespace PrePoMax.Forms
         }
         public void SelectionChanged(int[] ids)
         {
-            if (_viewThickenShellMesh != null)
+            if (ThickenShellMesh != null)
             {
-                _viewThickenShellMesh.GeometryIds = ids;
-                _viewThickenShellMesh.CreationData = _controller.Selection.DeepClone();
+                ThickenShellMesh.CreationIds = ids;
+                ThickenShellMesh.PartNames = _controller.DisplayedMesh.GetPartNamesFromGeometryIds(ids);
+                ThickenShellMesh.CreationData = _controller.Selection.DeepClone();
                 //
                 propertyGrid.Refresh();
                 //

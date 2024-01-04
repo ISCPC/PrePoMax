@@ -20,7 +20,7 @@ namespace PrePoMax.Forms
         // Properties                                                                                                               
         [CategoryAttribute("Data")]
         [OrderedDisplayName(0, 10, "Name")]
-        [DescriptionAttribute("Name of the mesh refinement.")]
+        [DescriptionAttribute("Name of the mesh setup item.")]
         public override string Name { get { return _meshRefinement.Name; } set { _meshRefinement.Name = value; } }
         //
         [CategoryAttribute("Data")]

@@ -1247,13 +1247,14 @@ namespace CaeModel
             if (meshSetupItem is MeshingParameters) return null;
             else if (meshSetupItem is FeMeshRefinement) return null;
             else if (meshSetupItem is ShellGmsh sg) return IsShellGmshProperlyDefined(sg);
+            else if (meshSetupItem is ThickenShellMesh tsm) return IsThickenShellMeshProperlyDefined(tsm);
             else if (meshSetupItem is TetrahedralGmsh tg) return IsTetrahedralGmshProperlyDefined(tg);
             else if (meshSetupItem is TransfiniteMesh tm) return IsTransfiniteMeshProperlyDefined(tm);
             else if (meshSetupItem is ExtrudeMesh em) return IsExtrudeMeshProperlyDefined(em);
             else if (meshSetupItem is RevolveMesh rm) return IsRevolveMeshProperlyDefined(rm);
             else throw new NotSupportedException("MeshSetupItemTypeException");
         }
-        public string IsShellGmshProperlyDefined(ShellGmsh shellGmsh)
+        private string IsShellGmshProperlyDefined(ShellGmsh shellGmsh)
         {
             BasePart part;
             int[] partIds = FeMesh.GetPartIdsFromGeometryIds(shellGmsh.CreationIds);
@@ -1267,7 +1268,28 @@ namespace CaeModel
             }
             return null;
         }
-        public string IsTetrahedralGmshProperlyDefined(TetrahedralGmsh tetrahedralGmsh)
+        private string IsThickenShellMeshProperlyDefined(ThickenShellMesh thickenShellMesh)
+        {
+            if (thickenShellMesh.PartNames != null && thickenShellMesh.PartNames.Length > 0)
+            {
+                BasePart part;
+                foreach (var partName in thickenShellMesh.PartNames)
+                {
+                    part = _geometry.Parts[partName];
+                    // Is mesh setup item defined on the mesh part
+                    if (part == null) part = _mesh.Parts[partName];
+                    if (part == null)
+                        return "The part " + partName + " cannot be found neither in geometry parts neither in model parts.";
+                    //
+                    if (part.PartType != PartType.Shell)
+                        return "The thicken shell feature can only be used on shell parts.";
+                }
+            }
+            else return "No parts are defined for the thicken shell mesh setup item.";
+            //
+            return null;
+        }
+        private string IsTetrahedralGmshProperlyDefined(TetrahedralGmsh tetrahedralGmsh)
         {
             BasePart part;
             int[] partIds = FeMesh.GetPartIdsFromGeometryIds(tetrahedralGmsh.CreationIds);
@@ -1281,7 +1303,7 @@ namespace CaeModel
             }
             return null;
         }
-        public string IsTransfiniteMeshProperlyDefined(TransfiniteMesh transfiniteMesh)
+        private string IsTransfiniteMeshProperlyDefined(TransfiniteMesh transfiniteMesh)
         {
             GeometryPart part;
             int[] partIds = FeMesh.GetPartIdsFromGeometryIds(transfiniteMesh.CreationIds);
@@ -1327,7 +1349,7 @@ namespace CaeModel
             }
             return null;
         }
-        public string IsExtrudeMeshProperlyDefined(ExtrudeMesh extrudeMesh)
+        private string IsExtrudeMeshProperlyDefined(ExtrudeMesh extrudeMesh)
         {
             string error = null;
             extrudeMesh.Direction = null;
@@ -1451,7 +1473,7 @@ namespace CaeModel
             //
             return error == null ? null : error + " The extruded mesh cannot be created.";
         }
-        public string IsRevolveMeshProperlyDefined(RevolveMesh revolveMesh)
+        private string IsRevolveMeshProperlyDefined(RevolveMesh revolveMesh)
         {
             string error = null;
             revolveMesh.AxisDirection = null;

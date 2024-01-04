@@ -15,17 +15,17 @@ namespace PrePoMax.Commands
     class CThickenShellMesh : Command
     {
         // Variables                                                                                                                
-        private int[] _partIds;
+        private string[] _partNames;
         private double _thickness;
         private int _numberOfLayers;
         private double _offset;
 
 
         // Constructor                                                                                                              
-        public CThickenShellMesh(int[] partIds, double thickness, int numberOfLayers, double offset)
+        public CThickenShellMesh(string[] partNames, double thickness, int numberOfLayers, double offset)
             : base("Thicken shell mesh")
         {
-            _partIds = partIds;
+            _partNames = partNames;
             _thickness = thickness;
             _numberOfLayers = numberOfLayers;
             _offset = offset;
@@ -35,7 +35,7 @@ namespace PrePoMax.Commands
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.ThickenShellMesh(_partIds, _thickness, _numberOfLayers, _offset);
+            receiver.ThickenShellMesh(_partNames, _thickness, _numberOfLayers, _offset);
             return true;
         }
 

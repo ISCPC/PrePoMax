@@ -532,6 +532,28 @@ namespace CaeMesh
                     SetItemValidity(sg, valid, items);
                     if (!valid && sg.Active) invalidItems.Add("Shell gmsh: " + sg.Name);
                 }
+                else if (entry.Value is ThickenShellMesh tsm)
+                {
+                    valid = tsm.Valid;              // this is set to invalid after deleting a part
+                    if (!valid) tsm.Valid = true;   // set this to true to detect a change in validity
+                    //
+                    string[] partNames = GetPartNamesFromPartIds(tsm.CreationIds);
+                    if (partNames == null || partNames.Length == 0) valid &= false;
+                    else
+                    {
+                        foreach (var partName in partNames)
+                        {
+                            if (!_parts.ContainsKey(partName))
+                            {
+                                valid &= false;
+                                break;
+                            }
+                        }
+                    }
+                    //
+                    SetItemValidity(tsm, valid, items);
+                    if (!valid && tsm.Active) invalidItems.Add("Thicken shell mesh: " + tsm.Name);
+                }
                 else if (entry.Value is TetrahedralGmsh tg)
                 {
                     valid = tg.Valid;              // this is set to invalid after deleting a part
@@ -6230,7 +6252,7 @@ namespace CaeMesh
             Vec3D n2 = new Vec3D(_nodes[edgeNodeIds[1]].Coor);
             Vec3D e = n2 - n1;
             //
-            int numSeg = (int)(e.Len / meshSize) + 1;
+            int numSeg = (int)Math.Round((e.Len / meshSize), 0, MidpointRounding.AwayFromZero);
             double[][] coor = new double[numSeg + 1][];
             coor[0] = n1.Coor;
             coor[numSeg] = n2.Coor;
@@ -7011,8 +7033,8 @@ namespace CaeMesh
             //
             foreach (var entry in _meshSetupItems)
             {
-                if (entry.Value is MeshingParameters || entry.Value is ShellGmsh ||  entry.Value is TetrahedralGmsh ||
-                    entry.Value is TransfiniteMesh)
+                if (entry.Value is MeshingParameters || entry.Value is ShellGmsh || entry.Value is ThickenShellMesh ||
+                    entry.Value is TetrahedralGmsh || entry.Value is TransfiniteMesh)
                 {
                     if (!(keepGeometrySelections && entry.Value.CreationData.IsGeometryBased()))
                     {
@@ -9318,7 +9340,7 @@ namespace CaeMesh
             }
             else throw new NotSupportedException();
         }
-        public string[] ThickenShellMesh(int[] partIds, double thickness, int numberOfLayers, double offset, bool preview,
+        public string[] ThickenShellMesh(string[] partNames, double thickness, int numberOfLayers, double offset, bool preview,
                                          out double[][][] connectedEdges)
         {
             List<string> errors = new List<string>();
@@ -9329,7 +9351,7 @@ namespace CaeMesh
             int[] edgeNodeIds;
             double[] faceNormal;
             FeElement element;
-            MeshPart shellPart;
+            BasePart shellPart;
             MeshPart solidPart;
             string solidPartName;
             Vec3D tmp;
@@ -9350,9 +9372,9 @@ namespace CaeMesh
             Dictionary<int, FeElement> newElements = new Dictionary<int, FeElement>();
             FeMesh mesh;
             //
-            foreach (int partId in partIds)
+            foreach (string partName in partNames)
             {
-                shellPart = (MeshPart)GetPartFromId(partId);
+                shellPart = _parts[partName];
                 if (shellPart.PartType != PartType.Shell) continue;
                 //
                 elementCount = 1;
