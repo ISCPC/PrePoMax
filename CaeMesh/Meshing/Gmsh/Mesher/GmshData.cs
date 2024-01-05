@@ -1,15 +1,16 @@
 ﻿using CaeGlobals;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace CaeMesh
 {
+    [Serializable]
+    public struct GmshIdLocation
+    {
+        public int Id;
+        public double[] Location;
+    }
+    
     [Serializable]
     public class GmshData
     {
@@ -18,31 +19,25 @@ namespace CaeMesh
         public string InpFileName;
         public MeshingParameters PartMeshingParameters;
         public MeshSetupItem[] GmshSetupItems;
-        public Dictionary<int, FeNode> VertexNodes;
-        public Dictionary<int, double> VertexNodeIdMeshSize;
-        public Dictionary<int[], int> EdgeVertexNodeIdsNumElements;
         public bool Preview;
+        // Topology
+        public Dictionary<int, FeNode> VertexNodes;
+        public Dictionary<int[], List<GmshIdLocation>> EdgeVertexNodeIdsEdgeId;
+        public Dictionary<int[], List<GmshIdLocation>> FaceVertexNodeIdsFaceId;
+        // Mesh size
+        public Dictionary<int, double> VertexNodeIdMeshSize;
+        public Dictionary<int, int> EdgeIdNumElements;
+        // Normals
+        public double[][] Coor;
+        public double[][] Normals;
 
 
-        public GmshData(string geometryFileName, string inpFileName, MeshingParameters partMeshingParameters,
-                        MeshSetupItem[] gmshSetupItems, Dictionary<int, FeNode> vertexNodes,
-                        Dictionary<int, double> vertexNodeIdMeshSize, Dictionary<int[], int> edgeVertexNodeIdsNumElements,
-                        bool preview)
+        // Constructors                                                                                                             
+        public GmshData(string geometryFileName)
         {
-            if (gmshSetupItems.Length != 1)
-                throw new CaeException("Currently, for a single part, only one active mesh setup item of the type: " +
-                    "Shell gmsh, Tetrahedral gmsh, Transfinite mesh, Extrude mesh or Revolve mesh is possible.");
-            //
             GeometryFileName = geometryFileName;
-            InpFileName = inpFileName;
-            PartMeshingParameters = partMeshingParameters;
-            GmshSetupItems = gmshSetupItems;
-            VertexNodes = vertexNodes;
-            VertexNodeIdMeshSize = vertexNodeIdMeshSize;
-            EdgeVertexNodeIdsNumElements = edgeVertexNodeIdsNumElements;
-            Preview = preview;
         }
-
+        //
         public void WriteToFile(string fileName)
         {
             this.DumpToFile(fileName);

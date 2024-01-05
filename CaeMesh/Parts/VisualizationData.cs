@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Windows.Forms.VisualStyles;
 
 namespace CaeMesh
 {
@@ -772,11 +773,21 @@ namespace CaeMesh
             }
             return vertexNodeIds;
         }
+        public int[] GetVertexNodeIdsForEdgeId(int edgeId)
+        {
+            HashSet<int> edgeNodeIds = new HashSet<int>(GetNodeIdsForEdgeId(edgeId));
+            return edgeNodeIds.Intersect(_vertexNodeIds).ToArray();
+        }
         public HashSet<int> GetVertexNodeIdsForEdgeIds(int[] edgeIds)
         {
             HashSet<int> edgeNodeIds = new HashSet<int>();
             foreach (int edgeId in edgeIds) edgeNodeIds.UnionWith(GetNodeIdsForEdgeId(edgeId));
             return edgeNodeIds.Intersect(_vertexNodeIds).ToHashSet();
+        }
+        public int[] GetVertexNodeIdsForSurfaceId(int surfaceId)
+        {
+            HashSet<int> surfaceNodeIds = new HashSet<int>(GetNodeIdsForSurfaceId(surfaceId));
+            return surfaceNodeIds.Intersect(_vertexNodeIds).ToArray();
         }
         public HashSet<int> GetVertexNodeIdsForSurfaceIds(int[] surfaceIds)
         {
@@ -1584,8 +1595,6 @@ namespace CaeMesh
                 }
             }
         }
-        
-
         // Section cut
         public void ApplySectionView(Dictionary<int, FeElement> elements, int[] elementIds, HashSet<int> frontNodes,
                                      HashSet<int> backNodes)

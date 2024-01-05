@@ -3375,9 +3375,7 @@ namespace PrePoMax
             else return defaultMeshingParameters;
         }
         //
-        public void GetMeshItemSizes(string partName,
-                                     out Dictionary<int, double> vertexNodeIdMeshSize,
-                                     out Dictionary<int[], int> edgeVertexNodeIdsNumElements,
+        public void GetMeshItemSizes(string partName, ref GmshData gmshData,
                                      OrderedDictionary<string, MeshSetupItem> meshSetupItems = null)
         {
             HashSet<int> selectedPartIds;
@@ -3408,18 +3406,16 @@ namespace PrePoMax
             int edgeId;
             double length;
             int numElements;
-            HashSet<int> vertexNodeIds = new HashSet<int>();
+            int[] vertexNodeIds;
             HashSet<int> nodeIds = new HashSet<int>();
-            vertexNodeIdMeshSize = new Dictionary<int, double>();
-            edgeVertexNodeIdsNumElements = new Dictionary<int[], int>();
+            gmshData.VertexNodeIdMeshSize = new Dictionary<int, double>();
+            gmshData.EdgeIdNumElements = new Dictionary<int, int>();
             foreach (var meshRefinement in meshRefinements)
             {
                 nodeIds.Clear();
                 //
                 foreach (int geometryId in meshRefinement.CreationIds)
                 {
-                    vertexNodeIds.Clear();
-                    //
                     itemTypePartId = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
                     itemId = itemTypePartId[0];
                     geometryType = (GeometryType)itemTypePartId[1];
@@ -3432,33 +3428,33 @@ namespace PrePoMax
                     }
                     else if (geometryType.IsEdge())
                     {
-                        vertexNodeIds = part.Visualization.GetVertexNodeIdsForEdgeIds(new int[] { itemId });
+                        vertexNodeIds = part.Visualization.GetVertexNodeIdsForEdgeId(itemId);
                         nodeIds.UnionWith(vertexNodeIds);
                         //
                         length = part.Visualization.EdgeLengths[itemId];
                         numElements = (int)Math.Round(length / meshRefinement.MeshSize, 0, MidpointRounding.AwayFromZero);
                         if (numElements < 1) numElements = 1;
-                        edgeVertexNodeIdsNumElements[vertexNodeIds.ToArray()] = numElements;
+                        //
+                        gmshData.EdgeIdNumElements[FeMesh.GmshTopologyId(itemId, partId)] = numElements;
                     }
                     else if (geometryType.IsSurface())
                     {
-                        vertexNodeIds = part.Visualization.GetVertexNodeIdsForSurfaceIds(new int[] { itemId });
-                        nodeIds.UnionWith(vertexNodeIds);
-                        //
                         for (int i = 0; i < part.Visualization.FaceEdgeIds[itemId].Length; i++)
                         {
                             edgeId = part.Visualization.FaceEdgeIds[itemId][i];
-                            vertexNodeIds = part.Visualization.GetVertexNodeIdsForEdgeIds(new int[] { edgeId });
+                            vertexNodeIds = part.Visualization.GetVertexNodeIdsForEdgeId(edgeId);
+                            nodeIds.UnionWith(vertexNodeIds);
+                            //
                             length = part.Visualization.EdgeLengths[edgeId];
                             numElements = (int)Math.Round(length / meshRefinement.MeshSize, 0, MidpointRounding.AwayFromZero);
                             if (numElements < 1) numElements = 1;
-                            edgeVertexNodeIdsNumElements[vertexNodeIds.ToArray()] = numElements;
+                            gmshData.EdgeIdNumElements[FeMesh.GmshTopologyId(edgeId, partId)] = numElements;
                         }
                     }
                     else throw new NotSupportedException();
                 }
                 // Add sizes
-                foreach (var nodeId in nodeIds) vertexNodeIdMeshSize[nodeId] = meshRefinement.MeshSize;
+                foreach (var nodeId in nodeIds) gmshData.VertexNodeIdMeshSize[nodeId] = meshRefinement.MeshSize;
             }
         }
         //
@@ -3615,12 +3611,13 @@ namespace PrePoMax
             SuppressExplodedView(new string[] { part.Name });
             File.WriteAllText(brepFileName, part.CADFileData);
             MeshingParameters partMeshingParameters = GetPartMeshingParameters(part.Name, meshSetupItems);
-            Dictionary<int, FeNode> vertexNodes = _model.Geometry.GetPartVertexNodes(part.Name);
-            Dictionary<int, double> vertexNodeIdMeshSize;
-            Dictionary<int[], int> edgeVertexNodeIdsNumElements;
-            GetMeshItemSizes(part.Name, out vertexNodeIdMeshSize, out edgeVertexNodeIdsNumElements, meshSetupItems);
-            GmshData gmshData = new GmshData(brepFileName, inpFileName, partMeshingParameters, gmshSetupItems,
-                                             vertexNodes, vertexNodeIdMeshSize, edgeVertexNodeIdsNumElements, true);
+            GmshData gmshData = new GmshData(brepFileName);
+            gmshData.InpFileName = inpFileName;
+            gmshData.PartMeshingParameters = partMeshingParameters;
+            gmshData.GmshSetupItems = gmshSetupItems;
+            gmshData.Preview = true;
+            _model.Geometry.GetPartTopologyForGmsh(part.Name, ref gmshData);
+            GetMeshItemSizes(part.Name, ref gmshData, meshSetupItems);
             gmshData.WriteToFile(gmshDataFileName);
             ResumeExplodedViews(false);
             //
@@ -3629,8 +3626,8 @@ namespace PrePoMax
             bool jobCompleted;
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                GmshMesher mesher = new GmshMesher(gmshData, _form.WriteDataToOutput);
-                string error = mesher.CreateMesh();
+                GmshBase gmsh = new GmshBase(gmshData, _form.WriteDataToOutput);
+                string error = gmsh.CreateMesh();
                 jobCompleted = error == null;
             }
             else
@@ -3789,12 +3786,13 @@ namespace PrePoMax
             SuppressExplodedView(partNames);
             FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, partNames);
             MeshingParameters partMeshingParameters = GetPartMeshingParameters(part.Name);
-            Dictionary<int, FeNode> vertexNodes = _model.Geometry.GetPartVertexNodes(part.Name);
-            Dictionary<int, double> vertexNodeIdMeshSize;
-            Dictionary<int[], int> edgeVertexNodeIdsNumElements;
-            GetMeshItemSizes(part.Name, out vertexNodeIdMeshSize, out edgeVertexNodeIdsNumElements);
-            GmshData gmshData = new GmshData(stlFileName, inpFileName, partMeshingParameters, meshSetupItems, vertexNodes,
-                                             vertexNodeIdMeshSize, edgeVertexNodeIdsNumElements, false);
+            GmshData gmshData = new GmshData(stlFileName);
+            gmshData.InpFileName = inpFileName;
+            gmshData.PartMeshingParameters = partMeshingParameters;
+            gmshData.GmshSetupItems = meshSetupItems;
+            gmshData.Preview = false;
+            _model.Geometry.GetPartTopologyForGmsh(part.Name, ref gmshData);
+            GetMeshItemSizes(part.Name, ref gmshData);
             gmshData.WriteToFile(gmshDataFileName);
             ResumeExplodedViews(false);
             //
@@ -3803,8 +3801,8 @@ namespace PrePoMax
             bool jobCompleted;
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                GmshMesher mesher = new GmshMesher(gmshData, _form.WriteDataToOutput);
-                string error = mesher.CreateMesh();
+                GmshBase gmsh = new GmshBase(gmshData, _form.WriteDataToOutput);
+                string error = gmsh.CreateMesh();
                 jobCompleted = error == null;
             }
             else
@@ -4025,12 +4023,13 @@ namespace PrePoMax
             SuppressExplodedView(new string[] { part.Name });
             File.WriteAllText(brepFileName, part.CADFileData);
             MeshingParameters partMeshingParameters = GetPartMeshingParameters(part.Name);
-            Dictionary<int, FeNode> vertexNodes = _model.Geometry.GetPartVertexNodes(part.Name);
-            Dictionary<int, double> vertexNodeIdMeshSize;
-            Dictionary<int[], int> edgeVertexNodeIdsNumElements;
-            GetMeshItemSizes(part.Name, out vertexNodeIdMeshSize, out edgeVertexNodeIdsNumElements);
-            GmshData gmshData = new GmshData(brepFileName, inpFileName, partMeshingParameters, meshSetupItems, 
-                                             vertexNodes, vertexNodeIdMeshSize, edgeVertexNodeIdsNumElements, false);
+            GmshData gmshData = new GmshData(brepFileName);
+            gmshData.InpFileName = inpFileName;
+            gmshData.PartMeshingParameters = partMeshingParameters;
+            gmshData.GmshSetupItems = meshSetupItems;
+            gmshData.Preview = false;
+            _model.Geometry.GetPartTopologyForGmsh(part.Name, ref gmshData);
+            GetMeshItemSizes(part.Name, ref gmshData);
             gmshData.WriteToFile(gmshDataFileName);
             ResumeExplodedViews(false);
             //
@@ -4041,8 +4040,8 @@ namespace PrePoMax
             bool debuggerAttached = System.Diagnostics.Debugger.IsAttached;
             if (debuggerAttached)
             {
-                GmshMesher mesher = new GmshMesher(gmshData, _form.WriteDataToOutput);
-                error = mesher.CreateMesh();
+                GmshBase gmsh = new GmshBase(gmshData, _form.WriteDataToOutput);
+                error = gmsh.CreateMesh();
                 jobCompleted = error == null;
             }
             else

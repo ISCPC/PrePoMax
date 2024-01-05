@@ -113,8 +113,11 @@
     <Compile Include="Meshing\Gmsh\Enums\GmshOptimizeHighOrderEnum.cs" />
     <Compile Include="Meshing\Gmsh\Enums\GmshOptimizeFirstOrderSolidEnum.cs" />
     <Compile Include="Meshing\Gmsh\Enums\GmshAlgorithmMesh3DEnum.cs" />
+    <Compile Include="Meshing\Gmsh\Mesher\GmshSurface.cs" />
+    <Compile Include="Meshing\Gmsh\Mesher\GmshEdge.cs" />
+    <Compile Include="Meshing\Gmsh\Mesher\GmshVolume.cs" />
     <Compile Include="Meshing\Gmsh\Mesher\GmshData.cs" />
-    <Compile Include="Meshing\Gmsh\Mesher\GmshMesher.cs" />
+    <Compile Include="Meshing\Gmsh\Mesher\GmshBase.cs" />
     <Compile Include="Meshing\Gmsh\SetupItems\ShellGmsh.cs" />
     <Compile Include="Meshing\Gmsh\SetupItems\TransfiniteMesh.cs" />
     <Compile Include="Meshing\Gmsh\SetupItems\TetrahedralGmsh.cs" />

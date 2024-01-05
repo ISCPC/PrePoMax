@@ -21,6 +21,8 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using PrePoMax.Commands;
 using System.Timers;
+using PrePoMax.Properties;
+using System.Runtime;
 
 namespace PrePoMax
 {
@@ -8834,7 +8836,8 @@ namespace PrePoMax
                 //AnimateModel58();
                 //_vtk.Export(GetFileNameToSaveAs());
                 //TestSpring();
-                TestSuperposition();
+                //TestSuperposition();
+                TestNormals();
             }
             catch
             {
@@ -8937,6 +8940,33 @@ namespace PrePoMax
             //
             //if (timerTest.Enabled) timerTest.Stop();
             //else timerTest.Start();
+        }
+        private void TestNormals()
+        {
+            GeometryPart part = _controller.GetGeometryPart("Shell_part-1");
+            double[][] coor = new double[][] { new double[] { 100, 0, 0 },
+                                               new double[] { 0, 100, 0 },
+                                               new double[] { 100, 1, 0 }};
+            //
+            CalculixSettings settings = _controller.Settings.Calculix;
+            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+            {
+                MessageBoxes.ShowWorkDirectoryError();
+                return;
+            }
+            string brepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
+            //
+            if (File.Exists(brepFileName)) File.Delete(brepFileName);
+            //
+            _controller.SuppressExplodedView(new string[] { part.Name });
+            File.WriteAllText(brepFileName, part.CADFileData);
+            GmshData gmshData = new GmshData(brepFileName);
+            gmshData.Coor = coor;
+            _controller.ResumeExplodedViews(false);
+            //
+            GmshBase gmsh = new GmshBase(gmshData, WriteDataToOutput);
+            string error = gmsh.GetOccNormals();
+            double[][] normals = gmsh.GmshData.Normals;
         }
         private void TestSuperposition()
         {

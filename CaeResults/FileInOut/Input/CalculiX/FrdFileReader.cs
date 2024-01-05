@@ -314,8 +314,7 @@ namespace CaeResults
                 else if ((lines[i].StartsWith("    2C") || lines[i].StartsWith("    3C")) && dataSet.Count > 0)
                 {
                     dataSets.Add(dataSet.ToArray());
-                    dataSet = new List<string>();
-                    dataSet.Add(lines[i]);
+                    dataSet = new List<string>() { lines[i] };
                 }
                 else
                     dataSet.Add(lines[i]);

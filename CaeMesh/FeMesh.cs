@@ -3484,7 +3484,7 @@ namespace CaeMesh
             //
             return allPartNames.ToArray();
         }
-        public Dictionary<int, FeNode> GetPartVertexNodes(string partName)
+        public Dictionary<int, FeNode> GetPartVertexNodes_(string partName)
         {
             FeNode node;
             int[] vertexNodeIds;
@@ -3501,6 +3501,84 @@ namespace CaeMesh
                 }
             }
             return vertices;
+        }
+        public void GetPartTopologyForGmsh(string partName, ref GmshData gmshData)
+        {
+            CompareIntArray comparer = new CompareIntArray();
+            gmshData.VertexNodes = new Dictionary<int, FeNode>();
+            gmshData.EdgeVertexNodeIdsEdgeId = new Dictionary<int[], List<GmshIdLocation>>(comparer);
+            gmshData.FaceVertexNodeIdsFaceId = new Dictionary<int[], List<GmshIdLocation>>(comparer);
+            //
+            int[] vertexIds;
+            int[] visNodeIds;
+            Vec3D cog;
+            BasePart part;
+            VisualizationData vis;
+            HashSet<int> nodeIdsHash;
+            Dictionary<int, HashSet<int>> edgeIdNodeIds;
+            Dictionary<int, HashSet<int>> faceIdNodeIds;
+            Dictionary<int, Vec3D> nodeIdVec;
+            GmshIdLocation idLocation;
+            List<GmshIdLocation> idLocationList;
+            //
+            string[] partNames = GetMeshablePartNames(new string[] { partName });
+            //
+            for (int i = 0; i < partNames.Length; i++)
+            {
+                part = _parts[partNames[i]];
+                vis = part.Visualization;
+                edgeIdNodeIds = vis.GetEdgeIdNodeIds();
+                faceIdNodeIds = vis.GetSurfaceIdNodeIds();
+                //
+                nodeIdVec = new Dictionary<int, Vec3D>();
+                visNodeIds = part.Visualization.GetNodeIds().ToArray();
+                for (int j = 0; j < visNodeIds.Length; j++) nodeIdVec[visNodeIds[j]] = new Vec3D(_nodes[visNodeIds[j]].Coor);
+                // Vertices
+                gmshData.VertexNodes = new Dictionary<int, FeNode>();
+                for (int j = 0; j < vis.VertexNodeIds.Length; j++)
+                {
+                    gmshData.VertexNodes.Add(vis.VertexNodeIds[j], _nodes[vis.VertexNodeIds[j]]);
+                }
+                // Edges
+                for (int j = 0; j < vis.EdgeCount; j++)
+                {
+                    cog = new Vec3D();
+                    nodeIdsHash = edgeIdNodeIds[j];
+                    foreach (var nodeId in nodeIdsHash) cog += nodeIdVec[nodeId];
+                    cog *= 1.0 / nodeIdsHash.Count();
+                    //
+                    vertexIds = vis.GetVertexNodeIdsForEdgeId(j);
+                    Array.Sort(vertexIds);
+                    //
+                    idLocation = new GmshIdLocation() { Id = GmshTopologyId(j, part.PartId), Location = cog.Coor };
+                    if (gmshData.EdgeVertexNodeIdsEdgeId.TryGetValue(vertexIds, out idLocationList))
+                        idLocationList.Add(idLocation);
+                    else
+                        gmshData.EdgeVertexNodeIdsEdgeId[vertexIds] = new List<GmshIdLocation>() { idLocation };
+                }
+                // Faces
+                for (int j = 0; j < vis.FaceCount; j++)
+                {
+                    cog = new Vec3D();
+                    nodeIdsHash = faceIdNodeIds[j];
+                    foreach (var nodeId in nodeIdsHash) cog += nodeIdVec[nodeId];
+                    cog *= 1.0 / nodeIdsHash.Count();
+                    //
+                    vertexIds = vis.GetVertexNodeIdsForSurfaceId(j);
+                    Array.Sort(vertexIds);
+                    //
+                    idLocation = new GmshIdLocation() { Id = GmshTopologyId(j, part.PartId), Location = cog.Coor };
+                    if (gmshData.FaceVertexNodeIdsFaceId.TryGetValue(vertexIds, out idLocationList))
+                        idLocationList.Add(idLocation);
+                    else
+                        gmshData.FaceVertexNodeIdsFaceId[vertexIds] = new List<GmshIdLocation>() { idLocation };
+                }
+            }
+        }
+        public static int GmshTopologyId(int itemId, int partId)
+        {
+            // Add 1 to prevent 0 * 10000 + 5 = 5
+            return (itemId + 1) * 10000 + partId;
         }
         // 3D - 2D
         public void UpdatePartsElementTypes(Dictionary<Type, HashSet<Enum>> elementTypeEnums)
@@ -9353,7 +9431,7 @@ namespace CaeMesh
             FeElement element;
             BasePart shellPart;
             MeshPart solidPart;
-            string solidPartName;
+            string prevPartName;
             Vec3D tmp;
             Vec3D averageNormal;
             List<Vec3D> nodeNormals;
@@ -9572,20 +9650,20 @@ namespace CaeMesh
                     mesh = new FeMesh(newNodes, newElements, _meshRepresentation, ImportOptions.DetectEdges);
                     mesh.ConvertLineFeElementsToEdges();
                     mesh.RemoveElementsByType<FeElement1D>();
-                    //
+                    // Fix the name
                     solidPart = (MeshPart)mesh.Parts.First().Value;
-                    solidPartName = solidPart.Name;
-                    //
+                    prevPartName = solidPart.Name;
+                    solidPart.Name = shellPart.Name;                                // must be here
+                    mesh.Parts.Replace(prevPartName, solidPart.Name, solidPart);    // must be here
+                    // Add the part
                     AddMesh(mesh, _parts.Keys);
-                    //
-                    solidPart.Name = shellPart.Name;
+                    // Fix the part id
                     solidPart.PartId = shellPart.PartId;
+                    foreach (var solidElementId in solidPart.Labels) _elements[solidElementId].PartId = solidPart.PartId;
+                    // Fiy other properties
                     solidPart.Color = shellPart.Color;
                     solidPart.Offset = shellPart.Offset;
                     solidPart.SmoothShaded = shellPart.SmoothShaded;
-                    _parts.Replace(solidPartName, solidPart.Name, solidPart);
-                    //
-                    foreach (var solidElementId in solidPart.Labels) _elements[solidElementId].PartId = solidPart.PartId;
                 }
             }
             //

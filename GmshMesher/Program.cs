@@ -23,8 +23,8 @@ namespace GmshMesherExe
                 {
                     GmshData gmshData = Tools.LoadDumpFromFile<GmshData>(gmshDataFileName);
                     //
-                    GmshMesher mesher = new GmshMesher(gmshData, Console.WriteLine);
-                    error = mesher.CreateMesh();
+                    GmshBase gmsh = new GmshBase(gmshData, Console.WriteLine);
+                    error = gmsh.CreateMesh();
                 }
             }
             //Console.WriteLine("Press any key to stop...");
