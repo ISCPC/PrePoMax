@@ -3451,6 +3451,23 @@ namespace PrePoMax
                             gmshData.EdgeIdNumElements[FeMesh.GmshTopologyId(edgeId, partId)] = numElements;
                         }
                     }
+                    else if (geometryType == GeometryType.Part)
+                    {
+                        for (int i = 0; i < part.Visualization.FaceCount; i++)
+                        {
+                            for (int j = 0; j < part.Visualization.FaceEdgeIds[i].Length; j++)
+                            {
+                                edgeId = part.Visualization.FaceEdgeIds[i][j];
+                                vertexNodeIds = part.Visualization.GetVertexNodeIdsForEdgeId(edgeId);
+                                nodeIds.UnionWith(vertexNodeIds);
+                                //
+                                length = part.Visualization.EdgeLengths[edgeId];
+                                numElements = (int)Math.Round(length / meshRefinement.MeshSize, 0, MidpointRounding.AwayFromZero);
+                                if (numElements < 1) numElements = 1;
+                                gmshData.EdgeIdNumElements[FeMesh.GmshTopologyId(edgeId, partId)] = numElements;
+                            }
+                        }
+                    }
                     else throw new NotSupportedException();
                 }
                 // Add sizes
