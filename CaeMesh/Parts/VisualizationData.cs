@@ -776,7 +776,10 @@ namespace CaeMesh
         public int[] GetVertexNodeIdsForEdgeId(int edgeId)
         {
             HashSet<int> edgeNodeIds = new HashSet<int>(GetNodeIdsForEdgeId(edgeId));
-            return edgeNodeIds.Intersect(_vertexNodeIds).ToArray();
+            edgeNodeIds.IntersectWith(_vertexNodeIds);
+            // Return start/end ids
+            if (edgeNodeIds.Count == 1) return new int[] { edgeNodeIds.First(), edgeNodeIds.First() };
+            else return edgeNodeIds.ToArray();
         }
         public HashSet<int> GetVertexNodeIdsForEdgeIds(int[] edgeIds)
         {

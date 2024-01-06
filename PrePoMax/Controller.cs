@@ -3428,9 +3428,6 @@ namespace PrePoMax
                     }
                     else if (geometryType.IsEdge())
                     {
-                        vertexNodeIds = part.Visualization.GetVertexNodeIdsForEdgeId(itemId);
-                        nodeIds.UnionWith(vertexNodeIds);
-                        //
                         length = part.Visualization.EdgeLengths[itemId];
                         numElements = (int)Math.Round(length / meshRefinement.MeshSize, 0, MidpointRounding.AwayFromZero);
                         if (numElements < 1) numElements = 1;
@@ -3442,12 +3439,10 @@ namespace PrePoMax
                         for (int i = 0; i < part.Visualization.FaceEdgeIds[itemId].Length; i++)
                         {
                             edgeId = part.Visualization.FaceEdgeIds[itemId][i];
-                            vertexNodeIds = part.Visualization.GetVertexNodeIdsForEdgeId(edgeId);
-                            nodeIds.UnionWith(vertexNodeIds);
-                            //
                             length = part.Visualization.EdgeLengths[edgeId];
                             numElements = (int)Math.Round(length / meshRefinement.MeshSize, 0, MidpointRounding.AwayFromZero);
                             if (numElements < 1) numElements = 1;
+                            //
                             gmshData.EdgeIdNumElements[FeMesh.GmshTopologyId(edgeId, partId)] = numElements;
                         }
                     }
@@ -3458,12 +3453,10 @@ namespace PrePoMax
                             for (int j = 0; j < part.Visualization.FaceEdgeIds[i].Length; j++)
                             {
                                 edgeId = part.Visualization.FaceEdgeIds[i][j];
-                                vertexNodeIds = part.Visualization.GetVertexNodeIdsForEdgeId(edgeId);
-                                nodeIds.UnionWith(vertexNodeIds);
-                                //
                                 length = part.Visualization.EdgeLengths[edgeId];
                                 numElements = (int)Math.Round(length / meshRefinement.MeshSize, 0, MidpointRounding.AwayFromZero);
                                 if (numElements < 1) numElements = 1;
+                                //
                                 gmshData.EdgeIdNumElements[FeMesh.GmshTopologyId(edgeId, partId)] = numElements;
                             }
                         }

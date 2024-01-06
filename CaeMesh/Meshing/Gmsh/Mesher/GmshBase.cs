@@ -224,6 +224,7 @@ namespace CaeMesh
         }
         private void RenumberGmshDataVerticesByCoor()
         {
+            // Vertices                                                                                                             
             double[] coor;
             Tuple<int, int>[] pointDimTags;
             Gmsh.Model.GetEntities(out pointDimTags, 0);
@@ -272,9 +273,9 @@ namespace CaeMesh
             Dictionary<int, double> vertexIdMeshSize = new Dictionary<int, double>();
             foreach (var entry in _gmshData.VertexNodeIdMeshSize) vertexIdMeshSize[netGenIdGmshId[entry.Key]] = entry.Value;
             _gmshData.VertexNodeIdMeshSize = vertexIdMeshSize;
-            // Renumber edge vertex node ids
+            // Edges                                                                                                                
             int edgeId;
-            int oldEdgeId = -1;
+            int netGenEdgeId = -1;
             double min;
             double d2;
             int[] vertexIds;
@@ -286,9 +287,19 @@ namespace CaeMesh
             Vec3D cog;
             List<GmshIdLocation> idLocationList;
             Tuple<int, int>[] dimTags;
-            Dictionary<int, int> oldEdgeIdEdgeId = new Dictionary<int, int>();
+            Dictionary<int, int> netGenEdgeIdEdgeId = new Dictionary<int, int>();
             Gmsh.Model.GetEntities(out dimTags, 1);
-            //
+            // Renumber edge vertex node ids as keys
+            CompareIntArray comparer = new CompareIntArray();
+            Dictionary<int[], List<GmshIdLocation>> edgeVertexNodeIdsEdgeId = new Dictionary<int[], List<GmshIdLocation>>(comparer);
+            foreach (var entry in _gmshData.EdgeVertexNodeIdsEdgeId)
+            {
+                vertexIds = new int[entry.Key.Length];
+                for (int i = 0; i < vertexIds.Length; i++) vertexIds[i] = netGenIdGmshId[entry.Key[i]];
+                edgeVertexNodeIdsEdgeId[vertexIds] = entry.Value;
+            }
+            _gmshData.EdgeVertexNodeIdsEdgeId = edgeVertexNodeIdsEdgeId;
+            // Renumber edge ids
             foreach (var entry in dimTags)
             {
                 edgeId = entry.Item2;
@@ -299,10 +310,7 @@ namespace CaeMesh
                 //
                 if (_gmshData.EdgeVertexNodeIdsEdgeId.TryGetValue(vertexIds, out idLocationList))
                 {
-                    if (idLocationList.Count() == 1)
-                    {
-                        oldEdgeId = idLocationList[0].Id;
-                    }
+                    if (idLocationList.Count() == 1) netGenEdgeId = idLocationList[0].Id;
                     else
                     {
                         min = double.MaxValue;
@@ -313,19 +321,22 @@ namespace CaeMesh
                             if (d2 < min)
                             {
                                 min = d2;
-                                oldEdgeId = idLocation.Id;
+                                netGenEdgeId = idLocation.Id;
                             }
                         }
                     }
                     //
-                    oldEdgeIdEdgeId[oldEdgeId] = edgeId;
+                    netGenEdgeIdEdgeId[netGenEdgeId] = edgeId;
                 }
             }
             //
             Dictionary<int,int> edgeIdNumElements = new Dictionary<int, int>();
             foreach (var entry in _gmshData.EdgeIdNumElements)
             {
-                edgeIdNumElements[oldEdgeIdEdgeId[entry.Key]] = entry.Value;
+                if (netGenEdgeIdEdgeId.TryGetValue(entry.Key, out edgeId))
+                    edgeIdNumElements[edgeId] = entry.Value;
+                else
+                    edgeId = edgeId;
             }
             _gmshData.EdgeIdNumElements = edgeIdNumElements;
         }
@@ -743,46 +754,45 @@ namespace CaeMesh
             //
             int min;
             int max;
-            int value;
             int numOfElements;
-            int overriddenNumElements;
+            int numOfNodes;
             HashSet<int> groupEdgeIds;
             IntPtr[] nodeTagsIntPtr;
             double[] coor;
             // Create edge mesh to get number of nodes for each edge
             Gmsh.Model.Mesh.Generate(1);
             //
-            Dictionary<int, int> edgeIdNumElements = new Dictionary<int, int>();
             foreach (var edgeGroup in edgeGroups)
             {
                 if (edgeGroup.Nodes.Count <= 1) continue;
                 //
                 min = int.MaxValue;
                 max = -int.MaxValue;
-                overriddenNumElements = -1;
                 groupEdgeIds = new HashSet<int>();
                 foreach (var edgeNodeFromGroup in edgeGroup.Nodes)
                 {
-                    //if (_gmshData.EdgeVertexNodeIdsNumElements.TryGetValue(edgeNodeFromGroup.Value.VertexIds, out numOfElements))
-                    //    overriddenNumElements = numOfElements;
-                    //else
+                    if (_gmshData.EdgeIdNumElements.TryGetValue(edgeNodeFromGroup.Value.Id, out numOfElements)) // must be here
+                    {
+                        numOfNodes = numOfElements + 1;
+                        min = numOfNodes;
+                        max = numOfNodes;
+                        break;
+                    }
+                    else
                     {
                         Gmsh.Model.Mesh.GetNodes(out nodeTagsIntPtr, out coor, 1, edgeNodeFromGroup.Value.Id, true, false);
                         //
-                        value = nodeTagsIntPtr.Length;
-                        if (value < min) min = value;
-                        if (value > max) max = value;
+                        numOfNodes = nodeTagsIntPtr.Length;      // for 2 nodes there is only 1 element
+                        if (numOfNodes < min) min = numOfNodes;
+                        if (numOfNodes > max) max = numOfNodes;
                     }
                 }
                 //
-                if (overriddenNumElements > 0) 
-                    value = overriddenNumElements + 1;
-                else value = (int)Math.Round((min + max) / 2.0);
+                numOfNodes = (int)Math.Round((min + max) / 2.0, 0, MidpointRounding.AwayFromZero);
                 //
                 foreach (var edgeNodeFromGroup in edgeGroup.Nodes)
                 {
-                    Gmsh.Model.Mesh.SetTransfiniteCurve(edgeNodeFromGroup.Value.Id, value);
-                    edgeIdNumElements.Add(edgeNodeFromGroup.Value.Id, value);
+                    Gmsh.Model.Mesh.SetTransfiniteCurve(edgeNodeFromGroup.Value.Id, numOfNodes);
                 }
             }
             //
