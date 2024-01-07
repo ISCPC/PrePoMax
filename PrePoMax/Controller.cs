@@ -14382,7 +14382,7 @@ namespace PrePoMax
             //if (meshRefinement.MeshSize > meshingParameters.MaxH) meshSize = meshingParameters.MaxH;
             //else if (meshRefinement.MeshSize < meshingParameters.MinH) meshSize = meshingParameters.MinH;
             //
-            mesh.GetVertexAndEdgeCoorFromGeometryIds(ids, meshSize, true, out coor);
+            mesh.GetMeshRefinementCoor(ids, meshSize, out coor);
             if (highlightNodes) HighlightNodes(coor, useSecondaryHighlightColor);
             //
             backfaceCulling = part.PartType != PartType.Shell;

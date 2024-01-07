@@ -12,6 +12,7 @@ using System.Reflection;
 using System.IO.Ports;
 using System.Security.AccessControl;
 using System.Runtime.InteropServices;
+using System.Windows.Forms.VisualStyles;
 
 namespace CaeMesh
 {
@@ -1957,10 +1958,10 @@ namespace CaeMesh
             }
             while (notVisitedEdgeCellIds.Count > 0);
             //
-            return SortEdgeCellIds(part, edgeCellIds);
+            return SortEdgeCellIds(part, edgeCellIds, vertexNodeIds);
         }
         //
-        private int[] SortEdgeCellIds(BasePart part, HashSet<int> edgeCellIds)
+        private int[] SortEdgeCellIds(BasePart part, HashSet<int> edgeCellIds, HashSet<int> vertexNodeIds)
         {
             int[][] edgeCells = part.Visualization.EdgeCells;
             //
@@ -1999,7 +2000,13 @@ namespace CaeMesh
             // Check for loop
             if (firstNodeId == -1)
             {
-                firstNodeId = nodeEdgeCellIds.Keys.First();
+                if (vertexNodeIds != null)
+                {
+                    var intersection = nodeEdgeCellIds.Keys.Intersect(vertexNodeIds);
+                    if (intersection.Count() > 0) firstNodeId = intersection.First();
+                }
+                if (firstNodeId == -1) firstNodeId = nodeEdgeCellIds.Keys.First();
+                //
                 lastNodeId = firstNodeId;
             }
             //
@@ -6231,30 +6238,93 @@ namespace CaeMesh
             lines = lineList.ToArray();
         }
         // Get node, edge or triangle coordinates for mesh refinement for Highlight
-        public void GetVertexAndEdgeCoorFromGeometryIds(int[] ids, double meshSize, bool edgeRepresentation,
-                                                       out double[][] points)
+        public void GetMeshRefinementCoor(int[] geometryIds, double meshSize, out double[][] coor)
         {
-            int[][] cells = GetCellsFromGeometryIds(ids, edgeRepresentation);
+            coor = null;
+            //
+            int[] itemTypePartIds;
+            int itemId;
+            GeometryType geomType;
+            BasePart part;
+            //
+            int[] edgeIds;
+            int edgeCellId;
+            int numElements;
+            double edgeLen;
+            double edgeCellLen;
+            double elemLen;
+            double accLen;
+            double missLen;
+            Vec3D p;
+            Vec3D n;
+            Vec3D p1;
+            Vec3D p2;
+            Vec3D pStart;
             List<double[]> pointList = new List<double[]>();
             //
-            for (int i = 0; i < cells.Length; i++)
+            foreach (int geometryId in geometryIds)
             {
-                if (cells[i].Length == 1)
+                itemTypePartIds = GetItemTypePartIdsFromGeometryId(geometryId);
+                itemId = itemTypePartIds[0];
+                geomType = (GeometryType)itemTypePartIds[1];
+                part = GetPartFromId(itemTypePartIds[2]);
+                if (part == null) continue;
+                //
+                VisualizationData vis = part.Visualization;
+                //
+                if (geomType == GeometryType.Vertex)
                 {
-                    pointList.Add(_nodes[cells[i][0]].Coor);
+                    pointList.Add(_nodes[vis.VertexNodeIds[itemId]].Coor);
                 }
-                else if (cells[i].Length == 2)
+                else
                 {
-                    pointList.AddRange(SplitEdge(cells[i], meshSize));
+                    if (geomType.IsEdge()) edgeIds = new int[] { itemId };
+                    else if (geomType.IsSurface()) edgeIds = vis.FaceEdgeIds[itemId];
+                    else if (geomType == GeometryType.Part)
+                    {
+                        edgeIds = new int[vis.EdgeCount];
+                        for (int i = 0; i < vis.EdgeCount; i++) edgeIds[i] = i;
+                    }
+                    else throw new NotSupportedException();
+                    //
+                    foreach (var edgeId in edgeIds)
+                    {
+                        accLen = 0;
+                        edgeLen = vis.EdgeLengths[edgeId];
+                        numElements = (int)Math.Round(edgeLen / meshSize, 0, MidpointRounding.AwayFromZero);
+                        elemLen = edgeLen / numElements;
+                        //
+                        for (int i = 0; i < vis.EdgeCellIdsByEdge[edgeId].Length; i++)
+                        {
+                            edgeCellId = vis.EdgeCellIdsByEdge[edgeId][i];
+                            p1 = new Vec3D(_nodes[vis.EdgeCells[edgeCellId][0]].Coor);
+                            p2 = new Vec3D(_nodes[vis.EdgeCells[edgeCellId][1]].Coor);
+                            pStart = p1;
+                            n = p2 - p1;
+                            edgeCellLen = n.Normalize();
+                            // First
+                            if (i == 0) pointList.Add(pStart.Coor);
+                            //
+                            while (accLen + edgeCellLen > elemLen)
+                            {
+                                missLen = elemLen - accLen;
+                                p = pStart + n * missLen;
+                                pointList.Add(p.Coor);
+                                //
+                                accLen = 0;
+                                pStart = p;
+                                edgeCellLen -= missLen;
+                            }
+                            //
+                            accLen += edgeCellLen;
+                            // Last
+                            if (i == vis.EdgeCellIdsByEdge[edgeId].Length - 1 && accLen > 0.9 * elemLen)
+                                pointList.Add(p2.Coor);
+                        }
+                    }
                 }
-                else if (cells[i].Length == 3)
-                {
-                    SplitTriangle(cells[i], meshSize, out double[][] trianglePoints, out double[][][] triangleLines);
-                    pointList.AddRange(trianglePoints);
-                }
-                else throw new NotSupportedException();
             }
-            points = pointList.ToArray();
+            coor = pointList.ToArray();
         }
         private int[][] GetCellsFromGeometryIds(int[] ids, bool edgeRepresentation)
         {

@@ -60,7 +60,7 @@ namespace CaeMesh
                     _edgeVertexIds = fixedEdgeVertexIds;
                 }
             }
-            //
+            // Three-sided faces
             if (VertexIds.Length == 3 && edgeIds.Length == 3)
             {
                 double delta1 = Math.Abs(edgeLengths[0] - edgeLengths[1]);
@@ -95,6 +95,23 @@ namespace CaeMesh
                 Triangular = true;
                 Transfinite = true;
             }
+            // Four-sided cylinder faces - not working
+            //else if (VertexIds.Length == 2 && edgeIds.Length == 4)
+            //{
+            //    int countA = 0;
+            //    int countB = 0;
+            //    OppositeEdgesA = new int[2];
+            //    OppositeEdgesB = new int[2];
+            //    for (int i = 0; i < edgeIds.Length; i++)
+            //    {
+            //        if (edgeVertexIds[i][0] == edgeVertexIds[i][1]) OppositeEdgesA[countA++] = edgeIds[i];
+            //        else OppositeEdgesB[countB++] = edgeIds[i];
+            //    }
+            //    Quadrangular = true;
+            //    Transfinite = true;
+            //    HasHole = true;
+            //}
+            // Four-sided faces
             else if (VertexIds.Length == 4 && edgeIds.Length == 4)
             {
                 // Find opposite edge to the first edge
@@ -110,7 +127,9 @@ namespace CaeMesh
                 if (!HasHole) Transfinite = true;
             }
             else if (VertexIds.Length != edgeIds.Length)
+            {
                 Collapsed = true;
+            }
         }
         public void SetFirstVertexId(int firstVertexId)
         {
