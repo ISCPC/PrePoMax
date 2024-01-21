@@ -30,7 +30,9 @@ namespace CaeModel
         IterativeScaling,
         //
         [StandardValue("IterativeCholesky", DisplayName = "Iterative Cholesky")]
-        IterativeCholesky
+        IterativeCholesky,
+        SXAT_HS,
+        SXAT_SCALING
     }
 
     [Serializable]
